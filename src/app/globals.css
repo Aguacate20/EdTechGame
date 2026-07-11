@@ -1,0 +1,757 @@
+/* ============================================================
+   Skin "Calabozo" v0.1 — Capa 3 (tema)
+   Paleta: noche de cripta + luz de antorcha
+   ============================================================ */
+:root {
+  --bg: #14101f;          /* noche de cripta */
+  --stone: #241c33;       /* piedra del muro */
+  --stone-deep: #1b1529;  /* piedra en sombra */
+  --torch: #f5a742;       /* luz de antorcha (acento) */
+  --blood: #e8504f;       /* corazones */
+  --gold: #f0c245;        /* monedas */
+  --moss: #6fd66a;        /* acierto */
+  --ink: #ece4d0;         /* pergamino (texto) */
+  --ink-dim: #8a7f9e;     /* texto secundario */
+  --px: 4px;              /* unidad de pixel del borde */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  line-height: 1.35;
+  image-rendering: pixelated;
+}
+
+/* Textura sutil de mazmorra: rejilla de piedra apenas visible */
+body {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 24px 24px;
+  min-height: 100vh;
+}
+
+h1, h2, .hud, .trail, .btn-primary, .room-kind, .timer-label, .landing-eyebrow {
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* Borde pixelado chunky (esquinas recortadas con box-shadow) */
+.pxborder, .room, .opt, .btn-primary, .hud, .mech-input, .treasure-box, .summary {
+  border: none;
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 0 var(--edge, var(--stone)),
+    0 var(--px) 0 0 var(--edge, var(--stone)),
+    calc(-1 * var(--px)) 0 0 0 var(--edge, var(--stone)),
+    var(--px) 0 0 0 var(--edge, var(--stone));
+  border-radius: 0;
+}
+
+/* ---------- Landing ---------- */
+.landing {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.landing-frame { max-width: 560px; text-align: center; }
+.landing-eyebrow {
+  font-size: 10px;
+  color: var(--torch);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.landing-title {
+  font-size: clamp(36px, 9vw, 64px);
+  line-height: 1.15;
+  margin: 16px 0;
+  color: var(--ink);
+  text-shadow: 4px 4px 0 #000, 8px 8px 0 rgba(245, 167, 66, 0.25);
+}
+.landing-sub { color: var(--ink-dim); margin: 0 0 8px; }
+.landing-desc { margin: 0 auto 28px; max-width: 46ch; }
+.landing-legend {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  color: var(--ink-dim);
+  font-size: 18px;
+}
+
+/* ---------- Layout de juego ---------- */
+.play-main { min-height: 100vh; display: flex; justify-content: center; padding: 20px 12px 40px; }
+.game { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 18px; }
+
+/* ---------- Sendero de salas (firma visual) ---------- */
+.trail { display: flex; align-items: center; justify-content: center; padding: 8px 0 2px; }
+.trail-step { display: flex; align-items: center; }
+.trail-door {
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  font-size: 18px;
+  background: var(--stone-deep);
+  --edge: var(--stone);
+  box-shadow:
+    0 calc(-1 * var(--px)) 0 0 var(--edge), 0 var(--px) 0 0 var(--edge),
+    calc(-1 * var(--px)) 0 0 0 var(--edge), var(--px) 0 0 0 var(--edge);
+  color: var(--ink-dim);
+}
+.trail-door.done { color: var(--moss); opacity: 0.75; }
+.trail-door.current {
+  color: var(--torch);
+  --edge: var(--torch);
+  animation: torch 1.2s ease-in-out infinite alternate;
+}
+.trail-door.boss.current, .trail-door.boss.next { color: var(--blood); }
+.trail-path { width: 20px; height: 4px; background: var(--stone); margin: 0 6px; }
+.trail-path.done { background: var(--moss); opacity: 0.5; }
+@keyframes torch {
+  from { box-shadow: 0 -4px 0 0 var(--torch), 0 4px 0 0 var(--torch), -4px 0 0 0 var(--torch), 4px 0 0 0 var(--torch), 0 0 12px 2px rgba(245,167,66,.35); }
+  to   { box-shadow: 0 -4px 0 0 var(--torch), 0 4px 0 0 var(--torch), -4px 0 0 0 var(--torch), 4px 0 0 0 var(--torch), 0 0 22px 6px rgba(245,167,66,.55); }
+}
+
+/* ---------- HUD ---------- */
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--stone-deep);
+  --edge: var(--stone);
+  padding: 12px 16px;
+  font-size: 12px;
+}
+.heart { color: var(--blood); font-size: 18px; margin-right: 2px; }
+.heart.empty { color: #493a55; }
+.hud-coins { color: var(--gold); }
+.hud-streak { color: var(--ink-dim); }
+.hud-streak.hot { color: var(--torch); animation: pulse 0.9s infinite alternate; }
+@keyframes pulse { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.06); } }
+.hud-items { margin-left: auto; display: flex; gap: 8px; font-size: 18px; }
+.hud-item.used { opacity: 0.25; filter: grayscale(1); }
+
+/* ---------- Sala ---------- */
+.room {
+  background: var(--stone-deep);
+  --edge: var(--stone);
+  padding: 22px 22px 26px;
+  min-height: 320px;
+}
+.room.boss { --edge: #5a2330; }
+.room.devil_deal { --edge: #4a2a52; }
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.room-kind { font-size: 11px; color: var(--torch); text-transform: uppercase; }
+.room-mod { font-size: 16px; color: var(--blood); }
+
+/* ---------- Mecánicas ---------- */
+.mech { display: flex; flex-direction: column; gap: 14px; }
+.mech-prompt { margin: 0; font-size: 24px; }
+.mech-def {
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--stone);
+  border-left: var(--px) solid var(--torch);
+  color: var(--ink);
+  font-size: 22px;
+}
+.mech-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mech-options.stacked { grid-template-columns: 1fr; }
+.opt {
+  background: var(--stone);
+  --edge: #3a2f4d;
+  color: var(--ink);
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  padding: 14px 12px;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.06s steps(2);
+}
+.opt:hover:not(:disabled) { --edge: var(--torch); transform: translateY(-2px); }
+.opt:focus-visible { outline: 3px dashed var(--torch); outline-offset: 4px; }
+.opt:disabled { cursor: default; }
+.opt.correcta { --edge: var(--moss); background: #1f3320; }
+.opt.incorrecta { --edge: var(--blood); background: #3a1c22; animation: shake 0.3s steps(4); }
+.opt.descartada { opacity: 0.3; text-decoration: line-through; }
+.opt-note { font-size: 16px; color: var(--ink-dim); }
+.door-icon { font-size: 26px; }
+@keyframes shake {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.mech-input-row { display: flex; gap: 10px; }
+.mech-input {
+  flex: 1;
+  background: var(--stone);
+  --edge: #3a2f4d;
+  color: var(--ink);
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  padding: 12px 14px;
+}
+.mech-input:focus { outline: none; --edge: var(--torch); }
+.mech-hint { color: var(--ink-dim); margin: 0; }
+.mech-verdict { margin: 0; font-size: 24px; }
+.mech-verdict.good { color: var(--moss); }
+.mech-verdict.bad { color: var(--blood); }
+
+.btn-primary {
+  background: var(--torch);
+  --edge: #b06f1e;
+  color: #201409;
+  font-size: 12px;
+  padding: 14px 22px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
+.btn-primary.big { font-size: 14px; padding: 18px 28px; }
+.btn-primary:disabled { opacity: 0.4; cursor: default; }
+.item-btn {
+  background: none;
+  border: 2px dashed var(--ink-dim);
+  color: var(--ink-dim);
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  padding: 8px 12px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.item-btn:hover { color: var(--torch); border-color: var(--torch); }
+
+/* ---------- Timer (J1) ---------- */
+.timer {
+  position: relative;
+  height: 18px;
+  background: var(--stone);
+  overflow: hidden;
+}
+.timer-fill { height: 100%; background: var(--torch); transition: width 0.1s linear; }
+.timer-fill.urgent { background: var(--blood); }
+.timer-label {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: 9px; color: var(--bg);
+  mix-blend-mode: normal;
+  color: var(--ink);
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ---------- Reveal (J9) ---------- */
+.reveal { text-align: center; padding: 36px 0; animation: reveal-in 0.35s steps(5); }
+.reveal-icon { font-size: 52px; margin-bottom: 8px; }
+.reveal.good .reveal-icon { color: var(--moss); }
+.reveal.bad .reveal-icon { color: var(--blood); }
+.reveal p { font-size: 26px; margin: 4px 0; }
+.reveal-rep { color: var(--torch); font-size: 20px !important; max-width: 40ch; margin: 10px auto 0 !important; }
+@keyframes reveal-in { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ---------- Tesoro ---------- */
+.treasure-box {
+  text-align: center;
+  background: var(--stone);
+  --edge: var(--gold);
+  padding: 24px;
+  margin: 6px 0;
+}
+.treasure-icon { font-size: 44px; display: block; margin-bottom: 8px; }
+.treasure-box p { margin: 4px 0; }
+
+/* ---------- Devil deal ---------- */
+.mech.devil .opt.bet:hover { --edge: #b96be0; }
+
+/* ---------- Síntesis ---------- */
+.summary {
+  background: var(--stone-deep);
+  --edge: var(--stone);
+  padding: 32px;
+  text-align: center;
+}
+.summary.won { --edge: var(--moss); }
+.summary.lost { --edge: var(--blood); }
+.summary h1 { font-size: 18px; margin: 0 0 18px; }
+.summary h2 { font-size: 11px; color: var(--ink-dim); margin: 26px 0 10px; text-transform: uppercase; }
+.summary-stats { display: flex; gap: 22px; justify-content: center; font-size: 22px; }
+.summary-concepts { list-style: none; padding: 0; margin: 0 0 26px; text-align: left; display: inline-block; }
+.summary-concepts li { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
+.dot { width: 12px; height: 12px; display: inline-block; }
+.dot.good { background: var(--moss); }
+.dot.mixed { background: var(--torch); }
+
+.seed-note { text-align: center; color: #4d4260; font-size: 16px; margin: 0; }
+
+/* ---------- Responsive + accesibilidad ---------- */
+@media (max-width: 520px) {
+  .mech-options { grid-template-columns: 1fr; }
+  .hud { flex-wrap: wrap; gap: 10px; }
+  body { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================
+   v0.2 — Arenas de acción, sprites, combate y menú constructor
+   ============================================================ */
+
+/* ---------- Sprites ---------- */
+.sprite-box { position: relative; overflow: hidden; }
+
+/* ---------- Arena Cacería (A1) ---------- */
+.arena {
+  position: relative;
+  height: 300px;
+  background:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+    #191225;
+  background-size: 20px 20px;
+  box-shadow: inset 0 0 0 4px var(--stone);
+  overflow: hidden;
+}
+.arena-hero { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+.slime-wrap { position: absolute; }
+.wander-x { animation: wanderX 3s ease-in-out infinite alternate; }
+.wander-y { animation: wanderY 2.6s ease-in-out infinite alternate; }
+.wander-x.paused, .wander-y.paused, .rain-zone.paused .fall-card { animation-play-state: paused; }
+@keyframes wanderX { from { transform: translateX(-34px); } to { transform: translateX(34px); } }
+@keyframes wanderY { from { transform: translateY(-18px); } to { transform: translateY(18px); } }
+.slime-btn {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.slime-btn:hover .slime-sprite { transform: scale(1.15); }
+.slime-btn:focus-visible { outline: 3px dashed var(--torch); }
+.slime-sprite { transition: transform 0.08s steps(2); }
+.slime-label {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  color: var(--ink);
+  background: rgba(20, 16, 31, 0.85);
+  padding: 2px 8px;
+  box-shadow: 0 0 0 2px var(--stone);
+  max-width: 150px;
+}
+.slime-btn.hit-good { animation: bounce 0.5s steps(4); }
+.slime-btn.hit-good .slime-label { color: var(--moss); box-shadow: 0 0 0 2px var(--moss); }
+.slime-btn.hit-bad { animation: shake 0.3s steps(4); }
+.slime-btn.hit-bad .slime-label { color: var(--blood); box-shadow: 0 0 0 2px var(--blood); }
+.slime-btn.flee { opacity: 0.25; transition: opacity 0.4s; }
+@keyframes bounce { 30% { transform: translateY(-14px); } 60% { transform: translateY(0); } 80% { transform: translateY(-6px); } }
+
+/* ---------- Arena Lluvia (B1) ---------- */
+.rain-zone {
+  position: relative;
+  height: 340px;
+  background: #191225;
+  box-shadow: inset 0 0 0 4px var(--stone);
+  overflow: hidden;
+}
+.fall-card {
+  position: absolute;
+  top: -10px;
+  width: 44%;
+  background: var(--stone);
+  box-shadow: 0 -4px 0 0 #3a2f4d, 0 4px 0 0 #3a2f4d, -4px 0 0 0 #3a2f4d, 4px 0 0 0 #3a2f4d;
+  color: var(--ink);
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  padding: 12px;
+  cursor: pointer;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  text-align: left;
+}
+.fall-card:hover:not(:disabled) { box-shadow: 0 -4px 0 0 var(--torch), 0 4px 0 0 var(--torch), -4px 0 0 0 var(--torch), 4px 0 0 0 var(--torch); }
+.fall-card.hit-good { box-shadow: 0 -4px 0 0 var(--moss), 0 4px 0 0 var(--moss), -4px 0 0 0 var(--moss), 4px 0 0 0 var(--moss); background: #1f3320; }
+.fall-card.hit-bad { box-shadow: 0 -4px 0 0 var(--blood), 0 4px 0 0 var(--blood), -4px 0 0 0 var(--blood), 4px 0 0 0 var(--blood); background: #3a1c22; animation-play-state: paused; }
+.fall-card.flee { opacity: 0.3; }
+@keyframes fall { from { transform: translateY(0); } to { transform: translateY(255px); } }
+.rain-floor {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 10px;
+  background: repeating-linear-gradient(90deg, var(--blood) 0 12px, #7a2b30 12px 24px);
+  opacity: 0.7;
+}
+
+/* ---------- Combate (E3) ---------- */
+.combat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: #191225;
+  box-shadow: inset 0 0 0 4px var(--stone);
+  padding: 18px 14px;
+  min-height: 150px;
+}
+.combat-enemy { display: flex; align-items: center; gap: 12px; flex: 1; }
+.combat-enemy.defeated { animation: defeat 0.9s steps(6) forwards; }
+.combat-enemy.attacking { animation: shake 0.4s steps(4) 2; }
+@keyframes defeat { to { transform: scale(0.2) rotate(90deg); opacity: 0; } }
+.combat-bubble {
+  font-size: 19px;
+  background: var(--stone);
+  padding: 10px 12px;
+  box-shadow: 0 0 0 3px #3a2f4d;
+  max-width: 40ch;
+}
+.combat-vs { font-family: 'Press Start 2P', monospace; font-size: 12px; color: var(--torch); white-space: nowrap; }
+.combat-hero { position: static; transform: none; }
+.opt.spell { text-align: left; }
+.opt.spell:hover:not(:disabled) { --edge: #b96be0; }
+
+.timing-bar {
+  position: relative;
+  height: 26px;
+  background: var(--stone);
+  box-shadow: inset 0 0 0 3px #3a2f4d;
+}
+.timing-sweet {
+  position: absolute; left: 38%; width: 24%; top: 0; bottom: 0;
+  background: rgba(240, 194, 69, 0.35);
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+.timing-marker {
+  position: absolute; top: -4px; bottom: -4px; width: 8px;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px #000;
+}
+
+/* ---------- Fragmento con blank (A2) ---------- */
+.mech-def.frag { line-height: 2; }
+.frag-blank {
+  background: var(--bg);
+  border: none;
+  border-bottom: 4px solid var(--torch);
+  color: var(--torch);
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  padding: 2px 8px;
+  margin: 0 4px;
+  width: auto;
+  min-width: 140px;
+}
+.frag-blank:focus { outline: none; border-bottom-color: var(--gold); }
+
+/* ---------- Clasificar (B2) ---------- */
+.classify { display: flex; flex-direction: column; gap: 14px; }
+.classify-item { background: var(--stone); padding: 12px; box-shadow: 0 0 0 3px #3a2f4d; }
+.classify-item.ok { box-shadow: 0 0 0 3px var(--moss); }
+.classify-item.ko { box-shadow: 0 0 0 3px var(--blood); }
+.classify-caso { margin: 0 0 10px; font-size: 19px; }
+.classify-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  background: var(--stone-deep);
+  box-shadow: 0 0 0 2px #3a2f4d;
+  color: var(--ink-dim);
+  border: none;
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.chip:hover:not(:disabled) { color: var(--ink); }
+.chip.chosen { color: var(--bg); background: var(--torch); box-shadow: 0 0 0 2px #b06f1e; }
+
+/* ---------- Conectar (C1) ---------- */
+.connect-pair {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  flex-wrap: wrap;
+}
+.rune {
+  background: var(--stone);
+  box-shadow: 0 0 0 3px var(--torch);
+  padding: 8px 14px;
+  font-size: 21px;
+}
+.connect-thread { color: var(--torch); font-size: 26px; animation: pulse 1s infinite alternate; }
+
+/* ---------- Menú constructor ---------- */
+.landing-frame.builder { max-width: 720px; text-align: left; }
+.builder .landing-title { font-size: clamp(26px, 6vw, 42px); text-align: center; }
+.builder .landing-eyebrow, .builder .landing-sub { text-align: center; }
+.builder-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 26px 0 6px; gap: 12px;
+}
+.builder-head h2 { font-size: 12px; margin: 0; color: var(--ink); }
+.btn-primary.dice { font-size: 11px; padding: 10px 14px; }
+.builder-shuffle-note { color: var(--torch); font-size: 18px; margin: 4px 0 0; }
+.builder-family { margin: 16px 0; }
+.builder-family-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px; color: var(--ink-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+  display: block; margin-bottom: 8px;
+}
+.builder-pieces { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.piece {
+  background: var(--stone-deep);
+  box-shadow: 0 0 0 3px var(--stone);
+  border: none; cursor: pointer;
+  color: var(--ink-dim);
+  font-family: 'VT323', monospace;
+  padding: 10px 12px;
+  text-align: left;
+  display: flex; flex-direction: column; gap: 3px;
+  transition: transform 0.06s steps(2);
+}
+.piece:hover { transform: translateY(-2px); color: var(--ink); }
+.piece.on { box-shadow: 0 0 0 3px var(--torch); color: var(--ink); background: #2a2038; }
+.piece-top { display: flex; align-items: center; gap: 8px; }
+.piece-icon { font-size: 18px; }
+.piece-id { font-family: 'Press Start 2P', monospace; font-size: 9px; color: var(--torch); }
+.piece-arena { margin-left: auto; font-size: 14px; color: var(--blood); }
+.piece-name { font-size: 21px; }
+.piece-desc { font-size: 16px; color: var(--ink-dim); line-height: 1.25; }
+.builder-row { display: flex; gap: 28px; flex-wrap: wrap; margin: 20px 0; }
+.builder-toggles { display: flex; gap: 8px; flex-wrap: wrap; }
+.toggle {
+  background: var(--stone-deep);
+  box-shadow: 0 0 0 3px var(--stone);
+  border: none; cursor: pointer;
+  color: var(--ink-dim);
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  padding: 8px 12px;
+}
+.toggle.on { box-shadow: 0 0 0 3px var(--torch); color: var(--ink); background: #2a2038; }
+.builder-preview { color: var(--ink-dim); font-size: 18px; }
+.builder .btn-primary.big { display: block; width: 100%; margin-top: 8px; }
+
+.summary-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary.alt { background: var(--stone); color: var(--ink); --edge: #3a2f4d; }
+.room-mods { display: flex; gap: 10px; }
+.arena-tag { color: var(--torch); }
+
+/* ================= v0.3 · Dungeon crawler ================= */
+
+/* --- Menú constructor --- */
+.menu-head h1 { font-family: var(--font-display, 'Press Start 2P'), monospace; color: var(--torch); font-size: 22px; margin-bottom: 8px; }
+.menu-sub { color: var(--ink-dim); max-width: 560px; }
+.builder-bar { display: flex; gap: 10px; align-items: center; margin: 18px 0; flex-wrap: wrap; }
+.seed-input { background: var(--stone-deep); border: 2px solid var(--stone); color: var(--ink); padding: 8px 10px; font-family: inherit; width: 170px; }
+.familia { margin-bottom: 14px; }
+.familia-title { font-family: var(--font-display, 'Press Start 2P'), monospace; font-size: 11px; color: var(--ink-dim); margin: 12px 0 6px; letter-spacing: 1px; }
+.familia-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 8px; }
+.piece { position: relative; text-align: left; background: var(--stone-deep); border: 2px solid var(--stone); color: var(--ink); padding: 10px; cursor: pointer; display: grid; grid-template-columns: 28px 1fr; gap: 2px 8px; font-family: inherit; font-size: 15px; }
+.piece:hover { border-color: var(--torch); }
+.piece.on { border-color: var(--gold); background: #2a2140; box-shadow: 0 0 0 1px var(--gold) inset; }
+.piece.locked { opacity: 0.45; cursor: default; }
+.piece.locked:hover { border-color: var(--stone); }
+.piece-icon { grid-row: span 3; font-size: 20px; }
+.piece-id { color: var(--torch); font-family: var(--font-display, 'Press Start 2P'), monospace; font-size: 9px; }
+.piece-name { font-weight: bold; }
+.piece-rol { color: var(--ink-dim); font-size: 13px; line-height: 1.25; }
+.piece-tag { position: absolute; top: 6px; right: 6px; font-size: 10px; color: var(--blood); border: 1px solid var(--blood); padding: 1px 4px; }
+.taller { margin-top: 16px; }
+.taller summary { cursor: pointer; color: var(--ink-dim); margin-bottom: 8px; }
+.menu-foot { margin-top: 20px; color: var(--ink-dim); font-size: 13px; }
+
+/* --- HUD superior + minimapa --- */
+.crawl-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.hud-floor { color: var(--torch); }
+.hud-items { display: flex; gap: 4px; }
+.hud-item.used { opacity: 0.3; filter: grayscale(1); }
+.minimap { display: grid; gap: 3px; background: rgba(0,0,0,0.35); padding: 6px; border: 2px solid var(--stone); }
+.mm-cell { width: 22px; height: 22px; display: grid; place-items: center; font-size: 12px; background: var(--stone-deep); border: 1px solid var(--stone); color: var(--ink-dim); }
+.mm-cell.seen { color: var(--ink); }
+.mm-cell.clear { background: #1e2b1e; }
+.mm-cell.ghost { opacity: 0.4; }
+.mm-cell.here { border-color: var(--torch); color: var(--torch); box-shadow: 0 0 6px var(--torch); }
+
+/* --- Escenario en tiempo real --- */
+.crawl-room { padding: 0; overflow: hidden; }
+.stage-wrap { position: relative; }
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background:
+  radial-gradient(ellipse at 50% 45%, #241c33 0%, #191225 65%, #120d1c 100%);
+  cursor: crosshair; overflow: hidden; touch-action: none; user-select: none; }
+.stage::before { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 6px #0d0916, inset 0 0 60px rgba(0,0,0,0.6); pointer-events: none; }
+.stage-banner { background: var(--stone-deep); border-bottom: 2px solid var(--stone); color: var(--ink); padding: 8px 12px; font-size: 15px; text-align: center; min-height: 20px; }
+.ent { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 2px; pointer-events: none; }
+.ent-label { font-size: 12px; color: var(--ink); background: rgba(0,0,0,0.55); padding: 1px 5px; border: 1px solid var(--stone); white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.hero-ent { z-index: 5; }
+.hero-ent.invul { animation: blink 0.18s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.slime-ent.angry { filter: hue-rotate(120deg) saturate(2); }
+.demon-ent.enraged { filter: brightness(1.5) saturate(2); animation: shake 0.12s infinite; }
+@keyframes shake { 25% { margin-left: -2px; } 75% { margin-left: 2px; } }
+.shot { position: absolute; width: 7px; height: 7px; background: var(--gold); box-shadow: 0 0 8px var(--gold); transform: translate(-50%, -50%); border-radius: 50%; z-index: 4; }
+.specter { position: absolute; transform: translate(-50%, -50%); font-size: 34px; filter: drop-shadow(0 0 10px #b96be0); animation: floaty 2.2s ease-in-out infinite; }
+@keyframes floaty { 50% { margin-top: -6px; } }
+.orb { z-index: 3; }
+.orb-glow { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, var(--torch) 40%, transparent 75%); box-shadow: 0 0 14px var(--torch); }
+.orb-label { max-width: 210px; white-space: normal; text-align: center; line-height: 1.2; }
+.prop { position: absolute; transform: translate(-50%, -50%); font-size: 32px; filter: drop-shadow(0 2px 0 #000); }
+.prop.fire { animation: floaty 1.4s ease-in-out infinite; filter: drop-shadow(0 0 12px var(--torch)); }
+.prop.portal { animation: spin 3s linear infinite; filter: drop-shadow(0 0 12px #5ab8d8); }
+@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.prop.gate.open { opacity: 0.5; }
+.door-slab { position: absolute; transform: translate(-50%, -50%); width: 34px; height: 26px; background: #0d0916; border: 2px solid var(--stone); display: grid; place-items: center; font-size: 13px; color: var(--ink-dim); z-index: 2; }
+.door-slab.n, .door-slab.s { width: 46px; height: 18px; }
+.door-slab.w, .door-slab.e { width: 18px; height: 46px; }
+.door-slab.locked { color: var(--blood); border-color: var(--blood); }
+
+/* --- Grimorio (combate E3) --- */
+.spell-panel { background: var(--stone-deep); border-top: 2px solid var(--stone); padding: 8px 10px; }
+.stage-caso { margin: 0 0 8px; font-size: 15px; }
+.spell-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+.spell { font-size: 14px; padding: 8px; }
+
+/* --- Overlays / guantelete / toast --- */
+.overlay-panel { padding: 16px; }
+.gauntlet-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display, 'Press Start 2P'), monospace; font-size: 10px; color: var(--blood); margin-bottom: 10px; }
+.g-hp { color: var(--blood); font-size: 16px; margin-left: 2px; }
+.g-hp.off { color: var(--stone); }
+.toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: var(--stone-deep); border: 2px solid var(--gold); color: var(--ink); padding: 8px 14px; font-size: 14px; z-index: 8; }
+.room { position: relative; }
+.item-btn { margin: 8px; background: var(--stone-deep); border: 2px solid var(--gold); color: var(--ink); padding: 6px 10px; cursor: pointer; font-family: inherit; }
+
+/* --- D-pad táctil --- */
+.dpad { position: absolute; left: 12px; bottom: 12px; display: grid; grid-template-areas: '. up .' 'left down right'; gap: 4px; z-index: 9; opacity: 0.85; }
+.dpad-btn { width: 44px; height: 44px; background: rgba(36,28,51,0.85); border: 2px solid var(--stone); color: var(--ink); font-size: 16px; cursor: pointer; touch-action: none; }
+.dpad-btn.up { grid-area: up; } .dpad-btn.down { grid-area: down; }
+.dpad-btn.left { grid-area: left; } .dpad-btn.right { grid-area: right; }
+.dpad-btn:active { border-color: var(--torch); }
+@media (hover: hover) and (pointer: fine) { .dpad { opacity: 0.35; } }
+
+/* --- Profecía / síntesis --- */
+.prophecy-result { color: var(--ink-dim); }
+.prophecy-result.good { color: var(--gold); }
+.summary-concepts .clickable { cursor: pointer; }
+.summary-concepts .clickable:hover { color: var(--torch); }
+
+/* ================= v0.4 · Soul Knight ================= */
+.stage { min-height: 300px; } /* fallback anti pantalla incompleta */
+.rock { position: absolute; background: linear-gradient(180deg, #3a2f52 0%, #241c33 70%); border: 2px solid #0d0916; box-shadow: inset 0 3px 0 rgba(255,255,255,0.07); z-index: 1; }
+.basic { font-size: 18px; z-index: 3; filter: drop-shadow(0 2px 0 #000); }
+.basic.bat { animation: flap 0.35s steps(2) infinite; }
+@keyframes flap { 50% { transform: translate(-50%, -56%) scaleY(0.85); } }
+.hp-chip { position: absolute; top: -6px; right: -6px; color: var(--blood); font-size: 14px; }
+.eproj { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--blood); box-shadow: 0 0 8px var(--blood); transform: translate(-50%, -50%); z-index: 4; }
+.pillar { position: absolute; transform: translate(-50%, -50%); font-size: 26px; display: grid; justify-items: center; gap: 2px; z-index: 2; }
+.thread-glow { width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, #5ab8d8 45%, transparent 75%); box-shadow: 0 0 12px #5ab8d8; }
+.prop.sealed { filter: grayscale(1) brightness(0.6); }
+.prop.sealed::after { content: '🔒'; position: absolute; font-size: 14px; right: -8px; top: -6px; }
+.demon-ent.vulnerable { filter: brightness(1.35) drop-shadow(0 0 10px var(--gold)); }
+.boss-bar { width: 60px; height: 7px; background: #0d0916; border: 1px solid var(--stone); display: block; }
+.boss-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--blood), #ff8a5f); transition: width 0.15s; }
+.hud-weapon { font-size: 18px; }
+.overlay-modal { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(10, 7, 18, 0.82); overflow: auto; }
+.overlay-modal .overlay-panel { width: min(680px, 94%); max-height: 92%; overflow: auto; background: var(--stone-deep); border: 2px solid var(--stone); box-shadow: 0 0 0 4px #0d0916; }
+
+/* ===== v0.4.1 · Centrado estable del juego ===== */
+/* La barra de scroll vertical aparecía solo en salas altas (élite/jefe) y
+   corría todo el layout a la izquierda. Se reserva su espacio SIEMPRE. */
+html { scrollbar-gutter: stable; overflow-x: hidden; }
+body { overflow-x: hidden; }
+.game { margin-left: auto; margin-right: auto; }
+
+/* ===== v0.4.2 · Fix definitivo de centrado ===== */
+/* justify-content:center derrama el desborde hacia AMBOS lados y el
+   izquierdo queda inalcanzable (bug clásico de flexbox). Centramos con
+   márgenes auto: centrado idéntico, pero ante desborde ancla a la
+   izquierda visible. + guardas de ancho mínimo en los hijos. */
+.play-main { justify-content: flex-start; }
+.game { margin-left: auto; margin-right: auto; }
+.game > * { min-width: 0; max-width: 100%; }
+.stage-wrap, .crawl-room, .overlay-panel { max-width: 100%; }
+
+/* ===== v0.4.3 · El escenario no se desplaza NUNCA ===== */
+/* overflow:hidden todavía permite scroll programático (p. ej., cuando un
+   botón cercano al borde recibe foco, el navegador "acomoda" el contenedor
+   y el juego salta a la izquierda). overflow:clip lo PROHÍBE del todo. */
+html, body { overflow-x: clip; }
+.play-main { overflow-x: clip; }
+.crawl-room, .stage, .stage-wrap { overflow: clip !important; }
+.stage-wrap { position: relative; }
+
+/* D-pad: vive DENTRO del escenario (esquina inferior izquierda del área de
+   juego), nunca debajo del panel de hechizos ni tapado por opciones. */
+.stage .dpad { position: absolute; left: 10px; bottom: 10px; z-index: 12; }
+
+/* ===== v0.5 · Economía de calibración ===== */
+.hud-contract { font-size: 13px; color: var(--gold); border: 1px solid var(--stone); padding: 2px 6px; }
+.hud-spyglass { background: var(--stone-deep); border: 2px solid var(--stone); color: var(--ink); font-size: 15px; cursor: pointer; padding: 2px 7px; }
+.hud-spyglass:hover { border-color: var(--torch); }
+.opt.ammo-on { border-color: var(--gold); background: #2a2140; box-shadow: 0 0 0 1px var(--gold) inset; }
+.demon-ent.feroz { filter: saturate(1.6) drop-shadow(0 0 8px var(--blood)); }
+.contract-log ul { list-style: none; padding: 0; }
+.contract-log .met { color: var(--moss); }
+.contract-log .broken { color: var(--blood); }
+.curation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; margin-bottom: 12px; }
+
+/* ===== v0.5.1 · Anti-desplazamiento total ===== */
+/* Cinturón y tirantes: ningún ancestro del escenario puede desplazarse
+   horizontalmente, ni por scroll del usuario ni programático del navegador. */
+.game { min-width: 0; }
+.crawl-top, .hud, .room { overflow-x: clip; }
+.overlay-modal { overscroll-behavior: contain; }
+
+/* ===== v0.6 · Modo aprendizaje ===== */
+.mode-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.mode-btn { text-align: left; background: var(--stone-deep); border: 2px solid var(--stone); color: var(--ink); padding: 12px; cursor: pointer; font-family: inherit; display: grid; gap: 6px; }
+.mode-btn:hover { border-color: var(--torch); }
+.mode-btn.on { border-color: var(--gold); background: #2a2140; box-shadow: 0 0 0 1px var(--gold) inset; }
+.mode-title { font-family: var(--font-display, 'Press Start 2P'), monospace; font-size: 12px; color: var(--torch); }
+.mode-desc { font-size: 14px; color: var(--ink-dim); line-height: 1.3; }
+@media (max-width: 560px) { .mode-picker { grid-template-columns: 1fr; } }
+.slime-ent.hinted { filter: drop-shadow(0 0 10px var(--gold)) brightness(1.25); }
+.slime-ent.hinted .ent-label { border-color: var(--gold); color: var(--gold); }
+.archivo-panel { max-height: 100%; }
+.pergamino { background: #201832; border: 1px solid var(--stone); border-left: 3px solid var(--torch); padding: 8px 10px; margin: 8px 0; font-size: 15px; }
+.pergamino p { margin: 4px 0; }
+.perg-intuitiva { color: var(--ink-dim); }
+.perg-caso { color: var(--moss); }
+
+/* ===== v0.6.1 · Diagnóstico en pantalla ===== */
+.diag-badge { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 99; background: #3a1420; border: 2px solid var(--blood); color: var(--ink); padding: 6px 10px; font-size: 13px; max-width: 92vw; }
+.diag-badge button { margin-left: 8px; background: none; border: 1px solid var(--blood); color: var(--blood); cursor: pointer; }
+
+/* ===== v0.6.1 · PANTALLA BLOQUEADA: el juego vive anclado al viewport ===== */
+/* position:fixed saca al juego del flujo del documento: su marco de
+   referencia es la VENTANA, no la página. Ningún scroll, desborde, foco
+   ni layout puede moverlo. margin:auto = centrado seguro (si el contenido
+   es más alto que la ventana, ancla arriba y se scrollea POR DENTRO). */
+.play-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  overflow-y: auto;
+  overflow-x: clip;
+  padding: 16px 12px 28px;
+  background: var(--bg);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.play-lock .game {
+  margin: auto; /* centrado en ambos ejes, con anclaje seguro ante desborde */
+  width: 100%;
+  max-width: 640px;
+}
+
+/* ===== v0.6.2 · Cinturón final: la sala jamás excede su columna ===== */
+.crawl-room, .stage-wrap { max-width: 640px; margin-inline: auto; }
