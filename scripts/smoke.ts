@@ -287,4 +287,33 @@ const ROOM_OF: Record<string, RoomType> = {
   console.log('✓ Modo aprendizaje: Archivo en pisos 1-3 (conectado, con pergaminos), fading monotónico, evaluación sin andamio');
 }
 
-console.log('\n✅ Todas las pruebas de humo v0.6 pasaron');
+// 9. v0.7 — Aprendizaje puro: REVIVE y scaffold sin castigo cognitivo
+{
+  // Morir en aprendizaje = revivir en la entrada del piso, runas intactas
+  let s = generateDungeon(CURSO_DEMO, { pieces: ['A1'], seed: 21, modo: 'aprendizaje' });
+  s = dungeonReducer(s, { type: 'NEXT_FLOOR' });
+  const roomAntes = s.floors[1].rooms[0].id;
+  s = dungeonReducer(s, { type: 'MOVE_ROOM', room_id: s.floors[1].rooms[1].id });
+  for (let i = 0; i < 3; i++) s = dungeonReducer(s, { type: 'DAMAGE' });
+  console.assert(s.status === 'game_over', 'FALLO: no murió');
+  s = dungeonReducer(s, { type: 'REVIVE' });
+  console.assert(s.status === 'active' && s.hearts === s.max_hearts && s.current_room === roomAntes && s.floor_index === 1, 'FALLO: REVIVE');
+  // REVIVE no aplica si está vivo
+  let v = generateDungeon(CURSO_DEMO, { pieces: ['A1'], seed: 22, modo: 'aprendizaje' });
+  const antes = JSON.stringify(v);
+  v = dungeonReducer(v, { type: 'REVIVE' });
+  console.assert(JSON.stringify(v) === antes, 'FALLO: REVIVE en vida');
+  // En aprendizaje los errores cognitivos JAMÁS hieren y la ayuda es gratis SIEMPRE
+  for (let f = 0; f < 5; f++) {
+    const sc = scaffoldFor('aprendizaje', f);
+    console.assert(sc.errores_gratis && sc.lupa_gratis, `FALLO: piso ${f} castiga el error o cobra la ayuda en aprendizaje`);
+  }
+  // Y en evaluación nunca son gratis
+  for (let f = 0; f < 5; f++) {
+    const sc = scaffoldFor('evaluacion', f);
+    console.assert(!sc.errores_gratis && !sc.lupa_gratis, 'FALLO: evaluación regala');
+  }
+  console.log('✓ v0.7: REVIVE (muerte sin pérdida), errar nunca hiere en aprendizaje, ayuda gratis siempre; evaluación intacta');
+}
+
+console.log('\n✅ Todas las pruebas de humo v0.7 pasaron');

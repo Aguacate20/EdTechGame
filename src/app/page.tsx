@@ -57,7 +57,7 @@ export default function Home() {
         <div className="mode-picker">
           <button className={`mode-btn ${modo === 'aprendizaje' ? 'on' : ''}`} onClick={() => setModo('aprendizaje')}>
             <span className="mode-title">🪜 Aprender</span>
-            <span className="mode-desc">El Archivo te muestra los pergaminos antes de cazarlos. El andamio se retira piso a piso: llegas al jefe sin ayuda, pero preparado. Errar enseña y re-encola.</span>
+            <span className="mode-desc">Sin stakes: cada concepto se aprende en ciclo (modelado → completamiento → evocación), errar enseña por contraste y nunca hiere, morir no borra tus runas, y en cada portal TÚ decides qué repasar. El grimorio se enciende, no se sobrevive.</span>
           </button>
           <button className={`mode-btn ${modo === 'evaluacion' ? 'on' : ''}`} onClick={() => setModo('evaluacion')}>
             <span className="mode-title">⚔ Evaluar</span>

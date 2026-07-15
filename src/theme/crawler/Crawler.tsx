@@ -74,6 +74,8 @@ type Overlay =
   | { kind: 'route' } // I1 · ruta del explorador (portal)
   | { kind: 'spyglass' } // I2 · catalejo
   | { kind: 'archivo' } // modo aprendizaje: la biblioteca del piso
+  | { kind: 'jol'; concept_id: string } // JOL sin stakes antes de la evocación
+  | { kind: 'grimorio' } // aprendizaje: runas del piso + asignación de repaso
   | null;
 
 export function Crawler({ config }: { config: DungeonConfig }) {
@@ -97,6 +99,8 @@ export function Crawler({ config }: { config: DungeonConfig }) {
   const rated = useRef(new Map<string, { tasa: 'facil' | 'parejo' | 'dificil'; realHard: boolean }>()); // G3
   const evidence = useRef({ errLow: 0, errHigh: 0, dmg: 0, betLost: 0, rapidos: 0 }); // G4 campamento
   const pendingCuration = useRef(false);
+  const runas = useRef(new Map<string, 'chispa' | 'encendida'>()); // aprendizaje
+  const pendingJOL = useRef<{ concept_id: string; jol: 'ya' | 'aun_no' } | null>(null);
   const has = (p: string) => config.pieces.includes(p);
 
   const floor = currentFloor(state);
@@ -178,6 +182,30 @@ export function Crawler({ config }: { config: DungeonConfig }) {
     const eco = result.mechanic_specific?.eco_de_anclaje;
     if (typeof eco === 'string' && eco) dispatch({ type: 'CONSUME_ECO', concept_id: eco });
 
+    // Grimorio (aprendizaje): la evocación correcta enciende la runa
+    if (modo === 'aprendizaje') {
+      for (const cid of result.concepts_involved) {
+        const paso = result.mechanic_specific?.paso;
+        const yaEncendida = runas.current.get(cid) === 'encendida';
+        if (!yaEncendida) {
+          const enciende = ok && (paso === undefined || paso === 2);
+          runas.current.set(cid, enciende ? 'encendida' : 'chispa');
+        }
+      }
+    }
+    // JOL: cruzar el juicio con el resultado de la evocación
+    if (pendingJOL.current && result.mechanic_specific?.paso === 2 && result.concepts_involved.includes(pendingJOL.current.concept_id)) {
+      const { concept_id, jol } = pendingJOL.current;
+      pendingJOL.current = null;
+      const coincide = (jol === 'ya') === ok;
+      emit('G2', {
+        status: 'completed', is_correct: null, partial_score: 1,
+        concepts_involved: [concept_id], repertoires_activated: [],
+        cognitive_signals: [{ dimension: 'srl_calibracion', target: concept_id, delta: coincide ? 0.04 : -0.02, confidence: 0.85 }],
+        mechanic_specific: { variante: 'jol_resolucion', jol, evocacion_correcta: ok, coincide, modo },
+      });
+    }
+
     // I5 · Conceptos que decidiste llevar pagan más botín
     let r = Math.round(reward * result.partial_score);
     if (ok && result.concepts_involved.some((c) => state.carried.includes(c))) r = Math.round(r * 1.5);
@@ -248,6 +276,17 @@ export function Crawler({ config }: { config: DungeonConfig }) {
     if (state.status !== 'active' || overlay) return;
     const isFinal = room.type === 'elite' || room.type === 'boss';
     if (isFinal && !room.cleared) {
+      if (modo === 'aprendizaje') {
+        // Sin mirilla, sin tratos: los stakes son especialidad del modo Evaluar
+        if (!has('E3')) {
+          const primarias = PRIMARIAS_JUGABLES.filter((m) => has(m.id)).sort((a, b) => b.rank - a.rank);
+          const piece = primarias[0]?.id ?? 'A1';
+          const total = room.type === 'boss' ? 3 : 2;
+          setGauntletHp(total);
+          setOverlay({ kind: 'gauntlet', piece, total });
+        }
+        return;
+      }
       if (has('G3') && !rated.current.has(room.id)) {
         setOverlay({ kind: 'scope' });
         return;
@@ -272,7 +311,7 @@ export function Crawler({ config }: { config: DungeonConfig }) {
 
   // G2 · Contrato al pisar la primera sala de cada piso
   useEffect(() => {
-    if (state.status !== 'active' || overlay || !has('G2')) return;
+    if (state.status !== 'active' || overlay || !has('G2') || modo === 'aprendizaje') return;
     const first = floor.rooms[0];
     if (room.id === first.id && !offeredContract.current.has(state.floor_index)) {
       offeredContract.current.add(state.floor_index);
@@ -355,9 +394,10 @@ export function Crawler({ config }: { config: DungeonConfig }) {
         state={state}
         materia={materia}
         emit={emit}
-        cartografo={has('G5')}
-        deathcamp={has('G4') && state.status === 'game_over'}
+        cartografo={modo === 'evaluacion' && has('G5')}
+        deathcamp={modo === 'evaluacion' && has('G4') && state.status === 'game_over'}
         evidence={evidence.current}
+        evalCta={modo === 'aprendizaje' ? `/play?m=${config.pieces.join(',')}&modo=evaluacion` : null}
       />
     );
   }
@@ -550,6 +590,69 @@ export function Crawler({ config }: { config: DungeonConfig }) {
             }}>Cerrar los pergaminos y cazar</button>
           </div>
         </div>
+      );
+    }
+
+    if (overlay.kind === 'jol') {
+      const c = materia.concepts.find((x) => x.concept_id === overlay.concept_id);
+      const responder = (jol: 'ya' | 'aun_no') => {
+        pendingJOL.current = { concept_id: overlay.concept_id, jol };
+        emit('G2', {
+          status: 'completed', is_correct: null, partial_score: 1,
+          concepts_involved: [overlay.concept_id], repertoires_activated: [],
+          cognitive_signals: [{ dimension: 'srl_calibracion', target: overlay.concept_id, delta: 0, confidence: 0.7 }],
+          mechanic_specific: { variante: 'jol_sin_stakes', jol, modo },
+        });
+        if (jol === 'aun_no' && c) {
+          setToast(`📖 Repaso rápido — ${c.label}: ${c.definicion_intuitiva}`);
+          setTimeout(() => setToast(''), 4500);
+        }
+        setOverlay(null); // el stage reanuda y lanza la evocación
+      };
+      return (
+        <div className="mech">
+          <p className="mech-prompt">🔮 Un segundo, explorador</p>
+          <p className="mech-def">
+            Viene la evocación de <strong>{c?.label}</strong> — sin marcas, sin red.
+            Honestamente: ¿ya lo tienes? (No hay premio ni castigo. Solo tu palabra contra tu memoria.)
+          </p>
+          <div className="mech-options">
+            <button className="opt" onClick={() => responder('ya')}>💪 Ya lo tengo</button>
+            <button className="opt" onClick={() => responder('aun_no')}>🌱 Aún no — muéstramelo otra vez</button>
+          </div>
+        </div>
+      );
+    }
+
+    if (overlay.kind === 'grimorio') {
+      const delPiso = Array.from(new Set(floor.rooms.flatMap((r) => r.concept_ids)));
+      const estado = (id: string) => runas.current.get(id) ?? 'apagada';
+      const repasables = delPiso.filter((id) => estado(id) !== 'encendida');
+      return (
+        <GrimorioPanel
+          conceptos={delPiso.map((id) => ({
+            id,
+            label: materia.concepts.find((c) => c.concept_id === id)?.label ?? id,
+            estado: estado(id),
+          }))}
+          maxRepaso={Math.min(2, repasables.length)}
+          onDone={(repasar) => {
+            for (const cid of repasar) dispatch({ type: 'ADD_ECO', concept_id: cid });
+            emit('I1', {
+              status: 'completed', is_correct: null, partial_score: 1,
+              concepts_involved: repasar, repertoires_activated: [],
+              cognitive_signals: [{ dimension: 'srl_planeacion', target: `repaso_piso_${state.floor_index}`, delta: 0.05, confidence: 0.85 }],
+              mechanic_specific: {
+                variante: 'asignacion_de_repaso', elegidos: repasar,
+                encendidas: delPiso.filter((id) => estado(id) === 'encendida'),
+                apagadas: delPiso.filter((id) => estado(id) === 'apagada'),
+                modo,
+              },
+            });
+            setOverlay(null);
+            dispatch({ type: 'NEXT_FLOOR' });
+          }}
+        />
       );
     }
 
@@ -754,6 +857,11 @@ export function Crawler({ config }: { config: DungeonConfig }) {
           </div>
           <div className="hud-floor">⛏ {state.floor_index + 1}/5</div>
           <div className="hud-weapon" title={WEAPONS[state.weapon].nombre}>{WEAPONS[state.weapon].icono}</div>
+          {modo === 'aprendizaje' && (
+            <div className="hud-contract" title="Runas encendidas del grimorio">
+              🔮 {Array.from(runas.current.values()).filter((v) => v === 'encendida').length}
+            </div>
+          )}
           {state.contract.target !== null && (
             <div className="hud-contract" title="Contrato del piso (G2)">
               📜 {state.contract.ok}/{state.contract.total} → {Math.round(state.contract.target * 100)}%
@@ -806,6 +914,8 @@ export function Crawler({ config }: { config: DungeonConfig }) {
             weapon={state.weapon}
             scaffold={scaffold}
             rescaffold={rescaffold}
+            modo={modo}
+            onJOL={modo === 'aprendizaje' ? (cid) => setOverlay({ kind: 'jol', concept_id: cid }) : undefined}
             ecoConcept={state.ecos[0] ?? null}
             onCoins={(n) => dispatch({ type: 'GAIN', coins: n })}
             hasBoots={hasItem(state, 'botas')}
@@ -850,6 +960,10 @@ export function Crawler({ config }: { config: DungeonConfig }) {
               pendingCuration.current = true;
               setTimeout(() => (pendingCuration.current = false), 800);
               setEntryDir(null);
+              if (modo === 'aprendizaje') {
+                setOverlay({ kind: 'grimorio' });
+                return;
+              }
               // G2: revelar el contrato del piso ANTES de bajar (J9)
               if (state.contract.target !== null && state.contract.total > 0) {
                 const actual = state.contract.ok / state.contract.total;
@@ -921,6 +1035,7 @@ function Summary({
   cartografo,
   deathcamp,
   evidence,
+  evalCta,
 }: {
   state: DungeonState;
   materia: typeof CURSO_DEMO;
@@ -928,6 +1043,7 @@ function Summary({
   cartografo: boolean;
   deathcamp: boolean;
   evidence: Evidence;
+  evalCta: string | null;
 }) {
   const [step, setStep] = useState<'camp' | 'summary'>(deathcamp ? 'camp' : 'summary');
   const [marks, setMarks] = useState<string[]>([]);
@@ -1087,6 +1203,9 @@ function Summary({
           <button className="btn-primary" onClick={() => window.location.reload()}>
             Nueva expedición
           </button>
+          {evalCta && (
+            <a className="btn-primary" href={evalCta}>⚔ ¿Listo? Ponte a prueba en Evaluar</a>
+          )}
           <a className="btn-primary alt" href="/">⚒ Cambiar piezas</a>
         </div>
       </div>
@@ -1121,6 +1240,45 @@ function CurationPanel({
       </div>
       <button className="btn-primary" onClick={() => onDone(sel)}>
         Descender ({sel.length}/3 en el mazo)
+      </button>
+    </div>
+  );
+}
+
+// ---------- Grimorio del piso (aprendizaje): runas + asignación de repaso ----------
+function GrimorioPanel({
+  conceptos,
+  maxRepaso,
+  onDone,
+}: {
+  conceptos: { id: string; label: string; estado: 'apagada' | 'chispa' | 'encendida' }[];
+  maxRepaso: number;
+  onDone: (repasar: string[]) => void;
+}) {
+  const [sel, setSel] = useState<string[]>([]);
+  const RUNA = { apagada: '⬤', chispa: '✦', encendida: '🔮' } as const;
+  return (
+    <div className="mech">
+      <p className="mech-prompt">🔮 El Grimorio del piso</p>
+      <p className="mech-def">
+        Así quedaron tus runas. Las encendidas ya viven en ti; las tibias y
+        apagadas puedes ponerlas de nuevo en tu camino — elegir qué repasar es
+        la decisión más sabia de un explorador.
+      </p>
+      <div className="mech-options curation-grid">
+        {conceptos.map((c) => (
+          <button
+            key={c.id}
+            className={`opt runa-${c.estado} ${sel.includes(c.id) ? 'ammo-on' : ''}`}
+            disabled={c.estado === 'encendida'}
+            onClick={() => setSel((m) => m.includes(c.id) ? m.filter((x) => x !== c.id) : m.length < maxRepaso ? [...m, c.id] : m)}
+          >
+            {RUNA[c.estado]} {c.label} {sel.includes(c.id) ? '· al camino' : ''}
+          </button>
+        ))}
+      </div>
+      <button className="btn-primary" onClick={() => onDone(sel)}>
+        Descender {sel.length ? `(repasarás ${sel.length})` : '(sin repasos)'}
       </button>
     </div>
   );

@@ -366,3 +366,30 @@ Reglas del marco implementadas:
   `cognitive_signals: []` — la lectura no es evidencia de comprensión.
 - La fogata I4 en aprendizaje muestra la ficha del concepto elegido
   (consolidación, no solo cura).
+
+---
+
+## 18. v0.7 — Aprendizaje PURO: la negación sistemática de la evaluación
+
+El doc 05 define evaluación por cuatro propiedades: presión, stakes, ranking,
+no-help-seeking. El modo aprendizaje v0.7 es su negación término a término:
+pedir ayuda es la mecánica, los stakes no existen, el error es información y
+la meta del run no es sobrevivir — es ENCENDER el grimorio.
+
+**Cada señal de evaluación tiene su gemela de aprendizaje:**
+
+| Señal | Evaluación | Aprendizaje puro |
+|---|---|---|
+| recuperacion | primer disparo bajo presión | **Ciclo de adquisición en 3 pasos** por concepto (Renkl): modelado (objetivo marcado ✓, distractores inertes, tocar = leer) → completamiento (2 opciones) → evocación (4, sin marcas). Señal = paso de consolidación + reintentos |
+| anclaje | el señuelo caza | **Confrontación explícita**: el mimic muestra intuición vs definición lado a lado; el eco mide si prendió |
+| transferencia | munición + contraataque | **Duelo mentor**: cada munición errada explica por qué NO aplica (contraste); reintentos infinitos, sin ráfagas de castigo |
+| srl_calibracion | apuestas/contratos/mirilla | **JOL sin stakes** (Nelson & Narens): "¿ya lo tienes?" antes de la evocación; luego `jol_resolucion` cruza juicio con resultado. "Aún no" abre re-estudio sin costo |
+| srl_planeacion | contrato/ruta | **Grimorio del portal**: ves runas encendidas/tibias/apagadas y ELIGES qué repasar (region of proximal learning) — los elegidos entran como ecos |
+| srl_accion | lupa con costo | **Ayuda gratis siempre** (en todos los pisos): el timing del pedido sigue siendo señal I3 |
+| srl_autorreflexion | autopsia/campamento | **Taller del error inmediato**: contraste al instante; el grimorio como espejo del piso |
+| economía | monedas/rachas/permadeath | **Runas**: apagada → chispa → encendida (evocación correcta). Morir = despertar en la entrada del piso, runas intactas (REVIVE). El fading de contenido sigue (archivo/hint/señuelos por piso) pero errar jamás hiere |
+
+Las piezas de calibración-con-stakes (G1 trato, G2 contrato, G3 mirilla, G4
+campamento, G5 cartógrafo) NO se activan en aprendizaje aunque estén
+seleccionadas — son la especialidad del modo Evaluar. La síntesis de
+aprendizaje cierra con CTA: "¿Listo? Ponte a prueba en Evaluar" (mismas piezas).

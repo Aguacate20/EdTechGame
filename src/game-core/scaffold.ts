@@ -37,9 +37,16 @@ export function scaffoldFor(modo: Modo, floor: number): Scaffold {
     return {
       nivel: 'medio', archivo: true, n_slimes: 4, senuelos: true,
       orb_speed_mul: 0.85, basics_mul: 0.75, hint_tras_errores: 2,
-      errores_gratis: false, lupa_gratis: true,
+      errores_gratis: true, lupa_gratis: true,
     };
-  return RETIRADO; // pisos 4-5: llegas al jefe sin andamio
+  // Pisos 4-5 en aprendizaje: el andamio de CONTENIDO se retira (consolidación),
+  // pero errar nunca hiere y la ayuda sigue gratis — eso no es andamio, es la
+  // definición del modo (negación del no-help-seeking de evaluación, doc 05 §0).
+  return {
+    nivel: 'retirado', archivo: false, n_slimes: 4, senuelos: true,
+    orb_speed_mul: 1, basics_mul: 1, hint_tras_errores: null,
+    errores_gratis: true, lupa_gratis: true,
+  };
 }
 
 /** Modulación de señal por andamio: éxito asistido ≠ dominio (doc 00 §5). */

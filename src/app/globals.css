@@ -755,3 +755,9 @@ html, body { overflow-x: clip; }
 
 /* ===== v0.6.2 · Cinturón final: la sala jamás excede su columna ===== */
 .crawl-room, .stage-wrap { max-width: 640px; margin-inline: auto; }
+
+/* ===== v0.7 · Aprendizaje puro ===== */
+.slime-ent.inerte { opacity: 0.35; filter: grayscale(0.7); }
+.opt.runa-encendida { border-color: var(--gold); color: var(--gold); opacity: 0.75; cursor: default; }
+.opt.runa-chispa { border-color: var(--torch); }
+.opt.runa-apagada { opacity: 0.85; }

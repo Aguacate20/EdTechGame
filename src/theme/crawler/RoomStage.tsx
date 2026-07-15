@@ -37,6 +37,8 @@ interface LSlime {
   id: number; x: number; y: number; tx: number; ty: number;
   label: string; correcta: boolean; repertoire_id?: string;
   angry: boolean; dead: boolean; color: string;
+  marcada?: boolean; // paso de modelado: el objetivo viene señalado
+  inerte?: boolean; // en modelado los distractores no reciben disparos
 }
 interface Orb {
   id: number; x: number; y: number; texto: string; correcta: boolean;
@@ -60,6 +62,8 @@ export interface StageProps {
   weapon: WeaponId;
   scaffold: Scaffold;
   rescaffold: boolean; // doc 01 §6: el andamio regresa si los errores suben
+  modo: 'aprendizaje' | 'evaluacion';
+  onJOL?: (conceptId: string) => void; // JOL sin stakes antes de la evocación
   hasBoots: boolean;
   lupaAvailable: boolean;
   focusConcept: string | null;
@@ -110,8 +114,11 @@ export function RoomStage(p: StageProps) {
   const shots = useRef<Shot[]>([]);
   const eprojs = useRef<EProj[]>([]);
   const demon = useRef<{ x: number; y: number; enragedUntil: number; hp: number; maxHp: number; burstAt: number; lastHit: number } | null>(null);
-  const wave = useRef(0);
+  const wave = useRef(0); // en aprendizaje-caza: paso del ciclo (0 modelado, 1 completamiento, 2 evocación)
   const phase = useRef(0);
+  const waitingJOL = useRef(false);
+  const reintentosPaso = useRef(0);
+  const paseEspectro = useRef(0); // 0 exploración (lenta+explicada), 1 consolidación (rápida)
   const waveStart = useRef(0);
   const attempts = useRef(0);
   const mimicOn = useRef(false);
@@ -129,6 +136,15 @@ export function RoomStage(p: StageProps) {
   ammoRef.current = ammo;
   const emittedAmmo = useRef(new Set<string>());
   const readingSince = useRef(0);
+
+  // Reanudar la evocación cuando el JOL se resuelve (overlay cerrado)
+  useEffect(() => {
+    if (!p.paused && waitingJOL.current) {
+      waitingJOL.current = false;
+      spawnHuntWave(2);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.paused]);
 
   // Gracia de aparición: 1.4s de invulnerabilidad al entrar a la sala y
   // 1.2s al despausar (cerrar el trato G1, fogatas, altares). Nadie muere
@@ -189,16 +205,19 @@ export function RoomStage(p: StageProps) {
   }, [p.room.type, p.room.cleared, p.floorIndex, rng]);
 
   const spawnHuntWave = useCallback((w: number) => {
-    const wc = waveConcept(w);
+    const aprendizaje = p.modo === 'aprendizaje';
+    const wc = waveConcept(aprendizaje ? 0 : w);
     const objetivo = conceptOf(wc.id);
-    setBanner(`🎯 ${objetivo.definicion_formal}`);
+    const PASO_LABEL = ['👁 MODELADO: el objetivo viene marcado — tócalo y léelo', '🧩 COMPLETAMIENTO: ahora con un impostor', '⚡ EVOCACIÓN: sin marcas, sin red'];
+    setBanner(aprendizaje ? `${PASO_LABEL[w]} · ${objetivo.definicion_formal}` : `🎯 ${objetivo.definicion_formal}`);
     waveStart.current = performance.now();
     attempts.current = 0;
-    const nTotal = p.scaffold.n_slimes;
+    reintentosPaso.current = 0;
+    const nTotal = aprendizaje ? (w === 0 ? 3 : w === 1 ? 2 : p.scaffold.n_slimes) : p.scaffold.n_slimes;
     const opts: { label: string; correcta: boolean; repertoire_id?: string }[] = [
       { label: objetivo.label, correcta: true },
     ];
-    if (p.scaffold.senuelos && objetivo.distractor_caracterizado)
+    if ((p.modo !== 'aprendizaje' || w === 2) && p.scaffold.senuelos && objetivo.distractor_caracterizado)
       opts.push({ label: objetivo.distractor_caracterizado.label, correcta: false, repertoire_id: objetivo.distractor_caracterizado.repertoire_id });
     for (const o of sample(rng, p.materia.concepts.filter((c) => c.concept_id !== wc.id), nTotal - opts.length))
       opts.push({ label: o.label, correcta: false });
@@ -206,12 +225,15 @@ export function RoomStage(p: StageProps) {
       let x = 0, y = 0, guard = 0;
       do { x = 20 + rng() * (W - 40); y = 12 + rng() * (H - 46); }
       while (Math.hypot(x - player.current.x, y - player.current.y) < 28 && guard++ < 20);
+      const modelado = p.modo === 'aprendizaje' && w === 0;
       return {
       id: idc.current++,
       x, y,
       tx: 20 + rng() * (W - 40), ty: 12 + rng() * (H - 46),
       label: o.label, correcta: o.correcta, repertoire_id: o.repertoire_id,
       angry: false, dead: false, color: SLIME_COLORS[(i + w) % SLIME_COLORS.length],
+      marcada: modelado && o.correcta,
+      inerte: modelado && !o.correcta,
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,16 +346,35 @@ export function RoomStage(p: StageProps) {
         ...reps.map((r) => ({ dimension: 'anclaje' as const, target: r, delta: 0.1, confidence: 0.9 })),
         ...(wc.eco && s.correcta ? [{ dimension: 'anclaje' as const, target: wc.id, delta: -0.08, confidence: 0.8 }] : []),
       ],
-      mechanic_specific: specific({ variante: 'crawler_caza', golpeado: s.label, wave: wave.current, primer_disparo_correcto: s.correcta && primerIntento, eco_de_anclaje: wc.eco ? wc.id : null, andamiaje: p.scaffold.nivel, hint_activo: hintActivo }),
+      mechanic_specific: specific({ variante: 'crawler_caza', golpeado: s.label, wave: wave.current, primer_disparo_correcto: s.correcta && primerIntento, eco_de_anclaje: wc.eco ? wc.id : null, andamiaje: p.scaffold.nivel, hint_activo: hintActivo, ...(p.modo === 'aprendizaje' ? { protocolo: 'adquisicion_3_pasos', paso: wave.current, reintentos_paso: reintentosPaso.current } : {}) }),
     });
     if (s.correcta) {
       s.dead = true;
-      if (wave.current + 1 < p.room.concept_ids.length) {
+      if (p.modo === 'aprendizaje') {
+        // Ciclo de adquisición: modelado → completamiento → (JOL) → evocación
+        if (wave.current === 0) {
+          setBanner(`📖 ${conceptOf(waveConcept(0).id).label}: ${conceptOf(waveConcept(0).id).definicion_intuitiva}`);
+          wave.current = 1;
+          setTimeout(() => !pausedRef.current && spawnHuntWave(1), 1600);
+        } else if (wave.current === 1) {
+          wave.current = 2;
+          if (p.onJOL) {
+            waitingJOL.current = true;
+            slimes.current = [];
+            p.onJOL(waveConcept(0).id);
+          } else {
+            setTimeout(() => !pausedRef.current && spawnHuntWave(2), 650);
+          }
+        } else {
+          finishCombat(12); // runa encendida
+        }
+      } else if (wave.current + 1 < p.room.concept_ids.length) {
         wave.current += 1;
         setTimeout(() => !pausedRef.current && spawnHuntWave(wave.current), 650);
       } else finishCombat(12);
     } else {
       attempts.current += 1;
+      reintentosPaso.current += 1;
       s.angry = true;
       // El feedback no corrige: contextualiza (doc 00, Test 4)
       const golpeado = p.materia.concepts.find((c) => c.label === s.label);
@@ -359,15 +400,37 @@ export function RoomStage(p: StageProps) {
         { dimension: 'recuperacion', target: cid, delta: o.correcta ? 0.05 : -0.04, confidence: conf(0.8) },
         ...reps.map((r) => ({ dimension: 'anclaje' as const, target: r, delta: 0.1, confidence: 0.9 })),
       ],
-      mechanic_specific: specific({ variante: mimic ? 'crawler_mimic' : 'crawler_espectro', texto: o.texto, tiempo_compromiso_ms: Math.round(performance.now() - o.born), wave: wave.current, andamiaje: p.scaffold.nivel }),
+      mechanic_specific: specific({ variante: mimic ? 'crawler_mimic' : 'crawler_espectro', texto: o.texto, tiempo_compromiso_ms: Math.round(performance.now() - o.born), wave: wave.current, andamiaje: p.scaffold.nivel, ...(p.modo === 'aprendizaje' ? { pase: paseEspectro.current === 0 ? 'exploracion' : 'consolidacion' } : {}) }),
     });
     orbs.current = [];
+    const c = conceptOf(cid);
     if (!o.correcta && !p.scaffold.errores_gratis) p.onDamage();
-    if (!o.correcta && p.scaffold.errores_gratis) setBanner('◌ El orbe falso te atraviesa sin herirte — el archivo aún te protege. Lee por qué era falso arriba.');
-    if (mimic) { chestOpened.current = true; mimicOn.current = false; p.onLoot(); return; }
+    if (p.modo === 'aprendizaje' && !mimic) {
+      // Feedback elaborativo: por qué era falso / verdadero, lado a lado
+      setBanner(o.correcta
+        ? `✓ Verdadero. La clave: ${c.definicion_intuitiva}`
+        : `◌ Ese era el falso: «${o.texto}». Lo verdadero: «${c.enunciado_correcto}»`);
+    }
+    if (mimic) {
+      if (p.modo === 'aprendizaje') {
+        setBanner(o.correcta
+          ? `✓ Sobrevivió la definición. Tu intuición era: «${p.materia.repertoires.find((r) => r.repertoire_id === c.distractor_caracterizado?.repertoire_id)?.enunciado ?? '—'}»`
+          : `👹 Esa era tu intuición. La definición: «${c.definicion_intuitiva}». Volverá como eco para consolidar.`);
+      }
+      chestOpened.current = true; mimicOn.current = false; p.onLoot(); return;
+    }
+    if (p.modo === 'aprendizaje') {
+      // Por concepto: pase 0 (exploración lenta) → pase 1 (consolidación rápida)
+      if (paseEspectro.current === 0) {
+        paseEspectro.current = 1;
+        setTimeout(() => !pausedRef.current && spawnOrbPair(waveConcept(wave.current).id), 2000);
+        return;
+      }
+      paseEspectro.current = 0;
+    }
     if (wave.current + 1 < p.room.concept_ids.length) {
       wave.current += 1;
-      setTimeout(() => !pausedRef.current && spawnOrbPair(waveConcept(wave.current).id), 650);
+      setTimeout(() => !pausedRef.current && spawnOrbPair(waveConcept(wave.current).id), p.modo === 'aprendizaje' ? 2000 : 650);
     } else finishCombat(10);
   };
 
@@ -435,13 +498,20 @@ export function RoomStage(p: StageProps) {
       });
       if (!ok && !related) {
         attempts.current += 1;
-        dm.enragedUntil = performance.now() + 2200;
-        burst(dm.x, dm.y, 7);
-        setBanner(`✖ "${c.label}" no explica este caso. ¡Contraataque!`);
+        if (p.modo === 'aprendizaje') {
+          setBanner(`◌ «${c.label}» (${c.definicion_intuitiva}) no explica ESTE caso. Compara y prueba otra munición.`);
+        } else {
+          dm.enragedUntil = performance.now() + 2200;
+          burst(dm.x, dm.y, 7);
+          setBanner(`✖ "${c.label}" no explica este caso. ¡Contraataque!`);
+        }
       } else if (related) {
         setBanner(`◐ "${c.label}" roza el caso (cluster cercano): daño a medias.`);
       } else {
-        setBanner('💥 ¡Munición correcta! Tu conocimiento muerde.');
+        const correcto = conceptOf(p.room.concept_ids[phase.current]);
+        setBanner(p.modo === 'aprendizaje'
+          ? `💥 Exacto: este caso ES ${correcto.label} — ${correcto.definicion_intuitiva}`
+          : '💥 ¡Munición correcta! Tu conocimiento muerde.');
       }
     }
     return ok ? wpnDmg : related ? wpnDmg / 2 : 0;
@@ -575,9 +645,10 @@ export function RoomStage(p: StageProps) {
             sh.hitIds.push(b.id);
           }
         }
-        // Etiquetados: golpear = afirmación cognitiva
+        // Etiquetados: golpear = afirmación cognitiva (los inertes del
+        // modelado dejan pasar el disparo: aún no hay nada que afirmar)
         for (const s of slimes.current) {
-          if (!s.dead && Math.hypot(sh.x - s.x, sh.y - s.y) < 7) { cogHunt(s); return false; }
+          if (!s.dead && !s.inerte && Math.hypot(sh.x - s.x, sh.y - s.y) < 7) { cogHunt(s); return false; }
         }
         // Jefe/élite: el daño depende de la MUNICIÓN conceptual elegida
         const dm = demon.current;
@@ -612,7 +683,7 @@ export function RoomStage(p: StageProps) {
         if (o.done) continue;
         const ddx = pl.x - o.x, ddy = pl.y - o.y;
         const d = Math.hypot(ddx, ddy) || 1;
-        const osp = 17 * p.scaffold.orb_speed_mul;
+        const osp = 17 * p.scaffold.orb_speed_mul * (p.modo === 'aprendizaje' && paseEspectro.current === 1 ? 1.6 : 1);
         o.x += (ddx / d) * osp * dt; o.y += (ddy / d) * osp * dt;
         if (d < 9) { o.done = true; cogOrb(o, isMimic); break; }
         if (now - o.born > 14000) {
@@ -638,7 +709,7 @@ export function RoomStage(p: StageProps) {
       if (dm && !p.room.cleared) {
         const enraged = now < dm.enragedUntil;
         const herido = dm.hp < dm.maxHp;
-        const sp = enraged ? 34 : herido ? 21 : 17;
+        const sp = (enraged ? 34 : herido ? 21 : 17) * (p.modo === 'aprendizaje' ? 0.8 : 1);
         const ddx = pl.x - dm.x, ddy = pl.y - dm.y;
         const d = Math.hypot(ddx, ddy) || 1;
         dm.x += (ddx / d) * sp * dt; dm.y += (ddy / d) * sp * dt;
@@ -765,9 +836,9 @@ export function RoomStage(p: StageProps) {
 
         {/* Slimes etiquetados */}
         {slimes.current.filter((s) => !s.dead).map((s) => (
-          <div key={s.id} className={`ent slime-ent ${s.angry ? 'angry' : ''} ${s.correcta && hintOn() ? 'hinted' : ''}`} style={{ left: px(s.x), top: py(s.y) }}>
+          <div key={s.id} className={`ent slime-ent ${s.angry ? 'angry' : ''} ${(s.marcada || (s.correcta && hintOn())) ? 'hinted' : ''} ${s.inerte ? 'inerte' : ''}`} style={{ left: px(s.x), top: py(s.y) }}>
             <Slime color={s.color} px={4} />
-            <span className="ent-label">{s.label}</span>
+            <span className="ent-label">{s.marcada ? '✓ ' : ''}{s.label}</span>
           </div>
         ))}
 

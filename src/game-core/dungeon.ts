@@ -312,9 +312,21 @@ export type DungeonAction =
   | { type: 'SET_FOCUS'; concept_id: string | null }
   | { type: 'SET_PROPHECY'; n: number }
   | { type: 'SET_BET'; bet: number }
-  | { type: 'MARK_AUTOPSY' };
+  | { type: 'MARK_AUTOPSY' }
+  | { type: 'REVIVE' }; // modo aprendizaje: la mazmorra no mata, te escupe
 
 export function dungeonReducer(s: DungeonState, a: DungeonAction): DungeonState {
+  if (a.type === 'REVIVE') {
+    if (s.status !== 'game_over') return s;
+    return {
+      ...s,
+      status: 'active',
+      hearts: s.max_hearts,
+      current_room: s.floors[s.floor_index].rooms[0].id,
+      bet: 0,
+      bet_lost: false,
+    };
+  }
   if (s.status !== 'active' && a.type !== 'SET_PROPHECY') return s;
   const floor = s.floors[s.floor_index];
 
