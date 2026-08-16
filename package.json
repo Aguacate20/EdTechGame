@@ -1,0 +1,27 @@
+{
+  "name": "edtech-game",
+  "private": true,
+  "version": "3.3.0",
+  "type": "module",
+  "description": "El Archivo Infinito — roguelike deckbuilder cognitivo que consume el bundle del extractor",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "smoke": "esbuild scripts/smoke.ts --bundle --platform=node --format=esm --outfile=.smoke.mjs --log-level=warning && node .smoke.mjs",
+    "demo:bundle": "python scripts/gen_demo_bundle.py"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "esbuild": "^0.21.5"
+  }
+}

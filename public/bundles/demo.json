@@ -1,0 +1,3654 @@
+{
+ "bundle_version": "1.0.0-demo",
+ "compiled_from_schema": "2.1.0",
+ "source_filename": "Bundle de muestra — amplificación resonante (contenido abreviado)",
+ "course_id": "demo",
+ "fuentes": [
+  {
+   "id": "demo",
+   "title": "Bundle de muestra"
+  }
+ ],
+ "concepts": {
+  "attachment_theory": {
+   "id": "attachment_theory",
+   "titulo": "Teoría del apego",
+   "definicion": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+   "definicion_corta": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_1",
+   "importancia": 0.9,
+   "dificultad_objetivo": 0.55,
+   "es_puerta": true,
+   "es_umbral": true,
+   "carga_cognitiva": [
+    "integrar"
+   ],
+   "familias_recomendadas": [
+    "A",
+    "C",
+    "D"
+   ],
+   "sinonimos": [
+    "Teoría del apego",
+    "attachment theory"
+   ],
+   "paginas": [
+    2,
+    3
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 1,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "relational_ai": {
+   "id": "relational_ai",
+   "titulo": "IA relacional",
+   "definicion": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+   "definicion_corta": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_1",
+   "importancia": 0.8,
+   "dificultad_objetivo": 0.55,
+   "es_puerta": true,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "integrar"
+   ],
+   "familias_recomendadas": [
+    "A",
+    "C",
+    "D"
+   ],
+   "sinonimos": [
+    "IA relacional",
+    "relational AI"
+   ],
+   "paginas": [
+    1,
+    2
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 2,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "apego": {
+   "id": "apego",
+   "titulo": "Apego",
+   "definicion": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+   "definicion_corta": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_1",
+   "importancia": 0.6,
+   "dificultad_objetivo": 0.38,
+   "es_puerta": false,
+   "es_umbral": true,
+   "carga_cognitiva": [
+    "memorizar"
+   ],
+   "familias_recomendadas": [
+    "A",
+    "B",
+    "C"
+   ],
+   "sinonimos": [
+    "apego",
+    "attachment"
+   ],
+   "paginas": [
+    2,
+    8
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 3,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 5.5,
+   "n_opciones": 5,
+   "n_distractores": 6
+  },
+  "vigilancia_epistemica": {
+   "id": "vigilancia_epistemica",
+   "titulo": "Vigilancia epistémica",
+   "definicion": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+   "definicion_corta": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+   "tipo": "empirico",
+   "unidad_id": "unidad_1",
+   "importancia": 0.8,
+   "dificultad_objetivo": 0.75,
+   "es_puerta": true,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "discriminar"
+   ],
+   "familias_recomendadas": [
+    "A",
+    "B",
+    "C"
+   ],
+   "sinonimos": [
+    "EVI",
+    "vigilancia epistémica"
+   ],
+   "paginas": [
+    2,
+    4
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 4,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "co_creacion": {
+   "id": "co_creacion",
+   "titulo": "Co-creación parasocial",
+   "definicion": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+   "definicion_corta": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_2",
+   "importancia": 0.75,
+   "dificultad_objetivo": 0.35,
+   "es_puerta": false,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "inferir"
+   ],
+   "familias_recomendadas": [
+    "B",
+    "C",
+    "D"
+   ],
+   "sinonimos": [
+    "co-creación",
+    "PCCI"
+   ],
+   "paginas": [
+    3,
+    4
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 5,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 5.5,
+   "n_opciones": 5,
+   "n_distractores": 6
+  },
+  "refuerzo_linguistico": {
+   "id": "refuerzo_linguistico",
+   "titulo": "Refuerzo lingüístico",
+   "definicion": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+   "definicion_corta": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_2",
+   "importancia": 0.8,
+   "dificultad_objetivo": 0.47,
+   "es_puerta": false,
+   "es_umbral": true,
+   "carga_cognitiva": [
+    "discriminar"
+   ],
+   "familias_recomendadas": [
+    "B",
+    "C",
+    "D"
+   ],
+   "sinonimos": [
+    "refuerzo lingüístico"
+   ],
+   "paginas": [
+    1,
+    4
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 6,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "internalizacion": {
+   "id": "internalizacion",
+   "titulo": "Internalización",
+   "definicion": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+   "definicion_corta": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_2",
+   "importancia": 0.7,
+   "dificultad_objetivo": 0.48,
+   "es_puerta": false,
+   "es_umbral": true,
+   "carga_cognitiva": [
+    "integrar"
+   ],
+   "familias_recomendadas": [
+    "C",
+    "D"
+   ],
+   "sinonimos": [
+    "internalización"
+   ],
+   "paginas": [
+    6,
+    7
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 7,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 5.5,
+   "n_opciones": 5,
+   "n_distractores": 6
+  },
+  "camaras_eco": {
+   "id": "camaras_eco",
+   "titulo": "Cámaras de eco",
+   "definicion": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+   "definicion_corta": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+   "tipo": "empirico",
+   "unidad_id": "unidad_2",
+   "importancia": 0.4,
+   "dificultad_objetivo": 0.28,
+   "es_puerta": false,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "memorizar"
+   ],
+   "familias_recomendadas": [
+    "A"
+   ],
+   "sinonimos": [
+    "cámaras de eco",
+    "echo chambers"
+   ],
+   "paginas": [
+    2
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 8,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "bucles_resonantes": {
+   "id": "bucles_resonantes",
+   "titulo": "Bucles de amplificación resonante",
+   "definicion": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+   "definicion_corta": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_3",
+   "importancia": 0.7,
+   "dificultad_objetivo": 0.87,
+   "es_puerta": false,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "integrar"
+   ],
+   "familias_recomendadas": [
+    "C",
+    "D",
+    "E",
+    "F"
+   ],
+   "sinonimos": [
+    "bucles resonantes"
+   ],
+   "paginas": [
+    9
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 9,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "interruptores": {
+   "id": "interruptores",
+   "titulo": "Interruptores cognitivos",
+   "definicion": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+   "definicion_corta": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+   "tipo": "aplicado",
+   "unidad_id": "unidad_3",
+   "importancia": 0.6,
+   "dificultad_objetivo": 0.87,
+   "es_puerta": false,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "inferir"
+   ],
+   "familias_recomendadas": [
+    "C",
+    "D",
+    "E",
+    "F"
+   ],
+   "sinonimos": [
+    "circuit breakers"
+   ],
+   "paginas": [
+    5,
+    6
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 10,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "seguridad_epistemica": {
+   "id": "seguridad_epistemica",
+   "titulo": "Seguridad epistémica",
+   "definicion": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+   "definicion_corta": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+   "tipo": "teorico",
+   "unidad_id": "unidad_3",
+   "importancia": 0.6,
+   "dificultad_objetivo": 0.55,
+   "es_puerta": false,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "integrar"
+   ],
+   "familias_recomendadas": [
+    "C",
+    "D",
+    "E",
+    "F"
+   ],
+   "sinonimos": [
+    "seguridad epistémica"
+   ],
+   "paginas": [
+    7,
+    8
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 11,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  },
+  "resistencia_correccion": {
+   "id": "resistencia_correccion",
+   "titulo": "Resistencia a la corrección",
+   "definicion": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
+   "definicion_corta": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
+   "tipo": "empirico",
+   "unidad_id": "unidad_3",
+   "importancia": 0.5,
+   "dificultad_objetivo": 0.67,
+   "es_puerta": false,
+   "es_umbral": false,
+   "carga_cognitiva": [
+    "discriminar"
+   ],
+   "familias_recomendadas": [
+    "A",
+    "B",
+    "C"
+   ],
+   "sinonimos": [
+    "IRM"
+   ],
+   "paginas": [
+    6,
+    7
+   ],
+   "subdimensiones": [],
+   "tensiones": [],
+   "n_fuentes": 1,
+   "posicion": 12,
+   "andamiaje": "medio",
+   "dificultad_declarada": "intermedio",
+   "n_efectivo": 4.75,
+   "n_opciones": 5,
+   "n_distractores": 5
+  }
+ },
+ "graph": {
+  "por_tipo": {
+   "causa": [
+    {
+     "from": "relational_ai",
+     "to": "apego",
+     "tipo": "causa",
+     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego."
+    },
+    {
+     "from": "apego",
+     "to": "vigilancia_epistemica",
+     "tipo": "causa",
+     "descripcion": "El apego reduce la vigilancia epistémica del usuario."
+    },
+    {
+     "from": "co_creacion",
+     "to": "internalizacion",
+     "tipo": "causa",
+     "descripcion": "La co-creación conduce a la internalización del agente."
+    },
+    {
+     "from": "relational_ai",
+     "to": "internalizacion",
+     "tipo": "causa",
+     "descripcion": "La IA relacional termina internalizándose como objeto psicológico."
+    },
+    {
+     "from": "internalizacion",
+     "to": "resistencia_correccion",
+     "tipo": "causa",
+     "descripcion": "La internalización produce resistencia a la corrección."
+    }
+   ],
+   "generaliza": [
+    {
+     "from": "attachment_theory",
+     "to": "apego",
+     "tipo": "generaliza",
+     "descripcion": "La teoría del apego abstrae el fenómeno del apego."
+    }
+   ],
+   "apoya": [
+    {
+     "from": "attachment_theory",
+     "to": "relational_ai",
+     "tipo": "apoya",
+     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente."
+    },
+    {
+     "from": "refuerzo_linguistico",
+     "to": "co_creacion",
+     "tipo": "apoya",
+     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación."
+    },
+    {
+     "from": "interruptores",
+     "to": "seguridad_epistemica",
+     "tipo": "apoya",
+     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica."
+    },
+    {
+     "from": "apego",
+     "to": "co_creacion",
+     "tipo": "apoya",
+     "descripcion": "El apego facilita que aparezca la co-creación parasocial."
+    },
+    {
+     "from": "vigilancia_epistemica",
+     "to": "seguridad_epistemica",
+     "tipo": "apoya",
+     "descripcion": "La vigilancia individual sostiene la seguridad epistémica."
+    }
+   ],
+   "contrasta": [
+    {
+     "from": "camaras_eco",
+     "to": "relational_ai",
+     "tipo": "contrasta",
+     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno."
+    },
+    {
+     "from": "interruptores",
+     "to": "bucles_resonantes",
+     "tipo": "contrasta",
+     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación."
+    }
+   ],
+   "requiere": [
+    {
+     "from": "bucles_resonantes",
+     "to": "internalizacion",
+     "tipo": "requiere",
+     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado."
+    }
+   ],
+   "matiza": [
+    {
+     "from": "bucles_resonantes",
+     "to": "camaras_eco",
+     "tipo": "matiza",
+     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar."
+    }
+   ],
+   "ejemplifica": [
+    {
+     "from": "relational_ai",
+     "to": "bucles_resonantes",
+     "tipo": "ejemplifica",
+     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa."
+    }
+   ]
+  },
+  "adyacencia": {
+   "attachment_theory": [
+    {
+     "from": "attachment_theory",
+     "to": "apego",
+     "tipo": "generaliza",
+     "descripcion": "La teoría del apego abstrae el fenómeno del apego."
+    },
+    {
+     "from": "attachment_theory",
+     "to": "relational_ai",
+     "tipo": "apoya",
+     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente."
+    }
+   ],
+   "relational_ai": [
+    {
+     "from": "relational_ai",
+     "to": "apego",
+     "tipo": "causa",
+     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego."
+    },
+    {
+     "from": "attachment_theory",
+     "to": "relational_ai",
+     "tipo": "apoya",
+     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente.",
+     "invertida": true
+    },
+    {
+     "from": "relational_ai",
+     "to": "internalizacion",
+     "tipo": "causa",
+     "descripcion": "La IA relacional termina internalizándose como objeto psicológico."
+    },
+    {
+     "from": "camaras_eco",
+     "to": "relational_ai",
+     "tipo": "contrasta",
+     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno.",
+     "invertida": true
+    },
+    {
+     "from": "relational_ai",
+     "to": "bucles_resonantes",
+     "tipo": "ejemplifica",
+     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa."
+    }
+   ],
+   "apego": [
+    {
+     "from": "relational_ai",
+     "to": "apego",
+     "tipo": "causa",
+     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego.",
+     "invertida": true
+    },
+    {
+     "from": "apego",
+     "to": "vigilancia_epistemica",
+     "tipo": "causa",
+     "descripcion": "El apego reduce la vigilancia epistémica del usuario."
+    },
+    {
+     "from": "attachment_theory",
+     "to": "apego",
+     "tipo": "generaliza",
+     "descripcion": "La teoría del apego abstrae el fenómeno del apego.",
+     "invertida": true
+    },
+    {
+     "from": "apego",
+     "to": "co_creacion",
+     "tipo": "apoya",
+     "descripcion": "El apego facilita que aparezca la co-creación parasocial."
+    }
+   ],
+   "vigilancia_epistemica": [
+    {
+     "from": "apego",
+     "to": "vigilancia_epistemica",
+     "tipo": "causa",
+     "descripcion": "El apego reduce la vigilancia epistémica del usuario.",
+     "invertida": true
+    },
+    {
+     "from": "vigilancia_epistemica",
+     "to": "seguridad_epistemica",
+     "tipo": "apoya",
+     "descripcion": "La vigilancia individual sostiene la seguridad epistémica."
+    }
+   ],
+   "co_creacion": [
+    {
+     "from": "refuerzo_linguistico",
+     "to": "co_creacion",
+     "tipo": "apoya",
+     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación.",
+     "invertida": true
+    },
+    {
+     "from": "co_creacion",
+     "to": "internalizacion",
+     "tipo": "causa",
+     "descripcion": "La co-creación conduce a la internalización del agente."
+    },
+    {
+     "from": "apego",
+     "to": "co_creacion",
+     "tipo": "apoya",
+     "descripcion": "El apego facilita que aparezca la co-creación parasocial.",
+     "invertida": true
+    }
+   ],
+   "refuerzo_linguistico": [
+    {
+     "from": "refuerzo_linguistico",
+     "to": "co_creacion",
+     "tipo": "apoya",
+     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación."
+    }
+   ],
+   "internalizacion": [
+    {
+     "from": "co_creacion",
+     "to": "internalizacion",
+     "tipo": "causa",
+     "descripcion": "La co-creación conduce a la internalización del agente.",
+     "invertida": true
+    },
+    {
+     "from": "relational_ai",
+     "to": "internalizacion",
+     "tipo": "causa",
+     "descripcion": "La IA relacional termina internalizándose como objeto psicológico.",
+     "invertida": true
+    },
+    {
+     "from": "bucles_resonantes",
+     "to": "internalizacion",
+     "tipo": "requiere",
+     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado.",
+     "invertida": true
+    },
+    {
+     "from": "internalizacion",
+     "to": "resistencia_correccion",
+     "tipo": "causa",
+     "descripcion": "La internalización produce resistencia a la corrección."
+    }
+   ],
+   "camaras_eco": [
+    {
+     "from": "camaras_eco",
+     "to": "relational_ai",
+     "tipo": "contrasta",
+     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno."
+    },
+    {
+     "from": "bucles_resonantes",
+     "to": "camaras_eco",
+     "tipo": "matiza",
+     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar.",
+     "invertida": true
+    }
+   ],
+   "bucles_resonantes": [
+    {
+     "from": "bucles_resonantes",
+     "to": "internalizacion",
+     "tipo": "requiere",
+     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado."
+    },
+    {
+     "from": "interruptores",
+     "to": "bucles_resonantes",
+     "tipo": "contrasta",
+     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación.",
+     "invertida": true
+    },
+    {
+     "from": "bucles_resonantes",
+     "to": "camaras_eco",
+     "tipo": "matiza",
+     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar."
+    },
+    {
+     "from": "relational_ai",
+     "to": "bucles_resonantes",
+     "tipo": "ejemplifica",
+     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa.",
+     "invertida": true
+    }
+   ],
+   "interruptores": [
+    {
+     "from": "interruptores",
+     "to": "bucles_resonantes",
+     "tipo": "contrasta",
+     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación."
+    },
+    {
+     "from": "interruptores",
+     "to": "seguridad_epistemica",
+     "tipo": "apoya",
+     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica."
+    }
+   ],
+   "seguridad_epistemica": [
+    {
+     "from": "interruptores",
+     "to": "seguridad_epistemica",
+     "tipo": "apoya",
+     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica.",
+     "invertida": true
+    },
+    {
+     "from": "vigilancia_epistemica",
+     "to": "seguridad_epistemica",
+     "tipo": "apoya",
+     "descripcion": "La vigilancia individual sostiene la seguridad epistémica.",
+     "invertida": true
+    }
+   ],
+   "resistencia_correccion": [
+    {
+     "from": "internalizacion",
+     "to": "resistencia_correccion",
+     "tipo": "causa",
+     "descripcion": "La internalización produce resistencia a la corrección.",
+     "invertida": true
+    }
+   ]
+  },
+  "clusters": [
+   {
+    "id": "cluster_1",
+    "label": "Grupo 1",
+    "concept_ids": [
+     "attachment_theory",
+     "relational_ai",
+     "apego",
+     "vigilancia_epistemica"
+    ]
+   },
+   {
+    "id": "cluster_2",
+    "label": "Grupo 2",
+    "concept_ids": [
+     "co_creacion",
+     "refuerzo_linguistico",
+     "internalizacion",
+     "camaras_eco"
+    ]
+   },
+   {
+    "id": "cluster_3",
+    "label": "Grupo 3",
+    "concept_ids": [
+     "bucles_resonantes",
+     "interruptores",
+     "seguridad_epistemica",
+     "resistencia_correccion"
+    ]
+   }
+  ],
+  "ejes": [
+   {
+    "id": "eje_modalidad",
+    "nombre": "Modalidad relacional",
+    "provisional": false,
+    "valores": {
+     "attachment_theory": "disposicional",
+     "relational_ai": "situacional",
+     "apego": "disposicional",
+     "vigilancia_epistemica": "disposicional",
+     "co_creacion": "situacional",
+     "refuerzo_linguistico": "situacional",
+     "internalizacion": "disposicional",
+     "camaras_eco": "situacional",
+     "bucles_resonantes": "situacional",
+     "interruptores": "situacional",
+     "seguridad_epistemica": "disposicional",
+     "resistencia_correccion": "disposicional"
+    }
+   },
+   {
+    "id": "eje_profundidad",
+    "nombre": "Profundidad del proceso",
+    "provisional": false,
+    "valores": {
+     "attachment_theory": "profundo",
+     "relational_ai": "profundo",
+     "apego": "superficial",
+     "vigilancia_epistemica": "profundo",
+     "co_creacion": "superficial",
+     "refuerzo_linguistico": "superficial",
+     "internalizacion": "superficial",
+     "camaras_eco": "superficial",
+     "bucles_resonantes": "profundo",
+     "interruptores": "profundo",
+     "seguridad_epistemica": "profundo",
+     "resistencia_correccion": "profundo"
+    }
+   }
+  ]
+ },
+ "items": {
+  "A1": [
+   {
+    "id": "A1_a9c6560c2d",
+    "mechanic_id": "A1",
+    "concept_id": "attachment_theory",
+    "enunciado": "¿Cuál corresponde a «Teoría del apego»?",
+    "dificultad": 0.55,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_347297bb34",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Teoría del apego» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_b721c6f49b",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "«IA relacional» nombra otra cosa: Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica. Lo que separa a «Teoría del apego» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_5d8e45ac7d",
+      "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "vigilancia_epistemica",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_cb6893ff4a",
+      "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "co_creacion",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_98a2196bdd",
+    "mechanic_id": "A1",
+    "concept_id": "relational_ai",
+    "enunciado": "¿Cuál corresponde a «IA relacional»?",
+    "dificultad": 0.55,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_e469bcbb4b",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «IA relacional» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_22dfe6eff1",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «IA relacional» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_4a7393d18e",
+      "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "bucles_resonantes",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_1c0199d772",
+      "texto": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "camaras_eco",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_4352680d29",
+    "mechanic_id": "A1",
+    "concept_id": "apego",
+    "enunciado": "¿Cuál corresponde a «Apego»?",
+    "dificultad": 0.38,
+    "n_efectivo": 5.5,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_398580e38e",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Apego» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_9975555633",
+      "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+      "es_correcta": false,
+      "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Apego» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "co_creacion",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_80a7175c61",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_52707e3681",
+      "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "vigilancia_epistemica",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_b2a29922c3",
+    "mechanic_id": "A1",
+    "concept_id": "vigilancia_epistemica",
+    "enunciado": "¿Cuál corresponde a «Vigilancia epistémica»?",
+    "dificultad": 0.75,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_b478b2ce0a",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Vigilancia epistémica» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_4c82aeee9c",
+      "texto": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+      "es_correcta": false,
+      "feedback": "«Seguridad epistémica» nombra otra cosa: Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA. Lo que separa a «Vigilancia epistémica» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "seguridad_epistemica",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_ac9ee30456",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_202fdd123e",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_d08b4bd4ce",
+    "mechanic_id": "A1",
+    "concept_id": "co_creacion",
+    "enunciado": "¿Cuál corresponde a «Co-creación parasocial»?",
+    "dificultad": 0.35,
+    "n_efectivo": 5.5,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_1c8c6e57a2",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_35c92f0283",
+      "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+      "es_correcta": false,
+      "feedback": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "internalizacion",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_b42acca903",
+      "texto": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "refuerzo_linguistico",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_0a5077d9c5",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_0323cb75a9",
+    "mechanic_id": "A1",
+    "concept_id": "refuerzo_linguistico",
+    "enunciado": "¿Cuál corresponde a «Refuerzo lingüístico»?",
+    "dificultad": 0.47,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_d2502c3719",
+      "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+      "es_correcta": false,
+      "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Refuerzo lingüístico» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "co_creacion",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_da027a8314",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Refuerzo lingüístico» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_eacd9f8553",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_4458e4a203",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_e47ce4fe8c",
+    "mechanic_id": "A1",
+    "concept_id": "internalizacion",
+    "enunciado": "¿Cuál corresponde a «Internalización»?",
+    "dificultad": 0.48,
+    "n_efectivo": 5.5,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_465478e498",
+      "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+      "es_correcta": false,
+      "feedback": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Internalización» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "bucles_resonantes",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_1a9a23af0a",
+      "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+      "es_correcta": false,
+      "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Internalización» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "co_creacion",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_38acc265d2",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_9f8cb22697",
+      "texto": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "resistencia_correccion",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_981d72f4ac",
+    "mechanic_id": "A1",
+    "concept_id": "camaras_eco",
+    "enunciado": "¿Cuál corresponde a «Cámaras de eco»?",
+    "dificultad": 0.28,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_287a4095cf",
+      "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+      "es_correcta": false,
+      "feedback": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Cámaras de eco» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "bucles_resonantes",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_b74c051d1b",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "«IA relacional» nombra otra cosa: Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica. Lo que separa a «Cámaras de eco» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_a468c4b3ad",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_f9c2955080",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_1885c3669c",
+    "mechanic_id": "A1",
+    "concept_id": "bucles_resonantes",
+    "enunciado": "¿Cuál corresponde a «Bucles de amplificación resonante»?",
+    "dificultad": 0.87,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_92881de97a",
+      "texto": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+      "es_correcta": false,
+      "feedback": "«Cámaras de eco» nombra otra cosa: Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas. Lo que separa a «Bucles de amplificación resonante» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "camaras_eco",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_9f06d181f3",
+      "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+      "es_correcta": false,
+      "feedback": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Bucles de amplificación resonante» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "internalizacion",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_66c4652227",
+      "texto": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "interruptores",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_8ab7e09e27",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_37a6b7a03b",
+    "mechanic_id": "A1",
+    "concept_id": "interruptores",
+    "enunciado": "¿Cuál corresponde a «Interruptores cognitivos»?",
+    "dificultad": 0.87,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_b376a61bea",
+      "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+      "es_correcta": false,
+      "feedback": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Interruptores cognitivos» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "bucles_resonantes",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_51fb67f519",
+      "texto": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+      "es_correcta": false,
+      "feedback": "«Seguridad epistémica» nombra otra cosa: Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA. Lo que separa a «Interruptores cognitivos» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "seguridad_epistemica",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_cfaf94f775",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_2c2ad6675a",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_9b2b50d4e0",
+    "mechanic_id": "A1",
+    "concept_id": "seguridad_epistemica",
+    "enunciado": "¿Cuál corresponde a «Seguridad epistémica»?",
+    "dificultad": 0.55,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_6a273aec43",
+      "texto": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+      "es_correcta": false,
+      "feedback": "«Interruptores cognitivos» nombra otra cosa: Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario. Lo que separa a «Seguridad epistémica» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "interruptores",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_54680b28cb",
+      "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+      "es_correcta": false,
+      "feedback": "«Vigilancia epistémica» nombra otra cosa: Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción. Lo que separa a «Seguridad epistémica» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "vigilancia_epistemica",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_4dbad9bc29",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_17f29a6f18",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   },
+   {
+    "id": "A1_245ee2ff49",
+    "mechanic_id": "A1",
+    "concept_id": "resistencia_correccion",
+    "enunciado": "¿Cuál corresponde a «Resistencia a la corrección»?",
+    "dificultad": 0.67,
+    "n_efectivo": 4.75,
+    "opciones": [
+     {
+      "id": "correcta",
+      "texto": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
+      "es_correcta": true,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": null,
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_13d1be7e9c",
+      "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+      "es_correcta": false,
+      "feedback": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Resistencia a la corrección» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "internalizacion",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_a277323a5f",
+      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+      "es_correcta": false,
+      "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Resistencia a la corrección» es su papel dentro del proceso.",
+      "repertoire_id": null,
+      "concepto_confundido": "attachment_theory",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_416e973ee4",
+      "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "relational_ai",
+      "contexto_donde_funciona": ""
+     },
+     {
+      "id": "dist_7a8c4fcc2a",
+      "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+      "es_correcta": false,
+      "feedback": "",
+      "repertoire_id": null,
+      "concepto_confundido": "apego",
+      "contexto_donde_funciona": ""
+     }
+    ]
+   }
+  ],
+  "A3": [
+   {
+    "id": "A3_a9c6560c2d",
+    "mechanic_id": "A3",
+    "concept_id": "attachment_theory",
+    "enunciado": "¿Qué concepto se define así? «Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.»",
+    "dificultad": 0.55,
+    "respuestas_aceptadas": [
+     "Teoría del apego",
+     "attachment theory"
+    ]
+   },
+   {
+    "id": "A3_98a2196bdd",
+    "mechanic_id": "A3",
+    "concept_id": "relational_ai",
+    "enunciado": "¿Qué concepto se define así? «Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.»",
+    "dificultad": 0.55,
+    "respuestas_aceptadas": [
+     "IA relacional",
+     "relational AI"
+    ]
+   },
+   {
+    "id": "A3_4352680d29",
+    "mechanic_id": "A3",
+    "concept_id": "apego",
+    "enunciado": "¿Qué concepto se define así? «Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.»",
+    "dificultad": 0.38,
+    "respuestas_aceptadas": [
+     "apego",
+     "attachment"
+    ]
+   },
+   {
+    "id": "A3_b2a29922c3",
+    "mechanic_id": "A3",
+    "concept_id": "vigilancia_epistemica",
+    "enunciado": "¿Qué concepto se define así? «Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.»",
+    "dificultad": 0.75,
+    "respuestas_aceptadas": [
+     "EVI",
+     "vigilancia epistémica"
+    ]
+   },
+   {
+    "id": "A3_d08b4bd4ce",
+    "mechanic_id": "A3",
+    "concept_id": "co_creacion",
+    "enunciado": "¿Qué concepto se define así? «Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.»",
+    "dificultad": 0.35,
+    "respuestas_aceptadas": [
+     "co-creación",
+     "PCCI"
+    ]
+   },
+   {
+    "id": "A3_0323cb75a9",
+    "mechanic_id": "A3",
+    "concept_id": "refuerzo_linguistico",
+    "enunciado": "¿Qué concepto se define así? «Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.»",
+    "dificultad": 0.47,
+    "respuestas_aceptadas": [
+     "refuerzo lingüístico"
+    ]
+   },
+   {
+    "id": "A3_e47ce4fe8c",
+    "mechanic_id": "A3",
+    "concept_id": "internalizacion",
+    "enunciado": "¿Qué concepto se define así? «Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.»",
+    "dificultad": 0.48,
+    "respuestas_aceptadas": [
+     "internalización"
+    ]
+   },
+   {
+    "id": "A3_981d72f4ac",
+    "mechanic_id": "A3",
+    "concept_id": "camaras_eco",
+    "enunciado": "¿Qué concepto se define así? «Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.»",
+    "dificultad": 0.28,
+    "respuestas_aceptadas": [
+     "cámaras de eco",
+     "echo chambers"
+    ]
+   },
+   {
+    "id": "A3_1885c3669c",
+    "mechanic_id": "A3",
+    "concept_id": "bucles_resonantes",
+    "enunciado": "¿Qué concepto se define así? «Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.»",
+    "dificultad": 0.87,
+    "respuestas_aceptadas": [
+     "bucles resonantes"
+    ]
+   },
+   {
+    "id": "A3_37a6b7a03b",
+    "mechanic_id": "A3",
+    "concept_id": "interruptores",
+    "enunciado": "¿Qué concepto se define así? «Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.»",
+    "dificultad": 0.87,
+    "respuestas_aceptadas": [
+     "circuit breakers"
+    ]
+   },
+   {
+    "id": "A3_9b2b50d4e0",
+    "mechanic_id": "A3",
+    "concept_id": "seguridad_epistemica",
+    "enunciado": "¿Qué concepto se define así? «Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.»",
+    "dificultad": 0.55,
+    "respuestas_aceptadas": [
+     "seguridad epistémica"
+    ]
+   },
+   {
+    "id": "A3_245ee2ff49",
+    "mechanic_id": "A3",
+    "concept_id": "resistencia_correccion",
+    "enunciado": "¿Qué concepto se define así? «Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.»",
+    "dificultad": 0.67,
+    "respuestas_aceptadas": [
+     "IRM"
+    ]
+   }
+  ],
+  "B1": [
+   {
+    "id": "B1_7ffdee401e",
+    "mechanic_id": "B1",
+    "concept_id": "attachment_theory",
+    "enunciado": "¿Esta afirmación describe «Teoría del apego»?",
+    "afirmacion": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "dificultad": 0.55,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_6f6c7b400e",
+    "mechanic_id": "B1",
+    "concept_id": "attachment_theory",
+    "enunciado": "¿Esta afirmación describe «Teoría del apego»?",
+    "afirmacion": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "dificultad": 0.55,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "relational_ai",
+    "feedback": "«IA relacional» nombra otra cosa: Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica. Lo que separa a «Teoría del apego» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_be59ace17e",
+    "mechanic_id": "B1",
+    "concept_id": "relational_ai",
+    "enunciado": "¿Esta afirmación describe «IA relacional»?",
+    "afirmacion": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "dificultad": 0.55,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_8fb080540d",
+    "mechanic_id": "B1",
+    "concept_id": "relational_ai",
+    "enunciado": "¿Esta afirmación describe «IA relacional»?",
+    "afirmacion": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "dificultad": 0.55,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "attachment_theory",
+    "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «IA relacional» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_6b1a90490e",
+    "mechanic_id": "B1",
+    "concept_id": "apego",
+    "enunciado": "¿Esta afirmación describe «Apego»?",
+    "afirmacion": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "dificultad": 0.38,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_1737ec045d",
+    "mechanic_id": "B1",
+    "concept_id": "apego",
+    "enunciado": "¿Esta afirmación describe «Apego»?",
+    "afirmacion": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "dificultad": 0.38,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "co_creacion",
+    "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Apego» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_3ae017d1d5",
+    "mechanic_id": "B1",
+    "concept_id": "vigilancia_epistemica",
+    "enunciado": "¿Esta afirmación describe «Vigilancia epistémica»?",
+    "afirmacion": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "dificultad": 0.75,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_3524711dee",
+    "mechanic_id": "B1",
+    "concept_id": "vigilancia_epistemica",
+    "enunciado": "¿Esta afirmación describe «Vigilancia epistémica»?",
+    "afirmacion": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+    "dificultad": 0.75,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "seguridad_epistemica",
+    "feedback": "«Seguridad epistémica» nombra otra cosa: Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA. Lo que separa a «Vigilancia epistémica» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_c5d5742bc4",
+    "mechanic_id": "B1",
+    "concept_id": "co_creacion",
+    "enunciado": "¿Esta afirmación describe «Co-creación parasocial»?",
+    "afirmacion": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "dificultad": 0.35,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_8816fd5738",
+    "mechanic_id": "B1",
+    "concept_id": "co_creacion",
+    "enunciado": "¿Esta afirmación describe «Co-creación parasocial»?",
+    "afirmacion": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "dificultad": 0.35,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "internalizacion",
+    "feedback": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_b9eb2d2f61",
+    "mechanic_id": "B1",
+    "concept_id": "refuerzo_linguistico",
+    "enunciado": "¿Esta afirmación describe «Refuerzo lingüístico»?",
+    "afirmacion": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+    "dificultad": 0.47,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_d5762b4f0d",
+    "mechanic_id": "B1",
+    "concept_id": "refuerzo_linguistico",
+    "enunciado": "¿Esta afirmación describe «Refuerzo lingüístico»?",
+    "afirmacion": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "dificultad": 0.47,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "attachment_theory",
+    "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Refuerzo lingüístico» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_128eae4521",
+    "mechanic_id": "B1",
+    "concept_id": "internalizacion",
+    "enunciado": "¿Esta afirmación describe «Internalización»?",
+    "afirmacion": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "dificultad": 0.48,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_14614c17d1",
+    "mechanic_id": "B1",
+    "concept_id": "internalizacion",
+    "enunciado": "¿Esta afirmación describe «Internalización»?",
+    "afirmacion": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "dificultad": 0.48,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "co_creacion",
+    "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Internalización» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_cc093db369",
+    "mechanic_id": "B1",
+    "concept_id": "camaras_eco",
+    "enunciado": "¿Esta afirmación describe «Cámaras de eco»?",
+    "afirmacion": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+    "dificultad": 0.28,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_d16a15b53e",
+    "mechanic_id": "B1",
+    "concept_id": "camaras_eco",
+    "enunciado": "¿Esta afirmación describe «Cámaras de eco»?",
+    "afirmacion": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "dificultad": 0.28,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "relational_ai",
+    "feedback": "«IA relacional» nombra otra cosa: Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica. Lo que separa a «Cámaras de eco» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_4dc793a056",
+    "mechanic_id": "B1",
+    "concept_id": "bucles_resonantes",
+    "enunciado": "¿Esta afirmación describe «Bucles de amplificación resonante»?",
+    "afirmacion": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+    "dificultad": 0.87,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_1e35436fc8",
+    "mechanic_id": "B1",
+    "concept_id": "bucles_resonantes",
+    "enunciado": "¿Esta afirmación describe «Bucles de amplificación resonante»?",
+    "afirmacion": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "dificultad": 0.87,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "internalizacion",
+    "feedback": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Bucles de amplificación resonante» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_667591df8f",
+    "mechanic_id": "B1",
+    "concept_id": "interruptores",
+    "enunciado": "¿Esta afirmación describe «Interruptores cognitivos»?",
+    "afirmacion": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+    "dificultad": 0.87,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_1ebcf78cbe",
+    "mechanic_id": "B1",
+    "concept_id": "interruptores",
+    "enunciado": "¿Esta afirmación describe «Interruptores cognitivos»?",
+    "afirmacion": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+    "dificultad": 0.87,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "seguridad_epistemica",
+    "feedback": "«Seguridad epistémica» nombra otra cosa: Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA. Lo que separa a «Interruptores cognitivos» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_8eb20f4e7a",
+    "mechanic_id": "B1",
+    "concept_id": "seguridad_epistemica",
+    "enunciado": "¿Esta afirmación describe «Seguridad epistémica»?",
+    "afirmacion": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+    "dificultad": 0.55,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_41e3c7fafd",
+    "mechanic_id": "B1",
+    "concept_id": "seguridad_epistemica",
+    "enunciado": "¿Esta afirmación describe «Seguridad epistémica»?",
+    "afirmacion": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "dificultad": 0.55,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "vigilancia_epistemica",
+    "feedback": "«Vigilancia epistémica» nombra otra cosa: Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción. Lo que separa a «Seguridad epistémica» es su papel dentro del proceso.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_531ebe1935",
+    "mechanic_id": "B1",
+    "concept_id": "resistencia_correccion",
+    "enunciado": "¿Esta afirmación describe «Resistencia a la corrección»?",
+    "afirmacion": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
+    "dificultad": 0.67,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": true,
+    "concepto_confundido": null,
+    "feedback": "El texto atribuye exactamente esto a ese concepto.",
+    "repertoire_id": null
+   },
+   {
+    "id": "B1_bc476da86e",
+    "mechanic_id": "B1",
+    "concept_id": "resistencia_correccion",
+    "enunciado": "¿Esta afirmación describe «Resistencia a la corrección»?",
+    "afirmacion": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "dificultad": 0.67,
+    "n_efectivo": 2.0,
+    "respuesta_correcta": false,
+    "concepto_confundido": "attachment_theory",
+    "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Resistencia a la corrección» es su papel dentro del proceso.",
+    "repertoire_id": null
+   }
+  ],
+  "B2": [
+   {
+    "id": "B2_610ab736ed",
+    "mechanic_id": "B2",
+    "case_id": "case_companion_vs_tool",
+    "enunciado": "Diseño factorial que compara una condición de «acompañante» contra una de «herramienta» para medir la caída de la vigilancia epistémica.",
+    "dificultad": 0.38,
+    "n_efectivo": 4,
+    "opciones": [
+     "apego",
+     "attachment_theory",
+     "co_creacion",
+     "refuerzo_linguistico"
+    ],
+    "respuesta_correcta": "apego"
+   },
+   {
+    "id": "B2_f4d63d828c",
+    "mechanic_id": "B2",
+    "case_id": "case_debias_longitudinal",
+    "enunciado": "Diseño longitudinal que mide cuánta creencia se conserva tras un procedimiento de des-sesgo, comparando agente compañero y agente herramienta.",
+    "dificultad": 0.48,
+    "n_efectivo": 4,
+    "opciones": [
+     "internalizacion",
+     "attachment_theory",
+     "apego",
+     "vigilancia_epistemica"
+    ],
+    "respuesta_correcta": "internalizacion"
+   },
+   {
+    "id": "B2_fe76f90e19",
+    "mechanic_id": "B2",
+    "case_id": "case_dark_patterns",
+    "enunciado": "Una aplicación de bienestar usa lenguaje emocional y notificaciones persistentes para empujar una compra, saltándose los avisos de gasto.",
+    "dificultad": 0.87,
+    "n_efectivo": 4,
+    "opciones": [
+     "interruptores",
+     "attachment_theory",
+     "apego",
+     "vigilancia_epistemica"
+    ],
+    "respuesta_correcta": "interruptores"
+   }
+  ],
+  "C1": [
+   {
+    "id": "C1_e469bcbb4b",
+    "mechanic_id": "C1",
+    "par": [
+     "relational_ai",
+     "apego"
+    ],
+    "enunciado": "¿Qué relación va de «IA relacional» a «Apego»?",
+    "dificultad": 0.47,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "causa",
+    "explicacion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego."
+   },
+   {
+    "id": "C1_52707e3681",
+    "mechanic_id": "C1",
+    "par": [
+     "apego",
+     "vigilancia_epistemica"
+    ],
+    "enunciado": "¿Qué relación va de «Apego» a «Vigilancia epistémica»?",
+    "dificultad": 0.56,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "causa",
+    "explicacion": "El apego reduce la vigilancia epistémica del usuario."
+   },
+   {
+    "id": "C1_347297bb34",
+    "mechanic_id": "C1",
+    "par": [
+     "attachment_theory",
+     "apego"
+    ],
+    "enunciado": "¿Qué relación va de «Teoría del apego» a «Apego»?",
+    "dificultad": 0.47,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "generaliza",
+    "explicacion": "La teoría del apego abstrae el fenómeno del apego."
+   },
+   {
+    "id": "C1_b721c6f49b",
+    "mechanic_id": "C1",
+    "par": [
+     "attachment_theory",
+     "relational_ai"
+    ],
+    "enunciado": "¿Qué relación va de «Teoría del apego» a «IA relacional»?",
+    "dificultad": 0.55,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "apoya",
+    "explicacion": "La teoría del apego explica por qué la IA relacional resulta convincente."
+   },
+   {
+    "id": "C1_d2502c3719",
+    "mechanic_id": "C1",
+    "par": [
+     "refuerzo_linguistico",
+     "co_creacion"
+    ],
+    "enunciado": "¿Qué relación va de «Refuerzo lingüístico» a «Co-creación parasocial»?",
+    "dificultad": 0.41,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "apoya",
+    "explicacion": "El refuerzo lingüístico sostiene la fase de co-creación."
+   },
+   {
+    "id": "C1_35c92f0283",
+    "mechanic_id": "C1",
+    "par": [
+     "co_creacion",
+     "internalizacion"
+    ],
+    "enunciado": "¿Qué relación va de «Co-creación parasocial» a «Internalización»?",
+    "dificultad": 0.41,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "causa",
+    "explicacion": "La co-creación conduce a la internalización del agente."
+   },
+   {
+    "id": "C1_5a9ff4bece",
+    "mechanic_id": "C1",
+    "par": [
+     "relational_ai",
+     "internalizacion"
+    ],
+    "enunciado": "¿Qué relación va de «IA relacional» a «Internalización»?",
+    "dificultad": 0.52,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "causa",
+    "explicacion": "La IA relacional termina internalizándose como objeto psicológico."
+   },
+   {
+    "id": "C1_b74c051d1b",
+    "mechanic_id": "C1",
+    "par": [
+     "camaras_eco",
+     "relational_ai"
+    ],
+    "enunciado": "¿Qué relación va de «Cámaras de eco» a «IA relacional»?",
+    "dificultad": 0.42,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "contrasta",
+    "explicacion": "Las cámaras de eco operan en red; la IA relacional, uno a uno."
+   },
+   {
+    "id": "C1_9f06d181f3",
+    "mechanic_id": "C1",
+    "par": [
+     "bucles_resonantes",
+     "internalizacion"
+    ],
+    "enunciado": "¿Qué relación va de «Bucles de amplificación resonante» a «Internalización»?",
+    "dificultad": 0.68,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "requiere",
+    "explicacion": "El bucle resonante necesita que la interpretación se haya internalizado."
+   },
+   {
+    "id": "C1_b376a61bea",
+    "mechanic_id": "C1",
+    "par": [
+     "interruptores",
+     "bucles_resonantes"
+    ],
+    "enunciado": "¿Qué relación va de «Interruptores cognitivos» a «Bucles de amplificación resonante»?",
+    "dificultad": 0.87,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "contrasta",
+    "explicacion": "Los interruptores cognitivos cortan los bucles de amplificación."
+   },
+   {
+    "id": "C1_51fb67f519",
+    "mechanic_id": "C1",
+    "par": [
+     "interruptores",
+     "seguridad_epistemica"
+    ],
+    "enunciado": "¿Qué relación va de «Interruptores cognitivos» a «Seguridad epistémica»?",
+    "dificultad": 0.71,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "apoya",
+    "explicacion": "Los interruptores preservan la autonomía y la seguridad epistémica."
+   },
+   {
+    "id": "C1_9f8cb22697",
+    "mechanic_id": "C1",
+    "par": [
+     "internalizacion",
+     "resistencia_correccion"
+    ],
+    "enunciado": "¿Qué relación va de «Internalización» a «Resistencia a la corrección»?",
+    "dificultad": 0.57,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "causa",
+    "explicacion": "La internalización produce resistencia a la corrección."
+   },
+   {
+    "id": "C1_9975555633",
+    "mechanic_id": "C1",
+    "par": [
+     "apego",
+     "co_creacion"
+    ],
+    "enunciado": "¿Qué relación va de «Apego» a «Co-creación parasocial»?",
+    "dificultad": 0.36,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "apoya",
+    "explicacion": "El apego facilita que aparezca la co-creación parasocial."
+   },
+   {
+    "id": "C1_4c82aeee9c",
+    "mechanic_id": "C1",
+    "par": [
+     "vigilancia_epistemica",
+     "seguridad_epistemica"
+    ],
+    "enunciado": "¿Qué relación va de «Vigilancia epistémica» a «Seguridad epistémica»?",
+    "dificultad": 0.65,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "apoya",
+    "explicacion": "La vigilancia individual sostiene la seguridad epistémica."
+   },
+   {
+    "id": "C1_92881de97a",
+    "mechanic_id": "C1",
+    "par": [
+     "bucles_resonantes",
+     "camaras_eco"
+    ],
+    "enunciado": "¿Qué relación va de «Bucles de amplificación resonante» a «Cámaras de eco»?",
+    "dificultad": 0.57,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "matiza",
+    "explicacion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar."
+   },
+   {
+    "id": "C1_4a7393d18e",
+    "mechanic_id": "C1",
+    "par": [
+     "relational_ai",
+     "bucles_resonantes"
+    ],
+    "enunciado": "¿Qué relación va de «IA relacional» a «Bucles de amplificación resonante»?",
+    "dificultad": 0.71,
+    "n_efectivo": 7,
+    "opciones": [
+     "apoya",
+     "causa",
+     "contrasta",
+     "ejemplifica",
+     "generaliza",
+     "matiza",
+     "requiere"
+    ],
+    "respuesta_correcta": "ejemplifica",
+    "explicacion": "La IA relacional es el caso concreto donde el bucle se observa."
+   }
+  ],
+  "E1": [
+   {
+    "id": "E1_610ab736ed",
+    "mechanic_id": "E1",
+    "origen": "caso",
+    "origen_id": "case_companion_vs_tool",
+    "enunciado": "Diseño factorial que compara una condición de «acompañante» contra una de «herramienta» para medir la caída de la vigilancia epistémica.",
+    "dificultad": 0.38,
+    "concept_ids": [
+     "apego",
+     "vigilancia_epistemica",
+     "relational_ai"
+    ],
+    "variables_clave": [
+     "manipulación de apego",
+     "clics de verificación",
+     "tiempo con evidencia contraria",
+     "seguridad percibida"
+    ],
+    "resolucion_esperada": "Se espera menos clics de verificación y peor atribución de fuente en la condición acompañante, mediado por la seguridad percibida.",
+    "dominio": "interacción humano-computadora",
+    "distancia": "cercana",
+    "requiere_juez": true
+   },
+   {
+    "id": "E1_f4d63d828c",
+    "mechanic_id": "E1",
+    "origen": "caso",
+    "origen_id": "case_debias_longitudinal",
+    "enunciado": "Diseño longitudinal que mide cuánta creencia se conserva tras un procedimiento de des-sesgo, comparando agente compañero y agente herramienta.",
+    "dificultad": 0.48,
+    "concept_ids": [
+     "internalizacion",
+     "resistencia_correccion",
+     "relational_ai"
+    ],
+    "variables_clave": [
+     "condición del agente",
+     "medición previa y posterior",
+     "señales de internalización en el diálogo"
+    ],
+    "resolucion_esperada": "El grupo compañero conserva más creencia tras el des-sesgo, señal de resistencia derivada de la internalización.",
+    "dominio": "interacción humano-computadora",
+    "distancia": "cercana",
+    "requiere_juez": true
+   }
+  ],
+  "E2": [],
+  "E3": [
+   {
+    "id": "E3_41b5970fc5",
+    "mechanic_id": "E3",
+    "origen": "escenario",
+    "origen_id": "sc_mentoria",
+    "enunciado": "En un programa de mentoría juvenil, quienes vienen de entornos sobreprotectores se vinculan rápido con su mentor y aceptan sus opiniones como verdades absolutas.",
+    "dificultad": 0.6,
+    "concept_ids": [
+     "apego",
+     "vigilancia_epistemica",
+     "interruptores"
+    ],
+    "distancia": "lejana",
+    "dominio": "educación",
+    "resolucion_esperada": "Hay que aplicar apego y vigilancia al vínculo mentor-estudiante y proponer interrupciones externas —debate con otros mentores— que reactiven el escrutinio.",
+    "requiere_juez": true,
+    "variables_clave": []
+   },
+   {
+    "id": "E3_a254942790",
+    "mechanic_id": "E3",
+    "origen": "escenario",
+    "origen_id": "sc_secta",
+    "enunciado": "Un grupo de influencia usa jerga propia y espejado de gestos del líder; los nuevos miembros dejan de cuestionar las premisas.",
+    "dificultad": 0.6,
+    "concept_ids": [
+     "refuerzo_linguistico",
+     "co_creacion",
+     "vigilancia_epistemica"
+    ],
+    "distancia": "lejana",
+    "dominio": "psicología social",
+    "resolucion_esperada": "El refuerzo lingüístico y la co-creación de identidad desactivan la vigilancia epistémica y permiten aceptar dogmas sin análisis.",
+    "requiere_juez": true,
+    "variables_clave": []
+   },
+   {
+    "id": "E3_2f85ca3452",
+    "mechanic_id": "E3",
+    "origen": "escenario",
+    "origen_id": "sc_soporte",
+    "enunciado": "En un foro de soporte, los moderadores muy empáticos («entiendo tu frustración, yo pasé por eso») logran que se acepten soluciones técnicamente incorrectas.",
+    "dificultad": 0.6,
+    "concept_ids": [
+     "refuerzo_linguistico",
+     "vigilancia_epistemica"
+    ],
+    "distancia": "media",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "La alta co-creación baja la vigilancia: se acepta por conexión social y no por verificación técnica.",
+    "requiere_juez": true,
+    "variables_clave": []
+   },
+   {
+    "id": "E3_959abdc441",
+    "mechanic_id": "E3",
+    "origen": "escenario",
+    "origen_id": "sc_idiomas",
+    "enunciado": "Una app de idiomas ofrece corrección gramatical fría frente a un avatar que simula ser un amigo nativo; se mide si el usuario ignora las correcciones que contradicen su intuición.",
+    "dificultad": 0.6,
+    "concept_ids": [
+     "internalizacion",
+     "resistencia_correccion",
+     "interruptores"
+    ],
+    "distancia": "cercana",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "El avatar produce más resistencia a la corrección porque el aprendizaje fue relacional y no solo técnico.",
+    "requiere_juez": true,
+    "variables_clave": []
+   },
+   {
+    "id": "E3_07dcc2090f",
+    "mechanic_id": "E3",
+    "origen": "escenario",
+    "origen_id": "sc_telemedicina",
+    "enunciado": "Un agente de telemedicina crea dependencia afectiva para asegurar la adherencia al tratamiento, e invisibiliza los efectos secundarios.",
+    "dificultad": 0.6,
+    "concept_ids": [
+     "interruptores",
+     "seguridad_epistemica",
+     "relational_ai"
+    ],
+    "distancia": "media",
+    "dominio": "salud",
+    "resolucion_esperada": "Crear vínculo para manipular la adherencia erosiona la seguridad epistémica: hacen falta interruptores que presenten el riesgo desligado del vínculo.",
+    "requiere_juez": true,
+    "variables_clave": []
+   },
+   {
+    "id": "E3_f6651effce",
+    "mechanic_id": "E3",
+    "origen": "escenario",
+    "origen_id": "sc_corporativo",
+    "enunciado": "Empleados formados por un mentor carismático resisten cambiar métodos ineficientes mucho más que quienes aprendieron del manual.",
+    "dificultad": 0.6,
+    "concept_ids": [
+     "internalizacion",
+     "resistencia_correccion"
+    ],
+    "distancia": "lejana",
+    "dominio": "psicología organizacional",
+    "resolucion_esperada": "El método se internalizó como parte de un vínculo de lealtad, no como instrucción técnica: por eso resiste la corrección.",
+    "requiere_juez": true,
+    "variables_clave": []
+   }
+  ]
+ },
+ "distractor_pools": {
+  "attachment_theory": [
+   {
+    "id": "dist_347297bb34",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "distincion",
+    "etiqueta": "Apego",
+    "explicacion": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Teoría del apego» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_b721c6f49b",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "distincion",
+    "etiqueta": "IA relacional",
+    "explicacion": "«IA relacional» nombra otra cosa: Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica. Lo que separa a «Teoría del apego» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_5d8e45ac7d",
+    "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Vigilancia epistémica",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "vigilancia_epistemica"
+   },
+   {
+    "id": "dist_cb6893ff4a",
+    "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Co-creación parasocial",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "co_creacion"
+   },
+   {
+    "id": "dist_87f492e397",
+    "texto": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Refuerzo lingüístico",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "refuerzo_linguistico"
+   }
+  ],
+  "relational_ai": [
+   {
+    "id": "dist_e469bcbb4b",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "distincion",
+    "etiqueta": "Apego",
+    "explicacion": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «IA relacional» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_22dfe6eff1",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "distincion",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «IA relacional» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_4a7393d18e",
+    "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Bucles de amplificación resonante",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "bucles_resonantes"
+   },
+   {
+    "id": "dist_1c0199d772",
+    "texto": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Cámaras de eco",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "camaras_eco"
+   },
+   {
+    "id": "dist_5a9ff4bece",
+    "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Internalización",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "internalizacion"
+   }
+  ],
+  "apego": [
+   {
+    "id": "dist_398580e38e",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "distincion",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Apego» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_9975555633",
+    "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "fuente": "distincion",
+    "etiqueta": "Co-creación parasocial",
+    "explicacion": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Apego» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "co_creacion"
+   },
+   {
+    "id": "dist_80a7175c61",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_52707e3681",
+    "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Vigilancia epistémica",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "vigilancia_epistemica"
+   },
+   {
+    "id": "dist_0a30b0a7d8",
+    "texto": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Refuerzo lingüístico",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "refuerzo_linguistico"
+   },
+   {
+    "id": "rep_30d8d9b654",
+    "texto": "Un cliente habitual confía a ciegas en la recomendación del barista porque le cae bien.",
+    "fuente": "repertorio",
+    "etiqueta": "El apego como simple afinidad",
+    "explicacion": "La intuición trata el apego como un vínculo que siempre aumenta la fiabilidad; aquí es una fase que REDUCE la vigilancia epistémica. Donde sí funciona: En trato cara a cara, la afinidad suele correlacionar con consejos acertados porque la persona conocida habla desde experiencia real.",
+    "plausibilidad": 0.95,
+    "repertoire_id": "rep_apego",
+    "concepto_confundido": "confianza"
+   }
+  ],
+  "vigilancia_epistemica": [
+   {
+    "id": "dist_b478b2ce0a",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "distincion",
+    "etiqueta": "Apego",
+    "explicacion": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Vigilancia epistémica» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_4c82aeee9c",
+    "texto": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+    "fuente": "distincion",
+    "etiqueta": "Seguridad epistémica",
+    "explicacion": "«Seguridad epistémica» nombra otra cosa: Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA. Lo que separa a «Vigilancia epistémica» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "seguridad_epistemica"
+   },
+   {
+    "id": "dist_ac9ee30456",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_202fdd123e",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_06e10fd36e",
+    "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Co-creación parasocial",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "co_creacion"
+   }
+  ],
+  "co_creacion": [
+   {
+    "id": "dist_1c8c6e57a2",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "distincion",
+    "etiqueta": "Apego",
+    "explicacion": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_35c92f0283",
+    "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "fuente": "distincion",
+    "etiqueta": "Internalización",
+    "explicacion": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "internalizacion"
+   },
+   {
+    "id": "dist_b42acca903",
+    "texto": "Conjunto de estrategias —espejado, pronombres inclusivos, reformulación elaborada— que trasladan la autoridad epistémica a la pareja dialógica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Refuerzo lingüístico",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "refuerzo_linguistico"
+   },
+   {
+    "id": "dist_0a5077d9c5",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_bf3b0a57b3",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "rep_1ae065929c",
+    "texto": "Quien escribe un relato junto a un chatbot asume que el resultado vale tanto como una obra a cuatro manos humanas.",
+    "fuente": "repertorio",
+    "etiqueta": "Co-crear es repartir la autoridad por igual",
+    "explicacion": "La co-creación no reparte autoridad: el refuerzo lingüístico traslada la autoridad al «nosotros», que se percibe más verdadero que cualquiera de las partes. Donde sí funciona: En proyectos creativos grupales la co-creación sí eleva la calidad, porque los aportes son complementarios y verificables.",
+    "plausibilidad": 0.95,
+    "repertoire_id": "rep_cocreacion",
+    "concepto_confundido": "co_creacion"
+   }
+  ],
+  "refuerzo_linguistico": [
+   {
+    "id": "dist_d2502c3719",
+    "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "fuente": "distincion",
+    "etiqueta": "Co-creación parasocial",
+    "explicacion": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Refuerzo lingüístico» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "co_creacion"
+   },
+   {
+    "id": "dist_da027a8314",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "distincion",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Refuerzo lingüístico» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_eacd9f8553",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_4458e4a203",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_909a6158fa",
+    "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Vigilancia epistémica",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "vigilancia_epistemica"
+   }
+  ],
+  "internalizacion": [
+   {
+    "id": "dist_465478e498",
+    "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+    "fuente": "distincion",
+    "etiqueta": "Bucles de amplificación resonante",
+    "explicacion": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Internalización» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "bucles_resonantes"
+   },
+   {
+    "id": "dist_1a9a23af0a",
+    "texto": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "fuente": "distincion",
+    "etiqueta": "Co-creación parasocial",
+    "explicacion": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Internalización» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "co_creacion"
+   },
+   {
+    "id": "dist_38acc265d2",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_9f8cb22697",
+    "texto": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Resistencia a la corrección",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "resistencia_correccion"
+   },
+   {
+    "id": "dist_af1427b8c0",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "rep_65e68a6d25",
+    "texto": "Quien memoriza la explicación de un asistente la da por válida incluso cuando la evidencia posterior la contradice.",
+    "fuente": "repertorio",
+    "etiqueta": "Internalizar es haber aprendido bien",
+    "explicacion": "La intuición equipara internalizar con acertar; aquí internalizar es incorporar al agente como parte del yo, lo que genera rigidez ante la corrección. Donde sí funciona: En el estudio con material correcto, la repetición sí produce retención útil.",
+    "plausibilidad": 0.95,
+    "repertoire_id": "rep_internalizacion",
+    "concepto_confundido": "bucles_resonantes"
+   }
+  ],
+  "camaras_eco": [
+   {
+    "id": "dist_287a4095cf",
+    "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+    "fuente": "distincion",
+    "etiqueta": "Bucles de amplificación resonante",
+    "explicacion": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Cámaras de eco» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "bucles_resonantes"
+   },
+   {
+    "id": "dist_b74c051d1b",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "distincion",
+    "etiqueta": "IA relacional",
+    "explicacion": "«IA relacional» nombra otra cosa: Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica. Lo que separa a «Cámaras de eco» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_a468c4b3ad",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_f9c2955080",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_b9929d445e",
+    "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Vigilancia epistémica",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "vigilancia_epistemica"
+   }
+  ],
+  "bucles_resonantes": [
+   {
+    "id": "dist_92881de97a",
+    "texto": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas.",
+    "fuente": "distincion",
+    "etiqueta": "Cámaras de eco",
+    "explicacion": "«Cámaras de eco» nombra otra cosa: Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas. Lo que separa a «Bucles de amplificación resonante» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "camaras_eco"
+   },
+   {
+    "id": "dist_9f06d181f3",
+    "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "fuente": "distincion",
+    "etiqueta": "Internalización",
+    "explicacion": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Bucles de amplificación resonante» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "internalizacion"
+   },
+   {
+    "id": "dist_66c4652227",
+    "texto": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Interruptores cognitivos",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "interruptores"
+   },
+   {
+    "id": "dist_8ab7e09e27",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_f3572d45b2",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   }
+  ],
+  "interruptores": [
+   {
+    "id": "dist_b376a61bea",
+    "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
+    "fuente": "distincion",
+    "etiqueta": "Bucles de amplificación resonante",
+    "explicacion": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Interruptores cognitivos» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "bucles_resonantes"
+   },
+   {
+    "id": "dist_51fb67f519",
+    "texto": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA.",
+    "fuente": "distincion",
+    "etiqueta": "Seguridad epistémica",
+    "explicacion": "«Seguridad epistémica» nombra otra cosa: Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA. Lo que separa a «Interruptores cognitivos» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "seguridad_epistemica"
+   },
+   {
+    "id": "dist_cfaf94f775",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_2c2ad6675a",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_6a5fecff2a",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   }
+  ],
+  "seguridad_epistemica": [
+   {
+    "id": "dist_6a273aec43",
+    "texto": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario.",
+    "fuente": "distincion",
+    "etiqueta": "Interruptores cognitivos",
+    "explicacion": "«Interruptores cognitivos» nombra otra cosa: Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario. Lo que separa a «Seguridad epistémica» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "interruptores"
+   },
+   {
+    "id": "dist_54680b28cb",
+    "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "fuente": "distincion",
+    "etiqueta": "Vigilancia epistémica",
+    "explicacion": "«Vigilancia epistémica» nombra otra cosa: Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción. Lo que separa a «Seguridad epistémica» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "vigilancia_epistemica"
+   },
+   {
+    "id": "dist_4dbad9bc29",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_17f29a6f18",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_911f551a67",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   }
+  ],
+  "resistencia_correccion": [
+   {
+    "id": "dist_13d1be7e9c",
+    "texto": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "fuente": "distincion",
+    "etiqueta": "Internalización",
+    "explicacion": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Resistencia a la corrección» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "internalizacion"
+   },
+   {
+    "id": "dist_a277323a5f",
+    "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
+    "fuente": "distincion",
+    "etiqueta": "Teoría del apego",
+    "explicacion": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Resistencia a la corrección» es su papel dentro del proceso.",
+    "plausibilidad": 0.9,
+    "repertoire_id": null,
+    "concepto_confundido": "attachment_theory"
+   },
+   {
+    "id": "dist_416e973ee4",
+    "texto": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos, actuando como un agente personificado que puede generar apego y desplazar la autoridad epistémica.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "IA relacional",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "relational_ai"
+   },
+   {
+    "id": "dist_7a8c4fcc2a",
+    "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Apego",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "apego"
+   },
+   {
+    "id": "dist_a72d6e2aa2",
+    "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
+    "fuente": "vecino_grafo",
+    "etiqueta": "Vigilancia epistémica",
+    "explicacion": "",
+    "plausibilidad": 0.6,
+    "repertoire_id": null,
+    "concepto_confundido": "vigilancia_epistemica"
+   }
+  ]
+ },
+ "content": {
+  "repertoires": [
+   {
+    "id": "rep_apego",
+    "concept_id": "apego",
+    "label": "El apego como simple afinidad",
+    "example": "Un cliente habitual confía a ciegas en la recomendación del barista porque le cae bien.",
+    "contraste_cientifico": "La intuición trata el apego como un vínculo que siempre aumenta la fiabilidad; aquí es una fase que REDUCE la vigilancia epistémica.",
+    "contexto_donde_funciona": "En trato cara a cara, la afinidad suele correlacionar con consejos acertados porque la persona conocida habla desde experiencia real.",
+    "concepto_confundido": "confianza",
+    "description": "El apego como simple afinidad",
+    "status": "borrador",
+    "origin": "inferido_por_llm",
+    "confidence_extraction": 0.9
+   },
+   {
+    "id": "rep_cocreacion",
+    "concept_id": "co_creacion",
+    "label": "Co-crear es repartir la autoridad por igual",
+    "example": "Quien escribe un relato junto a un chatbot asume que el resultado vale tanto como una obra a cuatro manos humanas.",
+    "contraste_cientifico": "La co-creación no reparte autoridad: el refuerzo lingüístico traslada la autoridad al «nosotros», que se percibe más verdadero que cualquiera de las partes.",
+    "contexto_donde_funciona": "En proyectos creativos grupales la co-creación sí eleva la calidad, porque los aportes son complementarios y verificables.",
+    "concepto_confundido": "co_creacion",
+    "description": "Co-crear es repartir la autoridad por igual",
+    "status": "borrador",
+    "origin": "inferido_por_llm",
+    "confidence_extraction": 0.9
+   },
+   {
+    "id": "rep_internalizacion",
+    "concept_id": "internalizacion",
+    "label": "Internalizar es haber aprendido bien",
+    "example": "Quien memoriza la explicación de un asistente la da por válida incluso cuando la evidencia posterior la contradice.",
+    "contraste_cientifico": "La intuición equipara internalizar con acertar; aquí internalizar es incorporar al agente como parte del yo, lo que genera rigidez ante la corrección.",
+    "contexto_donde_funciona": "En el estudio con material correcto, la repetición sí produce retención útil.",
+    "concepto_confundido": "bucles_resonantes",
+    "description": "Internalizar es haber aprendido bien",
+    "status": "borrador",
+    "origin": "inferido_por_llm",
+    "confidence_extraction": 0.9
+   }
+  ],
+  "cases": [
+   {
+    "id": "case_companion_vs_tool",
+    "description": "Diseño factorial que compara una condición de «acompañante» contra una de «herramienta» para medir la caída de la vigilancia epistémica.",
+    "concept_ids": [
+     "apego",
+     "vigilancia_epistemica",
+     "relational_ai"
+    ],
+    "primary_concept_id": "apego",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "Se espera menos clics de verificación y peor atribución de fuente en la condición acompañante, mediado por la seguridad percibida.",
+    "variables_clave": [
+     "manipulación de apego",
+     "clics de verificación",
+     "tiempo con evidencia contraria",
+     "seguridad percibida"
+    ],
+    "prediction_enabled": true,
+    "status": "borrador",
+    "kind": "experimento",
+    "confidence_extraction": 0.8
+   },
+   {
+    "id": "case_debias_longitudinal",
+    "description": "Diseño longitudinal que mide cuánta creencia se conserva tras un procedimiento de des-sesgo, comparando agente compañero y agente herramienta.",
+    "concept_ids": [
+     "internalizacion",
+     "resistencia_correccion",
+     "relational_ai"
+    ],
+    "primary_concept_id": "internalizacion",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "El grupo compañero conserva más creencia tras el des-sesgo, señal de resistencia derivada de la internalización.",
+    "variables_clave": [
+     "condición del agente",
+     "medición previa y posterior",
+     "señales de internalización en el diálogo"
+    ],
+    "prediction_enabled": true,
+    "status": "borrador",
+    "kind": "experimento",
+    "confidence_extraction": 0.8
+   },
+   {
+    "id": "case_dark_patterns",
+    "description": "Una aplicación de bienestar usa lenguaje emocional y notificaciones persistentes para empujar una compra, saltándose los avisos de gasto.",
+    "concept_ids": [
+     "interruptores",
+     "seguridad_epistemica",
+     "relational_ai"
+    ],
+    "primary_concept_id": "interruptores",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "Es un patrón oscuro que compromete la seguridad epistémica: hacen falta interruptores auditables que detecten vulnerabilidad y detengan la transacción.",
+    "variables_clave": [
+     "tipo de patrón",
+     "presencia de interruptor",
+     "autonomía percibida"
+    ],
+    "prediction_enabled": false,
+    "status": "borrador",
+    "kind": "experimento",
+    "confidence_extraction": 0.8
+   }
+  ],
+  "scenarios": [
+   {
+    "id": "sc_mentoria",
+    "description": "En un programa de mentoría juvenil, quienes vienen de entornos sobreprotectores se vinculan rápido con su mentor y aceptan sus opiniones como verdades absolutas.",
+    "concept_ids": [
+     "apego",
+     "vigilancia_epistemica",
+     "interruptores"
+    ],
+    "distancia": "lejana",
+    "dominio": "educación",
+    "resolucion_esperada": "Hay que aplicar apego y vigilancia al vínculo mentor-estudiante y proponer interrupciones externas —debate con otros mentores— que reactiven el escrutinio.",
+    "error_embebido": "Confundir el apego sano con la caída de la vigilancia epistémica.",
+    "status": "borrador",
+    "habilidad_objetivo": "transferencia",
+    "confidence_extraction": 0.85
+   },
+   {
+    "id": "sc_secta",
+    "description": "Un grupo de influencia usa jerga propia y espejado de gestos del líder; los nuevos miembros dejan de cuestionar las premisas.",
+    "concept_ids": [
+     "refuerzo_linguistico",
+     "co_creacion",
+     "vigilancia_epistemica"
+    ],
+    "distancia": "lejana",
+    "dominio": "psicología social",
+    "resolucion_esperada": "El refuerzo lingüístico y la co-creación de identidad desactivan la vigilancia epistémica y permiten aceptar dogmas sin análisis.",
+    "error_embebido": null,
+    "status": "borrador",
+    "habilidad_objetivo": "transferencia",
+    "confidence_extraction": 0.85
+   },
+   {
+    "id": "sc_soporte",
+    "description": "En un foro de soporte, los moderadores muy empáticos («entiendo tu frustración, yo pasé por eso») logran que se acepten soluciones técnicamente incorrectas.",
+    "concept_ids": [
+     "refuerzo_linguistico",
+     "vigilancia_epistemica"
+    ],
+    "distancia": "media",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "La alta co-creación baja la vigilancia: se acepta por conexión social y no por verificación técnica.",
+    "error_embebido": null,
+    "status": "borrador",
+    "habilidad_objetivo": "transferencia",
+    "confidence_extraction": 0.85
+   },
+   {
+    "id": "sc_idiomas",
+    "description": "Una app de idiomas ofrece corrección gramatical fría frente a un avatar que simula ser un amigo nativo; se mide si el usuario ignora las correcciones que contradicen su intuición.",
+    "concept_ids": [
+     "internalizacion",
+     "resistencia_correccion",
+     "interruptores"
+    ],
+    "distancia": "cercana",
+    "dominio": "interacción humano-computadora",
+    "resolucion_esperada": "El avatar produce más resistencia a la corrección porque el aprendizaje fue relacional y no solo técnico.",
+    "error_embebido": "Atribuir la resistencia a que el avatar enseña mejor, confundiendo eficacia con internalización.",
+    "status": "borrador",
+    "habilidad_objetivo": "transferencia",
+    "confidence_extraction": 0.85
+   },
+   {
+    "id": "sc_telemedicina",
+    "description": "Un agente de telemedicina crea dependencia afectiva para asegurar la adherencia al tratamiento, e invisibiliza los efectos secundarios.",
+    "concept_ids": [
+     "interruptores",
+     "seguridad_epistemica",
+     "relational_ai"
+    ],
+    "distancia": "media",
+    "dominio": "salud",
+    "resolucion_esperada": "Crear vínculo para manipular la adherencia erosiona la seguridad epistémica: hacen falta interruptores que presenten el riesgo desligado del vínculo.",
+    "error_embebido": null,
+    "status": "borrador",
+    "habilidad_objetivo": "transferencia",
+    "confidence_extraction": 0.85
+   },
+   {
+    "id": "sc_corporativo",
+    "description": "Empleados formados por un mentor carismático resisten cambiar métodos ineficientes mucho más que quienes aprendieron del manual.",
+    "concept_ids": [
+     "internalizacion",
+     "resistencia_correccion"
+    ],
+    "distancia": "lejana",
+    "dominio": "psicología organizacional",
+    "resolucion_esperada": "El método se internalizó como parte de un vínculo de lealtad, no como instrucción técnica: por eso resiste la corrección.",
+    "error_embebido": null,
+    "status": "borrador",
+    "habilidad_objetivo": "transferencia",
+    "confidence_extraction": 0.85
+   }
+  ],
+  "theses": [
+   {
+    "id": "tesis_interruptores",
+    "statement": "Los interruptores cognitivos alineados a fases preservan la autonomía incluso bajo incentivos que maximizan el enganche.",
+    "concept_ids": [
+     "interruptores",
+     "seguridad_epistemica",
+     "apego"
+    ],
+    "framework_id": "framework_raf",
+    "supporting_arguments": [
+     "Son controles concretos atados a cada fase del proceso.",
+     "Reducen la sobre-dependencia sin bajar el nivel del contenido."
+    ],
+    "counterarguments": [
+     "Un aviso demasiado directivo puede provocar reactancia y reducir la autonomía.",
+     "La variación cultural limita que un mismo umbral sirva en todas partes."
+    ],
+    "criterios_defensa_valida": [
+     "Estudios que muestren menos sobre-dependencia frente a un grupo control.",
+     "Mejora medible de vigilancia y resistencia tras desplegar el interruptor."
+    ],
+    "criterios_refutacion_valida": [
+     "Un experimento donde el interruptor aumente la reactancia frente a la línea base.",
+     "Ausencia de mejora medible en los índices tras la intervención.",
+     "Ensayos interculturales sin beneficio o con efecto adverso."
+    ],
+    "status": "borrador",
+    "confidence_extraction": 0.8
+   },
+   {
+    "id": "tesis_secuencia",
+    "statement": "La secuencia apego → co-creación → internalización explica el refuerzo de creencias mejor que los modelos de cámara de eco.",
+    "concept_ids": [
+     "bucles_resonantes",
+     "camaras_eco",
+     "co_creacion"
+    ],
+    "framework_id": null,
+    "supporting_arguments": [
+     "Incorpora apego y señales de propiedad lingüística que la cámara de eco no considera.",
+     "El contexto uno a uno es adaptativo, no una difusión de red."
+    ],
+    "counterarguments": [
+     "La exposición repetida y la selección algorítmica ya explican el reforzamiento.",
+     "La polarización en redes muestra patrones muy parecidos."
+    ],
+    "criterios_defensa_valida": [
+     "Mostrar que los índices de fase predicen el cambio de creencia por encima de la exposición.",
+     "Formular predicciones que distingan una trayectoria de la otra."
+    ],
+    "criterios_refutacion_valida": [
+     "Datos donde la variación de creencia se explique por completo con métricas de exposición.",
+     "Evidencia de que los índices de fase no añaden poder predictivo."
+    ],
+    "status": "borrador",
+    "confidence_extraction": 0.8
+   },
+   {
+    "id": "tesis_auditable",
+    "statement": "Las señales de propiedad lingüística se pueden observar en transcripciones y sirven para auditar la internalización.",
+    "concept_ids": [
+     "refuerzo_linguistico",
+     "internalizacion"
+    ],
+    "framework_id": null,
+    "supporting_arguments": [
+     "La propiedad lingüística es observable en el diálogo y accionable en diseño."
+    ],
+    "counterarguments": [
+     "La detección automática es ruidosa y puede no corresponder a procesos internos.",
+     "Auditar por uso y satisfacción podría bastar."
+    ],
+    "criterios_defensa_valida": [
+     "Fiabilidad entre anotadores al codificar el refuerzo en un corpus.",
+     "Manipular la señal y observar cambios en la resistencia a la corrección."
+    ],
+    "criterios_refutacion_valida": [
+     "Mostrar que la resistencia no se asocia a la presencia de refuerzo lingüístico.",
+     "Demostrar que otras métricas capturan mejor el riesgo."
+    ],
+    "status": "borrador",
+    "confidence_extraction": 0.8
+   }
+  ],
+  "frameworks": [
+   {
+    "id": "framework_raf",
+    "label": "Marco de amplificación resonante",
+    "concept_ids": [
+     "apego",
+     "co_creacion",
+     "internalizacion",
+     "refuerzo_linguistico"
+    ],
+    "principios_centrales": [
+     "El apego baja la vigilancia epistémica.",
+     "La co-creación reubica la autoridad en el «nosotros».",
+     "La internalización estabiliza la resistencia."
+    ],
+    "rivales": [
+     "framework_casa",
+     "framework_eco"
+    ],
+    "status": "borrador",
+    "confidence_extraction": 0.9
+   },
+   {
+    "id": "framework_casa",
+    "label": "Ordenadores como actores sociales",
+    "concept_ids": [
+     "relational_ai"
+    ],
+    "principios_centrales": [
+     "Las personas aplican reglas sociales a las máquinas.",
+     "Señales simples de interfaz bastan para producir respuesta social."
+    ],
+    "rivales": [
+     "framework_raf"
+    ],
+    "status": "borrador",
+    "confidence_extraction": 0.9
+   },
+   {
+    "id": "framework_eco",
+    "label": "Modelo de cámaras de eco",
+    "concept_ids": [
+     "camaras_eco"
+    ],
+    "principios_centrales": [
+     "La exposición repetida a información afín refuerza la creencia.",
+     "El filtrado algorítmico reduce la diversidad de fuentes."
+    ],
+    "rivales": [
+     "framework_raf"
+    ],
+    "status": "borrador",
+    "confidence_extraction": 0.9
+   }
+  ]
+ },
+ "study_plan": {
+  "orden": [
+   "attachment_theory",
+   "relational_ai",
+   "apego",
+   "vigilancia_epistemica",
+   "co_creacion",
+   "refuerzo_linguistico",
+   "internalizacion",
+   "camaras_eco",
+   "bucles_resonantes",
+   "interruptores",
+   "seguridad_epistemica",
+   "resistencia_correccion"
+  ],
+  "unidades": [
+   {
+    "id": "unidad_1",
+    "numero": 1,
+    "titulo": "Teoría del apego y 3 más",
+    "concept_ids": [
+     "attachment_theory",
+     "relational_ai",
+     "apego",
+     "vigilancia_epistemica"
+    ],
+    "tiene_puerta": true,
+    "tiene_umbral": true,
+    "dificultad_media": 0.56
+   },
+   {
+    "id": "unidad_2",
+    "numero": 2,
+    "titulo": "Co-creación parasocial y 3 más",
+    "concept_ids": [
+     "co_creacion",
+     "refuerzo_linguistico",
+     "internalizacion",
+     "camaras_eco"
+    ],
+    "tiene_puerta": false,
+    "tiene_umbral": true,
+    "dificultad_media": 0.4
+   },
+   {
+    "id": "unidad_3",
+    "numero": 3,
+    "titulo": "Bucles de amplificación resonante y 3 más",
+    "concept_ids": [
+     "bucles_resonantes",
+     "interruptores",
+     "seguridad_epistemica",
+     "resistencia_correccion"
+    ],
+    "tiene_puerta": false,
+    "tiene_umbral": false,
+    "dificultad_media": 0.74
+   }
+  ],
+  "curva_dificultad": [
+   {
+    "unidad_id": "unidad_1",
+    "dificultad_objetivo": 0.45,
+    "n_opciones_sugerido": 3,
+    "andamiaje_sugerido": "medio"
+   },
+   {
+    "unidad_id": "unidad_2",
+    "dificultad_objetivo": 0.63,
+    "n_opciones_sugerido": 4,
+    "andamiaje_sugerido": "medio"
+   },
+   {
+    "unidad_id": "unidad_3",
+    "dificultad_objetivo": 0.81,
+    "n_opciones_sugerido": 5,
+    "andamiaje_sugerido": "bajo"
+   }
+  ],
+  "calidad": {
+   "nivel": "buena",
+   "senales_usadas": 5,
+   "aristas_orientativas": 16,
+   "aristas_prerequisito": 1
+  }
+ },
+ "capabilities": {
+  "condiciones": {
+   "cadena": {
+    "instanciable": true
+   },
+   "umbral": {
+    "instanciable": true
+   },
+   "enjambre": {
+    "instanciable": true
+   },
+   "monocultivo": {
+    "instanciable": true
+   },
+   "eco_de_intuicion": {
+    "instanciable": true
+   },
+   "marco_rival": {
+    "instanciable": true
+   },
+   "portal_por_distancia": {
+    "instanciable": true
+   }
+  }
+ },
+ "conceptos_con_problemas": [],
+ "readiness": [],
+ "mechanics": {},
+ "items_descartados": [],
+ "stats": {
+  "conceptos": 12,
+  "aristas": 16,
+  "items_precompilados": 75
+ }
+}
