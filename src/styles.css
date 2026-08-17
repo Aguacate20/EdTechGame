@@ -261,103 +261,193 @@ label.campo > span { display: block; margin-bottom: 5px; }
 
 .aviso { border: 1px solid #6d3430; background: rgba(168,68,60,.09); border-radius: var(--r); padding: 12px 14px; font-size: 14px; }
 
-/* ================= v3.4 · escenario superior ================= */
 
-.escenario {
-  border: 1px solid var(--tinta-borde);
-  border-radius: var(--r);
+/* ================= v4 · el carril ================= */
+
+.carril {
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
   background:
-    radial-gradient(700px 220px at 50% 0%, rgba(255,255,255,.045), transparent 70%),
+    radial-gradient(800px 200px at 12% 0%, rgba(255,255,255,.05), transparent 70%),
     linear-gradient(180deg, rgba(255,255,255,.02), transparent);
-  padding: 16px 18px 14px;
+  padding: 12px 14px; display: flex; gap: 16px; align-items: stretch;
 }
-
-.frente { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; align-items: flex-end; }
-
-.enemigo {
-  position: relative;
-  background: transparent; border: 1px solid transparent; border-radius: var(--r);
-  color: var(--papel); padding: 8px 12px 10px; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  width: 128px; transition: border-color .15s, transform .12s, opacity .3s;
+.carril-jugador { display: flex; gap: 10px; align-items: center; flex: 0 0 auto; padding-right: 14px;
+  border-right: 1px solid var(--tinta-borde); }
+.carril-pista { display: flex; flex: 1; gap: 4px; min-height: 116px; overflow-x: auto; }
+.casilla {
+  flex: 1 0 82px; min-width: 82px; position: relative;
+  border-left: 1px dashed rgba(255,255,255,.07);
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px;
+  padding-bottom: 4px;
 }
-.enemigo:hover:not(:disabled) { border-color: var(--niebla); transform: translateY(-2px); }
-.enemigo.apuntado { border-color: var(--oxido); background: rgba(168,68,60,.08); }
-.enemigo.caido { opacity: .22; filter: grayscale(1); pointer-events: none; }
-.enemigo:disabled { cursor: default; }
-.enemigo:focus-visible { outline: 2px solid var(--laton); outline-offset: 2px; }
-.enemigo .nom { font-size: 13px; font-weight: 600; }
-.enemigo .amenaza { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: #d99a93; }
-.enemigo .debil { font-family: var(--mono); font-size: 9px; color: var(--niebla); }
+.casilla .numero { position: absolute; top: 2px; left: 4px; font-family: var(--mono); font-size: 9px; color: #3a4657; }
 
-.vida { width: 92px; height: 4px; background: #0d131b; border-radius: 99px; overflow: hidden; margin-top: 4px; }
-.vida span { display: block; height: 100%; background: var(--oxido); transition: width .4s ease; }
-.vida.ancha { width: 180px; height: 6px; }
-.vida.ancha span { background: linear-gradient(90deg, #6fb39c, var(--verdigris)); }
+.bicho { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; color: var(--papel); }
+.bicho .nom { font-size: 10.5px; text-align: center; line-height: 1.15; max-width: 78px; }
+.bicho .rasgo { font-family: var(--mono); font-size: 8.5px; color: var(--niebla); }
+.bicho .fase { font-family: var(--mono); font-size: 8.5px; color: var(--laton); text-align: center; max-width: 78px; }
+.bicho.en-mira { color: #ffd9d4; }
+.bicho.en-mira::after {
+  content: ''; position: absolute; inset: -5px -3px; border: 1px solid var(--oxido);
+  border-radius: 3px; opacity: .8;
+}
+.bicho-herido { animation: sacudir .3s ease; }
+.bicho-critico { animation: sacudir .3s ease, destello .5s ease; }
+.bicho-golpea { animation: embestir .38s ease; }
+.bicho-avanza { animation: pasoAdelante .35s ease; }
+.bicho-retrocede { animation: pasoAtras .45s ease; }
+.bicho-cae { animation: caer .5s forwards ease-in; }
 
-.fig { color: var(--papel); }
-.fig-herido { animation: sacudir .34s ease; }
-.fig-critico { animation: sacudir .34s ease, destello .5s ease; }
-.fig-golpea { animation: embestir .4s ease; }
-.fig-cae { animation: caer .6s forwards ease-in; }
-.fig-estabilizado { animation: asentar .6s ease; }
-
-@keyframes sacudir { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 60%{transform:translateX(5px)} }
-@keyframes embestir { 0%,100%{transform:translateY(0)} 45%{transform:translateY(10px) scale(1.06)} }
+@keyframes sacudir { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 60%{transform:translateX(4px)} }
+@keyframes embestir { 0%,100%{transform:translateX(0)} 45%{transform:translateX(-9px) scale(1.06)} }
 @keyframes destello { 0%{filter:brightness(3)} 100%{filter:brightness(1)} }
-@keyframes caer { to { transform: translateY(16px) rotate(9deg); opacity: 0; } }
-@keyframes asentar { 0%{opacity:.35; transform:scale(1.15)} 100%{opacity:1; transform:scale(1)} }
+@keyframes pasoAdelante { 0%{transform:translateX(14px); opacity:.6} 100%{transform:translateX(0); opacity:1} }
+@keyframes pasoAtras { 0%{transform:translateX(-14px)} 100%{transform:translateX(0)} }
+@keyframes caer { to { transform: translateY(12px) rotate(10deg); opacity: 0; } }
 
 .copista { color: var(--verdigris); }
-.copista-ataca { animation: embestir .4s ease reverse; }
-.copista-herido { animation: sacudir .34s ease; }
-.copista-cura { animation: destello .6s ease; }
-.copista-lee { opacity: .75; }
+.copista-afirma { animation: embestir .38s ease reverse; }
+.copista-herido { animation: sacudir .3s ease; }
+
+.vida { width: 74px; height: 3px; background: #0d131b; border-radius: 99px; overflow: hidden; }
+.vida span { display: block; height: 100%; background: var(--oxido); transition: width .35s ease; }
+.vida.ancha { width: 150px; height: 6px; }
+.vida.ancha span { background: linear-gradient(90deg, #6fb39c, var(--verdigris)); }
 
 .flotante {
-  position: absolute; top: -2px; right: 8px;
-  font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--oxido);
-  animation: subir .9s forwards ease-out; pointer-events: none;
+  position: absolute; top: -14px; right: -2px; font-family: var(--mono); font-size: 15px;
+  font-weight: 700; color: var(--laton); animation: subir 1s forwards ease-out; pointer-events: none;
 }
-.flotante.critico { font-size: 23px; color: var(--laton); }
-@keyframes subir { 0%{opacity:0; transform:translateY(8px)} 25%{opacity:1} 100%{opacity:0; transform:translateY(-26px)} }
+@keyframes subir { 0%{opacity:0; transform:translateY(6px)} 25%{opacity:1} 100%{opacity:0; transform:translateY(-22px)} }
 
-.linea-frente { height: 1px; background: linear-gradient(90deg, transparent, var(--tinta-borde), transparent); margin: 12px 0; }
+/* ================= v4 · el lienzo y las herramientas ================= */
 
-.jugador { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.veredicto-golpe { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin-left: auto; }
-.veredicto-golpe.limpio, .veredicto-golpe.estabilizado { color: var(--verdigris); }
-.veredicto-golpe.critico_rareza, .veredicto-golpe.critico_apuesta { color: var(--laton); }
-.veredicto-golpe.fallido, .veredicto-golpe.resistido, .veredicto-golpe.torpe, .veredicto-golpe.pausa { color: var(--oxido); }
+.lienzo {
+  position: relative; min-height: 340px; border: 1px solid var(--tinta-borde);
+  border-radius: var(--r); overflow: hidden;
+  background:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px) 0 0 / 100% 26px,
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px) 0 0 / 26px 100%,
+    linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+}
+.pista-lienzo {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  margin: 0; padding: 0 40px; text-align: center; color: var(--niebla); font-size: 14px;
+  pointer-events: none;
+}
+.lienzo svg.trazos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
-.parte { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.naipe {
+  position: relative; text-align: left; cursor: pointer; border-radius: var(--r);
+  border: 1px solid var(--papel-som); background: var(--papel); color: #1b2430;
+  padding: 9px 10px 9px 13px; box-shadow: var(--sombra);
+  display: flex; flex-direction: column; gap: 3px; overflow: hidden;
+  transition: transform .12s, box-shadow .12s;
+}
+.naipe:hover { transform: translateY(-2px); }
+.naipe.activa { outline: 2px solid var(--laton); outline-offset: 2px; }
+.naipe.marcada { outline: 2px solid var(--verdigris); outline-offset: 2px; }
+.naipe .tt { font-family: var(--mono); font-size: 8.5px; letter-spacing: .13em; text-transform: uppercase; color: #6b7280; }
+.naipe .nom { font-size: 13.5px; font-weight: 600; line-height: 1.18; }
+.naipe .cuerpo { font-size: 11.5px; line-height: 1.35; color: #333b47;
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.naipe .marca { font-family: var(--mono); font-size: 8.5px; letter-spacing: .1em; color: #8a6a25; }
+.naipe .borde { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.borde-et { background: #5a6b7d; }
+.borde-de { background: #8a7fa8; }
+.borde-co { background: var(--verdigris); }
+.borde-ca { background: #7a6fb0; }
+.borde-te { background: #b07f4a; }
+.borde-ma { background: #4a7fb0; }
+.borde-in { background: #b9ad92; }
+.borde-su { background: #9aa17d; }
+.naipe-definicion .nom { font-style: italic; color: #4a5262; font-size: 12px; }
+.naipe-intuicion { border-style: dashed; background: #e4dece; }
+
+.naipe.en-tablero {
+  position: absolute; transform: translate(-50%, -50%); width: 152px;
+  z-index: 2; cursor: grab;
+}
+.naipe.en-tablero:hover { transform: translate(-50%, -50%) translateY(-2px); }
+.naipe.en-tablero .orden {
+  position: absolute; top: -8px; right: -8px; width: 19px; height: 19px; border-radius: 50%;
+  background: var(--verdigris); color: #06110d; font-family: var(--mono); font-size: 11px;
+  font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 3;
+}
+
+.mano-naipes { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 8px; }
+
+.herramientas { display: flex; gap: 6px; flex-wrap: wrap; }
+.herr {
+  position: relative; border: 1px solid var(--tinta-borde); background: var(--tinta-alta);
+  color: var(--papel); border-radius: var(--r); padding: 7px 12px 7px 10px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: border-color .15s, background .15s;
+}
+.herr:hover:not(:disabled) { border-color: var(--verdigris); }
+.herr:disabled { opacity: .32; cursor: not-allowed; }
+.herr.activa { border-color: var(--laton); background: rgba(201,162,39,.12); }
+.herr .glifo { font-size: 19px; line-height: 1; color: var(--laton); }
+.herr .nom { font-size: 12.5px; }
+.herr .cuantas { font-family: var(--mono); font-size: 10px; color: var(--niebla); }
+.herr:focus-visible { outline: 2px solid var(--laton); outline-offset: 2px; }
+
+.constructor {
+  border: 1px solid #6b5a1c; border-radius: var(--r); padding: 12px 14px;
+  background: rgba(201,162,39,.06); display: flex; flex-direction: column; gap: 8px;
+}
+
+.trazo-chip {
+  font-family: var(--mono); font-size: 11px; border: 1px solid var(--tinta-borde);
+  background: transparent; color: var(--papel); border-radius: 99px; padding: 3px 10px;
+  cursor: pointer;
+}
+.trazo-chip:hover { border-color: var(--oxido); }
+
+.previa { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+
+.resolucion { display: flex; flex-direction: column; gap: 8px; }
+.cuenta { display: flex; align-items: baseline; gap: 8px; font-family: var(--mono); }
+.cuenta .fichas { font-size: 26px; color: #8fb8d6; }
+.cuenta .mult { font-size: 26px; color: var(--laton); }
+.cuenta .por { font-size: 15px; color: var(--niebla); }
+.cuenta .total { font-size: 38px; font-weight: 700; color: var(--papel);
+  animation: estampar .35s cubic-bezier(.2,1.4,.4,1); }
+
+.pozo { border: 1px solid #6b5a1c; border-radius: var(--r); padding: 12px 14px;
+  background: rgba(201,162,39,.06); display: flex; flex-direction: column; gap: 8px; }
+
+.tabla-jugadas { border: 1px solid var(--tinta-borde); border-radius: var(--r); padding: 10px 14px; }
+.tabla-jugadas summary { cursor: pointer; font-family: var(--mono); font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--niebla); }
+.tabla-jugadas[open] summary { margin-bottom: 8px; }
+
+.parte { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
 .parte li { font-size: 12.5px; color: var(--niebla); }
 .parte .dato { color: var(--oxido); }
 
 @media (prefers-reduced-motion: reduce) {
-  .fig-herido, .fig-critico, .fig-golpea, .fig-cae, .fig-estabilizado,
-  .copista-ataca, .copista-herido, .copista-cura, .flotante { animation: none; }
-  .fig-cae { opacity: 0; }
+  .bicho-herido, .bicho-critico, .bicho-golpea, .bicho-avanza, .bicho-retrocede, .bicho-cae,
+  .copista-afirma, .copista-herido, .flotante, .cuenta .total { animation: none; }
+  .naipe:hover { transform: none; }
+  .naipe.en-tablero:hover { transform: translate(-50%, -50%); }
 }
 
-/* ================= v3.4 · grafo de rutas ================= */
+/* ================= v4 · grafo y sellos (reutilizados) ================= */
 
 .grafo { position: relative; overflow-x: auto; padding: 8px 0 4px; }
 .grafo svg.hilos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .columnas { display: flex; gap: 26px; position: relative; min-width: 660px; }
 .columna { display: flex; flex-direction: column; gap: 14px; justify-content: center; flex: 1; }
 
-.nodo-g {
-  position: relative; text-align: left; cursor: pointer;
+.nodo-g { position: relative; text-align: left; cursor: pointer;
   border: 1px solid var(--tinta-borde); border-radius: var(--r);
   background: var(--tinta-alta); padding: 10px 12px;
   display: flex; flex-direction: column; gap: 2px;
-  transition: border-color .15s, transform .1s, opacity .2s;
-}
+  transition: border-color .15s, transform .1s, opacity .2s; }
 .nodo-g:hover:not(:disabled) { border-color: var(--verdigris); transform: translateY(-2px); }
 .nodo-g:disabled { opacity: .3; cursor: default; }
 .nodo-g.visitado { border-style: dashed; opacity: .45; }
-.nodo-g.actual { border-color: var(--laton); box-shadow: 0 0 0 1px rgba(201,162,39,.3); }
+.nodo-g.actual { border-color: var(--laton); }
 .nodo-g:focus-visible { outline: 2px solid var(--laton); outline-offset: 2px; }
 .nodo-g .tipo { font-family: var(--mono); font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: var(--niebla); }
 .nodo-g .nom { font-size: 14px; font-weight: 600; }
@@ -369,21 +459,13 @@ label.campo > span { display: block; margin-bottom: 5px; }
 .nodo-g.ruta-descanso { border-left: 3px solid var(--tinta-borde); }
 
 .sellos { display: flex; gap: 6px; flex-wrap: wrap; }
-.sello-unidad {
-  font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
-  border: 1px solid var(--tinta-borde); border-radius: 99px; padding: 3px 10px; color: var(--niebla);
-}
+.sello-unidad { font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+  border: 1px solid var(--tinta-borde); border-radius: 99px; padding: 3px 10px; color: var(--niebla); }
 .sello-unidad.puesto { border-color: #3f7566; color: #85c4b1; background: rgba(78,140,122,.12); }
 
-.objetivo-card {
-  text-align: left; cursor: pointer; border: 1px solid var(--tinta-borde);
+.objetivo-card { text-align: left; cursor: pointer; border: 1px solid var(--tinta-borde);
   background: var(--tinta-alta); border-radius: var(--r); padding: 16px;
   display: flex; flex-direction: column; gap: 6px; flex: 1 1 260px;
-  transition: border-color .15s, transform .1s;
-}
+  transition: border-color .15s, transform .1s; }
 .objetivo-card:hover { border-color: var(--verdigris); transform: translateY(-2px); }
-.objetivo-card:focus-visible { outline: 2px solid var(--laton); outline-offset: 2px; }
 .objetivo-card .nom { font-size: 18px; font-weight: 600; }
-
-.ficha.intuicion { background: #e2dccd; border-style: dashed; border-color: #b9ad92; }
-.ficha.intuicion .tt { color: #8a6a25; }

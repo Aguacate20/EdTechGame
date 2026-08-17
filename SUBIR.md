@@ -1,16 +1,17 @@
-# Subir v3.4 al repositorio
+# Subir v4.0 al repositorio
 
-Ruta del zip descomprimido (ajusta si Windows le añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v3.4/patch34/edtech-game`
+Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
+`C:/Users/sebas/Downloads/edtech_v4/patch40/edtech-game`
 
-v3.4 sustituye ficheros de v3.3 y **borra dos que ya no existen**
-(`src/engine/run.ts` pasó a `route.ts`), así que conviene limpiar `src/` antes de copiar.
+v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
+`boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
+`src/` antes de copiar.
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v3.4/patch34/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v4/patch40/edtech-game"
 
-# 1. comprobar que la fuente existe ANTES de tocar nada
+# 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
 
 # 2. limpiar solo lo que se reemplaza
@@ -19,22 +20,26 @@ rm -rf src scripts docs public
 # 3. copiar
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 26
+# 4. comprobar: debe decir 25
 find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v3.4: escenario de combate, frentes de enemigos y grafo de rutas
+git commit -m "v4.0: roguelike de diagramas con tablero libre y herramientas cognitivas
 
-- escenario superior: enemigos como marginalia en tinta, vocabulario de golpes
-  (limpio, critico, resistido, torpe, estabilizado) y el dano solo visible al resolver
-- frentes de 2 a 4 enemigos con amenazas propias; elegir objetivo decide de que pool
-  sale el embate, y esa eleccion queda registrada como senal de autorregulacion
-- grafo de rutas ramificado 1-2-3-2-1 con rutas etiquetadas y jefe final
-- planes de expedicion (I1 PLANEAR) que reparten mazo inicial e instrumento
-- cartas de Intuicion desde repertoires: se retiran reconociendo su contexto
-- sellado de unidades y edicion critica exportable al completar el grafo
-- npm run smoke ahora mide tambien balance: turnos por frente y lucidez restante"
+Cambia el atomo del juego: ya no hay enunciado con opciones, hay materiales y
+herramientas. El jugador compone un diagrama y el sistema lo evalua en cascada.
+
+- 9 herramientas cognitivas (identidad, flecha, campo, jerarquia, eje, secuencia,
+  ancla, balanza, tachon), cada una emitiendo una senal distinta
+- piezas con roles en vez de tipos rigidos: un criterio puede ser nodo suelto
+- titulo y definicion en cartas separadas; al emparejarlas se fusionan
+- cartas apocrifas desde la vecindad del grafo: hay que notarlas, nadie pregunta
+- combos emergentes por piezas compartidas entre trazos
+- lentes como jokers: la build es un plan de lectura
+- carril horizontal con 11 enemigos y presupuesto de amenaza por oleada
+- el pozo: quemar vs cambiar, dos gestos con senales distintas
+- npm run smoke verifica 5 criterios, incluidos combos y cobertura de herramientas"
 
 git push origin main
 ```
@@ -44,14 +49,5 @@ en cada push, así que un error de tipos detiene el despliegue antes de publicar
 
 ## Vercel
 
-Ya está en el repo como `vercel.json`. Si el proyecto sigue teniendo un *Build Command*
-manual en el dashboard, bórralo: los overrides del panel pisan al fichero.
-
-- Framework preset: **Vite**
-- Build command: `npm run build`
-- Output directory: `dist`
-
-## Recordatorio
-
-HuggingFace Space y GitHub son remotes distintos y necesitan `push` por separado.
-Este repositorio es solo GitHub.
+`vercel.json` ya viene en el repo con el preset Vite. Si el panel tiene un
+*Build Command* manual, bórralo: los overrides del dashboard pisan al fichero.

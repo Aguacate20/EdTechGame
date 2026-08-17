@@ -1,10 +1,11 @@
-# El Archivo Infinito — v3.4
+# El Archivo Infinito — v4.0
 
-Roguelike deckbuilder cognitivo. Consume el `bundle.json` del extractor como materia
-prima y lo convierte en una expedición jugable: rutas, encuentros, mazo de verbos,
-apuestas de confianza y un Atlas que persiste entre partidas.
+Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
+Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
+jugador afirma cosas sobre el texto, y lo que afirma le hace daño a lo que se le acerca.
 
-Sustituye al explorador de mazmorras anterior. El repositorio se reconstruye desde cero.
+v4 cambia el átomo del juego. En v3 había un enunciado y opciones (un quiz con capas).
+Ahora el átomo es **componer un diagrama y que el sistema lo evalúe en cascada**.
 
 ---
 
@@ -13,90 +14,127 @@ Sustituye al explorador de mazmorras anterior. El repositorio se reconstruye des
 ```bash
 npm install
 npm run dev          # http://localhost:5173
+npm run smoke        # simula 12 expediciones sin navegador
+npm run build
 ```
 
-En la pantalla de carga hay tres caminos:
-
-1. **Traer del backend** — pega la URL del extractor y tu ID de estudiante.
-   Si el backend bloquea al navegador por CORS, usa la opción 2.
-2. **Subir `bundle.json` a mano** — el archivo se lee en el navegador, no se sube a ningún lado.
-3. **Bundle de muestra** — 12 conceptos, 16 aristas, 75 ítems. Sirve para jugar sin backend.
-
-Antes de entrar, el juego muestra **qué sostiene ese texto y qué no**. Esa tabla no es
-decorativa: si una capa falta, el encuentro que dependía de ella no aparece en la rotación.
-
-```bash
-npm run smoke        # simula 15 expediciones sin navegador
-npm run build        # producción -> dist/
-npm run demo:bundle  # regenera public/bundles/demo.json
-```
+Tres formas de cargar contenido: traerlo del backend del extractor, subir el
+`bundle.json` a mano, o el bundle de muestra incluido. Antes de entrar, el juego
+muestra qué sostiene ese texto y qué no.
 
 ---
 
 ## Cómo se juega
 
-Cada expedición son cuatro pantallas que se repiten.
+**Arriba, el carril.** Tu personaje a la izquierda; los enemigos entran por la derecha
+y avanzan una casilla (o dos, o saltan) cada vez que tú afirmas algo. Cuando llegan a
+su alcance, golpean.
 
-**El plan.** Antes de entrar eliges qué vienes a hacer con el texto: consolidar el
-vocabulario, trazar el mapa o salir del texto. Cada plan te da dos verbos y un
-instrumento distintos. Tu mazo decide qué puedes demostrar, así que elegir plan y
-construir mazo son la misma decisión.
+**Abajo, el tablero libre.** Arrastras piezas y las relacionas con herramientas.
+Pulsas *Afirmar el diagrama* y todo se evalúa contra el grafo del texto:
+`fichas × multiplicador = daño`. Un diagrama sencillo hace 20; uno bien articulado, 400.
 
-**El grafo.** El mapa se ramifica: 1-2-3-2-1 nodos por acto, con rutas etiquetadas por
-lo que van a exigir (Consolidar, Elaborar, Umbral, Portal) y un jefe al final. Solo
-puedes avanzar por las aristas que salen del nodo donde estás.
+El daño **nunca** se conoce antes de resolver, y el alcance depende de cuántas
+afirmaciones sostengas: la complejidad de lo que dices es su alcance en el carril.
 
-**El frente.** Arriba, dos a cuatro enemigos y tu personaje. Abajo, el mazo. Eliges a
-quién atacas *y esa elección decide de qué pool sale la pregunta*: atacar a El Espejo es
-decidir hacer trabajo de relación; atacar a El Vacío es decidir recuperar. Juegas un
-verbo, respondes, declaras tu apuesta y atacas. Después el frente responde: cada enemigo
-pega y aplica su amenaza.
+### Las nueve herramientas cognitivas
 
-**El Atlas.** Lo que sostuviste queda dibujado. Cuando todos los conceptos de una unidad
-tienen evidencia, la unidad queda sellada. Sellar el texto completo desbloquea la
-edición crítica: tu mapa conceptual exportado con la evidencia y las páginas de origen.
+| | Herramienta | Afirma | Señal |
+|---|---|---|---|
+| `=` | Identidad | que este nombre y esta descripción son lo mismo | recuperación |
+| `→` | Flecha | que existe este vínculo, con este tipo y esta dirección | relación |
+| `◯` | Campo semántico | que todo lo encerrado pertenece a la misma zona | estructura |
+| `⊃` | Jerarquía | que el primero es la categoría que contiene al segundo | estructura |
+| `⊢` | Eje | que todo esto cae en el mismo extremo de un eje del dominio | relación |
+| `⇢` | Secuencia | que esto ocurre en este orden, cada paso llevando al siguiente | estructura |
+| `⌖` | Ancla | que estos conceptos son los que operan en este caso | transferencia |
+| `⚖` | Balanza | que esto es lo que obligaría a revisar la tesis | producción |
+| `✗` | Tachón | que esta carta es una falsificación | discriminación |
 
-### Los enemigos son marginalia
+Las herramientas son **el mazo del jugador**: se acumulan, se gastan por turno y son
+lo que define tu estilo. El contenido lo reparte el currículo.
 
-| Enemigo | Pide | Amenaza |
+### Las piezas no tienen tipo rígido
+
+Cada carta declara **roles**, no una clase cerrada. Un criterio de refutación puede
+usarse como nodo suelto de una flecha; un marco teórico puede usarse como campo
+semántico. La flexibilidad no viene de tener muchos tipos, viene de que cada pieza
+diga qué papeles admite.
+
+Y el título y la definición **viajan en cartas separadas**. Emparejarlas con la
+Identidad es la jugada más sencilla del juego y la puerta de entrada del novato — y
+cuando aciertas, las dos cartas se **fusionan** en un concepto completo para el resto
+de la expedición. El mazo mejora al aprender.
+
+Entre las piezas se cuelan **apócrifas**: el título de un concepto con la definición de
+otro, sacadas del propio grafo de vecindad. Nadie te pregunta si son falsas: tienes que
+notarlo. Si la usas como nodo, el diagrama entero se derrumba.
+
+### Los combos son la adicción
+
+Salen de que varios trazos **compartan piezas**, no de una lista de recetas:
+
+- **Articulación** — una pieza sostiene tres afirmaciones a la vez
+- **Cierre** — un campo que además está tejido por dentro con flechas
+- **Doble registro** — un concepto identificado *y* enlazado en el mismo diagrama
+- **Constelación** — cuatro afirmaciones sostenidas sin un solo error
+- **Refutación completa** — balanza más el campo del marco al que responde
+- **Traducción** — un caso anclado cuyos conceptos además están definidos
+- **Coherencia** — todo el diagrama del mismo tipo de vínculo
+
+### El pozo: dos gestos, cuatro resultados, dos señales
+
+| | La carta era falsa | La carta era legítima |
 |---|---|---|
-| El Vacío | familia A | Olvido: se lleva una carta de tu mano |
-| El Confuso | familia B | Superficie: retira las definiciones de apoyo |
-| El Espejo | familia C | Niebla: vela el contexto del próximo embate |
-| El Eco | familias A/B | Susurro: te deja una Intuición en el mazo |
-| El Enjambre | familias A/B | Ruido: robas una carta menos |
-| El Caso | familias B/E | Superficie, y resiste el trabajo de recuperación |
-| El Arquitecto | familias B/C | Insistencia: se envalentona cada turno |
-| El Marco (jefe) | familia F | Escudo: solo lo hiere la refutación |
+| **Quemar** «esto es falso» | acierto de discriminación | destruyes material bueno |
+| **Cambiar** «es cierto, aquí no me sirve» | no la notaste | gestión de mano (regulación) |
 
-Un crítico desarma al enemigo y le hace perder su turno: jugar bien reduce el daño que
-recibes, sin que nada de eso toque la corrección.
+Es la fuente de señal más barata y más rica del juego: el mismo botón dice cosas
+distintas de ti según lo que estabas tirando.
 
-### La carta de Intuición
+### Las lentes dicen qué buscar en el texto
 
-Cuando El Eco te golpea, mete una carta de Intuición en tu mazo. Estorba, ocupa mano y no
-responde nada. No se descarta ni se compra: se retira jugándola y **reconociendo el
-contexto donde esa intuición sí funcionaba** — que es literalmente el campo
-`contexto_donde_funciona` de cada repertorio. Es la carta maldita del género, pero
-honesta: no te castiga por pensar mal, te deja un asunto pendiente que se cierra
-admitiendo dónde tenías razón.
+Son los jokers. La *Lente del disidente* multiplica los contrastes y anula los apoyos:
+una run con ella te convierte en alguien que caza oposiciones en el paper. La *Lente
+del topógrafo* premia campos y jerarquías. **La build es un plan de lectura**, y cada
+partida te hace leer el mismo texto con otros ojos.
 
-## Las cinco reglas que no se negocian
+### El carril: once enemigos
 
-1. **El daño nunca está impreso en la carta.** Se calcula después de comprobar la
-   afirmación. Si se puede optimizar sin leer, el juego falló.
-2. **La build modula la recompensa, nunca la corrección.** Ninguna carta, instrumento
-   o apuesta entra en la función que decide si acertaste. La potencia sale de la
-   estrategia; la señal cognitiva, solo de la decisión de conocimiento.
-3. **La mano se reparte después de elegir el ítem.** No existe la mano muerta: las
-   opciones que trae el ítem precompilado son las cartas que se ponen sobre la mesa.
-4. **Improvisar siempre está permitido.** Si no tienes el verbo adecuado puedes
-   responder igual, con mucha menos recompensa. Nunca te bloqueas; sí pagas.
-5. **Perder no borra el Atlas.** La expedición se pierde; la evidencia se conserva.
+| Enemigo | Avanza | Alcance | Rasgo |
+|---|---|---|---|
+| El Copista | 1 | cuerpo a cuerpo | base |
+| La Errata | 2 | cuerpo a cuerpo | frágil y rápida |
+| El Rumor | no avanza | todo el carril | te alcanza siempre |
+| El Apócrifo | 1 | cuerpo a cuerpo | deja falsificaciones en tu mazo |
+| La Nota al Pie | 1 | 2 | no hiere: se lleva cartas de tu mano |
+| El Dogma | 1 | 2 | solo lo hieren diagramas de 2+ afirmaciones |
+| El Eco | 1 | cuerpo a cuerpo | retrocede en vez de caer; deja intuiciones |
+| La Cita Descontextualizada | 1 (+2 salto) | cuerpo a cuerpo | salta cada dos turnos |
+| El Palimpsesto | 1 | cuerpo a cuerpo | se cura si no lo tocas |
+| La Bibliografía | 1 | cuerpo a cuerpo | al caer se divide en dos |
+| La Ortodoxia | 1 | 2 | solo cede ante cierres y contrastes |
+| El Tratado (jefe) | no avanza | todo el carril | exige una jugada distinta por fase |
 
-`npm run smoke` verifica esto de forma automática. Además del bot tramposo mide el
-balance: un frente debe durar entre 2 y 9 turnos, y quien lee tiene que ganar casi
-siempre. Si un cambio rompe cualquiera de los cuatro criterios, el script sale con error.
+Las oleadas se compran con un **presupuesto de amenaza** que crece por acto: una
+casilla ligera del acto 1 son dos Copistas; una dura del acto 3 puede ser Dogma +
+Errata + Rumor.
+
+---
+
+## Las reglas que no se negocian
+
+1. **El daño nunca está impreso.** Se calcula después de comprobar el diagrama.
+2. **Las lentes y los blindajes modulan la recompensa, nunca la corrección.** Se puede
+   acertar y no herir, porque ese enemigo pide otra clase de trabajo.
+3. **Lo que el texto no dice no castiga.** Silencio ≠ error. Solo la dirección
+   invertida y la falsificación usada duelen.
+4. **Perder no borra el Atlas.** La expedición se pierde; la evidencia se conserva.
+5. **Nunca te bloqueas.** Si nada encaja, cambiar cartas es barato y siempre disponible.
+
+`npm run smoke` verifica esto: un bot que traza al azar tiene que perder las doce
+expediciones, quien lee tiene que ganarlas casi todas, y las nueve herramientas y los
+combos tienen que ser instanciables sobre el bundle. Si algo se rompe, el script falla.
 
 ---
 
@@ -105,112 +143,54 @@ siempre. Si un cambio rompe cualquiera de los cuatro criterios, el script sale c
 ```
 src/
   content/
-    types.ts        formas normalizadas (el motor no conoce el JSON crudo)
+    types.ts        formas normalizadas
     adapter.ts      bundle del extractor -> Contenido, con lectores tolerantes
   engine/
-    rng.ts          RNG por semilla: misma semilla, misma ruta
-    cards.ts        catálogo de verbos e instrumentos
-    encounters.ts   arquetipos, condiciones y constructores de embate por mecánica
-    threats.ts      instancias de enemigo, amenazas, resistencias y frentes
-    boss.ts         fase final del jefe a partir de tesis y marcos rivales
-    intuition.ts    cartas de Intuición y su embate de contexto
+    pieces.ts       una sola forma de carta con roles; fábricas desde el bundle
+    tools.ts        las nueve herramientas, su validación, los combos y el marcador
+    lenses.ts       los jokers y cómo reescriben la puntuación
+    lane.ts         el carril, los once enemigos y el presupuesto de oleada
+    battle.ts       tablero, trazos, pozo y turno del carril
+    route.ts        grafo de rutas ramificado y recompensas
     objectives.ts   planes de expedición y sellado de unidades
-    combat.ts       frente, modelo de daño, resolución y turno enemigo
-    route.ts        grafo de rutas ramificadas, actos y recompensas
-    atlas.ts        persistencia del Atlas y registro de señales
+    atlas.ts        Atlas persistente y registro de señales
     export.ts       edición crítica en markdown
+    rng.ts          RNG por semilla
   ui/
-    Stage.tsx       escenario superior: marginalia en tinta y vocabulario de golpes
-    CombatView.tsx  embate, mano, apuesta y veredicto
+    LaneView.tsx    el carril horizontal
+    BoardView.tsx   el tablero libre, las herramientas y el pozo
     Screens.tsx     plan, grafo, recompensa, refugio, Atlas y cierre
 ```
 
-### Tres mazos, no uno
+### Qué campo del bundle alimenta qué
 
-| Mazo | Contiene | Quién decide |
-|---|---|---|
-| Contenido | conceptos y relaciones del bundle | el currículo: llega al avanzar por la ruta |
-| Operaciones | verbos (Definir, Conectar, Transferir, Refutar…) | el jugador: aquí está el deckbuilding |
-| Instrumentos | reliquias y condiciones | el jugador, con contrapartida |
+| Campo | Se convierte en |
+|---|---|
+| `concepts.titulo` / `definicion_corta` | cartas de Nombre y Descripción separadas |
+| `graph.por_tipo` / `adyacencia` | la verdad contra la que se valida cada flecha |
+| `graph.clusters` | campos semánticos |
+| `graph.ejes` | la herramienta Eje |
+| aristas `generaliza` / `requiere` | Jerarquía y Secuencia |
+| `distractor_pools` (vecindad) | las cartas apócrifas |
+| `content.cases` / `scenarios` | cartas de Caso y el Ancla |
+| `content.theses` + criterios | Balanza y el jefe |
+| `content.frameworks` | cartas de Marco usables como campo |
+| `content.repertoires` | Intuiciones que se reubican contrastándolas |
+| `concepts.subdimensiones` | atributos colocables en un eje |
+| `study_plan.unidades` | actos y sellado |
 
-Resuelve la tensión de fondo: en un deckbuilder lo divertido es especializarse, pero
-en educación no puedes esquivar contenido. Se especializa el **cómo piensas**, no el
-**qué te tocó**.
-
-### De campo del bundle a sistema de juego
-
-| Campo | Sistema | Si falta |
-|---|---|---|
-| `concepts` | cartas de concepto, peso del daño | no hay juego |
-| `graph.por_tipo` / `adyacencia` | EL ESPEJO, Atlas, rareza de relación | sin encuentros de relación |
-| `graph.ejes` | EL ARQUITECTO | sale de la rotación |
-| `graph.clusters` | biomas | los actos salen solo de las unidades |
-| `carga_cognitiva` | qué condición aplica cada nodo | los combates van sin condición |
-| `distractor_pools` | opciones sobre la mesa y feedback | menos opciones, feedback más pobre |
-| `content.repertoires` | EL ECO | ese enemigo no aparece |
-| `content.scenarios.distancia` | portales cercano/medio/lejano | se repite el mismo peldaño |
-| `content.theses` + criterios | jefe EL MARCO | el jefe cae a un encuentro de relación |
-| `study_plan.unidades` + curva | actos, tamaño de mano, andamiaje | acto único |
-| `capabilities.condiciones` | qué condiciones son instanciables | se deducen de la carga cognitiva |
-
-### La carga cognitiva se vuelve mecánica
-
-La causa de dificultad del nodo elige la condición del combate:
-
-| `carga_cognitiva` | Condición | Efecto |
-|---|---|---|
-| `memorizar` | Mano corta | menos cartas por turno |
-| `discriminar` | Enjambre | todas las opciones plausibles que el texto sostiene |
-| `inferir` | Niebla | la dificultad del embate queda oculta |
-| `integrar` | Cadena | cada embate parte del concepto donde terminó el anterior |
-
-Si el bundle declara `capabilities.condiciones`, esa lista manda sobre la deducción.
-
-### B1 se juega como atribución
-
-Los ítems de discriminación no se presentan como verdadero/falso: una moneda al aire
-da 50 % a quien no lee. Se pregunta **de qué concepto habla realmente la afirmación**,
-y la respuesta correcta se deriva del propio ítem —`concept_id` si la afirmación es
-verdadera, `concepto_confundido` si es falsa— con los vecinos del grafo como distractores.
-
-### El Atlas
-
-La metaprogresión no son números mayores: es el mapa conceptual que el jugador
-reconstruyó jugando. Cada vínculo que sostiene se dibuja; cada concepto sube de nivel
-cuando acumula aciertos **desde mecánicas distintas**, no por repetición. La misma
-pantalla sirve de resultados, de material de repaso y de panel docente, y cada nodo
-conserva sus páginas de origen.
-
-Se guarda en `localStorage`, con clave por fuente: cambiar de texto no mezcla Atlas.
-
-### Señales
-
-El botón **Señales** exporta el registro de la sesión en JSON: ítem, mecánica,
-conceptos, verbo jugado, si improvisó, selección, acierto, apuesta declarada,
-calibración, latencia, ayuda pedida y repertorio tocado. Es el insumo para conectar
-con Supabase sin cambiar nada del juego.
+**Nota honesta:** v4 valida contra el grafo y las capas de contenido, no contra
+`items`. Los 278 ítems precompilados ya no se consumen — la corrección sale de las
+aristas y de los campos de contenido. Eso simplifica el contrato y hace el juego
+independiente del compilador de ítems, pero conviene decidir si el extractor debe
+seguir produciéndolos.
 
 ---
 
-## Conectar con la plataforma
+## Pendientes
 
-Hoy el juego es cliente puro. Los tres puntos de enganche están aislados a propósito:
-
-- **Entrada**: `adaptarBundle()` en `src/content/adapter.ts`.
-- **Salida**: `registrar()` en `src/engine/atlas.ts` — cambiar el cuerpo por un POST.
-- **Persistencia**: `cargarAtlas` / `guardarAtlas`, hoy contra `localStorage`.
-
----
-
-## Pendientes conocidos
-
-- `E2 DIAGNOSTICAR`, `A4`, `C5` y la familia F completa necesitan juez de texto abierto.
-- `C4 MAPEAR` tiene los ejes leídos pero todavía no un tablero propio: EL ARQUITECTO
-  usa `B2` mientras tanto.
-- La familia H (colaborar) requiere un segundo estudiante; la dimensión `persistencia`
-  no es medible en solitario.
-- `docs/PEGLIN.md` describe la Mesa de Tiradas: el tablero de clavijas donde la
-  declaración produce la señal y el tiro solo modula la recompensa. Sigue sin implementar.
-- El Arquitecto lee los ejes pero todavía usa `B2`; le falta su tablero de cuadrantes.
-- La familia H (colaborar) requiere un segundo estudiante; `persistencia` no es medible
-  en solitario.
+- Sello de confianza sobre el diagrama completo (calibración explícita, G1/G2).
+- Reserva de una pieza entre turnos (señal de planeación).
+- Familia H (colaborar) requiere un segundo estudiante.
+- `docs/PEGLIN.md` describe la Mesa de Tiradas, que sigue sin implementar y que ahora
+  encaja mejor: las clavijas serían las piezas del tablero.

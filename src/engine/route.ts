@@ -1,11 +1,9 @@
-import type { Contenido, MecanicaId } from '../content/types'
-import { CATALOGO, INSTRUMENTOS, type EfectoInstrumento } from './cards'
-import {
-  ARQUETIPOS, CONDICION_POR_CARGA, itemsCandidatos, type ArquetipoId, type CondicionId
-} from './encounters'
+import type { Contenido } from '../content/types'
+import type { Dificultad } from './lane'
+import { LENTES } from './lenses'
 import { Rng } from './rng'
 
-export type TipoNodo = 'combate' | 'elite' | 'refugio' | 'taller' | 'jefe'
+export type TipoNodo = 'oleada' | 'refugio' | 'taller' | 'jefe'
 export type EtiquetaRuta = 'consolidar' | 'elaborar' | 'umbral' | 'portal' | 'descanso'
 
 export interface Nodo {
@@ -14,10 +12,12 @@ export interface Nodo {
   fila: number
   actoIndex: number
   tipo: TipoNodo
+  dificultad: Dificultad
   etiquetaRuta: EtiquetaRuta
-  arquetipos: ArquetipoId[]
-  condicion: CondicionId | null
   conceptIds: string[]
+  /** casos y tesis que esta casilla pone sobre la mesa */
+  casos: string[]
+  tesis: string[]
   salidas: string[]
 }
 
@@ -31,65 +31,38 @@ export interface Acto {
   entradas: string[]
 }
 
-export interface Ruta {
-  semilla: string
-  actos: Acto[]
-}
+export interface Ruta { semilla: string; actos: Acto[] }
 
 export const RUTAS: Record<EtiquetaRuta, { nombre: string; promesa: string; riesgo: string }> = {
   consolidar: {
     nombre: 'Consolidar',
-    promesa: 'Conceptos que se fijan de uno en uno.',
+    promesa: 'Conceptos frecuentes y bien poblados de distractores.',
     riesgo: 'Seguro. Llena poco Atlas.'
   },
   elaborar: {
     nombre: 'Elaborar',
     promesa: 'Conceptos densos, con muchos vínculos alrededor.',
-    riesgo: 'Exige relacionar. Llena mucho Atlas.'
+    riesgo: 'Cadenas largas posibles. Llena mucho Atlas.'
   },
   umbral: {
     nombre: 'Umbral',
-    promesa: 'Pasa por un concepto que reorganiza todo el mapa.',
-    riesgo: 'Caro. Cambia cómo lees el resto del texto.'
+    promesa: 'Pasa por un concepto que reorganiza el mapa.',
+    riesgo: 'Caro, y multiplica si lo sostienes.'
   },
   portal: {
     nombre: 'Portal',
     promesa: 'Casos de dominios que el autor no menciona.',
-    riesgo: 'El terreno más caro y el que más rinde.'
+    riesgo: 'El terreno que más rinde y el que más cuesta.'
   },
   descanso: { nombre: 'Alto', promesa: 'Sin enemigos.', riesgo: 'Ninguno.' }
 }
 
-/* ------------------------- qué arquetipos son viables ---------------------- */
-
-export function arquetiposViables(contenido: Contenido, conceptIds: string[]): ArquetipoId[] {
-  const salida: ArquetipoId[] = []
-  const hay = (mecs: MecanicaId[]) =>
-    itemsCandidatos(contenido, {
-      mecanicas: mecs, conceptIds, condicion: null, conceptoAnterior: null
-    }).length > 0
-
-  if (hay(['A1', 'A3'])) salida.push('vacio')
-  if (hay(['B1'])) salida.push('confuso')
-  if (hay(['C1'])) salida.push('espejo')
-  if (contenido.repertorios.length > 0 &&
-      itemsCandidatos(contenido, {
-        mecanicas: ['A1', 'B1'], conceptIds, condicion: null, conceptoAnterior: null, soloRepertorio: true
-      }).length > 0) salida.push('eco')
-  const ricos = conceptIds.filter((id) => (contenido.conceptos[id]?.nDistractores ?? 0) >= 4)
-  if (ricos.length >= 2 && hay(['A1', 'B1'])) salida.push('enjambre')
-  if (hay(['B2', 'E3', 'E1'])) salida.push('caso')
-  if (contenido.ejes.length >= 2 && hay(['B2'])) salida.push('arquitecto')
-  return salida
-}
-
-/* --------------------------- selección por etiqueta ------------------------ */
+/* --------------------------- selección de material ------------------------- */
 
 function conceptosPara(
   contenido: Contenido, pool: string[], etiqueta: EtiquetaRuta, rng: Rng
 ): string[] {
-  const grado = (id: string) =>
-    contenido.aristas.filter((a) => a.from === id || a.to === id).length
+  const grado = (id: string) => contenido.aristas.filter((a) => a.from === id || a.to === id).length
   const carga = (id: string) => contenido.conceptos[id]?.cargaCognitiva ?? []
 
   let filtro: string[] = []
@@ -109,120 +82,97 @@ function conceptosPara(
     default:
       filtro = pool
   }
-  const base = filtro.length >= 3 ? filtro : pool
-  const extra = rng.sample(pool.filter((id) => !base.includes(id)), 2)
-  return [...new Set([...rng.sample(base, Math.max(3, Math.ceil(base.length * 0.8))), ...extra])]
+  const base = filtro.length >= 4 ? filtro : pool
+  // siempre se añaden vecinos de los elegidos: sin vecinos no hay cadenas posibles
+  const elegidos = rng.sample(base, Math.min(base.length, Math.max(4, Math.ceil(base.length * 0.7))))
+  const vecinos = elegidos.flatMap((id) =>
+    contenido.aristas
+      .filter((a) => a.from === id || a.to === id)
+      .map((a) => (a.from === id ? a.to : a.from))
+  ).filter((id) => pool.includes(id))
+  return [...new Set([...elegidos, ...rng.sample([...new Set(vecinos)], 3)])]
 }
 
-/** La causa de dificultad del concepto elige la condición del combate. */
-function condicionPara(
-  contenido: Contenido, conceptIds: string[], etiqueta: EtiquetaRuta, rng: Rng
-): CondicionId | null {
-  if (etiqueta === 'portal') return 'portal_por_distancia'
-  const cargas = conceptIds.flatMap((id) => contenido.conceptos[id]?.cargaCognitiva ?? [])
-  if (cargas.length === 0) return null
-  const conteo: Record<string, number> = {}
-  for (const c of cargas) conteo[c] = (conteo[c] ?? 0) + 1
-  const dominante = Object.entries(conteo).sort((a, b) => b[1] - a[1])[0]?.[0]
-  const propuesta = dominante ? CONDICION_POR_CARGA[dominante] : null
-  if (!propuesta) return null
-  if (contenido.condicionesDisponibles.length > 0 &&
-      !contenido.condicionesDisponibles.includes(propuesta) &&
-      !['niebla', 'mano_corta'].includes(propuesta)) {
-    const alternativas = contenido.condicionesDisponibles
-      .filter((c) => c !== 'portal_por_distancia' && c !== 'marco_rival') as CondicionId[]
-    return alternativas.length ? rng.pick(alternativas) : null
-  }
-  return propuesta
+function casosPara(contenido: Contenido, conceptIds: string[], etiqueta: EtiquetaRuta, rng: Rng): string[] {
+  const candidatos = [
+    ...contenido.escenarios.filter((s) =>
+      s.conceptIds.some((c) => conceptIds.includes(c)) &&
+      (etiqueta !== 'portal' || s.distancia !== 'cercana')),
+    ...contenido.casos.filter((c) => c.conceptIds.some((x) => conceptIds.includes(x)))
+  ].map((x) => x.id)
+  return rng.sample([...new Set(candidatos)], etiqueta === 'portal' ? 2 : 1)
 }
 
-/* ------------------------------- generación -------------------------------- */
+/* -------------------------------- generación ------------------------------- */
 
-const ANCHOS_ACTO = [1, 2, 3, 2, 1]
+const ANCHOS = [1, 2, 3, 2, 1]
 const ANCHOS_FINAL = [1, 2, 3, 2, 1, 1]
 
 export function generarRuta(contenido: Contenido, semilla: string): Ruta {
   const rng = new Rng(semilla)
-  const unidades = contenido.unidades.filter((u) => u.conceptIds.length > 0).slice(0, 5)
-  if (unidades.length === 0) {
-    throw new Error('El bundle no trae unidades con conceptos: no se puede trazar la expedición.')
+  const unidades = contenido.unidades.filter((u) => u.conceptIds.length >= 2).slice(0, 5)
+  if (!unidades.length) {
+    throw new Error('El bundle no trae unidades con conceptos suficientes: no se puede trazar la expedición.')
   }
   const actos: Acto[] = []
 
   unidades.forEach((u, ai) => {
     const esUltimo = ai === unidades.length - 1
-    const anchos = esUltimo ? ANCHOS_FINAL : ANCHOS_ACTO
-    const viables = arquetiposViables(contenido, u.conceptIds)
+    const anchos = esUltimo ? ANCHOS_FINAL : ANCHOS
     const columnas: Nodo[][] = []
 
     anchos.forEach((ancho, col) => {
-      const ultimaCol = col === anchos.length - 1
+      const ultima = col === anchos.length - 1
       const fila: Nodo[] = []
       for (let f = 0; f < ancho; f++) {
-        let tipo: TipoNodo = 'combate'
-        if (esUltimo && ultimaCol) tipo = 'jefe'
-        else if (col === anchos.length - 2 && !esUltimo) tipo = 'refugio'
-        else if (col === anchos.length - 2 && esUltimo) tipo = 'refugio'
+        let tipo: TipoNodo = 'oleada'
+        if (esUltimo && ultima) tipo = 'jefe'
+        else if (col === anchos.length - 2) tipo = 'refugio'
         else if (col === 2 && f === 0) tipo = 'taller'
-        else if (col === anchos.length - 3) tipo = 'elite'
 
-        let etiqueta: EtiquetaRuta
-        if (tipo === 'refugio' || tipo === 'taller') etiqueta = 'descanso'
-        else if (tipo === 'jefe') etiqueta = 'umbral'
-        else {
+        let etiqueta: EtiquetaRuta = 'descanso'
+        let dificultad: Dificultad = 'facil'
+        if (tipo === 'jefe') { etiqueta = 'umbral'; dificultad = 'jefe' }
+        else if (tipo === 'oleada') {
           const opciones: EtiquetaRuta[] = ['consolidar', 'elaborar', 'umbral', 'portal']
           etiqueta = opciones[(f + col + ai) % opciones.length]
           if (etiqueta === 'umbral' && !u.conceptIds.some((id) => contenido.conceptos[id]?.esUmbral)) {
             etiqueta = 'elaborar'
           }
-          if (etiqueta === 'portal' && !viables.includes('caso')) etiqueta = 'consolidar'
+          if (etiqueta === 'portal' && contenido.escenarios.length === 0) etiqueta = 'consolidar'
+          dificultad = etiqueta === 'consolidar' ? 'facil'
+            : etiqueta === 'portal' || etiqueta === 'umbral' ? 'dura' : 'media'
+          if (col === anchos.length - 3 && f === 0) dificultad = 'dura'
         }
 
         const conceptIds = tipo === 'refugio' || tipo === 'taller'
           ? u.conceptIds
           : conceptosPara(contenido, u.conceptIds, etiqueta, rng)
-
-        const pool = arquetiposViables(contenido, conceptIds)
-        let arquetipos: ArquetipoId[] = []
-        if (tipo === 'jefe') {
-          arquetipos = ['marco']
-        } else if (tipo === 'combate' || tipo === 'elite') {
-          const fuente = pool.length ? pool : viables
-          if (etiqueta === 'portal' && fuente.includes('caso')) arquetipos = ['caso']
-          else if (tipo === 'elite') {
-            const elites = fuente.filter((a) => ARQUETIPOS[a].rango === 'elite')
-            arquetipos = elites.length ? elites : fuente
-          } else {
-            arquetipos = fuente.filter((a) => ARQUETIPOS[a].rango === 'comun')
-            if (!arquetipos.length) arquetipos = fuente
-          }
-        }
-        if ((tipo === 'combate' || tipo === 'elite' || tipo === 'jefe') && arquetipos.length === 0) {
-          tipo = 'refugio'
-          etiqueta = 'descanso'
-        }
+        const casos = tipo === 'oleada' || tipo === 'jefe'
+          ? casosPara(contenido, conceptIds, etiqueta, rng)
+          : []
+        const tesis = tipo === 'jefe'
+          ? rng.sample(contenido.tesis.map((t) => t.id), 2)
+          : etiqueta === 'umbral'
+            ? rng.sample(contenido.tesis.filter((t) => t.conceptIds.some((c) => conceptIds.includes(c))).map((t) => t.id), 1)
+            : []
 
         fila.push({
-          id: `a${ai}c${col}f${f}`,
-          columna: col, fila: f, actoIndex: ai, tipo, etiquetaRuta: etiqueta,
-          arquetipos,
-          condicion: tipo === 'combate' || tipo === 'elite'
-            ? condicionPara(contenido, conceptIds, etiqueta, rng)
-            : null,
-          conceptIds,
-          salidas: []
+          id: `a${ai}c${col}f${f}`, columna: col, fila: f, actoIndex: ai,
+          tipo, dificultad, etiquetaRuta: etiqueta, conceptIds, casos, tesis, salidas: []
         })
       }
       columnas.push(fila)
     })
 
-    // aristas del grafo: cada nodo enlaza con 1-2 del siguiente, y ninguno queda huérfano
     for (let col = 0; col < columnas.length - 1; col++) {
       const actual = columnas[col]
       const siguiente = columnas[col + 1]
       const alcanzados = new Set<string>()
       actual.forEach((n, i) => {
-        const centro = Math.round((i / Math.max(1, actual.length - 1)) * (siguiente.length - 1)) || 0
+        const centro = siguiente.length === 1
+          ? 0
+          : Math.round((i / Math.max(1, actual.length - 1)) * (siguiente.length - 1))
         const cand = [...new Set([
           siguiente[centro],
           siguiente[Math.max(0, centro - 1)],
@@ -242,54 +192,49 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
     }
 
     actos.push({
-      index: ai,
-      unidadId: u.id,
-      titulo: u.titulo,
+      index: ai, unidadId: u.id, titulo: u.titulo,
       dificultadObjetivo: u.dificultadObjetivo,
-      manoSugerida: Math.max(3, Math.min(6, u.nOpcionesSugerido)),
-      columnas,
-      entradas: columnas[0].map((n) => n.id)
+      manoSugerida: Math.max(6, Math.min(8, 5 + u.nOpcionesSugerido - 2)),
+      columnas, entradas: columnas[0].map((n) => n.id)
     })
   })
 
   return { semilla, actos }
 }
 
-export function nodoPorId(acto: Acto, id: string): Nodo | null {
-  for (const col of acto.columnas) {
-    const n = col.find((x) => x.id === id)
-    if (n) return n
-  }
-  return null
-}
-
-/* ------------------------------- recompensas ------------------------------ */
+/* ------------------------------- recompensas ------------------------------- */
 
 export type Recompensa =
-  | { tipo: 'verbo'; cardId: string }
-  | { tipo: 'mejora'; cardId: string; reemplaza: string }
-  | { tipo: 'instrumento'; id: EfectoInstrumento }
+  | { tipo: 'lente'; id: string }
+  | { tipo: 'relacion'; tipoRelacion: string }
+  | { tipo: 'caso'; id: string }
+  | { tipo: 'tesis'; id: string }
   | { tipo: 'lucidez'; cantidad: number }
+  | { tipo: 'ranura'; }
 
 export function ofrecerRecompensas(
-  mazo: string[], instrumentos: EfectoInstrumento[], rng: Rng, elite: boolean
+  contenido: Contenido, lentes: string[], relaciones: string[], rng: Rng,
+  dura: boolean
 ): Recompensa[] {
   const salida: Recompensa[] = []
 
-  const nuevos = CATALOGO.filter((c) => !c.mejoraDe && !mazo.includes(c.id))
-  if (nuevos.length) salida.push({ tipo: 'verbo', cardId: rng.pick(nuevos).id })
+  const libres = LENTES.filter((l) => !lentes.includes(l.id) && (dura || !l.raro))
+  if (libres.length && lentes.length < 5) salida.push({ tipo: 'lente', id: rng.pick(libres).id })
 
-  const mejorables = CATALOGO.filter((c) => c.mejoraDe && mazo.includes(c.mejoraDe) && !mazo.includes(c.id))
-  if (mejorables.length) {
-    const m = rng.pick(mejorables)
-    salida.push({ tipo: 'mejora', cardId: m.id, reemplaza: m.mejoraDe as string })
+  // relaciones raras del texto: las que más multiplican y menos tienes
+  const porRareza = Object.entries(contenido.frecuenciaRelacion)
+    .sort((a, b) => a[1] - b[1])
+    .map(([t]) => t)
+  const candidata = porRareza.find((t) => relaciones.filter((r) => r === t).length < 2) ?? porRareza[0]
+  if (candidata) salida.push({ tipo: 'relacion', tipoRelacion: candidata })
+
+  if (dura && contenido.tesis.length) {
+    salida.push({ tipo: 'tesis', id: rng.pick(contenido.tesis).id })
+  } else if (contenido.escenarios.length) {
+    const lejanos = contenido.escenarios.filter((s) => s.distancia !== 'cercana')
+    salida.push({ tipo: 'caso', id: rng.pick(lejanos.length ? lejanos : contenido.escenarios).id })
   }
 
-  const libres = INSTRUMENTOS.filter((i) => !instrumentos.includes(i.id) && (elite || !i.maldito))
-  if (libres.length && (elite || rng.next() < 0.6)) {
-    salida.push({ tipo: 'instrumento', id: rng.pick(libres).id })
-  }
-
-  while (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: elite ? 14 : 8 })
+  if (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: dura ? 16 : 10 })
   return rng.shuffle(salida).slice(0, 3)
 }
