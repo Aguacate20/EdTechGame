@@ -1,7 +1,7 @@
-# Subir v4.0 al repositorio
+# Subir v4.1 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v4/patch40/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v4.1/patch41/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v4/patch40/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v4.1/patch41/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -20,26 +20,28 @@ rm -rf src scripts docs public
 # 3. copiar
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 25
+# 4. comprobar: debe decir 26
 find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v4.0: roguelike de diagramas con tablero libre y herramientas cognitivas
+git commit -m "v4.1: escalera de veredictos, apocrifas no derrumban, feedback sobre el diagrama
 
-Cambia el atomo del juego: ya no hay enunciado con opciones, hay materiales y
-herramientas. El jugador compone un diagrama y el sistema lo evalua en cascada.
+Deja de exigir memoria de etiquetas sin perder cientificidad.
 
-- 9 herramientas cognitivas (identidad, flecha, campo, jerarquia, eje, secuencia,
-  ancla, balanza, tachon), cada una emitiendo una senal distinta
-- piezas con roles en vez de tipos rigidos: un criterio puede ser nodo suelto
-- titulo y definicion en cartas separadas; al emparejarlas se fusionan
-- cartas apocrifas desde la vecindad del grafo: hay que notarlas, nadie pregunta
-- combos emergentes por piezas compartidas entre trazos
-- lentes como jokers: la build es un plan de lectura
-- carril horizontal con 11 enemigos y presupuesto de amenaza por oleada
-- el pozo: quemar vs cambiar, dos gestos con senales distintas
-- npm run smoke verifica 5 criterios, incluidos combos y cobertura de herramientas"
+- graph.ts: contrasta es simetrica, generaliza/ejemplifica son duales,
+  apoya/extiende/matiza son una familia; solo los tipos direccionales castigan
+  al invertirse
+- escalera sostenido/equivalente/derivado/aproximado/plausible/mudo/invertido
+- derivado: si A->C se sigue de A->B->C el juego da credito y lo marca inferencia
+- las apocrifas ya no derrumban el diagrama; se anota reserva y baja rendimiento
+- segunda oportunidad: si la relacion es cierta del dueno real de esa descripcion,
+  se premia haber razonado por contenido y no por etiqueta
+- la correccion ocurre sobre el propio diagrama: el tablero se queda en pantalla
+  con marcas y colores por trazo, y se toca cada trazo para leer por que
+- lupa para las cartas largas (casos, escenarios, tesis)
+- npm run smoke anade dos criterios: que el azar no cobre y que quien razona bien
+  con la etiqueta equivocada reciba credito"
 
 git push origin main
 ```

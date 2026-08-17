@@ -469,3 +469,32 @@ label.campo > span { display: block; margin-bottom: 5px; }
   transition: border-color .15s, transform .1s; }
 .objetivo-card:hover { border-color: var(--verdigris); transform: translateY(-2px); }
 .objetivo-card .nom { font-size: 18px; font-weight: 600; }
+
+/* ================= v4.1 · corrección sobre el diagrama ================= */
+
+.marca-corregido {
+  position: absolute; top: 8px; right: 12px; z-index: 4;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--niebla);
+  border: 1px solid var(--tinta-borde); border-radius: 99px; padding: 2px 9px;
+  background: rgba(19,26,36,.7);
+}
+
+.trazo-chip.abierto { background: rgba(255,255,255,.06); }
+
+.detalle-trazo {
+  border-left: 3px solid var(--tinta-borde); padding: 8px 0 8px 12px;
+  background: linear-gradient(90deg, rgba(255,255,255,.03), transparent);
+}
+
+.lupa {
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+}
+.lupa .serif-lectura { font-size: 14.5px; line-height: 1.55; }
+
+.naipe .mas {
+  font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em;
+  color: #7a8290;
+}

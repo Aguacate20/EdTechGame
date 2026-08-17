@@ -13,7 +13,8 @@ import {
   soltar, type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from '../src/engine/battle'
 import { combinarLentes } from '../src/engine/lenses'
-import { HERRAMIENTAS, listaHerramientas, type HerramientaId } from '../src/engine/tools'
+import { HERRAMIENTAS, type HerramientaId } from '../src/engine/tools'
+import { DUALES, FAMILIAS } from '../src/engine/graph'
 import { generarRuta } from '../src/engine/route'
 import { OBJETIVOS } from '../src/engine/objectives'
 import { Rng } from '../src/engine/rng'
@@ -31,15 +32,19 @@ console.log(' ', Object.keys(contenido.conceptos).length, 'conceptos ·', conten
   contenido.tesis.length, 'tesis ·', contenido.ejes.length, 'ejes ·', contenido.clusters.length, 'clusters')
 for (const d of contenido.diagnostico) console.log(`   ${d.estado.padEnd(8)} ${d.clave}: ${d.detalle}`)
 
-type Estrategia = 'informado' | 'azar'
+type Estrategia = 'informado' | 'aproximado' | 'azar'
 interface Rep {
   gano: boolean; turnos: number; oleadas: number; lucidez: number
   sostenidos: number; trazos: number; herramientasUsadas: Set<string>
   quemasBuenas: number; quemasMalas: number; fusiones: number; combos: Set<string>
+  estados: Record<string, number>
 }
 
-/** Un jugador que lee: busca en su mano las piezas que sí sostienen algo. */
-function jugarInformado(e: EstadoBatalla, c: Contenido, rng: Rng): number {
+/** Un jugador que lee: busca en su mano las piezas que sí sostienen algo.
+ *  En modo `aproximado` sabe QUÉ se relaciona con qué, pero se equivoca de
+ *  etiqueta (usa un tipo de la misma familia o la forma dual). Es el caso
+ *  real: razonar bien sin recordar el nombre exacto del vínculo. */
+function jugarInformado(e: EstadoBatalla, c: Contenido, rng: Rng, aprox = false): number {
   let trazados = 0
   const libres = () => {
     const r = [...e.herramientas]
@@ -68,12 +73,26 @@ function jugarInformado(e: EstadoBatalla, c: Contenido, rng: Rng): number {
   const nodos = e.mano.filter((x) => x.conceptId && x.clase !== 'apocrifa' && x.clase !== 'definicion')
   for (const arista of c.aristas) {
     if (!libres().includes('flecha')) break
-    if (!e.relacionesDisponibles.includes(arista.tipo)) continue
-    const a = nodos.find((x) => x.conceptId === arista.from)
-    const b = nodos.find((x) => x.conceptId === arista.to && x.uid !== a?.uid)
+    let tipo = arista.tipo
+    let from = arista.from, to = arista.to
+    if (aprox) {
+      // mismo par, etiqueta imprecisa: familia vecina, o la forma dual invertida
+      const familia = Object.entries(FAMILIAS)
+        .filter(([k, f]) => f === FAMILIAS[arista.tipo] && k !== arista.tipo)
+        .map(([k]) => k)
+        .filter((k) => e.relacionesDisponibles.includes(k))
+      if (DUALES[arista.tipo] && e.relacionesDisponibles.includes(DUALES[arista.tipo])) {
+        tipo = DUALES[arista.tipo]; from = arista.to; to = arista.from
+      } else if (familia.length) {
+        tipo = rng.pick(familia)
+      }
+    }
+    if (!e.relacionesDisponibles.includes(tipo)) continue
+    const a = nodos.find((x) => x.conceptId === from)
+    const b = nodos.find((x) => x.conceptId === to && x.uid !== a?.uid)
     if (!a || !b) continue
     poner(a); poner(b)
-    if (trazar(e, 'flecha', [a.uid, b.uid], arista.tipo)) trazados++
+    if (trazar(e, 'flecha', [a.uid, b.uid], tipo)) trazados++
   }
   // 4. ancla de caso
   const caso = e.mano.find((x) => x.clase === 'caso')
@@ -172,7 +191,8 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
   const fusionados: string[] = []
   const rep: Rep = {
     gano: false, turnos: 0, oleadas: 0, lucidez, sostenidos: 0, trazos: 0,
-    herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0, combos: new Set()
+    herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0,
+    combos: new Set(), estados: {}
   }
   const herramientas: HerramientaId[] = [
     ...BASE,
@@ -195,13 +215,20 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
       else if (nodo.tipo !== 'taller') {
         rep.oleadas += 1
         const bolsa: Bolsa = {
-          herramientas, relaciones: obj.relacionesIniciales,
+          herramientas,
+          // el bot impreciso lleva todas las relaciones: así puede equivocarse
+          // de etiqueta de verdad en vez de quedarse sin carta
+          relaciones: estrategia === 'aproximado'
+            ? Object.keys(contenido.frecuenciaRelacion)
+            : obj.relacionesIniciales,
           casos: nodo.casos, tesis: nodo.tesis, intuiciones: [], fusionados
         }
         const e = iniciarBatalla(ctx, nodo.conceptIds, bolsa, nodo.dificultad, acto.index, acto.manoSugerida)
         let guardia = 0
         while (vivos(e).length && lucidez > 0 && guardia++ < 40) {
-          const n = estrategia === 'informado' ? jugarInformado(e, contenido, rng) : jugarAzar(e, rng)
+          const n = estrategia === 'azar'
+            ? jugarAzar(e, rng)
+            : jugarInformado(e, contenido, rng, estrategia === 'aproximado')
           if (estrategia === 'informado' && e.quemasRestantes > 0) {
             const ap = e.mano.find((p) => p.clase === 'apocrifa')
             if (ap && !e.tablero.some((t) => t.uid === ap.uid)) {
@@ -216,6 +243,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
           turnoDelCarril(e, ctx, r)
           lucidez -= r.danoRecibido
           rep.sostenidos += r.diag.sostenidos
+          for (const v of r.diag.veredictos) rep.estados[v.estado] = (rep.estados[v.estado] ?? 0) + 1
           rep.fusiones += r.diag.fusiona.length
           for (const c of r.diag.combos) rep.combos.add(c.nombre)
           fusionados.push(...r.diag.fusiona)
@@ -235,8 +263,8 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
 
 const semillas = ['ar-ka-mor', 'tel-sen-vi', 'lun-dro-fa', 'nex-ori-zel', 'zel-ka-vi', 'mor-fa-ori']
 console.log('\n— expediciones simuladas —')
-const res: Record<Estrategia, Rep[]> = { informado: [], azar: [] }
-for (const est of ['informado', 'azar'] as Estrategia[]) {
+const res: Record<Estrategia, Rep[]> = { informado: [], aproximado: [], azar: [] }
+for (const est of ['informado', 'aproximado', 'azar'] as Estrategia[]) {
   for (const s of semillas) res[est].push(jugarRun(s, est))
   const rs = res[est]
   const v = rs.filter((r) => r.gano).length
@@ -256,6 +284,21 @@ console.log(` combos vistos: ${[...combos].join(' · ') || 'ninguno'}`)
 console.log(` pozo: ${inf.reduce((n, r) => n + r.quemasBuenas, 0)} quemas acertadas · ${inf.reduce((n, r) => n + r.quemasMalas, 0)} erradas`)
 console.log(` fusiones nombre+descripción: ${inf.reduce((n, r) => n + r.fusiones, 0)}`)
 
+const sumar = (rs: Rep[]) => rs.reduce<Record<string, number>>((acc, r) => {
+  for (const [k, v] of Object.entries(r.estados)) acc[k] = (acc[k] ?? 0) + v
+  return acc
+}, {})
+const escI = sumar(inf), escA = sumar(res.azar)
+const pinta = (e: Record<string, number>) => {
+  const t = Object.values(e).reduce((a, b) => a + b, 0) || 1
+  return Object.entries(e).sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${k} ${(100 * v / t).toFixed(0)}%`).join(' · ')
+}
+const escX = sumar(res.aproximado)
+console.log(` escalera (informado): ${pinta(escI)}`)
+console.log(` escalera (aproximado):${pinta(escX)}`)
+console.log(` escalera (azar):      ${pinta(escA)}`)
+
 console.log('\n— criterios de aceptación —')
 const ok1 = inf.filter((r) => r.gano).length >= semillas.length - 1
 const ok2 = res.azar.filter((r) => r.gano).length === 0
@@ -263,9 +306,19 @@ const ok3 = usadas.size >= 7
 const tpo = inf.reduce((n, r) => n + r.turnos, 0) / Math.max(1, inf.reduce((n, r) => n + r.oleadas, 0))
 const ok4 = tpo >= 2 && tpo <= 9
 const ok5 = combos.size >= 2
+// la flexibilidad no puede volverse permisividad: al azar casi nada debe sostenerse
+const totalAzar = Object.values(escA).reduce((a, b) => a + b, 0) || 1
+const aciertaAzar = (escA.sostenido ?? 0) + (escA.equivalente ?? 0) + (escA.derivado ?? 0)
+const ok6 = aciertaAzar / totalAzar < 0.2
+// quien razona bien pero se equivoca de etiqueta debe recibir crédito parcial
+const totalAprox = Object.values(escX).reduce((a, b) => a + b, 0) || 1
+const creditoAprox = (escX.equivalente ?? 0) + (escX.aproximado ?? 0) + (escX.derivado ?? 0) + (escX.sostenido ?? 0)
+const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
 console.log(` ${ok1 ? 'PASA' : 'FALLA'}  quien lee despeja el carril`)
 console.log(` ${ok2 ? 'PASA' : 'FALLA'}  trazar al azar nunca gana`)
 console.log(` ${ok3 ? 'PASA' : 'FALLA'}  al menos 7 de las 9 herramientas son instanciables (${usadas.size})`)
 console.log(` ${ok4 ? 'PASA' : 'FALLA'}  una oleada dura entre 2 y 9 turnos (${tpo.toFixed(1)})`)
 console.log(` ${ok5 ? 'PASA' : 'FALLA'}  los combos aparecen de verdad (${combos.size})`)
-if (!(ok1 && ok2 && ok3 && ok4 && ok5)) process.exit(1)
+console.log(` ${ok6 ? 'PASA' : 'FALLA'}  la escalera no premia al azar (${(100 * aciertaAzar / totalAzar).toFixed(0)}% de aciertos al azar)`)
+console.log(` ${ok7 ? 'PASA' : 'FALLA'}  quien razona bien y se equivoca de etiqueta recibe crédito (${(100 * creditoAprox / totalAprox).toFixed(0)}%, ${res.aproximado.filter((r) => r.gano).length}/${semillas.length} victorias)`)
+if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7)) process.exit(1)

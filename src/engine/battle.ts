@@ -31,8 +31,16 @@ export interface EventoPozo {
   nota: string
 }
 
+export interface FotoDiagrama {
+  tablero: PiezaEnTablero[]
+  trazos: Trazo[]
+  piezas: Pieza[]
+}
+
 export interface ResultadoTurno {
   diag: Diagnostico
+  /** el diagrama tal como quedó, para poder corregir SOBRE él */
+  foto: FotoDiagrama
   impactos: { uid: string; nombre: string; dano: number; motivo: string | null; derribado: boolean }[]
   danoTotal: number
   parteEnemiga: { texto: string; dano: number }[]
@@ -336,7 +344,15 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
 
   const r: ResultadoTurno = {
     diag, impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
-    intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0
+    intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0,
+    // se congela ANTES de limpiar: el feedback ocurre sobre el propio dibujo
+    foto: {
+      tablero: e.tablero.map((t) => ({ ...t })),
+      trazos: e.trazos.map((t) => ({ ...t })),
+      piezas: e.tablero
+        .map((t) => e.mano.find((x) => x.uid === t.uid))
+        .filter((x): x is Pieza => !!x)
+    }
   }
 
   // limpiar el tablero: lo usado va al descarte, lo reubicado sale de la run

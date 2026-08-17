@@ -1,4 +1,4 @@
-# El Archivo Infinito — v4.0
+# El Archivo Infinito — v4.1
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -70,6 +70,49 @@ Entre las piezas se cuelan **apócrifas**: el título de un concepto con la defi
 otro, sacadas del propio grafo de vecindad. Nadie te pregunta si son falsas: tienes que
 notarlo. Si la usas como nodo, el diagrama entero se derrumba.
 
+### La escalera de veredictos
+
+El juego **no puede exigir memoria de etiquetas**. Puede exigir que lo que afirmas sea
+verdad. Por eso un vínculo no se juzga como acierto o error, sino en una escalera:
+
+| Veredicto | Cuándo | Crédito |
+|---|---|---|
+| **Sostenido** | el texto lo dice, con ese tipo y esa dirección | completo |
+| **Equivalente** | forma dual o simétrica (`generaliza`↔`ejemplifica`, `contrasta`) | completo |
+| **Derivado** | no lo dice, pero **se sigue** de dos vínculos que sí están | 70% y se marca como inferencia |
+| **Aproximado** | el vínculo existe; tu tipo es de la misma familia | 50% |
+| **Plausible** | vecino común o misma zona del texto, sin camino | 18%, sin castigo |
+| **Mudo** | nada | cero, sin castigo |
+| **Invertido** | el texto dice lo contrario, con un tipo que sí tiene dirección | castigo |
+
+`contrasta` es simétrica: afirmarla en cualquier dirección vale igual.
+`generaliza` y `ejemplifica` son duales: decir *A generaliza B* o *B ejemplifica A* es
+la misma afirmación. `apoya`, `extiende` y `matiza` son una familia; confundirlas es
+impreciso, no falso. Solo `causa`, `requiere`, `generaliza` y `ejemplifica` castigan al
+invertirse, porque ahí la dirección **es** la afirmación.
+
+**Derivado** es lo que convierte el juego en razonamiento y no en recuerdo: si trazas
+*A → C* y el texto tiene *A → B → C*, el juego responde «no lo dice directamente, pero
+se sigue», te da crédito y lo registra como inferencia. El Atlas, en cambio, solo recoge
+lo que el texto afirma literalmente.
+
+### Las apócrifas ya no derrumban el diagrama
+
+Una falsificación corrompe la **identidad**, no la **relación**. Si la usas en una
+flecha, el vínculo se evalúa igual sobre el concepto que la titula, con una reserva
+anotada y una pérdida de rendimiento — pero el diagrama sigue en pie.
+
+Y hay una segunda oportunidad: si la relación que trazaste es cierta del **dueño real de
+esa descripción**, el juego te lo dice y te da el crédito. Razonaste por contenido en
+vez de por etiqueta, y eso merece premio, no castigo.
+
+### La corrección ocurre sobre tu propio diagrama
+
+Al resolver, el tablero **se queda en pantalla**. Cada trazo recibe su marca (`✓`, `≈`,
+`~`, `↺`) y su color; los derivados se dibujan con línea larga y los plausibles con
+puntos. Tocas un trazo y lees por qué. El feedback deja de ser una lista de párrafos
+sueltos y vuelve al lugar donde el estudiante pensó.
+
 ### Los combos son la adicción
 
 Salen de que varios trazos **compartan piezas**, no de una lista de recetas:
@@ -127,8 +170,10 @@ Errata + Rumor.
 1. **El daño nunca está impreso.** Se calcula después de comprobar el diagrama.
 2. **Las lentes y los blindajes modulan la recompensa, nunca la corrección.** Se puede
    acertar y no herir, porque ese enemigo pide otra clase de trabajo.
-3. **Lo que el texto no dice no castiga.** Silencio ≠ error. Solo la dirección
-   invertida y la falsificación usada duelen.
+3. **Lo que el texto no dice no castiga.** Silencio ≠ error. Solo la inversión de un
+   tipo direccional y el tachón injusto duelen.
+   Y **nunca se exige recordar la etiqueta exacta**: la escalera da crédito a quien
+   acierta el vínculo aunque falle el matiz.
 4. **Perder no borra el Atlas.** La expedición se pierde; la evidencia se conserva.
 5. **Nunca te bloqueas.** Si nada encaja, cambiar cartas es barato y siempre disponible.
 
@@ -146,6 +191,7 @@ src/
     types.ts        formas normalizadas
     adapter.ts      bundle del extractor -> Contenido, con lectores tolerantes
   engine/
+    graph.ts        semántica del grafo: simetrías, duales, familias y derivaciones
     pieces.ts       una sola forma de carta con roles; fábricas desde el bundle
     tools.ts        las nueve herramientas, su validación, los combos y el marcador
     lenses.ts       los jokers y cómo reescriben la puntuación

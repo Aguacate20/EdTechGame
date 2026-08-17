@@ -1,5 +1,6 @@
 import type { Contenido } from '../content/types'
 import type { Pieza, Rol } from './pieces'
+import { juzgarVinculo } from './graph'
 
 /* ==========================================================================
    Las herramientas cognitivas. Cada una es una forma de AFIRMAR algo sobre
@@ -99,7 +100,21 @@ export interface Trazo {
   param: string | null
 }
 
-export type Estado = 'sostenido' | 'parcial' | 'silencio' | 'invertido' | 'error'
+/** Escalera de veredictos. Solo `error` e `invertido` castigan: lo que el texto
+ *  no dice no es una falta, y lo que se sigue del texto cuenta como acierto. */
+export type Estado =
+  | 'sostenido'    // el texto lo dice tal cual
+  | 'equivalente'  // forma dual o simétrica: la misma afirmación dicha al revés
+  | 'derivado'     // no lo dice, pero se sigue de dos vínculos que sí están
+  | 'aproximado'   // el vínculo existe; el tipo es de la misma familia o vecino
+  | 'plausible'    // no lo dice, pero están cerca en el grafo: sin castigo
+  | 'silencio'     // nada
+  | 'invertido'    // el texto dice lo contrario, con un tipo que sí tiene dirección
+  | 'error'        // falsificación afirmada como verdadera, o tachón injusto
+
+/** Los que cuentan como acierto para combos, alcance y Atlas. */
+export const ACIERTA: Estado[] = ['sostenido', 'equivalente', 'derivado']
+export const esAcierto = (e: Estado): boolean => ACIERTA.includes(e)
 
 export interface Veredicto {
   trazo: Trazo
@@ -114,6 +129,10 @@ export interface Veredicto {
   fusiona: string[]
   apocrifaDetectada: string | null
   repertorioReubicado: string | null
+  /** anotación cuando el jugador usó una carta falsificada sin darse cuenta */
+  reserva: string | null
+  /** el veredicto salió de una inferencia, no de una lectura literal */
+  inferencia: boolean
 }
 
 export interface ModificadoresLente {
@@ -161,6 +180,9 @@ export interface Diagnostico {
   dano: number
   alcance: number
   sostenidos: number
+  aproximados: number
+  inferencias: number
+  reservas: string[]
   errores: number
   invertidos: number
   dimensiones: Dimension[]
@@ -186,14 +208,45 @@ export function rarezaRelacion(c: Contenido, tipo: string): number {
 
 const vacio = (t: Trazo, d: Dimension): Veredicto => ({
   trazo: t, estado: 'silencio', fichas: 0, mult: 0, nota: '', dimension: d,
-  conceptIds: [], aristas: [], fusiona: [], apocrifaDetectada: null, repertorioReubicado: null
+  conceptIds: [], aristas: [], fusiona: [], apocrifaDetectada: null,
+  repertorioReubicado: null, reserva: null, inferencia: false
 })
+
+/** Una apócrifa ya NO derrumba el diagrama.
+ *  Corrompe la identidad, no la relación: sigue apuntando a un concepto real
+ *  (el que la titula) y se evalúa con una reserva anotada. */
+function resolver(p: Pieza): { id: string | null; reserva: string | null } {
+  if (p.clase === 'apocrifa') {
+    return {
+      id: p.conceptId,
+      reserva: `Ojo: esa carta lleva el título de «${p.titulo}» con una descripción que no es suya. ${p.explicacion}`
+    }
+  }
+  return { id: p.conceptId, reserva: null }
+}
+
+/** Crédito por veredicto: la escalera convertida en fichas y multiplicador. */
+const PESO: Record<Estado, { f: number; m: number }> = {
+  sostenido: { f: 1, m: 1 },
+  equivalente: { f: 1, m: 1 },
+  derivado: { f: 0.7, m: 0.65 },
+  aproximado: { f: 0.5, m: 0.35 },
+  plausible: { f: 0.18, m: 0 },
+  silencio: { f: 0, m: 0 },
+  invertido: { f: 0, m: -1 },
+  error: { f: 0, m: -0.6 }
+}
 
 const titulo = (c: Contenido, id: string | null) => (id && c.conceptos[id]?.titulo) || '—'
 
-/** ¿Es esta pieza legítima como nodo del grafo? Una apócrifa no lo es. */
-function nodoValido(p: Pieza): boolean {
-  return p.clase !== 'apocrifa'
+/** Reserva acumulada por usar cartas falsificadas: se anota, no se castiga
+ *  con el derrumbe del diagrama. La falsificación corrompe la identidad,
+ *  no la estructura que el jugador está afirmando. */
+function reservaDe(ps: Pieza[]): string | null {
+  const mala = ps.find((p) => p.clase === 'apocrifa')
+  return mala
+    ? `Ojo: usaste «${mala.titulo}» con una descripción que no es suya. ${mala.explicacion}`
+    : null
 }
 
 function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
@@ -202,24 +255,19 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
   const tipo = t.param ?? 'apoya'
   if (!a || !b || !t.param) return { ...v, nota: 'Falta el tipo de vínculo.' }
 
-  for (const p of [a, b]) {
-    if (!nodoValido(p)) {
-      return { ...v, estado: 'error', nota: `«${p.titulo}» no dice eso. ${p.explicacion}` }
-    }
-  }
   // el caso conecta ejemplificando; la tesis, apoyándose o contrastando
   if (a.clase === 'caso') {
     const ok = tipo === 'ejemplifica' && !!b.conceptId && a.conceptIds.includes(b.conceptId)
     return ok
       ? { ...v, estado: 'sostenido', fichas: 12 + lentes.fichasPorSostenido, mult: 1.2, nota: a.cierre, conceptIds: [b.conceptId!] }
-      : { ...v, nota: 'Un caso se enlaza ejemplificando un concepto que sí opera en él.' }
+      : { ...v, estado: 'plausible', fichas: 3, nota: 'Un caso se enlaza ejemplificando un concepto que sí opera en él.' }
   }
   if (a.clase === 'tesis') {
     const apoya = tipo === 'apoya' && !!b.conceptId && a.conceptIds.includes(b.conceptId)
     const contra = tipo === 'contrasta' && !!b.conceptId && a.conceptIdsRivales.includes(b.conceptId)
     return apoya || contra
       ? { ...v, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.3, nota: a.cierre || 'La tesis queda situada.', conceptIds: [b.conceptId!] }
-      : { ...v, nota: 'Una tesis se apoya en los conceptos que la sostienen o contrasta con los del marco rival.' }
+      : { ...v, estado: 'plausible', fichas: 3, nota: 'Una tesis se apoya en los conceptos que la sostienen o contrasta con los del marco rival.' }
   }
   if (a.clase === 'intuicion') {
     const ok = tipo === 'contrasta' && b.conceptId === a.conceptId
@@ -229,41 +277,63 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
           nota: `${a.explicacion} Donde sí funcionaba: ${a.cierre}`,
           conceptIds: a.conceptId ? [a.conceptId] : [], repertorioReubicado: a.refId
         }
-      : { ...v, estado: 'error', nota: 'Una intuición se reubica contrastándola con el concepto que ocupaba su lugar.' }
-  }
-  if (!a.conceptId || !b.conceptId) {
-    return { ...v, nota: 'Esa pieza no es un nodo del texto.' }
+      : { ...v, estado: 'plausible', nota: 'Una intuición se reubica contrastándola con el concepto que ocupaba su lugar.' }
   }
 
-  const directa = c.aristas.filter((x) => x.from === a.conceptId && x.to === b.conceptId)
-  const inversa = c.aristas.filter((x) => x.from === b.conceptId && x.to === a.conceptId)
-  const exacta = directa.find((x) => x.tipo === tipo)
+  const ra = resolver(a)
+  const rb = resolver(b)
+  if (!ra.id || !rb.id) return { ...v, nota: 'Esa pieza no es un nodo del texto.' }
+
+  let h = juzgarVinculo(c, ra.id, rb.id, tipo)
+  let desde = ra.id
+  let hasta = rb.id
+  let porContenido = false
+
+  // Segunda oportunidad: si usaste una apócrifa, quizá razonaste por la
+  // DESCRIPCIÓN y no por la etiqueta. Si la relación es cierta del dueño real
+  // de esa descripción, eso es pensar por contenido y merece crédito.
+  const ACIERTA_H = ['sostenida', 'equivalente', 'derivada']
+  if ((a.clase === 'apocrifa' || b.clase === 'apocrifa') && !ACIERTA_H.includes(h.estado)) {
+    const alt = {
+      from: a.clase === 'apocrifa' ? (a.duenoReal ?? ra.id) : ra.id,
+      to: b.clase === 'apocrifa' ? (b.duenoReal ?? rb.id) : rb.id
+    }
+    const h2 = juzgarVinculo(c, alt.from, alt.to, tipo)
+    if (ACIERTA_H.includes(h2.estado)) {
+      h = h2
+      desde = alt.from
+      hasta = alt.to
+      porContenido = true
+    }
+  }
+
+  const MAPA: Record<string, Estado> = {
+    sostenida: 'sostenido', equivalente: 'equivalente', derivada: 'derivado',
+    aproximada: 'aproximado', plausible: 'plausible', muda: 'silencio', invertida: 'invertido'
+  }
+  const estado = MAPA[h.estado] ?? 'silencio'
   const imp = (a.importancia + b.importancia) / 2
+  const peso = PESO[estado]
+  const fichasBase = 8 + Math.round(12 * imp) + lentes.fichasPorSostenido
+  const multBase = rarezaRelacion(c, h.tipoReal ?? tipo) + (lentes.multPorTipo[tipo] ?? 0)
+  const reserva = ra.reserva ?? rb.reserva
 
-  if (exacta) {
-    return {
-      ...v, estado: 'sostenido',
-      fichas: 8 + Math.round(12 * imp) + lentes.fichasPorSostenido,
-      mult: rarezaRelacion(c, tipo) + (lentes.multPorTipo[tipo] ?? 0),
-      nota: exacta.descripcion, conceptIds: [a.conceptId, b.conceptId],
-      aristas: [{ from: a.conceptId, to: b.conceptId, tipo }]
-    }
+  return {
+    ...v,
+    estado,
+    fichas: Math.round(fichasBase * peso.f),
+    mult: peso.m < 0 ? peso.m : multBase * peso.m,
+    nota: porContenido
+      ? `Fuiste por la descripción y no por el título, y ahí acertaste: ${h.nota}`
+      : h.nota,
+    reserva,
+    inferencia: estado === 'derivado',
+    conceptIds: [desde, hasta],
+    // el Atlas solo recoge lo que el texto afirma literalmente, no lo inferido
+    aristas: estado === 'sostenido' || estado === 'equivalente'
+      ? [{ from: desde, to: hasta, tipo: h.tipoReal ?? tipo }]
+      : []
   }
-  if (directa.length) {
-    return {
-      ...v, estado: 'parcial', fichas: 5,
-      nota: `El vínculo existe, pero es «${directa[0].tipo}»: ${directa[0].descripcion}`,
-      conceptIds: [a.conceptId, b.conceptId]
-    }
-  }
-  if (inversa.length) {
-    return {
-      ...v, estado: 'invertido', mult: -1,
-      nota: `Va al contrario: ${titulo(c, b.conceptId)} ${inversa[0].tipo} ${titulo(c, a.conceptId)}.`,
-      conceptIds: [a.conceptId, b.conceptId]
-    }
-  }
-  return { ...v, nota: 'El texto no afirma nada entre esos dos.' }
 }
 
 function validarIdentidad(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
@@ -298,13 +368,10 @@ function validarIdentidad(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
 
 function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'estructura')
-  if (ps.some((p) => !nodoValido(p))) {
-    const bad = ps.find((p) => !nodoValido(p))!
-    return { ...v, estado: 'error', nota: `${bad.explicacion}` }
-  }
+  const reserva = reservaDe(ps)
   const marco = ps.find((p) => p.clase === 'marco')
   const conceptos = ps.filter((p) => p.conceptId && p.clase !== 'marco')
-  if (conceptos.length < 2) return { ...v, nota: 'Un campo necesita al menos dos conceptos.' }
+  if (conceptos.length < 2) return { ...v, reserva, nota: 'Un campo necesita al menos dos conceptos.' }
 
   if (marco) {
     const dentro = conceptos.filter((p) => marco.conceptIds.includes(p.conceptId!))
@@ -316,7 +383,7 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
           conceptIds: conceptos.map((p) => p.conceptId!)
         }
       : {
-          ...v, estado: 'parcial', fichas: 4 * dentro.length,
+          ...v, estado: 'aproximado', fichas: 4 * dentro.length,
           nota: `${conceptos.length - dentro.length} de esos conceptos no pertenecen a ${marco.titulo}.`,
           conceptIds: dentro.map((p) => p.conceptId!)
         }
@@ -324,7 +391,7 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
   const clusters = new Set(conceptos.map((p) => c.conceptos[p.conceptId!]?.clusterId ?? '—'))
   if (clusters.size === 1 && !clusters.has('—')) {
     return {
-      ...v, estado: 'sostenido', fichas: 7 * conceptos.length + lentes.fichasPorSostenido,
+      ...v, reserva, estado: 'sostenido', fichas: 7 * conceptos.length + lentes.fichasPorSostenido,
       mult: 0.9 + 0.25 * conceptos.length, nota: 'Comparten zona del texto.',
       conceptIds: conceptos.map((p) => p.conceptId!)
     }
@@ -337,11 +404,9 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
 
 function validarJerarquia(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'estructura')
-  if (ps.some((p) => !nodoValido(p))) {
-    return { ...v, estado: 'error', nota: ps.find((p) => !nodoValido(p))!.explicacion }
-  }
+  const reserva = reservaDe(ps)
   const ids = ps.map((p) => p.conceptId).filter((x): x is string => !!x)
-  if (ids.length < 2) return { ...v, nota: 'La jerarquía necesita dos conceptos.' }
+  if (ids.length < 2) return { ...v, reserva, nota: 'La jerarquía necesita dos conceptos.' }
 
   let ok = 0
   const aristas: Diagnostico['aristas'] = []
@@ -352,11 +417,11 @@ function validarJerarquia(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
   }
   if (ok === ids.length - 1) {
     return {
-      ...v, estado: 'sostenido', fichas: 10 * ok + lentes.fichasPorSostenido, mult: 1.1 * ok,
+      ...v, reserva, estado: 'sostenido', fichas: 10 * ok + lentes.fichasPorSostenido, mult: 1.1 * ok,
       nota: 'La contención categórica se sostiene de arriba abajo.', conceptIds: ids, aristas
     }
   }
-  if (ok > 0) return { ...v, estado: 'parcial', fichas: 5 * ok, nota: 'Parte de la jerarquía se sostiene.', conceptIds: ids, aristas }
+  if (ok > 0) return { ...v, reserva, estado: 'aproximado', fichas: 5 * ok, nota: 'Parte de la jerarquía se sostiene.', conceptIds: ids, aristas }
   const alReves = c.aristas.some((x) => x.from === ids[1] && x.to === ids[0] && x.tipo === 'generaliza')
   return alReves
     ? { ...v, estado: 'invertido', mult: -1, nota: `«${titulo(c, ids[1])}» es la categoría, no lo contrario.`, conceptIds: ids }
@@ -365,40 +430,36 @@ function validarJerarquia(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
 
 function validarEje(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'relacion')
-  if (!t.param) return { ...v, nota: 'Elige un eje y un extremo.' }
+  const reserva = reservaDe(ps)
+  if (!t.param) return { ...v, reserva, nota: 'Elige un eje y un extremo.' }
   const [ejeId, valor] = t.param.split('::')
   const eje = c.ejes.find((e) => e.id === ejeId)
-  if (!eje) return { ...v, nota: 'Este texto no trae ese eje.' }
-  if (ps.some((p) => !nodoValido(p))) {
-    return { ...v, estado: 'error', nota: ps.find((p) => !nodoValido(p))!.explicacion }
-  }
+  if (!eje) return { ...v, reserva, nota: 'Este texto no trae ese eje.' }
   const ids = ps.map((p) => p.conceptId).filter((x): x is string => !!x)
-  if (ids.length < 2) return { ...v, nota: 'Coloca al menos dos piezas en el eje.' }
+  if (ids.length < 2) return { ...v, reserva, nota: 'Coloca al menos dos piezas en el eje.' }
   const aciertos = ids.filter((id) => String(eje.valores[id] ?? '') === valor)
   if (aciertos.length === ids.length) {
     return {
-      ...v, estado: 'sostenido', fichas: 9 * ids.length + lentes.fichasPorSostenido,
+      ...v, reserva, estado: 'sostenido', fichas: 9 * ids.length + lentes.fichasPorSostenido,
       mult: 1.2 + 0.2 * ids.length,
       nota: `Todos son «${valor}» en el eje ${eje.nombre}.`, conceptIds: ids
     }
   }
   if (aciertos.length) {
     return {
-      ...v, estado: 'parcial', fichas: 4 * aciertos.length,
+      ...v, reserva, estado: 'aproximado', fichas: 4 * aciertos.length,
       nota: `${ids.length - aciertos.length} de esas piezas están en el otro extremo de ${eje.nombre}.`,
       conceptIds: aciertos
     }
   }
-  return { ...v, estado: 'invertido', mult: -1, nota: `Ninguno es «${valor}» en ${eje.nombre}.`, conceptIds: ids }
+  return { ...v, reserva, estado: 'invertido', mult: -1, nota: `Ninguno es «${valor}» en ${eje.nombre}.`, conceptIds: ids }
 }
 
 function validarSecuencia(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'estructura')
-  if (ps.some((p) => !nodoValido(p))) {
-    return { ...v, estado: 'error', nota: ps.find((p) => !nodoValido(p))!.explicacion }
-  }
+  const reserva = reservaDe(ps)
   const ids = ps.map((p) => p.conceptId).filter((x): x is string => !!x)
-  if (ids.length < 3) return { ...v, nota: 'Una secuencia necesita tres pasos.' }
+  if (ids.length < 3) return { ...v, reserva, nota: 'Una secuencia necesita tres pasos.' }
   const aristas: Diagnostico['aristas'] = []
   let ok = 0
   for (let i = 0; i + 1 < ids.length; i++) {
@@ -407,40 +468,38 @@ function validarSecuencia(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
   }
   if (ok === ids.length - 1) {
     return {
-      ...v, estado: 'sostenido', fichas: 12 * ok + lentes.fichasPorSostenido, mult: 1.4 * ok,
+      ...v, reserva, estado: 'sostenido', fichas: 12 * ok + lentes.fichasPorSostenido, mult: 1.4 * ok,
       nota: 'El proceso ocurre en ese orden.', conceptIds: ids, aristas
     }
   }
-  if (ok > 0) return { ...v, estado: 'parcial', fichas: 6 * ok, nota: 'Parte del orden se sostiene.', conceptIds: ids, aristas }
-  return { ...v, nota: 'El texto no encadena esos pasos así.' }
+  if (ok > 0) return { ...v, reserva, estado: 'aproximado', fichas: 6 * ok, nota: 'Parte del orden se sostiene.', conceptIds: ids, aristas }
+  return { ...v, reserva, nota: 'El texto no encadena esos pasos así.' }
 }
 
 function validarAncla(_c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'transferencia')
   const caso = ps.find((p) => p.clase === 'caso')
   const resto = ps.filter((p) => p !== caso)
-  if (!caso) return { ...v, nota: 'El ancla necesita un caso.' }
-  if (resto.some((p) => !nodoValido(p))) {
-    return { ...v, estado: 'error', nota: resto.find((p) => !nodoValido(p))!.explicacion }
-  }
+  const reserva = reservaDe(resto)
+  if (!caso) return { ...v, reserva, nota: 'El ancla necesita un caso.' }
   const ids = resto.map((p) => p.conceptId).filter((x): x is string => !!x)
-  if (!ids.length) return { ...v, nota: 'Ancla el caso a los conceptos que operan en él.' }
+  if (!ids.length) return { ...v, reserva, nota: 'Ancla el caso a los conceptos que operan en él.' }
   const aciertos = ids.filter((id) => caso.conceptIds.includes(id))
   const m = caso.distancia === 'lejana' ? 2.2 : caso.distancia === 'media' ? 1.6 : 1.1
   if (aciertos.length === ids.length) {
     return {
-      ...v, estado: 'sostenido', fichas: 10 * ids.length + 8 + lentes.fichasPorSostenido,
+      ...v, reserva, estado: 'sostenido', fichas: 10 * ids.length + 8 + lentes.fichasPorSostenido,
       mult: m + 0.2 * ids.length, nota: caso.cierre, conceptIds: ids
     }
   }
   if (aciertos.length) {
     return {
-      ...v, estado: 'parcial', fichas: 5 * aciertos.length, mult: m * 0.5,
+      ...v, reserva, estado: 'aproximado', fichas: 5 * aciertos.length, mult: m * 0.5,
       nota: `${ids.length - aciertos.length} de esos conceptos no operan en este caso. ${caso.cierre}`,
       conceptIds: aciertos
     }
   }
-  return { ...v, estado: 'invertido', mult: -1, nota: `Ninguno opera ahí. ${caso.cierre}`, conceptIds: ids }
+  return { ...v, reserva, estado: 'invertido', mult: -1, nota: `Ninguno opera ahí. ${caso.cierre}`, conceptIds: ids }
 }
 
 function validarBalanza(_c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
@@ -527,9 +586,12 @@ export function evaluarDiagrama(
     veredictos.push({ ...ver, mult: ver.mult + (ver.estado === 'sostenido' ? extra : 0) })
   }
 
-  const sostenidos = veredictos.filter((v) => v.estado === 'sostenido')
+  // acierto = lo que el texto sostiene, dicho al derecho, al revés o inferido
+  const sostenidos = veredictos.filter((v) => esAcierto(v.estado))
+  const aproximados = veredictos.filter((v) => v.estado === 'aproximado')
   const errores = veredictos.filter((v) => v.estado === 'error')
   const invertidos = veredictos.filter((v) => v.estado === 'invertido')
+  const reservas = veredictos.map((v) => v.reserva).filter((x): x is string => !!x)
 
   let fichas = veredictos.reduce((n, v) => n + v.fichas, 0)
   let mult = 1 + veredictos.reduce((n, v) => n + v.mult, 0)
@@ -598,8 +660,11 @@ export function evaluarDiagrama(
     combos[combos.length - 1].nombre = 'Umbral'
   }
 
-  if (errores.length) { fichas = Math.round(fichas * 0.35); mult = Math.max(0.3, mult * 0.5) }
-  mult = Math.max(0, mult + (errores.length ? 0 : lentes.multGlobal))
+  // un error resta, pero ya no derrumba el diagrama entero: lo demás sigue en pie
+  if (errores.length) mult = Math.max(0.4, mult - 0.5 * errores.length)
+  // usar una falsificación sin darse cuenta cuesta rendimiento, no la jugada
+  if (reservas.length) mult = Math.max(0.4, mult * (1 - 0.15 * reservas.length))
+  mult = Math.max(0, mult + lentes.multGlobal)
 
   const dano = Math.max(0, Math.round(fichas * mult))
   const dims = [...new Set(sostenidos.map((v) => v.dimension))]
@@ -608,6 +673,9 @@ export function evaluarDiagrama(
     veredictos, combos, fichas, mult, dano,
     alcance: Math.min(4, 1 + Math.floor(sostenidos.length / 1.5) + lentes.alcanceExtra),
     sostenidos: sostenidos.length,
+    aproximados: aproximados.length,
+    inferencias: veredictos.filter((v) => v.inferencia).length,
+    reservas,
     errores: errores.length,
     invertidos: invertidos.length,
     dimensiones: dims,
@@ -616,7 +684,7 @@ export function evaluarDiagrama(
     fusiona: [...new Set(sostenidos.flatMap((v) => v.fusiona))],
     apocrifasDetectadas: sostenidos.map((v) => v.apocrifaDetectada).filter((x): x is string => !!x),
     repertoriosReubicados: sostenidos.map((v) => v.repertorioReubicado).filter((x): x is string => !!x),
-    autodano: errores.length * 5 + invertidos.length * 3,
+    autodano: errores.length * 4 + invertidos.length * 3,
     cierre: sostenidos.length ? sostenidos[sostenidos.length - 1].nota : null
   }
 }

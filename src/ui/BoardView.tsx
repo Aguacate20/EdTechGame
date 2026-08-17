@@ -21,8 +21,35 @@ export interface AccionesBatalla {
 }
 
 const COLOR_ESTADO: Record<string, string> = {
-  sostenido: 'var(--verdigris)', parcial: 'var(--laton)',
-  silencio: 'var(--niebla)', invertido: 'var(--oxido)', error: 'var(--oxido)'
+  sostenido: 'var(--verdigris)',
+  equivalente: 'var(--verdigris)',
+  derivado: '#7fa8d6',
+  aproximado: 'var(--laton)',
+  plausible: '#7a6fb0',
+  silencio: 'var(--niebla)',
+  invertido: 'var(--oxido)',
+  error: 'var(--oxido)'
+}
+
+const ETIQUETA_ESTADO: Record<string, string> = {
+  sostenido: 'sostenido',
+  equivalente: 'lo mismo dicho al revés',
+  derivado: 'se sigue del texto',
+  aproximado: 'vas bien, otro matiz',
+  plausible: 'razonable, el texto no lo dice',
+  silencio: 'el texto no lo dice',
+  invertido: 'al revés',
+  error: 'falla'
+}
+
+const TONO_NOTA: Record<string, string> = {
+  sostenido: 'ok', equivalente: 'ok', derivado: 'ok',
+  aproximado: 'nota', plausible: 'nota', silencio: 'nota',
+  invertido: 'mal', error: 'mal'
+}
+
+function recorte(t: string, n: number): string {
+  return t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t
 }
 
 function Naipe({ p, compacto }: { p: Pieza; compacto?: boolean }) {
@@ -36,8 +63,9 @@ function Naipe({ p, compacto }: { p: Pieza; compacto?: boolean }) {
   return (
     <>
       <span className="tt">{ETIQUETA[p.clase]}</span>
-      <span className="nom">{p.titulo}</span>
-      {!compacto && p.cuerpo && <span className="cuerpo">{p.cuerpo}</span>}
+      <span className="nom">{recorte(p.titulo, 46)}</span>
+      {!compacto && p.cuerpo && <span className="cuerpo">{recorte(p.cuerpo, 190)}</span>}
+      {!compacto && p.cuerpo.length > 190 && <span className="mas">toca para leerlo entero</span>}
       {p.umbral && <span className="marca">umbral</span>}
       <i className={`borde borde-${clase}`} />
     </>
@@ -60,17 +88,27 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
   const [pendientes, setPendientes] = useState<string[]>([])
   const [seleccion, setSeleccion] = useState<string | null>(null)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
-
-  const resuelto = e.fase !== 'jugando'
-  const enMano = e.mano.filter((p) => !e.tablero.some((t) => t.uid === p.uid))
-  const enTablero = e.tablero
-    .map((t) => ({ t, p: e.mano.find((x) => x.uid === t.uid) }))
-    .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
+  const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
 
   const previa = useMemo(
     () => evaluarDiagrama(contenido, e.mano, e.trazos, lentes),
     [contenido, e.mano, e.trazos, lentes]
   )
+  const resuelto = e.fase !== 'jugando'
+  const foto = resuelto ? e.ultima?.foto : null
+  const enMano = e.mano.filter((p) => !e.tablero.some((t) => t.uid === p.uid))
+  const enTablero = foto
+    ? foto.tablero
+        .map((t) => ({ t, p: foto.piezas.find((x) => x.uid === t.uid) }))
+        .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
+    : e.tablero
+        .map((t) => ({ t, p: e.mano.find((x) => x.uid === t.uid) }))
+        .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
+  const trazosVisibles = foto ? foto.trazos : e.trazos
+  const posiciones = foto ? foto.tablero : e.tablero
+  const veredictos = resuelto && e.ultima ? e.ultima.diag.veredictos : previa.veredictos
+  const piezaAbierta = [...e.mano, ...(foto?.piezas ?? [])].find((p) => p.uid === seleccion) ?? null
+
   const libres = herramientasLibres(e)
   const objetivo = vivos(e).sort((a, b) => a.posicion - b.posicion)[0]
   const h = herramienta ? HERRAMIENTAS[herramienta] : null
@@ -94,6 +132,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
       return
     }
     setSeleccion(seleccion === uid ? null : uid)
+    setTrazoAbierto(null)
   }
 
   const cerrarTrazo = () => {
@@ -131,6 +170,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
           setArrastrando(null)
         }}
       >
+        {resuelto && <span className="marca-corregido">corregido</span>}
         {enTablero.length === 0 && (
           <p className="pista-lienzo">
             Arrastra piezas aquí. Después elige una herramienta y toca las piezas
@@ -139,12 +179,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
         )}
 
         <svg className="trazos" aria-hidden>
-          {e.trazos.map((t) => {
+          {trazosVisibles.map((t) => {
             const pts = t.piezas
-              .map((u) => e.tablero.find((x) => x.uid === u))
+              .map((u) => posiciones.find((x) => x.uid === u))
               .filter((x): x is NonNullable<typeof x> => !!x)
             if (pts.length < 1) return null
-            const ver = previa.veredictos.find((v) => v.trazo.uid === t.uid)
+            const ver = veredictos.find((v) => v.trazo.uid === t.uid)
             const color = COLOR_ESTADO[ver?.estado ?? 'silencio']
             const tool = HERRAMIENTAS[t.tool]
             if (t.tool === 'campo' || t.tool === 'eje') {
@@ -166,10 +206,27 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
                   return (
                     <line key={i} x1={`${a.x}%`} y1={`${a.y}%`} x2={`${b.x}%`} y2={`${b.y}%`}
                       stroke={color} strokeWidth="2.4"
-                      strokeDasharray={t.tool === 'identidad' ? '3 3' : undefined}
+                      strokeDasharray={
+                        t.tool === 'identidad' ? '3 3'
+                        : ver?.estado === 'derivado' ? '9 4'
+                        : ver?.estado === 'plausible' ? '2 6' : undefined}
                       markerEnd={tool.ordenada ? 'url(#punta)' : undefined} />
                   )
                 })}
+                {resuelto && ver && (
+                  <text
+                    x={`${(pts[0].x + pts[pts.length - 1].x) / 2}%`}
+                    y={`${(pts[0].y + pts[pts.length - 1].y) / 2 - 3}%`}
+                    fill={color} fontSize="11" textAnchor="middle"
+                    style={{ fontFamily: 'var(--mono)' }}>
+                    {ver.estado === 'sostenido' ? '✓'
+                      : ver.estado === 'equivalente' ? '✓ ='
+                      : ver.estado === 'derivado' ? '✓ se sigue'
+                      : ver.estado === 'aproximado' ? '≈'
+                      : ver.estado === 'plausible' ? '~'
+                      : ver.estado === 'invertido' ? '↺' : '·'}
+                  </text>
+                )}
                 {t.tool === 'tachon' && (
                   <text x={`${pts[0].x}%`} y={`${pts[0].y}%`} fill={color}
                     fontSize="26" textAnchor="middle" dominantBaseline="middle">✗</text>
@@ -179,7 +236,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
           })}
           <defs>
             <marker id="punta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-              <path d="M0 0 L8 4 L0 8 z" fill="var(--verdigris)" />
+              <path d="M0 0 L8 4 L0 8 z" fill="var(--niebla)" />
             </marker>
           </defs>
         </svg>
@@ -319,22 +376,55 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
             <span className="por">=</span>
             <span className="total">{e.ultima.diag.dano}</span>
           </div>
+
+          <p className="silencio" style={{ margin: 0, fontSize: 13 }}>
+            Tu diagrama sigue arriba. Cada trazo lleva ahora su marca; toca uno para leer por qué.
+          </p>
+
+          <div className="fila" style={{ gap: 6, flexWrap: 'wrap' }}>
+            {trazosVisibles.map((t) => {
+              const ver = veredictos.find((v) => v.trazo.uid === t.uid)
+              const est = ver?.estado ?? 'silencio'
+              return (
+                <button
+                  key={t.uid}
+                  className={`trazo-chip${trazoAbierto === t.uid ? ' abierto' : ''}`}
+                  style={{ borderColor: COLOR_ESTADO[est], color: COLOR_ESTADO[est] }}
+                  onClick={() => setTrazoAbierto(trazoAbierto === t.uid ? null : t.uid)}
+                >
+                  {HERRAMIENTAS[t.tool].glifo} {HERRAMIENTAS[t.tool].nombre}
+                  {t.param ? ` · ${t.param.split('::').pop()}` : ''} — {ETIQUETA_ESTADO[est]}
+                </button>
+              )
+            })}
+          </div>
+
+          {trazoAbierto && (() => {
+            const ver = veredictos.find((v) => v.trazo.uid === trazoAbierto)
+            if (!ver) return null
+            return (
+              <div className="detalle-trazo">
+                <p className={`nota ${TONO_NOTA[ver.estado]}`} style={{ margin: 0 }}>{ver.nota}</p>
+                {ver.reserva && <p className="nota nota" style={{ margin: '6px 0 0' }}>{ver.reserva}</p>}
+                {ver.inferencia && (
+                  <p className="dato silencio" style={{ margin: '6px 0 0' }}>
+                    Esto lo dedujiste tú: no estaba escrito. Cuenta como inferencia.
+                  </p>
+                )}
+              </div>
+            )
+          })()}
+
           <div className="fila" style={{ gap: 6, flexWrap: 'wrap' }}>
             {e.ultima.diag.dimensiones.map((d) => <Chip key={d} tono="verde">{d}</Chip>)}
+            {e.ultima.diag.inferencias > 0 && (
+              <Chip tono="verde">{e.ultima.diag.inferencias} inferencia(s)</Chip>
+            )}
             {e.ultima.diag.combos.map((c, i) => (
               <Chip key={i} tono="laton">{c.nombre} +{c.mult.toFixed(1)}×</Chip>
             ))}
           </div>
-          {e.ultima.diag.veredictos.map((v, i) => (
-            <p key={i} className={`nota ${v.estado === 'sostenido' ? 'ok' : v.estado === 'silencio' ? 'nota' : 'mal'}`}>
-              <strong>{HERRAMIENTAS[v.trazo.tool].glifo} {HERRAMIENTAS[v.trazo.tool].nombre}</strong>
-              {' · '}{v.estado === 'sostenido' ? 'sostenido'
-                : v.estado === 'parcial' ? 'a medias'
-                : v.estado === 'silencio' ? 'el texto no lo dice'
-                : v.estado === 'invertido' ? 'al revés' : 'derrumbe'}
-              <br />{v.nota}
-            </p>
-          ))}
+
           {e.ultima.impactos.map((im) => (
             <p key={im.uid} className="dato" style={{ margin: 0 }}>
               {im.nombre}: −{im.dano}{im.derribado ? ' · cae' : ''}{im.motivo ? ` · ${im.motivo}` : ''}
@@ -347,7 +437,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               ))}
             </ul>
           )}
-          <button className="btn primario" onClick={on.continuar} style={{ alignSelf: 'flex-start' }}>
+          <button className="btn primario" onClick={() => { setTrazoAbierto(null); on.continuar() }} style={{ alignSelf: 'flex-start' }}>
             {e.fase === 'ganado' ? 'El carril queda despejado'
               : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}
           </button>
@@ -377,6 +467,19 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               </div>
             ))}
           </div>
+
+          {piezaAbierta && (
+            <div className="lupa">
+              <span className="eyebrow">{ETIQUETA[piezaAbierta.clase]}</span>
+              <strong style={{ fontSize: 16 }}>{piezaAbierta.titulo}</strong>
+              {piezaAbierta.cuerpo && (
+                <p className="serif-lectura" style={{ margin: 0 }}>{piezaAbierta.cuerpo}</p>
+              )}
+              {piezaAbierta.clase === 'caso' && piezaAbierta.distancia && (
+                <span className="dato silencio">distancia {piezaAbierta.distancia}</span>
+              )}
+            </div>
+          )}
 
           {seleccion && enMano.some((p) => p.uid === seleccion) && (
             <div className="pozo">
