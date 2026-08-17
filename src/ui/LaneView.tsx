@@ -1,4 +1,7 @@
 import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
+import { Retrato } from './assets'
+import { sfx } from './sfx'
+import { useEffect, useRef } from 'react'
 
 /* El carril: el jugador a la izquierda, los enemigos entrando por la derecha.
    Cada afirmación es un turno; cada turno se acercan. */
@@ -55,12 +58,31 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
   ultimosImpactos: { uid: string; dano: number }[]
 }) {
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
+  const gestosPrevios = useRef<Record<string, string>>({})
+
+  useEffect(() => {
+    for (const e of enemigos) {
+      const antes = gestosPrevios.current[e.uid]
+      if (antes !== e.gesto) {
+        if (e.gesto === 'golpea') sfx.golpe()
+        else if (e.gesto === 'critico') sfx.critico()
+        else if (e.gesto === 'herido') sfx.golpe()
+        else if (e.gesto === 'cae') sfx.cae()
+        else if (e.gesto === 'avanza') sfx.paso()
+        gestosPrevios.current[e.uid] = e.gesto
+      }
+    }
+  }, [enemigos])
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
 
   return (
     <div className="carril">
       <div className="carril-jugador">
-        <Copista gesto={gesto} />
+        <Retrato
+          familia="jugador" id="copista" alt="El Copista"
+          tamano={40} gesto={gesto}
+          respaldo={<Copista gesto={gesto} />}
+        />
         <div>
           <span className="eyebrow">El Copista</span>
           <div className="vida ancha"><span style={{ width: `${(lucidez / lucidezMax) * 100}%` }} /></div>
@@ -85,7 +107,11 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
                     title={`${e.nombre} — ${t.glosa}`}
                   >
                     {impacto && <span className="flotante">−{impacto.dano}</span>}
-                    <Silueta tipoId={e.tipoId} />
+                    <Retrato
+                      familia="enemigos" id={e.tipoId} alt={e.nombre}
+                      tamano={34} gesto={e.gesto}
+                      respaldo={<Silueta tipoId={e.tipoId} />}
+                    />
                     <span className="nom">{e.nombre}</span>
                     <div className="vida"><span style={{ width: `${(e.hp / e.hpMax) * 100}%` }} /></div>
                     <span className="rasgo">

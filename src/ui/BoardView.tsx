@@ -10,6 +10,9 @@ import {
 import { tipoPorId } from '../engine/lane'
 import { LaneView } from './LaneView'
 import { Chip } from './components'
+import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
+import { useCascada } from './cascade'
+import { despertarAudio, sfx } from './sfx'
 
 export interface AccionesBatalla {
   cambio: (mut: (e: EstadoBatalla) => void) => void
@@ -52,22 +55,21 @@ function recorte(t: string, n: number): string {
   return t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t
 }
 
-function Naipe({ p, compacto }: { p: Pieza; compacto?: boolean }) {
-  const clase = p.clase === 'etiqueta' ? 'et'
-    : p.clase === 'definicion' ? 'de'
-    : p.clase === 'caso' ? 'ca'
-    : p.clase === 'tesis' || p.clase === 'criterio' ? 'te'
-    : p.clase === 'marco' ? 'ma'
-    : p.clase === 'intuicion' ? 'in'
-    : p.clase === 'subdimension' ? 'su' : 'co'
+function Naipe({ p, contenido, compacto }: { p: Pieza; contenido: Contenido; compacto?: boolean }) {
+  const cd = cedulaDe(contenido, p)
   return (
     <>
-      <span className="tt">{ETIQUETA[p.clase]}</span>
+      <span className="tt">
+        {ETIQUETA[p.clase]}
+        <span className="orn" aria-hidden>{cd.ornamento}</span>
+      </span>
       <span className="nom">{recorte(p.titulo, 46)}</span>
       {!compacto && p.cuerpo && <span className="cuerpo">{recorte(p.cuerpo, 190)}</span>}
       {!compacto && p.cuerpo.length > 190 && <span className="mas">toca para leerlo entero</span>}
       {p.umbral && <span className="marca">umbral</span>}
-      <i className={`borde borde-${clase}`} />
+      <i className="borde" style={{ background: cd.banda }} />
+      <i className={`grano grano-${cd.textura}`} aria-hidden />
+      {cd.canto && <i className="canto" aria-hidden />}
     </>
   )
 }
@@ -108,6 +110,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
   const posiciones = foto ? foto.tablero : e.tablero
   const veredictos = resuelto && e.ultima ? e.ultima.diag.veredictos : previa.veredictos
   const piezaAbierta = [...e.mano, ...(foto?.piezas ?? [])].find((p) => p.uid === seleccion) ?? null
+  const casc = useCascada(resuelto && e.ultima ? e.ultima.diag : null, resuelto)
 
   const libres = herramientasLibres(e)
   const objetivo = vivos(e).sort((a, b) => a.posicion - b.posicion)[0]
@@ -126,7 +129,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
   }
 
   const tocarPieza = (uid: string) => {
+    despertarAudio()
     if (resuelto) return
+    sfx.tomar()
     if (h) {
       setPendientes((prev) => prev.includes(uid) ? prev.filter((x) => x !== uid) : [...prev, uid])
       return
@@ -137,6 +142,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
 
   const cerrarTrazo = () => {
     if (!herramienta || !puedeCerrar) return
+    sfx.trazar()
     on.cambio((st) => { trazar(st, herramienta, pendientes, param) })
     reset()
   }
@@ -166,6 +172,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
           const uid = arrastrando ?? ev.dataTransfer.getData('text/plain')
           if (!uid || resuelto) return
           const { x, y } = posicionEnLienzo(ev)
+          sfx.soltar()
           on.cambio((st) => soltar(st, uid, x, y))
           setArrastrando(null)
         }}
@@ -200,17 +207,31 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               )
             }
             return (
-              <g key={t.uid}>
+              <g key={t.uid} className={resuelto && !casc.trazosRevelados.has(t.uid) ? 'oculto' : 'trazo-vivo'}>
                 {pts.slice(0, -1).map((a, i) => {
                   const b = pts[i + 1]
+                  const est = t.tool === 'flecha' ? estiloRelacion(t.param) : null
+                  const dash = est?.dash
+                    ?? (t.tool === 'identidad' ? '3 3'
+                      : ver?.estado === 'derivado' ? '9 4'
+                      : ver?.estado === 'plausible' ? '2 6' : undefined)
+                  const ancho = est?.ancho ?? 2.4
+                  const comun = {
+                    stroke: color, strokeWidth: ancho, strokeDasharray: dash,
+                    fill: 'none' as const,
+                    markerEnd: tool.ordenada ? `url(#punta-${est?.punta ?? 'flecha'})` : undefined
+                  }
+                  if (est?.ondulada) return null // se dibuja en la capa de ondas
                   return (
-                    <line key={i} x1={`${a.x}%`} y1={`${a.y}%`} x2={`${b.x}%`} y2={`${b.y}%`}
-                      stroke={color} strokeWidth="2.4"
-                      strokeDasharray={
-                        t.tool === 'identidad' ? '3 3'
-                        : ver?.estado === 'derivado' ? '9 4'
-                        : ver?.estado === 'plausible' ? '2 6' : undefined}
-                      markerEnd={tool.ordenada ? 'url(#punta)' : undefined} />
+                    <g key={i}>
+                      <line x1={`${a.x}%`} y1={`${a.y}%`} x2={`${b.x}%`} y2={`${b.y}%`} {...comun} />
+                      {est?.doble && (
+                        <line
+                          x1={`${a.x}%`} y1={`${a.y + 1.6}%`} x2={`${b.x}%`} y2={`${b.y + 1.6}%`}
+                          stroke={color} strokeWidth={ancho * 0.7} fill="none" opacity=".75"
+                        />
+                      )}
+                    </g>
                   )
                 })}
                 {resuelto && ver && (
@@ -235,10 +256,39 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
             )
           })}
           <defs>
-            <marker id="punta" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-              <path d="M0 0 L8 4 L0 8 z" fill="var(--niebla)" />
+            <marker id="punta-flecha" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0 0.5 L9 4.5 L0 8.5 z" fill="currentColor" />
             </marker>
+            <marker id="punta-barra" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+              <path d="M6 0.5 L6 8.5" stroke="currentColor" strokeWidth="2.4" />
+            </marker>
+            <marker id="punta-doble" markerWidth="11" markerHeight="9" refX="9" refY="4.5" orient="auto">
+              <path d="M0 0.5 L5 4.5 L0 8.5 z M5 0.5 L10 4.5 L5 8.5 z" fill="currentColor" />
+            </marker>
+            <marker id="punta-ninguna" markerWidth="1" markerHeight="1" refX="0" refY="0" />
           </defs>
+        </svg>
+
+        <svg className="trazos ondas" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+          {trazosVisibles
+            .filter((t) => t.tool === 'flecha' && estiloRelacion(t.param).ondulada)
+            .map((t) => {
+              const pts = t.piezas
+                .map((u) => posiciones.find((x) => x.uid === u))
+                .filter((x): x is NonNullable<typeof x> => !!x)
+              if (pts.length < 2) return null
+              const ver = veredictos.find((v) => v.trazo.uid === t.uid)
+              if (resuelto && !casc.trazosRevelados.has(t.uid)) return null
+              return (
+                <path
+                  key={t.uid}
+                  d={ondaEntre(pts[0].x, pts[0].y, pts[1].x, pts[1].y)}
+                  fill="none" strokeWidth={1.8}
+                  stroke={COLOR_ESTADO[ver?.estado ?? 'silencio']}
+                  vectorEffect="non-scaling-stroke"
+                />
+              )
+            })}
         </svg>
 
         {enTablero.map(({ t, p }) => {
@@ -248,7 +298,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
             <div
               key={p.uid}
               className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}${seleccion === p.uid ? ' activa' : ''}`}
-              style={{ left: `${t.x}%`, top: `${t.y}%` }}
+              style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cedulaDe(contenido, p)) }}
               draggable={!resuelto}
               onDragStart={() => setArrastrando(p.uid)}
               onDragEnd={() => setArrastrando(null)}
@@ -257,7 +307,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               title="Arrastra para mover · doble clic para devolver a la mano"
             >
               {marcada && <span className="orden">{orden + 1}</span>}
-              <Naipe p={p} compacto />
+              <Naipe p={p} contenido={contenido} compacto />
             </div>
           )
         })}
@@ -345,7 +395,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               const ver = previa.veredictos.find((v) => v.trazo.uid === t.uid)
               return (
                 <button key={t.uid} className="trazo-chip"
-                  onClick={() => on.cambio((st) => borrarTrazo(st, t.uid))}
+                  onClick={() => { sfx.deshacer(); on.cambio((st) => borrarTrazo(st, t.uid)) }}
                   title="Toca para deshacer este trazo">
                   <span style={{ color: COLOR_ESTADO[ver?.estado ?? 'silencio'] }}>
                     {HERRAMIENTAS[t.tool].glifo}
@@ -369,26 +419,31 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
       {/* ----------------------------- resolución ----------------------------- */}
       {resuelto && e.ultima && (
         <div className="resolucion">
-          <div className="cuenta">
-            <span className="fichas">{e.ultima.diag.fichas}</span>
+          <div className="cuenta" onClick={casc.saltar} title="Toca para saltar la cuenta">
+            <span className="fichas" key={`f${casc.fichas}`}>{casc.fichas}</span>
             <span className="por">×</span>
-            <span className="mult">{e.ultima.diag.mult.toFixed(1)}</span>
-            <span className="por">=</span>
-            <span className="total">{e.ultima.diag.dano}</span>
+            <span className="mult" key={`m${casc.mult.toFixed(1)}`}>{casc.mult.toFixed(1)}</span>
+            {casc.total !== null && (
+              <>
+                <span className="por">=</span>
+                <span className="total">{casc.total}</span>
+              </>
+            )}
           </div>
 
           <p className="silencio" style={{ margin: 0, fontSize: 13 }}>
             Tu diagrama sigue arriba. Cada trazo lleva ahora su marca; toca uno para leer por qué.
+            {!casc.terminada && ' Toca la cuenta para saltarla.'}
           </p>
 
           <div className="fila" style={{ gap: 6, flexWrap: 'wrap' }}>
-            {trazosVisibles.map((t) => {
+            {trazosVisibles.filter((t) => casc.trazosRevelados.has(t.uid)).map((t) => {
               const ver = veredictos.find((v) => v.trazo.uid === t.uid)
               const est = ver?.estado ?? 'silencio'
               return (
                 <button
                   key={t.uid}
-                  className={`trazo-chip${trazoAbierto === t.uid ? ' abierto' : ''}`}
+                  className={`trazo-chip aparece${trazoAbierto === t.uid ? ' abierto' : ''}`}
                   style={{ borderColor: COLOR_ESTADO[est], color: COLOR_ESTADO[est] }}
                   onClick={() => setTrazoAbierto(trazoAbierto === t.uid ? null : t.uid)}
                 >
@@ -420,24 +475,27 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
             {e.ultima.diag.inferencias > 0 && (
               <Chip tono="verde">{e.ultima.diag.inferencias} inferencia(s)</Chip>
             )}
-            {e.ultima.diag.combos.map((c, i) => (
-              <Chip key={i} tono="laton">{c.nombre} +{c.mult.toFixed(1)}×</Chip>
+            {e.ultima.diag.combos.slice(0, casc.combosRevelados).map((c, i) => (
+              <span key={i} className="aparece"><Chip tono="laton">{c.nombre} +{c.mult.toFixed(1)}×</Chip></span>
             ))}
           </div>
 
-          {e.ultima.impactos.map((im) => (
+          {casc.terminada && e.ultima.impactos.map((im) => (
             <p key={im.uid} className="dato" style={{ margin: 0 }}>
               {im.nombre}: −{im.dano}{im.derribado ? ' · cae' : ''}{im.motivo ? ` · ${im.motivo}` : ''}
             </p>
           ))}
-          {e.ultima.parteEnemiga.length > 0 && (
+          {casc.terminada && e.ultima.parteEnemiga.length > 0 && (
             <ul className="parte">
               {e.ultima.parteEnemiga.map((p, i) => (
                 <li key={i}>{p.texto}{p.dano > 0 && <span className="dato"> −{p.dano}</span>}</li>
               ))}
             </ul>
           )}
-          <button className="btn primario" onClick={() => { setTrazoAbierto(null); on.continuar() }} style={{ alignSelf: 'flex-start' }}>
+          <button
+            className="btn primario" disabled={!casc.terminada}
+            onClick={() => { setTrazoAbierto(null); on.continuar() }}
+            style={{ alignSelf: 'flex-start' }}>
             {e.fase === 'ganado' ? 'El carril queda despejado'
               : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}
           </button>
@@ -458,12 +516,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               <div
                 key={p.uid}
                 className={`naipe naipe-${p.clase}${seleccion === p.uid ? ' activa' : ''}`}
+                style={estiloDeCedula(cedulaDe(contenido, p))}
                 draggable
                 onDragStart={(ev) => { setArrastrando(p.uid); ev.dataTransfer.setData('text/plain', p.uid) }}
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => setSeleccion(seleccion === p.uid ? null : p.uid)}
               >
-                <Naipe p={p} />
+                <Naipe p={p} contenido={contenido} />
               </div>
             ))}
           </div>

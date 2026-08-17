@@ -1,7 +1,7 @@
-# Subir v4.1 al repositorio
+# Subir v4.2 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v4.1/patch41/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v4.2/patch42/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v4.1/patch41/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v4.2/patch42/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -20,28 +20,24 @@ rm -rf src scripts docs public
 # 3. copiar
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 26
+# 4. comprobar: debe decir 34
 find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v4.1: escalera de veredictos, apocrifas no derrumban, feedback sobre el diagrama
+git commit -m "v4.2: primera pasada grafica — cedula visual, cascada y sonido
 
-Deja de exigir memoria de etiquetas sin perder cientificidad.
-
-- graph.ts: contrasta es simetrica, generaliza/ejemplifica son duales,
-  apoya/extiende/matiza son una familia; solo los tipos direccionales castigan
-  al invertirse
-- escalera sostenido/equivalente/derivado/aproximado/plausible/mudo/invertido
-- derivado: si A->C se sigue de A->B->C el juego da credito y lo marca inferencia
-- las apocrifas ya no derrumban el diagrama; se anota reserva y baja rendimiento
-- segunda oportunidad: si la relacion es cierta del dueno real de esa descripcion,
-  se premia haber razonado por contenido y no por etiqueta
-- la correccion ocurre sobre el propio diagrama: el tablero se queda en pantalla
-  con marcas y colores por trazo, y se toca cada trazo para leer por que
-- lupa para las cartas largas (casos, escenarios, tesis)
-- npm run smoke anade dos criterios: que el azar no cobre y que quien razona bien
-  con la etiqueta equivocada reciba credito"
+- identity.ts: la apariencia de cada carta se DERIVA del bundle (cluster -> matiz,
+  tipo -> ornamento, carga cognitiva -> textura, umbral -> canto dorado,
+  importancia -> sombra). El contenido es infinito, asi que no se ilustra: se genera
+- los 8 tipos de relacion tienen 8 tratamientos de linea distintos, incluida
+  ondulada para matiza y doble para contrasta
+- cascade.ts: el marcador se descubre eslabon por eslabon, con combos encendiendose
+  y tono ascendente por escala pentatonica; se puede saltar tocando la cuenta
+- sfx.ts: sonido sintetizado con WebAudio, sin ficheros ni licencias, con interruptor
+- assets.tsx: ranuras de ilustracion con respaldo automatico en el SVG actual;
+  public/art/LEEME.md trae la especificacion y la direccion de arte
+- Enemigo.gesto expuesto como data-gesto: es ya la maquina de estados para Rive"
 
 git push origin main
 ```

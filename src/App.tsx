@@ -14,6 +14,7 @@ import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
 import { AtlasView, CampfireView, EndView, MapView, ObjectiveView, RewardView } from './ui/Screens'
 import { Medidor } from './ui/components'
+import { despertarAudio, estaSilenciado, silenciar } from './ui/sfx'
 
 type Fase = 'cargar' | 'plan' | 'mapa' | 'batalla' | 'recompensa' | 'refugio' | 'atlas' | 'fin'
 
@@ -56,6 +57,7 @@ export default function App() {
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [victoria, setVictoria] = useState(false)
+  const [mudo, setMudo] = useState(estaSilenciado())
 
   const rngRef = useRef(new Rng('inicio'))
   const runIdRef = useRef('')
@@ -274,6 +276,14 @@ export default function App() {
         {fase !== 'batalla' && <Medidor valor={lucidez} max={LUCIDEZ_MAX} etiqueta="Lucidez" />}
         <span className="dato silencio">Atlas {cob.pct}%</span>
         <button className="btn fantasma" onClick={() => { setFaseAnterior(fase); setFase('atlas') }}>Atlas</button>
+        <button
+          className="btn fantasma"
+          aria-pressed={mudo}
+          title={mudo ? 'Activar sonido' : 'Silenciar'}
+          onClick={() => { const v = !mudo; silenciar(v); setMudo(v); if (!v) despertarAudio() }}
+        >
+          {mudo ? 'Sonido off' : 'Sonido on'}
+        </button>
         <button className="btn fantasma" onClick={descargarLog}>Señales</button>
       </header>
 

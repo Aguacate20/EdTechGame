@@ -498,3 +498,68 @@ label.campo > span { display: block; margin-bottom: 5px; }
   font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em;
   color: #7a8290;
 }
+
+/* ================= v4.2 · primera pasada gráfica ================= */
+
+/* --- cédula visual: texturas de papel derivadas de la carga cognitiva --- */
+.naipe { position: relative; isolation: isolate; }
+.naipe .grano {
+  position: absolute; inset: 0; pointer-events: none; z-index: -1;
+  mix-blend-mode: multiply; opacity: .5;
+}
+.grano-liso { background: none; }
+.grano-veteado {
+  background: repeating-linear-gradient(114deg, rgba(0,0,0,.05) 0 1px, transparent 1px 7px);
+}
+.grano-rayado {
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.055) 0 1px, transparent 1px 6px);
+}
+.grano-manchado {
+  background:
+    radial-gradient(22px 14px at 78% 22%, rgba(0,0,0,.07), transparent 70%),
+    radial-gradient(30px 18px at 18% 74%, rgba(0,0,0,.055), transparent 70%);
+}
+.naipe .canto {
+  position: absolute; inset: 0; pointer-events: none; border-radius: var(--r);
+  border: 1px solid rgba(201,162,39,.85);
+  box-shadow: inset 0 0 0 2px rgba(201,162,39,.22);
+}
+.naipe .tt { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.naipe .tt .orn { font-size: 11px; opacity: .55; letter-spacing: 0; }
+
+/* --- ranuras de asset --- */
+.retrato { display: inline-flex; align-items: center; justify-content: center; }
+.retrato img { display: block; object-fit: contain; }
+
+/* --- la cascada --- */
+.cuenta { cursor: pointer; user-select: none; min-height: 46px; }
+.cuenta .fichas, .cuenta .mult {
+  display: inline-block;
+  animation: latir .22s cubic-bezier(.2,1.6,.4,1);
+}
+@keyframes latir {
+  0% { transform: scale(1.28); filter: brightness(1.7); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.aparece { animation: entrar .26s cubic-bezier(.2,1.3,.4,1); }
+@keyframes entrar {
+  0% { opacity: 0; transform: translateY(5px) scale(.94); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* --- trazos: aparición progresiva durante la cascada --- */
+.lienzo svg.trazos g.oculto { opacity: 0; }
+.lienzo svg.trazos g.trazo-vivo { animation: dibujar .3s ease-out; }
+@keyframes dibujar { 0% { opacity: 0; } 100% { opacity: 1; } }
+.lienzo svg.trazos { color: var(--niebla); }
+.lienzo svg.ondas { z-index: 1; }
+
+/* --- anticipación: el enemigo se inclina antes de avanzar --- */
+.bicho { transition: transform .28s cubic-bezier(.3,1.2,.4,1); }
+.casilla { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cuenta .fichas, .cuenta .mult, .aparece, .lienzo svg.trazos g.trazo-vivo { animation: none; }
+  .bicho { transition: none; }
+}
