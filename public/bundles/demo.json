@@ -997,6 +997,15 @@
       "contexto_donde_funciona": ""
      },
      {
+      "id": "rep_30d8d9b654",
+      "texto": "Un cliente habitual confía a ciegas en la recomendación del barista porque le cae bien.",
+      "es_correcta": false,
+      "feedback": "La intuición trata el apego como un vínculo que siempre aumenta la fiabilidad; aquí es una fase que REDUCE la vigilancia epistémica. Donde sí funciona: En trato cara a cara, la afinidad suele correlacionar con consejos acertados porque la persona conocida habla desde experiencia real.",
+      "repertoire_id": "rep_apego",
+      "concepto_confundido": "confianza",
+      "contexto_donde_funciona": ""
+     },
+     {
       "id": "dist_398580e38e",
       "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
       "es_correcta": false,
@@ -1021,15 +1030,6 @@
       "feedback": "",
       "repertoire_id": null,
       "concepto_confundido": "relational_ai",
-      "contexto_donde_funciona": ""
-     },
-     {
-      "id": "dist_52707e3681",
-      "texto": "Disposición a cuestionar y verificar la información que entrega un agente, medida como índice auditable a lo largo de la interacción.",
-      "es_correcta": false,
-      "feedback": "",
-      "repertoire_id": null,
-      "concepto_confundido": "vigilancia_epistemica",
       "contexto_donde_funciona": ""
      }
     ]
@@ -1107,6 +1107,15 @@
       "contexto_donde_funciona": ""
      },
      {
+      "id": "rep_1ae065929c",
+      "texto": "Quien escribe un relato junto a un chatbot asume que el resultado vale tanto como una obra a cuatro manos humanas.",
+      "es_correcta": false,
+      "feedback": "La co-creación no reparte autoridad: el refuerzo lingüístico traslada la autoridad al «nosotros», que se percibe más verdadero que cualquiera de las partes. Donde sí funciona: En proyectos creativos grupales la co-creación sí eleva la calidad, porque los aportes son complementarios y verificables.",
+      "repertoire_id": "rep_cocreacion",
+      "concepto_confundido": "co_creacion",
+      "contexto_donde_funciona": ""
+     },
+     {
       "id": "dist_1c8c6e57a2",
       "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
       "es_correcta": false,
@@ -1131,15 +1140,6 @@
       "feedback": "",
       "repertoire_id": null,
       "concepto_confundido": "refuerzo_linguistico",
-      "contexto_donde_funciona": ""
-     },
-     {
-      "id": "dist_0a5077d9c5",
-      "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
-      "es_correcta": false,
-      "feedback": "",
-      "repertoire_id": null,
-      "concepto_confundido": "attachment_theory",
       "contexto_donde_funciona": ""
      }
     ]
@@ -1217,6 +1217,15 @@
       "contexto_donde_funciona": ""
      },
      {
+      "id": "rep_65e68a6d25",
+      "texto": "Quien memoriza la explicación de un asistente la da por válida incluso cuando la evidencia posterior la contradice.",
+      "es_correcta": false,
+      "feedback": "La intuición equipara internalizar con acertar; aquí internalizar es incorporar al agente como parte del yo, lo que genera rigidez ante la corrección. Donde sí funciona: En el estudio con material correcto, la repetición sí produce retención útil.",
+      "repertoire_id": "rep_internalizacion",
+      "concepto_confundido": "bucles_resonantes",
+      "contexto_donde_funciona": ""
+     },
+     {
       "id": "dist_465478e498",
       "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
       "es_correcta": false,
@@ -1241,15 +1250,6 @@
       "feedback": "",
       "repertoire_id": null,
       "concepto_confundido": "relational_ai",
-      "contexto_donde_funciona": ""
-     },
-     {
-      "id": "dist_9f8cb22697",
-      "texto": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria.",
-      "es_correcta": false,
-      "feedback": "",
-      "repertoire_id": null,
-      "concepto_confundido": "resistencia_correccion",
       "contexto_donde_funciona": ""
      }
     ]
@@ -1712,7 +1712,7 @@
     "repertoire_id": null
    },
    {
-    "id": "B1_6b1a90490e",
+    "id": "B1_8551d5b61f",
     "mechanic_id": "B1",
     "concept_id": "apego",
     "enunciado": "¿Esta afirmación describe «Apego»?",
@@ -1722,19 +1722,19 @@
     "respuesta_correcta": true,
     "concepto_confundido": null,
     "feedback": "El texto atribuye exactamente esto a ese concepto.",
-    "repertoire_id": null
+    "repertoire_id": "rep_apego"
    },
    {
-    "id": "B1_1737ec045d",
+    "id": "B1_6fc7b2cd1f",
     "mechanic_id": "B1",
     "concept_id": "apego",
     "enunciado": "¿Esta afirmación describe «Apego»?",
-    "afirmacion": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "afirmacion": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
     "dificultad": 0.38,
     "n_efectivo": 2.0,
     "respuesta_correcta": false,
-    "concepto_confundido": "co_creacion",
-    "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Apego» es su papel dentro del proceso.",
+    "concepto_confundido": "attachment_theory",
+    "feedback": "«Teoría del apego» nombra otra cosa: Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza. Lo que separa a «Apego» es su papel dentro del proceso.",
     "repertoire_id": null
    },
    {
@@ -1764,7 +1764,7 @@
     "repertoire_id": null
    },
    {
-    "id": "B1_c5d5742bc4",
+    "id": "B1_c0af4e0c02",
     "mechanic_id": "B1",
     "concept_id": "co_creacion",
     "enunciado": "¿Esta afirmación describe «Co-creación parasocial»?",
@@ -1774,19 +1774,19 @@
     "respuesta_correcta": true,
     "concepto_confundido": null,
     "feedback": "El texto atribuye exactamente esto a ese concepto.",
-    "repertoire_id": null
+    "repertoire_id": "rep_cocreacion"
    },
    {
-    "id": "B1_8816fd5738",
+    "id": "B1_1ae9b896fb",
     "mechanic_id": "B1",
     "concept_id": "co_creacion",
     "enunciado": "¿Esta afirmación describe «Co-creación parasocial»?",
-    "afirmacion": "Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo.",
+    "afirmacion": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
     "dificultad": 0.35,
     "n_efectivo": 2.0,
     "respuesta_correcta": false,
-    "concepto_confundido": "internalizacion",
-    "feedback": "«Internalización» nombra otra cosa: Proceso por el que el agente pasa a ser un objeto interno del usuario, de modo que corregirlo se siente como una amenaza al yo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
+    "concepto_confundido": "apego",
+    "feedback": "«Apego» nombra otra cosa: Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo. Lo que separa a «Co-creación parasocial» es su papel dentro del proceso.",
     "repertoire_id": null
    },
    {
@@ -1816,7 +1816,7 @@
     "repertoire_id": null
    },
    {
-    "id": "B1_128eae4521",
+    "id": "B1_e77962a996",
     "mechanic_id": "B1",
     "concept_id": "internalizacion",
     "enunciado": "¿Esta afirmación describe «Internalización»?",
@@ -1826,19 +1826,19 @@
     "respuesta_correcta": true,
     "concepto_confundido": null,
     "feedback": "El texto atribuye exactamente esto a ese concepto.",
-    "repertoire_id": null
+    "repertoire_id": "rep_internalizacion"
    },
    {
-    "id": "B1_14614c17d1",
+    "id": "B1_0f2e34274f",
     "mechanic_id": "B1",
     "concept_id": "internalizacion",
     "enunciado": "¿Esta afirmación describe «Internalización»?",
-    "afirmacion": "Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida.",
+    "afirmacion": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
     "dificultad": 0.48,
     "n_efectivo": 2.0,
     "respuesta_correcta": false,
-    "concepto_confundido": "co_creacion",
-    "feedback": "«Co-creación parasocial» nombra otra cosa: Fase en la que usuario y agente construyen juntos el significado, con señales lingüísticas que generan sensación de propiedad compartida. Lo que separa a «Internalización» es su papel dentro del proceso.",
+    "concepto_confundido": "bucles_resonantes",
+    "feedback": "«Bucles de amplificación resonante» nombra otra cosa: Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección. Lo que separa a «Internalización» es su papel dentro del proceso.",
     "repertoire_id": null
    },
    {
@@ -2637,6 +2637,16 @@
   ],
   "apego": [
    {
+    "id": "rep_30d8d9b654",
+    "texto": "Un cliente habitual confía a ciegas en la recomendación del barista porque le cae bien.",
+    "fuente": "repertorio",
+    "etiqueta": "El apego como simple afinidad",
+    "explicacion": "La intuición trata el apego como un vínculo que siempre aumenta la fiabilidad; aquí es una fase que REDUCE la vigilancia epistémica. Donde sí funciona: En trato cara a cara, la afinidad suele correlacionar con consejos acertados porque la persona conocida habla desde experiencia real.",
+    "plausibilidad": 0.95,
+    "repertoire_id": "rep_apego",
+    "concepto_confundido": "confianza"
+   },
+   {
     "id": "dist_398580e38e",
     "texto": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura, moldeando la regulación emocional y la confianza.",
     "fuente": "distincion",
@@ -2685,16 +2695,6 @@
     "plausibilidad": 0.6,
     "repertoire_id": null,
     "concepto_confundido": "refuerzo_linguistico"
-   },
-   {
-    "id": "rep_30d8d9b654",
-    "texto": "Un cliente habitual confía a ciegas en la recomendación del barista porque le cae bien.",
-    "fuente": "repertorio",
-    "etiqueta": "El apego como simple afinidad",
-    "explicacion": "La intuición trata el apego como un vínculo que siempre aumenta la fiabilidad; aquí es una fase que REDUCE la vigilancia epistémica. Donde sí funciona: En trato cara a cara, la afinidad suele correlacionar con consejos acertados porque la persona conocida habla desde experiencia real.",
-    "plausibilidad": 0.95,
-    "repertoire_id": "rep_apego",
-    "concepto_confundido": "confianza"
    }
   ],
   "vigilancia_epistemica": [
@@ -2751,6 +2751,16 @@
   ],
   "co_creacion": [
    {
+    "id": "rep_1ae065929c",
+    "texto": "Quien escribe un relato junto a un chatbot asume que el resultado vale tanto como una obra a cuatro manos humanas.",
+    "fuente": "repertorio",
+    "etiqueta": "Co-crear es repartir la autoridad por igual",
+    "explicacion": "La co-creación no reparte autoridad: el refuerzo lingüístico traslada la autoridad al «nosotros», que se percibe más verdadero que cualquiera de las partes. Donde sí funciona: En proyectos creativos grupales la co-creación sí eleva la calidad, porque los aportes son complementarios y verificables.",
+    "plausibilidad": 0.95,
+    "repertoire_id": "rep_cocreacion",
+    "concepto_confundido": "co_creacion"
+   },
+   {
     "id": "dist_1c8c6e57a2",
     "texto": "Vínculo emocional que el usuario establece con un agente, con sensación de seguridad, dependencia y búsqueda de consuelo.",
     "fuente": "distincion",
@@ -2799,16 +2809,6 @@
     "plausibilidad": 0.6,
     "repertoire_id": null,
     "concepto_confundido": "relational_ai"
-   },
-   {
-    "id": "rep_1ae065929c",
-    "texto": "Quien escribe un relato junto a un chatbot asume que el resultado vale tanto como una obra a cuatro manos humanas.",
-    "fuente": "repertorio",
-    "etiqueta": "Co-crear es repartir la autoridad por igual",
-    "explicacion": "La co-creación no reparte autoridad: el refuerzo lingüístico traslada la autoridad al «nosotros», que se percibe más verdadero que cualquiera de las partes. Donde sí funciona: En proyectos creativos grupales la co-creación sí eleva la calidad, porque los aportes son complementarios y verificables.",
-    "plausibilidad": 0.95,
-    "repertoire_id": "rep_cocreacion",
-    "concepto_confundido": "co_creacion"
    }
   ],
   "refuerzo_linguistico": [
@@ -2865,6 +2865,16 @@
   ],
   "internalizacion": [
    {
+    "id": "rep_65e68a6d25",
+    "texto": "Quien memoriza la explicación de un asistente la da por válida incluso cuando la evidencia posterior la contradice.",
+    "fuente": "repertorio",
+    "etiqueta": "Internalizar es haber aprendido bien",
+    "explicacion": "La intuición equipara internalizar con acertar; aquí internalizar es incorporar al agente como parte del yo, lo que genera rigidez ante la corrección. Donde sí funciona: En el estudio con material correcto, la repetición sí produce retención útil.",
+    "plausibilidad": 0.95,
+    "repertoire_id": "rep_internalizacion",
+    "concepto_confundido": "bucles_resonantes"
+   },
+   {
     "id": "dist_465478e498",
     "texto": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno, produciendo convicciones resistentes a la corrección.",
     "fuente": "distincion",
@@ -2913,16 +2923,6 @@
     "plausibilidad": 0.6,
     "repertoire_id": null,
     "concepto_confundido": "attachment_theory"
-   },
-   {
-    "id": "rep_65e68a6d25",
-    "texto": "Quien memoriza la explicación de un asistente la da por válida incluso cuando la evidencia posterior la contradice.",
-    "fuente": "repertorio",
-    "etiqueta": "Internalizar es haber aprendido bien",
-    "explicacion": "La intuición equipara internalizar con acertar; aquí internalizar es incorporar al agente como parte del yo, lo que genera rigidez ante la corrección. Donde sí funciona: En el estudio con material correcto, la repetición sí produce retención útil.",
-    "plausibilidad": 0.95,
-    "repertoire_id": "rep_internalizacion",
-    "concepto_confundido": "bucles_resonantes"
    }
   ],
   "camaras_eco": [

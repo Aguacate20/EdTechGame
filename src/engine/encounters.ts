@@ -96,6 +96,12 @@ export const ARQUETIPOS: Record<ArquetipoId, Arquetipo> = {
   }
 }
 
+/** Qué familias de verbo puede exigir un arquetipo. Se muestra en el escenario:
+ *  reduce niebla de interfaz, no de contenido, y hace planificable la elección de objetivo. */
+export function familiasDeArquetipo(id: ArquetipoId): Familia[] {
+  return [...new Set(ARQUETIPOS[id].mecanicas.map((m) => FAMILIA_DE_MECANICA[m]))]
+}
+
 export const CONDICIONES = [
   { id: 'cadena', nombre: 'Cadena', regla: 'Cada embate parte del concepto donde terminó el anterior.' },
   { id: 'umbral', nombre: 'Umbral', regla: 'Solo aparecen embates que tocan un concepto umbral.' },

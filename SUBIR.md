@@ -1,74 +1,57 @@
-# Subir el patch al repositorio
+# Subir v3.4 al repositorio
 
-El repositorio `Aguacate20/EdTechGame` contenía el explorador de mazmorras anterior.
-Esta versión lo sustituye por completo, así que el paso 1 borra el contenido viejo
-y conserva el historial (nada se pierde: sigue en los commits anteriores).
+Ruta del zip descomprimido (ajusta si Windows le añadió un sufijo `_1`):
+`C:/Users/sebas/Downloads/edtech_v3.4/patch34/edtech-game`
 
-Ruta del zip descomprimido: `C:/Users/sebas/Downloads/edtech_v3.3_a3/patch33`
+v3.4 sustituye ficheros de v3.3 y **borra dos que ya no existen**
+(`src/engine/run.ts` pasó a `route.ts`), así que conviene limpiar `src/` antes de copiar.
 
 ```bash
 cd /c/Proyectos/edtech-game
+SRC="/c/Users/sebas/Downloads/edtech_v3.4/patch34/edtech-game"
 
-# 0. red de seguridad: una rama con el estado actual, por si acaso
-git checkout -b respaldo-dungeon-crawler
-git push -u origin respaldo-dungeon-crawler
-git checkout main
+# 1. comprobar que la fuente existe ANTES de tocar nada
+ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
 
-# 1. vaciar el árbol de trabajo conservando .git
-git rm -r --cached . > /dev/null
-find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+# 2. limpiar solo lo que se reemplaza
+rm -rf src scripts docs public
 
-# 2. copiar el patch
-cp -r /c/Users/sebas/Downloads/edtech_v3.3_a3/patch33/edtech-game/. .
+# 3. copiar
+cp -r "$SRC/." .
 
-# 3. comprobar que compila y que el bot tramposo pierde
-npm install
-npm run typecheck
-npm run smoke
-npm run build
+# 4. comprobar: debe decir 26
+find src scripts public docs -type f | wc -l
 
-# 4. commit
+# 5. commit
 git add -A
-git commit -m "v3.3: roguelike deckbuilder cognitivo sobre el bundle del extractor
+git commit -m "v3.4: escenario de combate, frentes de enemigos y grafo de rutas
 
-Sustituye el explorador de mazmorras. El juego consume bundle.json como
-materia prima: ruta desde study_plan, condiciones desde carga_cognitiva,
-EL ECO desde repertoires, jefe desde theses y Atlas persistente.
-
-- separa mazo de contenido (currículo) de mazo de operaciones (jugador)
-- la build modula recompensa, nunca corrección
-- el dano se calcula despues de resolver y nunca se imprime en la carta
-- B1 se juega como atribucion, no como verdadero/falso
-- npm run smoke verifica que un bot de heuristica fija pierde siempre"
+- escenario superior: enemigos como marginalia en tinta, vocabulario de golpes
+  (limpio, critico, resistido, torpe, estabilizado) y el dano solo visible al resolver
+- frentes de 2 a 4 enemigos con amenazas propias; elegir objetivo decide de que pool
+  sale el embate, y esa eleccion queda registrada como senal de autorregulacion
+- grafo de rutas ramificado 1-2-3-2-1 con rutas etiquetadas y jefe final
+- planes de expedicion (I1 PLANEAR) que reparten mazo inicial e instrumento
+- cartas de Intuicion desde repertoires: se retiran reconociendo su contexto
+- sellado de unidades y edicion critica exportable al completar el grafo
+- npm run smoke ahora mide tambien balance: turnos por frente y lucidez restante"
 
 git push origin main
 ```
 
-## Si prefieres no borrar y empezar en una rama limpia
+Si `npm` no está en el PATH de Git Bash no pasa nada: Vercel corre `tsc -b && vite build`
+en cada push, así que un error de tipos detiene el despliegue antes de publicar.
 
-```bash
-cd /c/Proyectos/edtech-game
-git checkout --orphan v3
-git rm -rf . > /dev/null
-cp -r /c/Users/sebas/Downloads/edtech_v3.3_a3/patch33/edtech-game/. .
-npm install && npm run smoke
-git add -A
-git commit -m "v3.3: roguelike deckbuilder cognitivo"
-git push -u origin v3
-```
+## Vercel
 
-## Desplegar en Vercel
-
-Es un proyecto Vite estático, sin variables de entorno.
+Ya está en el repo como `vercel.json`. Si el proyecto sigue teniendo un *Build Command*
+manual en el dashboard, bórralo: los overrides del panel pisan al fichero.
 
 - Framework preset: **Vite**
 - Build command: `npm run build`
 - Output directory: `dist`
 
-Si el backend de Hugging Face rechaza al navegador por CORS, el juego lo dice en
-pantalla y siempre queda la opción de subir el `bundle.json` a mano.
-
-## Recordatorio de los dos remotes
+## Recordatorio
 
 HuggingFace Space y GitHub son remotes distintos y necesitan `push` por separado.
-Este repositorio es solo GitHub; el backend del extractor va aparte.
+Este repositorio es solo GitHub.

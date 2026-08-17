@@ -153,6 +153,13 @@ for cid, c in conceptos.items():
     resto = [o for o in otros if o not in vs]
     elegidos = (vs + resto)[:5]
     pool = []
+    # los distractores de repertorio van PRIMERO: son los más valiosos y deben
+    # entrar en los items, no quedarse al final del pool sin usarse nunca
+    for r in REPS:
+        if r[1] == cid:
+            pool.append(dict(id=f"rep_{h(r[0])}", texto=r[3], fuente="repertorio",
+                             etiqueta=r[2], explicacion=f"{r[4]} Donde sí funciona: {r[5]}",
+                             plausibilidad=0.95, repertoire_id=r[0], concepto_confundido=r[6]))
     for i, o in enumerate(elegidos):
         caracterizado = i < 2
         pool.append(dict(
@@ -164,11 +171,6 @@ for cid, c in conceptos.items():
                         if caracterizado else "",
             plausibilidad=0.9 if caracterizado else 0.6,
             repertoire_id=None, concepto_confundido=o))
-    for r in REPS:
-        if r[1] == cid:
-            pool.append(dict(id=f"rep_{h(r[0])}", texto=r[3], fuente="repertorio",
-                             etiqueta=r[2], explicacion=f"{r[4]} Donde sí funciona: {r[5]}",
-                             plausibilidad=0.95, repertoire_id=r[0], concepto_confundido=r[6]))
     pools[cid] = pool
     c["n_distractores"] = len(pool)
     c["n_efectivo"] = round(1 + 0.75 * len(pool), 2)

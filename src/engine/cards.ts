@@ -60,8 +60,18 @@ export const CATALOGO: CartaOperacion[] = [
     glosa: 'Rinde más cuanto mayor es la distancia de dominio.' }
 ]
 
-export const porId = (id: string): CartaOperacion =>
-  CATALOGO.find((c) => c.id === id) ?? CATALOGO[0]
+export const porId = (id: string): CartaOperacion => {
+  const encontrada = CATALOGO.find((c) => c.id === id)
+  if (encontrada) return encontrada
+  if (id.startsWith('intuicion:')) {
+    return {
+      id, nombre: 'Intuición', verbo: 'RECONOCER', familias: [], rareza: 'comun',
+      efecto: 'ninguno',
+      glosa: 'Ocupa sitio. Juégala para reconocer dónde sí funcionaba y retirarla del mazo.'
+    }
+  }
+  return CATALOGO[0]
+}
 
 export const MAZO_INICIAL = [
   'definir', 'definir', 'distinguir', 'distinguir',

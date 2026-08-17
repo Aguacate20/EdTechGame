@@ -1,4 +1,4 @@
-# El Archivo Infinito — v3.3
+# El Archivo Infinito — v3.4
 
 Roguelike deckbuilder cognitivo. Consume el `bundle.json` del extractor como materia
 prima y lo convierte en una expedición jugable: rutas, encuentros, mazo de verbos,
@@ -33,6 +33,54 @@ npm run demo:bundle  # regenera public/bundles/demo.json
 
 ---
 
+## Cómo se juega
+
+Cada expedición son cuatro pantallas que se repiten.
+
+**El plan.** Antes de entrar eliges qué vienes a hacer con el texto: consolidar el
+vocabulario, trazar el mapa o salir del texto. Cada plan te da dos verbos y un
+instrumento distintos. Tu mazo decide qué puedes demostrar, así que elegir plan y
+construir mazo son la misma decisión.
+
+**El grafo.** El mapa se ramifica: 1-2-3-2-1 nodos por acto, con rutas etiquetadas por
+lo que van a exigir (Consolidar, Elaborar, Umbral, Portal) y un jefe al final. Solo
+puedes avanzar por las aristas que salen del nodo donde estás.
+
+**El frente.** Arriba, dos a cuatro enemigos y tu personaje. Abajo, el mazo. Eliges a
+quién atacas *y esa elección decide de qué pool sale la pregunta*: atacar a El Espejo es
+decidir hacer trabajo de relación; atacar a El Vacío es decidir recuperar. Juegas un
+verbo, respondes, declaras tu apuesta y atacas. Después el frente responde: cada enemigo
+pega y aplica su amenaza.
+
+**El Atlas.** Lo que sostuviste queda dibujado. Cuando todos los conceptos de una unidad
+tienen evidencia, la unidad queda sellada. Sellar el texto completo desbloquea la
+edición crítica: tu mapa conceptual exportado con la evidencia y las páginas de origen.
+
+### Los enemigos son marginalia
+
+| Enemigo | Pide | Amenaza |
+|---|---|---|
+| El Vacío | familia A | Olvido: se lleva una carta de tu mano |
+| El Confuso | familia B | Superficie: retira las definiciones de apoyo |
+| El Espejo | familia C | Niebla: vela el contexto del próximo embate |
+| El Eco | familias A/B | Susurro: te deja una Intuición en el mazo |
+| El Enjambre | familias A/B | Ruido: robas una carta menos |
+| El Caso | familias B/E | Superficie, y resiste el trabajo de recuperación |
+| El Arquitecto | familias B/C | Insistencia: se envalentona cada turno |
+| El Marco (jefe) | familia F | Escudo: solo lo hiere la refutación |
+
+Un crítico desarma al enemigo y le hace perder su turno: jugar bien reduce el daño que
+recibes, sin que nada de eso toque la corrección.
+
+### La carta de Intuición
+
+Cuando El Eco te golpea, mete una carta de Intuición en tu mazo. Estorba, ocupa mano y no
+responde nada. No se descarta ni se compra: se retira jugándola y **reconociendo el
+contexto donde esa intuición sí funcionaba** — que es literalmente el campo
+`contexto_donde_funciona` de cada repertorio. Es la carta maldita del género, pero
+honesta: no te castiga por pensar mal, te deja un asunto pendiente que se cierra
+admitiendo dónde tenías razón.
+
 ## Las cinco reglas que no se negocian
 
 1. **El daño nunca está impreso en la carta.** Se calcula después de comprobar la
@@ -46,8 +94,9 @@ npm run demo:bundle  # regenera public/bundles/demo.json
    responder igual, con mucha menos recompensa. Nunca te bloqueas; sí pagas.
 5. **Perder no borra el Atlas.** La expedición se pierde; la evidencia se conserva.
 
-`npm run smoke` verifica la regla 1 de forma automática: un bot que siempre elige la
-primera opción y otro que responde al azar deben perder todas las expediciones.
+`npm run smoke` verifica esto de forma automática. Además del bot tramposo mide el
+balance: un frente debe durar entre 2 y 9 turnos, y quien lee tiene que ganar casi
+siempre. Si un cambio rompe cualquiera de los cuatro criterios, el script sale con error.
 
 ---
 
@@ -62,11 +111,18 @@ src/
     rng.ts          RNG por semilla: misma semilla, misma ruta
     cards.ts        catálogo de verbos e instrumentos
     encounters.ts   arquetipos, condiciones y constructores de embate por mecánica
+    threats.ts      instancias de enemigo, amenazas, resistencias y frentes
     boss.ts         fase final del jefe a partir de tesis y marcos rivales
-    combat.ts       máquina de combate, modelo de daño y resolución
-    run.ts          generación de ruta, actos y recompensas
+    intuition.ts    cartas de Intuición y su embate de contexto
+    objectives.ts   planes de expedición y sellado de unidades
+    combat.ts       frente, modelo de daño, resolución y turno enemigo
+    route.ts        grafo de rutas ramificadas, actos y recompensas
     atlas.ts        persistencia del Atlas y registro de señales
-  ui/               pantallas (carga, mapa, combate, recompensa, refugio, Atlas)
+    export.ts       edición crítica en markdown
+  ui/
+    Stage.tsx       escenario superior: marginalia en tinta y vocabulario de golpes
+    CombatView.tsx  embate, mano, apuesta y veredicto
+    Screens.tsx     plan, grafo, recompensa, refugio, Atlas y cierre
 ```
 
 ### Tres mazos, no uno
@@ -153,4 +209,8 @@ Hoy el juego es cliente puro. Los tres puntos de enganche están aislados a prop
   usa `B2` mientras tanto.
 - La familia H (colaborar) requiere un segundo estudiante; la dimensión `persistencia`
   no es medible en solitario.
-- Ver `docs/PEGLIN.md` para el tablero de tiradas propuesto para v3.4.
+- `docs/PEGLIN.md` describe la Mesa de Tiradas: el tablero de clavijas donde la
+  declaración produce la señal y el tiro solo modula la recompensa. Sigue sin implementar.
+- El Arquitecto lee los ejes pero todavía usa `B2`; le falta su tablero de cuadrantes.
+- La familia H (colaborar) requiere un segundo estudiante; `persistencia` no es medible
+  en solitario.

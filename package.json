@@ -1,7 +1,7 @@
 {
   "name": "edtech-game",
   "private": true,
-  "version": "3.3.0",
+  "version": "3.4.0",
   "type": "module",
   "description": "El Archivo Infinito — roguelike deckbuilder cognitivo que consume el bundle del extractor",
   "scripts": {
