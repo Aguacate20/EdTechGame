@@ -27,10 +27,10 @@ type Fase = 'cargar' | 'plan' | 'mapa' | 'batalla' | 'recompensa' | 'archivo' | 
 const LUCIDEZ_MAX = 80
 
 const HERRAMIENTAS_BASE: HerramientaId[] = [
-  'identidad', 'identidad', 'flecha', 'flecha', 'tachon', 'campo'
+  'identidad', 'identidad', 'flecha', 'flecha', 'flecha', 'campo'
 ]
 const HERRAMIENTAS_POR_PLAN: Record<ObjetivoId, HerramientaId[]> = {
-  consolidar: ['identidad', 'tachon'],
+  consolidar: ['identidad', 'identidad'],
   trazar: ['flecha', 'jerarquia'],
   salir: ['ancla', 'flecha']
 }

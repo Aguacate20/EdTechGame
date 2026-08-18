@@ -15,7 +15,7 @@ import {
 import { combinarLentes } from '../src/engine/powers'
 import { HERRAMIENTAS, type HerramientaId } from '../src/engine/tools'
 import { DUALES, FAMILIAS } from '../src/engine/graph'
-import { generarRuta } from '../src/engine/route'
+import { generarRuta, hermanosPosibles, repartirEntreHermanos, solapeMedio, type Nodo } from '../src/engine/route'
 import { OBJETIVOS } from '../src/engine/objectives'
 import { tintaDeCombate } from '../src/engine/economy'
 import { Rng } from '../src/engine/rng'
@@ -24,7 +24,7 @@ import type { Contenido } from '../src/content/types'
 
 const contenido: Contenido = adaptarBundle(JSON.parse(readFileSync('public/bundles/demo.json', 'utf8')))
 const LUCIDEZ_MAX = 80
-const BASE: HerramientaId[] = ['identidad', 'identidad', 'flecha', 'flecha', 'tachon', 'campo']
+const BASE: HerramientaId[] = ['identidad', 'identidad', 'flecha', 'flecha', 'flecha', 'campo']
 
 console.log('— adaptador —')
 console.log(' ', contenido.fuente)
@@ -56,12 +56,6 @@ function jugarInformado(e: EstadoBatalla, c: Contenido, rng: Rng, aprox = false)
     if (!e.tablero.some((t) => t.uid === p.uid)) soltar(e, p.uid, 20 + rng.int(60), 20 + rng.int(50))
   }
 
-  // 1. tachar apócrifas: la señal de discriminación más limpia
-  for (const p of e.mano.filter((x) => x.clase === 'apocrifa' || (x.clase === 'criterio' && x.sentido !== 'refuta'))) {
-    if (!libres().includes('tachon')) break
-    poner(p)
-    if (trazar(e, 'tachon', [p.uid], null)) trazados++
-  }
   // 2. identidades: emparejar nombre con su descripción
   for (const et of e.mano.filter((x) => x.clase === 'etiqueta')) {
     if (!libres().includes('identidad')) break
@@ -175,7 +169,9 @@ function jugarInformado(e: EstadoBatalla, c: Contenido, rng: Rng, aprox = false)
 function jugarAzar(e: EstadoBatalla, rng: Rng): number {
   const nodos = rng.shuffle(e.mano).slice(0, 4)
   nodos.forEach((p) => soltar(e, p.uid, 20 + rng.int(60), 20 + rng.int(50)))
-  const tool = rng.pick(e.herramientas)
+  const disponibles = e.herramientas.filter((x) => HERRAMIENTAS[x])
+  if (!disponibles.length) return 0
+  const tool = rng.pick(disponibles)
   const h = HERRAMIENTAS[tool]
   const sel = nodos.slice(0, h.aridad[0]).map((p) => p.uid)
   const param = h.parametro === 'relacion' ? rng.pick(e.relacionesDisponibles)
@@ -268,6 +264,21 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
 }
 
 const semillas = ['ar-ka-mor', 'tel-sen-vi', 'lun-dro-fa', 'nex-ori-zel', 'zel-ka-vi', 'mor-fa-ori']
+console.log('\n— reparto entre hermanos —')
+const solapes: number[] = []
+{
+  const rng0 = new Rng('reparto')
+  for (const u of contenido.unidades) {
+    for (const k of [2, 3]) {
+      if (k > hermanosPosibles(u.conceptIds.length)) continue
+      solapes.push(solapeMedio(repartirEntreHermanos(contenido, u.conceptIds, k, rng0)))
+    }
+  }
+  console.log(solapes.length
+    ? ` solape medio entre nodos hermanos: ${(100 * solapes.reduce((a, b) => a + b, 0) / solapes.length).toFixed(0)}% en ${solapes.length} columnas ramificadas`
+    : ' este texto no ramifica: las unidades son demasiado pequeñas')
+}
+
 console.log('\n— expediciones simuladas —')
 const res: Record<Estrategia, Rep[]> = { informado: [], aproximado: [], azar: [] }
 for (const est of ['informado', 'aproximado', 'azar'] as Estrategia[]) {
@@ -322,6 +333,8 @@ const totalAprox = Object.values(escX).reduce((a, b) => a + b, 0) || 1
 const creditoAprox = (escX.equivalente ?? 0) + (escX.aproximado ?? 0) + (escX.derivado ?? 0) + (escX.sostenido ?? 0)
 const tintaMedia = inf.reduce((n, r) => n + r.tinta, 0) / Math.max(1, inf.length)
 const ok8 = tintaMedia >= 60 && tintaMedia <= 400
+const solape = solapes.length ? solapes.reduce((a, b) => a + b, 0) / solapes.length : 1
+const ok9 = solapes.length > 0 && solape < 0.5
 const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
 console.log(` ${ok1 ? 'PASA' : 'FALLA'}  quien lee despeja el carril`)
 console.log(` ${ok2 ? 'PASA' : 'FALLA'}  trazar al azar nunca gana`)
@@ -331,4 +344,5 @@ console.log(` ${ok5 ? 'PASA' : 'FALLA'}  los combos aparecen de verdad (${combos
 console.log(` ${ok6 ? 'PASA' : 'FALLA'}  la escalera no premia al azar (${(100 * aciertaAzar / totalAzar).toFixed(0)}% de aciertos al azar)`)
 console.log(` ${ok7 ? 'PASA' : 'FALLA'}  quien razona bien y se equivoca de etiqueta recibe crédito (${(100 * creditoAprox / totalAprox).toFixed(0)}%, ${res.aproximado.filter((r) => r.gano).length}/${semillas.length} victorias)`)
 console.log(` ${ok8 ? 'PASA' : 'FALLA'}  la tinta alcanza para comprar sin sobrar (${tintaMedia.toFixed(0)} por run)`)
-if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8)) process.exit(1)
+console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios distintos (${(100 * solape).toFixed(0)}% en ${solapes.length} columnas)`)
+if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9)) process.exit(1)

@@ -37,7 +37,7 @@ Pulsas *Afirmar el diagrama* y todo se evalúa contra el grafo del texto:
 El daño **nunca** se conoce antes de resolver, y el alcance depende de cuántas
 afirmaciones sostengas: la complejidad de lo que dices es su alcance en el carril.
 
-### Las nueve herramientas cognitivas
+### Las ocho herramientas cognitivas
 
 | | Herramienta | Afirma | Señal |
 |---|---|---|---|
@@ -49,7 +49,8 @@ afirmaciones sostengas: la complejidad de lo que dices es su alcance en el carri
 | `⇢` | Secuencia | que esto ocurre en este orden, cada paso llevando al siguiente | estructura |
 | `⌖` | Ancla | que estos conceptos son los que operan en este caso | transferencia |
 | `⚖` | Balanza | que esto es lo que obligaría a revisar la tesis | producción |
-| `✗` | Tachón | que esta carta es una falsificación | discriminación |
+
+La discriminación se mide en el pozo: **quemar** afirma que la carta es falsa.
 
 Las herramientas son **el mazo del jugador**: se acumulan, se gastan por turno y son
 lo que define tu estilo. El contenido lo reparte el currículo.

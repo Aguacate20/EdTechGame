@@ -138,6 +138,10 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
                         : dif === 'media' ? 'Oleada media' : 'Oleada ligera'}
                     </span>
                     <span className="det">{n.tipo === 'oleada' || n.tipo === 'jefe' ? r.promesa : n.tipo === 'archivo' ? 'Lentes, sellos y herramientas a cambio de tinta.' : r.riesgo}</span>
+                    {n.temas.length > 0 && (
+                      <span className="temas">{n.temas.join(' · ')}</span>
+                    )}
+                    {n.tinta > 0 && <span className="dato tinta-nodo">◈ +{n.tinta}</span>}
                     {n.casos.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae caso</Chip></span>}
                     {n.tesis.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae tesis</Chip></span>}
                   </button>

@@ -1,7 +1,7 @@
-# Subir v4.3 al repositorio
+# Subir v4.4 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v4.3/patch43/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v4.4/patch44/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v4.3/patch43/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v4.4/patch44/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,21 +25,19 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v4.3: poderes, tinta y El Archivo
+git commit -m "v4.4: mapa procedural con temarios distintos y batalla sin scroll
 
-- powers.ts: 22 lentes pasivas sobre ejes ortogonales (tipo de relacion,
-  herramienta, combos, mano, discriminacion, escalera) para que apilarlas
-  siempre sume y nunca sea redundante; 6 sellos activos de un uso por combate
-- economy.ts: la tinta como moneda, ganada por afirmar, deducir y detectar
-  falsificaciones; El Archivo como nodo de tienda con remesa nueva
-- quemar bien ahora da tinta, roba una carta, bonifica el proximo diagrama y
-  deja acuse de recibo en pantalla
-- estante de poderes siempre visible con las pasivas y los sellos
-- el disparo del carril ocurre DESPUES de que termina la cuenta del marcador
-- al tocar un feedback, su trazo y sus piezas se resaltan y el resto se atenua
-- cada herramienta trae un ejemplo con animales para entenderla sin saber del tema
-- texto completo de las cartas largas al pasar el raton, sin abrir panel
-- npm run smoke anade un criterio de economia: la tinta alcanza sin sobrar"
+- route.ts: la forma del acto se deriva del grafo (largo por numero de conceptos,
+  ancho por material disponible); una unidad pequena no se ramifica
+- repartirEntreHermanos: los nodos de una misma columna reciben subconjuntos
+  distintos del temario, sesgados por cluster y completados con vecinos
+- el mapa anuncia los temas, la dificultad y la tinta de cada nodo
+- se retira el Tachon: la discriminacion ya la mide el pozo (quemar)
+- devolver una pieza pide confirmacion y recupera las herramientas de sus trazos
+- batalla en rejilla de 3 columnas sin scroll: herramientas a la izquierda,
+  mano en renglones a la derecha, acciones abajo, todo con texto al pasar el raton
+- bundle de muestra ampliado a 18 conceptos y 29 aristas para que ramifique
+- npm run smoke anade el criterio de solape entre hermanos (<50%)"
 
 git push origin main
 ```

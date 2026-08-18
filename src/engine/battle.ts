@@ -222,9 +222,16 @@ export function soltar(e: EstadoBatalla, uid: string, x: number, y: number): voi
   e.tablero.push({ uid, x, y })
 }
 
+/** Qué se perdería al devolver esta pieza: la interfaz lo pregunta antes. */
+export function trazosQueUsan(e: EstadoBatalla, uid: string): Trazo[] {
+  return e.trazos.filter((t) => t.piezas.includes(uid))
+}
+
 export function devolverAMano(e: EstadoBatalla, uid: string): void {
+  // al deshacer un trazo hay que devolver su herramienta al cinturón, o el
+  // jugador la pierde por mover una carta de sitio
+  for (const t of trazosQueUsan(e, uid)) borrarTrazo(e, t.uid)
   e.tablero = e.tablero.filter((t) => t.uid !== uid)
-  e.trazos = e.trazos.filter((t) => !t.piezas.includes(uid))
 }
 
 let nt = 0
@@ -387,7 +394,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   const formaDiag = {
     eslabones: diag.sostenidos,
     puente: diag.combos.some((c) => c.id === 'cierre' || c.id === 'constelacion'),
-    contraste: e.trazos.some((t) => t.param === 'contrasta' || t.tool === 'tachon'),
+    contraste: e.trazos.some((t) => t.param === 'contrasta'),
     jugadas: [
       ...e.trazos.map((t) => t.tool as string),
       ...diag.combos.map((c) => c.id as string),

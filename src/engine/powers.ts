@@ -90,9 +90,9 @@ export const LENTES: Lente[] = [
 
   /* ---- eje: discriminación y tinta ---- */
   { id: 'inquisidor', nombre: 'Lente del inquisidor', rareza: 'comun', precio: 10,
-    regla: 'Tachar falsificaciones rinde mucho más y da tinta extra.',
-    costo: 'Tachar una carta legítima duele el doble.',
-    mod: { multPorHerramienta: { tachon: 1.6 }, tintaPorQuema: 2 } },
+    regla: 'Quemar falsificaciones da mucha más tinta y una quema extra por combate.',
+    costo: 'No mejora ninguna afirmación: solo tu ojo para las falsas.',
+    mod: { tintaPorQuema: 4, quemasExtra: 1 } },
   { id: 'ojo_critico', nombre: 'Ojo crítico', rareza: 'rara', precio: 14,
     regla: 'Al empezar cada combate, dos falsificaciones aparecen marcadas.',
     costo: 'Te acostumbras a que te las señalen.',

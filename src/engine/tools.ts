@@ -10,7 +10,7 @@ import { juzgarVinculo } from './graph'
 
 export type HerramientaId =
   | 'flecha' | 'campo' | 'jerarquia' | 'eje' | 'identidad'
-  | 'tachon' | 'ancla' | 'balanza' | 'secuencia'
+  | 'ancla' | 'balanza' | 'secuencia'
 
 export type Dimension =
   | 'recuperacion' | 'discriminacion' | 'relacion' | 'estructura'
@@ -89,13 +89,6 @@ export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
     aridad: [2, 3], rolesExigidos: ['tesis', 'criterio'], parametro: null,
     dimension: 'produccion', ordenada: true,
     ejemplo: "⚖ «Los cuervos usan herramientas» + «Un cuervo criado aislado no las usaría»."
-  },
-  tachon: {
-    id: 'tachon', nombre: 'Tachón', glifo: '✗',
-    afirma: 'Que esta carta es una falsificación.',
-    aridad: [1, 1], rolesExigidos: ['nodo'], parametro: null,
-    dimension: 'discriminacion', ordenada: false,
-    ejemplo: "✗ «Murciélago: ave nocturna que…» — no: es un mamífero. Eso es una falsificación."
   }
 }
 
@@ -562,30 +555,6 @@ function validarBalanza(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificado
   return { ...v, nota: 'Ese criterio pertenece a otra tesis.' }
 }
 
-function validarTachon(_c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
-  const v = vacio(t, 'discriminacion')
-  const p = ps[0]
-  if (!p) return v
-  if (p.clase === 'apocrifa') {
-    return {
-      ...v, estado: 'sostenido', fichas: 16 + lentes.fichasPorSostenido, mult: 1.5,
-      nota: `Bien visto. ${p.explicacion}`,
-      conceptIds: p.conceptId ? [p.conceptId] : [], apocrifaDetectada: p.conceptId
-    }
-  }
-  if (p.clase === 'criterio' && p.sentido !== 'refuta') {
-    return {
-      ...v, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.3,
-      nota: `Bien visto. ${p.explicacion}`
-    }
-  }
-  return {
-    ...v, estado: 'error', mult: -0.5,
-    nota: `«${p.titulo}» era legítima: el texto la sostiene tal como está.`,
-    conceptIds: p.conceptId ? [p.conceptId] : []
-  }
-}
-
 const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l: ModificadoresLente) => Veredicto> = {
   flecha: validarFlecha,
   identidad: validarIdentidad,
@@ -595,7 +564,6 @@ const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l
   secuencia: validarSecuencia,
   ancla: validarAncla,
   balanza: validarBalanza,
-  tachon: validarTachon
 }
 
 /* ==========================================================================

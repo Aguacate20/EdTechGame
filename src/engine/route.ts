@@ -16,9 +16,12 @@ export interface Nodo {
   dificultad: Dificultad
   etiquetaRuta: EtiquetaRuta
   conceptIds: string[]
-  /** casos y tesis que esta casilla pone sobre la mesa */
+  /** los títulos que se anuncian en el mapa: elegir ruta es elegir temario */
+  temas: string[]
   casos: string[]
   tesis: string[]
+  /** tinta extra por despejarlo: lo difícil paga más */
+  tinta: number
   salidas: string[]
 }
 
@@ -37,77 +40,176 @@ export interface Ruta { semilla: string; actos: Acto[] }
 export const RUTAS: Record<EtiquetaRuta, { nombre: string; promesa: string; riesgo: string }> = {
   consolidar: {
     nombre: 'Consolidar',
-    promesa: 'Conceptos frecuentes y bien poblados de distractores.',
-    riesgo: 'Seguro. Llena poco Atlas.'
+    promesa: 'Conceptos frecuentes, bien poblados de descripciones parecidas.',
+    riesgo: 'Oleada ligera. Poca tinta.'
   },
   elaborar: {
     nombre: 'Elaborar',
     promesa: 'Conceptos densos, con muchos vínculos alrededor.',
-    riesgo: 'Cadenas largas posibles. Llena mucho Atlas.'
+    riesgo: 'Permite cadenas largas. Tinta media.'
   },
   umbral: {
     nombre: 'Umbral',
     promesa: 'Pasa por un concepto que reorganiza el mapa.',
-    riesgo: 'Caro, y multiplica si lo sostienes.'
+    riesgo: 'Oleada dura. Multiplica si lo sostienes.'
   },
   portal: {
     nombre: 'Portal',
     promesa: 'Casos de dominios que el autor no menciona.',
-    riesgo: 'El terreno que más rinde y el que más cuesta.'
+    riesgo: 'Lo que más cuesta y lo que más tinta deja.'
   },
   descanso: { nombre: 'Alto', promesa: 'Sin enemigos.', riesgo: 'Ninguno.' }
 }
 
-/* --------------------------- selección de material ------------------------- */
+/* ==========================================================================
+   Reparto entre hermanos.
+   Antes, dos nodos de la misma columna muestreaban del mismo saco: elegir
+   rama cambiaba la etiqueta pero no el temario, así que la decisión era casi
+   cosmética. Ahora cada hermano recibe un subconjunto distinto, sesgado por
+   cluster, y el mapa anuncia qué conceptos vas a ver. Elegir ruta es elegir
+   qué parte del texto vas a poder sellar en el Atlas.
+   ========================================================================== */
 
-function conceptosPara(
-  contenido: Contenido, pool: string[], etiqueta: EtiquetaRuta, rng: Rng
-): string[] {
-  const grado = (id: string) => contenido.aristas.filter((a) => a.from === id || a.to === id).length
-  const carga = (id: string) => contenido.conceptos[id]?.cargaCognitiva ?? []
+/** Conceptos mínimos para que un nodo tenga aristas trazables dentro. */
+const MIN_POR_NODO = 3
 
-  let filtro: string[] = []
-  switch (etiqueta) {
-    case 'umbral':
-      filtro = pool.filter((id) => contenido.conceptos[id]?.esUmbral || contenido.conceptos[id]?.esPuerta)
-      break
-    case 'elaborar':
-      filtro = pool.filter((id) => grado(id) >= 2 || carga(id).includes('integrar'))
-      break
-    case 'consolidar':
-      filtro = pool.filter((id) => carga(id).includes('memorizar') || (contenido.conceptos[id]?.nEfectivo ?? 0) >= 3)
-      break
-    case 'portal':
-      filtro = pool.filter((id) => contenido.escenarios.some((s) => s.conceptIds.includes(id)))
-      break
-    default:
-      filtro = pool
+/** Cuántos hermanos admite un saco sin que los temarios se solapen:
+ *  una unidad pequeña simplemente no se ramifica. */
+export const hermanosPosibles = (n: number): number =>
+  Math.max(1, Math.min(3, Math.floor(n / MIN_POR_NODO)))
+
+export function repartirEntreHermanos(
+  c: Contenido, pool: string[], k: number, rng: Rng
+): string[][] {
+  if (k <= 1) return [pool]
+
+  // 1. agrupar por cluster: cada hermano tendrá un acento distinto del texto
+  const porCluster = new Map<string, string[]>()
+  for (const id of pool) {
+    const cl = c.conceptos[id]?.clusterId ?? '—'
+    porCluster.set(cl, [...(porCluster.get(cl) ?? []), id])
   }
-  const base = filtro.length >= 4 ? filtro : pool
-  // siempre se añaden vecinos de los elegidos: sin vecinos no hay cadenas posibles
-  const elegidos = rng.sample(base, Math.min(base.length, Math.max(4, Math.ceil(base.length * 0.7))))
-  const vecinos = elegidos.flatMap((id) =>
-    contenido.aristas
-      .filter((a) => a.from === id || a.to === id)
-      .map((a) => (a.from === id ? a.to : a.from))
-  ).filter((id) => pool.includes(id))
-  return [...new Set([...elegidos, ...rng.sample([...new Set(vecinos)], 3)])]
+  const grupos = [...porCluster.values()].sort((a, b) => b.length - a.length)
+
+  // 2. repartir los grupos al hermano más vacío
+  const cubos: string[][] = Array.from({ length: k }, () => [])
+  for (const g of rng.shuffle(grupos)) {
+    for (const id of g) {
+      const destino = cubos.reduce((min, x) => (x.length < min.length ? x : min), cubos[0])
+      destino.push(id)
+    }
+  }
+
+  // 3. completar hasta el mínimo con vecinos de lo que ya tiene, para que
+  //    siempre haya aristas trazables dentro del nodo
+  const vecinosDe = (id: string) => c.aristas
+    .filter((a) => a.from === id || a.to === id)
+    .map((a) => (a.from === id ? a.to : a.from))
+    .filter((x) => pool.includes(x))
+
+  // el tamaño objetivo sale del saco, no de una constante: así el relleno
+  // nunca obliga a que dos hermanos compartan casi todo
+  const objetivo = Math.max(MIN_POR_NODO, Math.ceil(pool.length / k))
+
+  for (const cubo of cubos) {
+    const usadoPorOtros = new Set(cubos.filter((x) => x !== cubo).flatMap((x) => x))
+    let guardia = 0
+    while (cubo.length < Math.min(objetivo, pool.length) && guardia++ < 40) {
+      const candidatos = [...new Set(cubo.flatMap(vecinosDe))].filter((x) => !cubo.includes(x))
+      // primero vecinos que nadie más tiene; si no hay, se acepta el solape
+      const propios = candidatos.filter((x) => !usadoPorOtros.has(x))
+      const fuente = propios.length ? propios : candidatos.length ? candidatos
+        : pool.filter((x) => !cubo.includes(x))
+      if (!fuente.length) break
+      cubo.push(rng.pick(fuente))
+    }
+  }
+  return cubos
 }
 
-function casosPara(contenido: Contenido, conceptIds: string[], etiqueta: EtiquetaRuta, rng: Rng): string[] {
+/** Solape medio entre hermanos: lo mide el smoke para que no vuelva a subir. */
+export function solapeMedio(cubos: string[][]): number {
+  if (cubos.length < 2) return 0
+  let suma = 0, pares = 0
+  for (let i = 0; i < cubos.length; i++) {
+    for (let j = i + 1; j < cubos.length; j++) {
+      const a = new Set(cubos[i])
+      const comunes = cubos[j].filter((x) => a.has(x)).length
+      suma += comunes / Math.max(1, Math.min(cubos[i].length, cubos[j].length))
+      pares++
+    }
+  }
+  return pares ? suma / pares : 0
+}
+
+/* --------------------------- etiqueta según el material -------------------- */
+
+function etiquetaPara(c: Contenido, ids: string[], rng: Rng): EtiquetaRuta {
+  const grado = (id: string) => c.aristas.filter((a) => a.from === id || a.to === id).length
+  const tieneUmbral = ids.some((id) => c.conceptos[id]?.esUmbral || c.conceptos[id]?.esPuerta)
+  const densidad = ids.reduce((n, id) => n + grado(id), 0) / Math.max(1, ids.length)
+  const conEscenario = ids.filter((id) =>
+    c.escenarios.some((s) => s.distancia !== 'cercana' && s.conceptIds.includes(id))).length
+
+  const pesos: [EtiquetaRuta, number][] = [
+    ['umbral', tieneUmbral ? 3 : 0],
+    ['portal', conEscenario >= 1 ? 2.5 : 0],
+    ['elaborar', densidad >= 2 ? 2.5 : 1],
+    ['consolidar', densidad < 2 ? 2.5 : 1]
+  ]
+  const total = pesos.reduce((n, [, w]) => n + w, 0)
+  let x = rng.next() * total
+  for (const [et, w] of pesos) { x -= w; if (x <= 0) return et }
+  return 'elaborar'
+}
+
+const DIFICULTAD: Record<EtiquetaRuta, Dificultad> = {
+  consolidar: 'facil', elaborar: 'media', umbral: 'dura', portal: 'dura', descanso: 'facil'
+}
+const TINTA_EXTRA: Record<Dificultad, number> = { facil: 0, media: 3, dura: 7, jefe: 12 }
+
+function casosPara(c: Contenido, ids: string[], etiqueta: EtiquetaRuta, rng: Rng): string[] {
   const candidatos = [
-    ...contenido.escenarios.filter((s) =>
-      s.conceptIds.some((c) => conceptIds.includes(c)) &&
+    ...c.escenarios.filter((s) =>
+      s.conceptIds.some((x) => ids.includes(x)) &&
       (etiqueta !== 'portal' || s.distancia !== 'cercana')),
-    ...contenido.casos.filter((c) => c.conceptIds.some((x) => conceptIds.includes(x)))
+    ...c.casos.filter((k) => k.conceptIds.some((x) => ids.includes(x)))
   ].map((x) => x.id)
   return rng.sample([...new Set(candidatos)], etiqueta === 'portal' ? 2 : 1)
 }
 
-/* -------------------------------- generación ------------------------------- */
+const temasDe = (c: Contenido, ids: string[]): string[] =>
+  [...ids]
+    .sort((a, b) => (c.conceptos[b]?.importancia ?? 0) - (c.conceptos[a]?.importancia ?? 0))
+    .slice(0, 3)
+    .map((id) => c.conceptos[id]?.titulo ?? id)
 
-const ANCHOS = [1, 2, 3, 2, 1]
-const ANCHOS_FINAL = [1, 2, 3, 2, 1, 1]
+/* ==========================================================================
+   Forma del acto, derivada del grafo y no de una plantilla
+   ========================================================================== */
+
+function formaDelActo(c: Contenido, conceptIds: string[], rng: Rng, esUltimo: boolean): number[] {
+  const n = conceptIds.length
+  const clusters = new Set(conceptIds.map((id) => c.conceptos[id]?.clusterId ?? '—')).size
+  // un acto pequeño no merece el mismo mapa que uno grande
+  const largo = Math.max(4, Math.min(7, 3 + Math.ceil(n / 4)))
+  // el ancho lo limita el MATERIAL, no el número de clusters: los clusters dan
+  // el sabor del reparto, pero una unidad de un solo cluster puede ramificarse
+  // igual si tiene conceptos suficientes para dos temarios distintos
+  const anchoMax = Math.min(3, hermanosPosibles(n) + (clusters >= 3 ? 1 : 0))
+
+  const forma: number[] = [1]
+  for (let i = 1; i < largo - 2; i++) {
+    const subida = anchoMax <= 1
+      ? 1
+      : Math.min(anchoMax, 1 + Math.round((i / Math.max(1, largo - 3)) * (anchoMax - 1)) +
+          (rng.next() < 0.25 ? 1 : 0))
+    forma.push(Math.max(1, Math.min(anchoMax, subida)))
+  }
+  forma.push(1)                 // refugio: siempre columna única
+  if (esUltimo) forma.push(1)   // y el jefe cierra el acto
+  return forma
+}
 
 export function generarRuta(contenido: Contenido, semilla: string): Ruta {
   const rng = new Rng(semilla)
@@ -119,48 +221,51 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
 
   unidades.forEach((u, ai) => {
     const esUltimo = ai === unidades.length - 1
-    const anchos = esUltimo ? ANCHOS_FINAL : ANCHOS
+    const anchos = formaDelActo(contenido, u.conceptIds, rng, esUltimo)
     const columnas: Nodo[][] = []
+    const colArchivo = Math.max(1, Math.floor(anchos.length / 2) - 1)
 
     anchos.forEach((ancho, col) => {
       const ultima = col === anchos.length - 1
+      // el refugio es la única columna de ancho 1 antes del cierre del acto
+      const colRefugio = esUltimo ? anchos.length - 2 : anchos.length - 1
+      const penultima = col === colRefugio
+      // el reparto se hace UNA vez por columna: los hermanos no se solapan
+      const reparto = repartirEntreHermanos(contenido, u.conceptIds, ancho, rng)
       const fila: Nodo[] = []
+
       for (let f = 0; f < ancho; f++) {
         let tipo: TipoNodo = 'oleada'
         if (esUltimo && ultima) tipo = 'jefe'
-        else if (col === anchos.length - 2) tipo = 'refugio'
-        else if (col === 2 && f === 0) tipo = 'archivo'
+        else if (penultima) tipo = 'refugio'
+        else if (col === colArchivo && f === 0) tipo = 'archivo'
+
+        const conceptIds = tipo === 'refugio' || tipo === 'archivo'
+          ? u.conceptIds
+          : reparto[f] ?? u.conceptIds
 
         let etiqueta: EtiquetaRuta = 'descanso'
         let dificultad: Dificultad = 'facil'
         if (tipo === 'jefe') { etiqueta = 'umbral'; dificultad = 'jefe' }
         else if (tipo === 'oleada') {
-          const opciones: EtiquetaRuta[] = ['consolidar', 'elaborar', 'umbral', 'portal']
-          etiqueta = opciones[(f + col + ai) % opciones.length]
-          if (etiqueta === 'umbral' && !u.conceptIds.some((id) => contenido.conceptos[id]?.esUmbral)) {
-            etiqueta = 'elaborar'
-          }
-          if (etiqueta === 'portal' && contenido.escenarios.length === 0) etiqueta = 'consolidar'
-          dificultad = etiqueta === 'consolidar' ? 'facil'
-            : etiqueta === 'portal' || etiqueta === 'umbral' ? 'dura' : 'media'
-          if (col === anchos.length - 3 && f === 0) dificultad = 'dura'
+          etiqueta = etiquetaPara(contenido, conceptIds, rng)
+          if (etiqueta === 'portal' && !contenido.escenarios.length) etiqueta = 'consolidar'
+          dificultad = DIFICULTAD[etiqueta]
         }
-
-        const conceptIds = tipo === 'refugio' || tipo === 'archivo'
-          ? u.conceptIds
-          : conceptosPara(contenido, u.conceptIds, etiqueta, rng)
-        const casos = tipo === 'oleada' || tipo === 'jefe'
-          ? casosPara(contenido, conceptIds, etiqueta, rng)
-          : []
-        const tesis = tipo === 'jefe'
-          ? rng.sample(contenido.tesis.map((t) => t.id), 2)
-          : etiqueta === 'umbral'
-            ? rng.sample(contenido.tesis.filter((t) => t.conceptIds.some((c) => conceptIds.includes(c))).map((t) => t.id), 1)
-            : []
 
         fila.push({
           id: `a${ai}c${col}f${f}`, columna: col, fila: f, actoIndex: ai,
-          tipo, dificultad, etiquetaRuta: etiqueta, conceptIds, casos, tesis, salidas: []
+          tipo, dificultad, etiquetaRuta: etiqueta, conceptIds,
+          temas: tipo === 'refugio' || tipo === 'archivo' ? [] : temasDe(contenido, conceptIds),
+          casos: tipo === 'oleada' || tipo === 'jefe' ? casosPara(contenido, conceptIds, etiqueta, rng) : [],
+          tesis: tipo === 'jefe'
+            ? rng.sample(contenido.tesis.map((t) => t.id), 2)
+            : etiqueta === 'umbral'
+              ? rng.sample(contenido.tesis.filter((t) =>
+                  t.conceptIds.some((x) => conceptIds.includes(x))).map((t) => t.id), 1)
+              : [],
+          tinta: TINTA_EXTRA[dificultad],
+          salidas: []
         })
       }
       columnas.push(fila)
@@ -215,8 +320,6 @@ export type Recompensa =
   | { tipo: 'lucidez'; cantidad: number }
   | { tipo: 'tinta'; cantidad: number }
 
-/** Tras cada sala se elige una de tres. Nunca son de la misma familia, para
- *  que la decisión sea «qué clase de run quiero» y no «cuál es la mejor». */
 export function ofrecerRecompensas(
   contenido: Contenido, cartera: {
     lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[]

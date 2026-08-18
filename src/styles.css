@@ -659,3 +659,117 @@ label.campo > span { display: block; margin-bottom: 5px; }
 .naipe.vendido { filter: grayscale(1) brightness(.85); }
 
 @media (prefers-reduced-motion: reduce) { .acuse { animation: none; } }
+
+/* ================= v4.4 · batalla sin scroll ================= */
+
+.batalla {
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr) 232px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "carril carril carril"
+    "herr   lienzo mano"
+    "acc    acc    acc";
+  gap: 10px;
+  height: calc(100dvh - 52px);
+  padding: 10px 14px 12px;
+  overflow: hidden;
+}
+.zona-carril { grid-area: carril; }
+.zona-herramientas { grid-area: herr; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; }
+.zona-lienzo { grid-area: lienzo; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.zona-mano { grid-area: mano; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.zona-acciones {
+  grid-area: acc; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  border-top: 1px solid var(--tinta-borde); padding-top: 9px;
+}
+
+.zona-lienzo .lienzo { flex: 1; min-height: 220px; }
+.zona-lienzo .constructor,
+.zona-lienzo .resolucion,
+.zona-lienzo .acuse { flex: 0 0 auto; max-height: 34vh; overflow-y: auto; }
+
+.separador { height: 1px; background: var(--tinta-borde); margin: 6px 0 2px; }
+
+/* --- herramientas en vertical --- */
+.herr-v {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  border: 1px solid var(--tinta-borde); background: var(--tinta-alta); color: var(--papel);
+  border-radius: var(--r); padding: 6px 9px; cursor: pointer; text-align: left;
+  transition: border-color .15s, background .15s;
+}
+.herr-v:hover:not(:disabled) { border-color: var(--verdigris); }
+.herr-v:disabled { opacity: .3; cursor: not-allowed; }
+.herr-v.activa { border-color: var(--laton); background: rgba(201,162,39,.14); }
+.herr-v .glifo { font-size: 17px; line-height: 1; color: var(--laton); width: 18px; text-align: center; }
+.herr-v .nom { font-size: 12px; flex: 1; }
+.herr-v .cuantas { font-family: var(--mono); font-size: 10.5px; color: var(--niebla); }
+
+.pastilla.ancha, .sello-btn.ancho { width: 100%; justify-content: flex-start; text-align: left; }
+
+/* --- la mano como renglones --- */
+.lista-mano { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding-right: 2px; }
+.renglon {
+  position: relative; border-radius: var(--r); border: 1px solid rgba(0,0,0,.14);
+  border-left: 4px solid var(--niebla); color: #1b2430;
+  padding: 6px 9px; cursor: grab; display: flex; flex-direction: column; gap: 1px;
+  transition: transform .1s, box-shadow .12s;
+}
+.renglon:hover { transform: translateX(-3px); box-shadow: -3px 0 0 rgba(201,162,39,.6); }
+.renglon.activa { outline: 2px solid var(--laton); outline-offset: 1px; }
+.renglon.senalada { outline: 2px dashed var(--oxido); outline-offset: 1px; }
+.renglon .tt {
+  font-family: var(--mono); font-size: 8px; letter-spacing: .13em; text-transform: uppercase;
+  color: #6b7280; display: flex; justify-content: space-between;
+}
+.renglon .nom { font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+.renglon .marca { font-family: var(--mono); font-size: 8px; color: #8a6a25; }
+
+/* --- barra de acciones --- */
+.btn.grande { font-size: 15px; padding: 10px 20px; }
+.zona-acciones .tinta-marca { margin-left: auto; }
+
+.constructor.compacto { padding: 9px 12px; gap: 6px; }
+.resolucion.compacta { gap: 6px; }
+.resolucion.compacta .cuenta { min-height: 38px; }
+.resolucion.compacta .cuenta .fichas,
+.resolucion.compacta .cuenta .mult { font-size: 21px; }
+.resolucion.compacta .cuenta .total { font-size: 30px; }
+
+.trazos-activos {
+  position: fixed; right: 248px; bottom: 74px; z-index: 30;
+  display: flex; gap: 4px; flex-wrap: wrap; max-width: 300px; justify-content: flex-end;
+}
+
+/* --- diálogo de confirmación --- */
+.velo {
+  position: fixed; inset: 0; background: rgba(10,14,20,.72); z-index: 80;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.dialogo {
+  background: var(--tinta-alta); border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  padding: 20px 22px; max-width: 420px; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.55);
+}
+
+/* el tooltip respeta los saltos de línea del texto */
+[data-ayuda]:hover::after { white-space: pre-line; }
+
+/* en pantallas estrechas se apila y sí hay scroll */
+@media (max-width: 1080px) {
+  .batalla {
+    grid-template-columns: 1fr;
+    grid-template-areas: "carril" "lienzo" "herr" "mano" "acc";
+    height: auto; overflow: visible;
+  }
+  .zona-herramientas { flex-direction: row; flex-wrap: wrap; }
+  .herr-v { width: auto; }
+  .trazos-activos { position: static; max-width: none; justify-content: flex-start; }
+}
+
+.nodo-g .temas {
+  font-size: 11px; line-height: 1.35; color: #9fb3ad; margin-top: 3px;
+  border-top: 1px dashed var(--tinta-borde); padding-top: 4px;
+}
+.nodo-g .tinta-nodo { color: #8fb8d6; margin-top: 2px; }
