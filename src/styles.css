@@ -563,3 +563,99 @@ label.campo > span { display: block; margin-bottom: 5px; }
   .cuenta .fichas, .cuenta .mult, .aparece, .lienzo svg.trazos g.trazo-vivo { animation: none; }
   .bicho { transition: none; }
 }
+
+/* ================= v4.3 · poderes, tinta y foco ================= */
+
+/* --- estante de pasivas: siempre a la vista --- */
+.estante {
+  display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  padding: 9px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+}
+.estante-grupo { display: flex; flex-direction: column; gap: 5px; }
+.estante-grupo.derecha { margin-left: auto; align-items: flex-end; }
+
+.pastilla {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .03em;
+  border: 1px solid #3f7566; color: #85c4b1; background: rgba(78,140,122,.12);
+  border-radius: 99px; padding: 3px 10px; cursor: help;
+}
+.pastilla.brillo { border-color: var(--laton); color: var(--laton); background: rgba(201,162,39,.14); }
+
+.sello-btn {
+  font-family: var(--mono); font-size: 11px;
+  border: 1px solid #6b5a1c; color: var(--laton); background: rgba(201,162,39,.08);
+  border-radius: 99px; padding: 3px 11px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.sello-btn:hover:not(:disabled) { background: rgba(201,162,39,.2); }
+.sello-btn.gastado, .sello-btn:disabled { opacity: .3; cursor: not-allowed; }
+.sello-btn .glifo { font-size: 13px; }
+
+.tinta-marca {
+  font-family: var(--mono); font-size: 12px; color: #8fb8d6;
+  border: 1px solid #34506a; border-radius: 99px; padding: 2px 10px;
+  background: rgba(80,130,180,.1);
+}
+.tinta-marca.grande { font-size: 17px; padding: 3px 13px; }
+.tinta-total { font-family: var(--mono); font-size: 26px; color: #8fb8d6; }
+.recibo {
+  border: 1px solid #34506a; border-radius: var(--r); padding: 10px 14px;
+  background: rgba(80,130,180,.07); display: flex; flex-direction: column; gap: 5px;
+}
+
+/* --- acuse de recibo del pozo --- */
+.acuse {
+  border-left: 3px solid var(--verdigris); border-radius: var(--r);
+  padding: 9px 13px; display: flex; flex-direction: column; gap: 3px;
+  background: linear-gradient(90deg, rgba(78,140,122,.12), transparent);
+  animation: entrar .3s cubic-bezier(.2,1.3,.4,1);
+  font-size: 13.5px;
+}
+.acuse.mal { border-left-color: var(--oxido); background: linear-gradient(90deg, rgba(168,68,60,.12), transparent); }
+.acuse .premio { font-family: var(--mono); font-size: 12px; color: var(--laton); }
+
+/* --- falsificación señalada --- */
+.naipe.senalada { outline: 2px dashed var(--oxido); outline-offset: 2px; }
+.naipe.senalada::after {
+  content: '✗ señalada'; position: absolute; top: 4px; right: 6px;
+  font-family: var(--mono); font-size: 8.5px; color: var(--oxido);
+}
+
+/* --- foco al revisar el feedback --- */
+.lienzo svg.trazos g.resaltado { filter: drop-shadow(0 0 6px currentColor); }
+.lienzo svg.trazos g.resaltado line,
+.lienzo svg.trazos g.resaltado path { stroke-width: 4; }
+.lienzo svg.trazos g.atenuado { opacity: .22; }
+.naipe.en-foco { outline: 2px solid var(--laton); outline-offset: 3px; z-index: 5; }
+.naipe.fuera-de-foco { opacity: .32; }
+
+/* --- ejemplo de herramienta --- */
+.ejemplo-herr {
+  margin: 0; font-size: 13px; line-height: 1.5; color: var(--papel);
+  border-left: 2px solid var(--laton); padding-left: 10px; opacity: .9;
+}
+
+/* --- texto completo al pasar el ratón --- */
+[data-ayuda] { position: relative; }
+[data-ayuda]:hover::after {
+  content: attr(data-ayuda);
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+  width: min(340px, 70vw); z-index: 60;
+  background: #0d131b; color: var(--papel);
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  padding: 9px 12px; font-family: var(--serif); font-size: 13px; line-height: 1.5;
+  box-shadow: 0 10px 26px rgba(0,0,0,.5); pointer-events: none;
+  white-space: normal; text-align: left;
+}
+
+/* --- tienda --- */
+.naipe .precio {
+  margin-top: auto; font-family: var(--mono); font-size: 11px;
+  color: #2c6a55; border-top: 1px dashed rgba(0,0,0,.15); padding-top: 6px;
+}
+.naipe .precio.caro { color: #9b4038; }
+.naipe.vendido { filter: grayscale(1) brightness(.85); }
+
+@media (prefers-reduced-motion: reduce) { .acuse { animation: none; } }

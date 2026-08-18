@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { Contenido } from '../content/types'
-import { lentePorId } from '../engine/lenses'
+import { lentePorId, selloPorId } from '../engine/powers'
+import { describirOferta, PRECIO_REROLL, type Oferta } from '../engine/economy'
 import { HERRAMIENTAS, type HerramientaId } from '../engine/tools'
+import type { SelloId } from '../engine/powers'
 import { RUTAS, type Acto, type Nodo, type Recompensa, type Ruta } from '../engine/route'
 import { coberturaAtlas, nivelDe, type Atlas } from '../engine/atlas'
 import { OBJETIVOS, unidadesSelladas, edicionCriticaDisponible, type Objetivo } from '../engine/objectives'
@@ -126,16 +128,16 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
                   >
                     <span className="tipo">
                       {n.tipo === 'jefe' ? 'Jefe final'
-                        : n.tipo === 'refugio' ? 'Refugio' : n.tipo === 'taller' ? 'Taller' : r.nombre}
+                        : n.tipo === 'refugio' ? 'Refugio' : n.tipo === 'archivo' ? 'El Archivo' : r.nombre}
                     </span>
                     <span className="nom">
                       {n.tipo === 'refugio' ? 'Alto en el camino'
-                        : n.tipo === 'taller' ? 'Taller de herramientas'
+                        : n.tipo === 'archivo' ? 'Gasta tinta'
                         : dif === 'jefe' ? 'El Tratado'
                         : dif === 'dura' ? 'Oleada dura'
                         : dif === 'media' ? 'Oleada media' : 'Oleada ligera'}
                     </span>
-                    <span className="det">{n.tipo === 'oleada' || n.tipo === 'jefe' ? r.promesa : r.riesgo}</span>
+                    <span className="det">{n.tipo === 'oleada' || n.tipo === 'jefe' ? r.promesa : n.tipo === 'archivo' ? 'Lentes, sellos y herramientas a cambio de tinta.' : r.riesgo}</span>
                     {n.casos.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae caso</Chip></span>}
                     {n.tesis.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae tesis</Chip></span>}
                   </button>
@@ -157,36 +159,47 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
 
 /* ------------------------------- recompensa ------------------------------- */
 
-export function RewardView({ opciones, onElegir, titulo, contenido }: {
-  opciones: Recompensa[]; onElegir: (r: Recompensa) => void; titulo: string; contenido: Contenido
+export function RewardView({ opciones, onElegir, titulo, contenido, tinta }: {
+  opciones: Recompensa[]; onElegir: (r: Recompensa) => void; titulo: string
+  contenido: Contenido; tinta: { total: number; partes: { concepto: string; cantidad: number }[] }
 }) {
   const describir = (r: Recompensa): { tt: string; nom: string; cuerpo: string; pie?: string } => {
     switch (r.tipo) {
       case 'lente': {
         const l = lentePorId(r.id)
-        return { tt: 'Lente', nom: l.nombre, cuerpo: l.regla, pie: l.costo }
+        return { tt: `Lente · ${l.rareza}`, nom: l.nombre, cuerpo: l.regla, pie: l.costo }
+      }
+      case 'sello': {
+        const x = selloPorId(r.id)
+        return { tt: 'Sello · un uso por combate', nom: `${x.glifo} ${x.nombre}`, cuerpo: x.efecto }
+      }
+      case 'herramienta': {
+        const h = HERRAMIENTAS[r.id]
+        return {
+          tt: 'Herramienta', nom: `${h.glifo} ${h.nombre}`,
+          cuerpo: `Una más por turno. ${h.afirma}`, pie: `Señal: ${h.dimension}`
+        }
       }
       case 'relacion':
         return {
           tt: 'Carta de relación', nom: r.tipoRelacion,
-          cuerpo: `Se suma a tu mazo. Aparece ${contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0} veces en este texto, así que multiplica ${(contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0) <= 3 ? 'mucho' : 'poco'}.`
+          cuerpo: `Aparece ${contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0} veces en este texto, así que multiplica ${(contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0) <= 3 ? 'mucho' : 'poco'}.`
         }
       case 'caso': {
         const e = contenido.escenarios.find((x) => x.id === r.id) ?? contenido.casos.find((x) => x.id === r.id)
         return {
-          tt: `Caso${'distancia' in (e ?? {}) ? ` · ${(e as { distancia?: string }).distancia ?? ''}` : ''}`,
-          nom: (e && 'dominio' in e ? e.dominio : '') || 'Caso nuevo',
-          cuerpo: e?.descripcion ?? 'Un caso que podrás anclar a los conceptos que operan en él.'
+          tt: 'Caso', nom: (e && 'dominio' in e ? e.dominio : '') || 'Caso nuevo',
+          cuerpo: e?.descripcion ?? ''
         }
       }
       case 'tesis': {
         const t = contenido.tesis.find((x) => x.id === r.id)
         return { tt: 'Tesis', nom: 'Tesis y sus criterios', cuerpo: t?.enunciado ?? '' }
       }
-      case 'ranura':
-        return { tt: 'Herramienta', nom: 'Flecha extra', cuerpo: 'Una flecha más por turno.' }
+      case 'tinta':
+        return { tt: 'Tinta', nom: `+${r.cantidad} de tinta`, cuerpo: 'Para gastar en el Archivo.' }
       default:
-        return { tt: 'Descanso', nom: `Recuperas ${r.cantidad} de lucidez`, cuerpo: 'Cerrar los ojos también es una decisión.' }
+        return { tt: 'Descanso', nom: `Recuperas ${r.cantidad} de lucidez`, cuerpo: 'Volver entero también es una decisión.' }
     }
   }
 
@@ -196,6 +209,17 @@ export function RewardView({ opciones, onElegir, titulo, contenido }: {
         <span className="eyebrow">Hallazgo</span>
         <h2 className="display" style={{ fontSize: 28 }}>{titulo}</h2>
       </div>
+
+      <div className="recibo">
+        <span className="eyebrow">Tinta ganada</span>
+        <div className="fila" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'baseline' }}>
+          <span className="tinta-total">+{tinta.total}</span>
+          {tinta.partes.map((x, i) => (
+            <span key={i} className="dato silencio">{x.concepto} +{x.cantidad}</span>
+          ))}
+        </div>
+      </div>
+
       <div className="mano-naipes" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
         {opciones.map((r, i) => {
           const d = describir(r)
@@ -213,13 +237,65 @@ export function RewardView({ opciones, onElegir, titulo, contenido }: {
   )
 }
 
+/* -------------------------------- el Archivo ------------------------------ */
+
+export function ShopView({ ofertas, tinta, onComprar, onReroll, onSalir, contenido, comprados }: {
+  ofertas: Oferta[]; tinta: number; comprados: number[]
+  onComprar: (o: Oferta, i: number) => void; onReroll: () => void; onSalir: () => void
+  contenido: Contenido
+}) {
+  return (
+    <div className="envoltura pila">
+      <div>
+        <span className="eyebrow">El Archivo</span>
+        <h2 className="display" style={{ fontSize: 30 }}>Tienes {tinta} de tinta</h2>
+        <p className="silencio" style={{ maxWidth: 640, fontSize: 14 }}>
+          Aquí se decide qué clase de expedición estás haciendo. Las lentes no compiten
+          entre sí: cada una toca un eje distinto, así que apilarlas siempre suma.
+        </p>
+      </div>
+
+      <div className="mano-naipes" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+        {ofertas.map((o, i) => {
+          const d = describirOferta(contenido, o)
+          const vendido = comprados.includes(i)
+          const puede = !vendido && tinta >= o.precio
+          return (
+            <button
+              key={i} className={`naipe${vendido ? ' vendido' : ''}`}
+              disabled={!puede} onClick={() => onComprar(o, i)} style={{ minHeight: 165 }}
+            >
+              <span className="tt">{d.tt}</span>
+              <span className="nom">{d.nom}</span>
+              <span className="cuerpo">{d.cuerpo}</span>
+              {d.pie && <span className="cuerpo" style={{ fontStyle: 'italic', opacity: .8 }}>{d.pie}</span>}
+              <span className={`precio${puede ? '' : ' caro'}`}>
+                {vendido ? 'comprado' : `${o.precio} de tinta`}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="fila">
+        <button className="btn" disabled={tinta < PRECIO_REROLL} onClick={onReroll}>
+          Nueva remesa · {PRECIO_REROLL} de tinta
+        </button>
+        <button className="btn primario" onClick={onSalir}>Seguir camino</button>
+      </div>
+    </div>
+  )
+}
+
 /* -------------------------------- refugio --------------------------------- */
 
 export function CampfireView({
-  lentes, relaciones, herramientas, fusionados, contenido,
-  onDescansar, onSoltarLente, lucidez, lucidezMax
+  cartera, fusionados, contenido, onDescansar, onSoltarLente, lucidez, lucidezMax
 }: {
-  lentes: string[]; relaciones: string[]; herramientas: HerramientaId[]
+  cartera: {
+    tinta: number; lentes: string[]; sellos: SelloId[]
+    herramientas: HerramientaId[]; relaciones: string[]; manoExtra: number
+  }
   fusionados: string[]; contenido: Contenido
   onDescansar: () => void; onSoltarLente: (id: string) => void
   lucidez: number; lucidezMax: number
@@ -230,7 +306,7 @@ export function CampfireView({
         <span className="eyebrow">Refugio</span>
         <h2 className="display" style={{ fontSize: 28 }}>Un alto para revisar</h2>
         <p className="silencio" style={{ maxWidth: 660, fontSize: 14 }}>
-          Recupera lucidez, o suelta una lente que no encaja con lo que te está tocando.
+          Recupera lucidez, o vende una lente que no encaja con lo que te está tocando.
           Una lente mal elegida te empuja a buscar en el texto lo que el texto no tiene.
         </p>
       </div>
@@ -243,7 +319,7 @@ export function CampfireView({
 
       <Panel titulo="Tus lentes">
         <div className="rejilla">
-          {lentes.map((id) => {
+          {cartera.lentes.map((id) => {
             const l = lentePorId(id)
             return (
               <button className="celda" key={id} onClick={() => onSoltarLente(id)}
@@ -251,22 +327,28 @@ export function CampfireView({
                 <strong>{l.nombre}</strong>
                 <p className="silencio" style={{ fontSize: 13, margin: '4px 0 0' }}>{l.regla}</p>
                 <p className="silencio" style={{ fontSize: 12, margin: '4px 0 0', fontStyle: 'italic' }}>{l.costo}</p>
-                <p className="dato" style={{ margin: '6px 0 0' }}>toca para soltarla</p>
+                <p className="dato" style={{ margin: '6px 0 0' }}>venderla · ◈ +5</p>
               </button>
             )
           })}
-          {lentes.length === 0 && <p className="silencio">Sin lentes: el diagrama puntúa a pelo.</p>}
+          {cartera.lentes.length === 0 && <p className="silencio">Sin lentes: el diagrama puntúa a pelo.</p>}
         </div>
       </Panel>
 
       <Panel titulo="Tu equipo">
         <p style={{ margin: '0 0 8px' }}>
           <strong>Herramientas:</strong>{' '}
-          {[...new Set(herramientas)].map((h) => `${HERRAMIENTAS[h].glifo} ${HERRAMIENTAS[h].nombre} ×${herramientas.filter((x) => x === h).length}`).join(' · ')}
+          {[...new Set(cartera.herramientas)].map((h) => `${HERRAMIENTAS[h].glifo} ${HERRAMIENTAS[h].nombre} ×${cartera.herramientas.filter((x) => x === h).length}`).join(' · ')}
+        </p>
+        <p style={{ margin: '0 0 8px' }}>
+          <strong>Sellos:</strong>{' '}
+          {cartera.sellos.length
+            ? cartera.sellos.map((s) => `${selloPorId(s).glifo} ${selloPorId(s).nombre}`).join(' · ')
+            : 'ninguno'}
         </p>
         <p style={{ margin: '0 0 8px' }}>
           <strong>Relaciones:</strong>{' '}
-          {[...new Set(relaciones)].map((r) => `${r} ×${relaciones.filter((x) => x === r).length}`).join(' · ') || 'ninguna'}
+          {[...new Set(cartera.relaciones)].map((r) => `${r} ×${cartera.relaciones.filter((x) => x === r).length}`).join(' · ') || 'ninguna'}
         </p>
         <p style={{ margin: 0 }}>
           <strong>Conceptos fusionados:</strong>{' '}

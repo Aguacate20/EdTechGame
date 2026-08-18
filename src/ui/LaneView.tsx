@@ -48,7 +48,7 @@ function Copista({ gesto }: { gesto: 'quieto' | 'afirma' | 'herido' }) {
   )
 }
 
-export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos }: {
+export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo }: {
   enemigos: Enemigo[]
   lucidez: number
   lucidezMax: number
@@ -56,11 +56,14 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
   alcance: number
   gesto: 'quieto' | 'afirma' | 'herido'
   ultimosImpactos: { uid: string; dano: number }[]
+  /** el disparo solo se ve cuando la cuenta ha terminado */
+  disparoListo?: boolean
 }) {
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
   const gestosPrevios = useRef<Record<string, string>>({})
 
   useEffect(() => {
+    if (disparoListo === false) return
     for (const e of enemigos) {
       const antes = gestosPrevios.current[e.uid]
       if (antes !== e.gesto) {
@@ -72,7 +75,7 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
         gestosPrevios.current[e.uid] = e.gesto
       }
     }
-  }, [enemigos])
+  }, [enemigos, disparoListo])
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
 
   return (
@@ -103,7 +106,7 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
                 return (
                   <div
                     key={e.uid}
-                    className={`bicho bicho-${e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
+                    className={`bicho bicho-${disparoListo === false ? 'quieto' : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
                     title={`${e.nombre} — ${t.glosa}`}
                   >
                     {impacto && <span className="flotante">−{impacto.dano}</span>}

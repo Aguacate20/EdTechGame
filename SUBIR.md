@@ -1,7 +1,7 @@
-# Subir v4.2 al repositorio
+# Subir v4.3 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v4.2/patch42/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v4.3/patch43/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v4.2/patch42/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v4.3/patch43/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -20,24 +20,26 @@ rm -rf src scripts docs public
 # 3. copiar
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 34
+# 4. comprobar: debe decir 35
 find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v4.2: primera pasada grafica — cedula visual, cascada y sonido
+git commit -m "v4.3: poderes, tinta y El Archivo
 
-- identity.ts: la apariencia de cada carta se DERIVA del bundle (cluster -> matiz,
-  tipo -> ornamento, carga cognitiva -> textura, umbral -> canto dorado,
-  importancia -> sombra). El contenido es infinito, asi que no se ilustra: se genera
-- los 8 tipos de relacion tienen 8 tratamientos de linea distintos, incluida
-  ondulada para matiza y doble para contrasta
-- cascade.ts: el marcador se descubre eslabon por eslabon, con combos encendiendose
-  y tono ascendente por escala pentatonica; se puede saltar tocando la cuenta
-- sfx.ts: sonido sintetizado con WebAudio, sin ficheros ni licencias, con interruptor
-- assets.tsx: ranuras de ilustracion con respaldo automatico en el SVG actual;
-  public/art/LEEME.md trae la especificacion y la direccion de arte
-- Enemigo.gesto expuesto como data-gesto: es ya la maquina de estados para Rive"
+- powers.ts: 22 lentes pasivas sobre ejes ortogonales (tipo de relacion,
+  herramienta, combos, mano, discriminacion, escalera) para que apilarlas
+  siempre sume y nunca sea redundante; 6 sellos activos de un uso por combate
+- economy.ts: la tinta como moneda, ganada por afirmar, deducir y detectar
+  falsificaciones; El Archivo como nodo de tienda con remesa nueva
+- quemar bien ahora da tinta, roba una carta, bonifica el proximo diagrama y
+  deja acuse de recibo en pantalla
+- estante de poderes siempre visible con las pasivas y los sellos
+- el disparo del carril ocurre DESPUES de que termina la cuenta del marcador
+- al tocar un feedback, su trazo y sus piezas se resaltan y el resto se atenua
+- cada herramienta trae un ejemplo con animales para entenderla sin saber del tema
+- texto completo de las cartas largas al pasar el raton, sin abrir panel
+- npm run smoke anade un criterio de economia: la tinta alcanza sin sobrar"
 
 git push origin main
 ```

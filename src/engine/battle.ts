@@ -11,6 +11,7 @@ import {
   crearEnemigo, factorBlindaje, generarOleada, tipoPorId, type Dificultad, type Enemigo
 } from './lane'
 import type { Rng } from './rng'
+import { SELLOS, type SelloId } from './powers'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -29,6 +30,10 @@ export interface EventoPozo {
   acertado: boolean
   dimension: Dimension
   nota: string
+  /** recompensa inmediata: quemar bien tiene que sentirse */
+  tinta: number
+  bonusMult: number
+  titulo: string
 }
 
 export interface FotoDiagrama {
@@ -75,8 +80,21 @@ export interface EstadoBatalla {
   ultima: ResultadoTurno | null
   manoBase: number
   pozo: EventoPozo[]
+  /** el último gesto del pozo, para poder darle acuse de recibo en pantalla */
+  ultimoPozo: EventoPozo | null
   /** conceptos fusionados: entran como carta completa en adelante */
   fusionados: string[]
+  // — poderes —
+  sellos: SelloId[]
+  sellosUsados: SelloId[]
+  /** falsificaciones ya señaladas (por Ojo crítico o por la Lupa) */
+  reveladas: string[]
+  /** bonificación acumulada para el próximo diagrama */
+  bonusMult: number
+  carrilCongelado: boolean
+  tintaGanada: number
+  quemasAcertadas: number
+  inferenciasTotales: number
 }
 
 export interface ContextoBatalla {
@@ -97,6 +115,8 @@ export interface Bolsa {
   tesis: string[]
   intuiciones: string[]
   fusionados: string[]
+  sellos: SelloId[]
+  manoExtra: number
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -144,19 +164,29 @@ export function iniciarBatalla(
   ctx: ContextoBatalla, conceptIds: string[], bolsa: Bolsa, dificultad: Dificultad,
   acto: number, manoBase: number
 ): EstadoBatalla {
+  const m = ctx.lentes
   const e: EstadoBatalla = {
     dificultad, acto, conceptIdsCasilla: conceptIds,
     enemigos: generarOleada(dificultad, acto, ctx.rng),
     mazo: montarMazo(ctx.contenido, conceptIds, bolsa, dificultad, ctx.rng),
     mano: [], descarte: [], tablero: [], trazos: [],
-    herramientas: bolsa.herramientas, usadas: [],
+    herramientas: [...bolsa.herramientas, ...m.herramientasExtra], usadas: [],
     relacionesDisponibles: bolsa.relaciones,
-    quemasRestantes: dificultad === 'facil' ? 2 : 3,
-    cambiosRestantes: 3,
-    turno: 1, fase: 'jugando', ultima: null, manoBase,
-    pozo: [], fusionados: [...bolsa.fusionados]
+    quemasRestantes: (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
+    cambiosRestantes: 3 + m.cambiosExtra,
+    turno: 1, fase: 'jugando', ultima: null,
+    manoBase: manoBase + m.manoExtra + bolsa.manoExtra,
+    pozo: [], ultimoPozo: null, fusionados: [...bolsa.fusionados],
+    sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
+    bonusMult: 0, carrilCongelado: false,
+    tintaGanada: 0, quemasAcertadas: 0, inferenciasTotales: 0
   }
-  robar(e, manoBase)
+  robar(e, e.manoBase)
+  // Ojo crítico: algunas falsificaciones vienen ya señaladas
+  if (m.revelaApocrifas > 0) {
+    e.reveladas = e.mano.filter((p) => p.clase === 'apocrifa')
+      .slice(0, m.revelaApocrifas).map((p) => p.uid)
+  }
   return e
 }
 
@@ -232,7 +262,7 @@ export function herramientasLibres(e: EstadoBatalla): HerramientaId[] {
    verdadera pero no sirve aquí. Dos gestos, cuatro resultados, dos señales.
    ========================================================================== */
 
-export function quemar(e: EstadoBatalla, uid: string): EventoPozo | null {
+export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
   if (e.quemasRestantes <= 0) return null
   const p = e.mano.find((x) => x.uid === uid)
   if (!p) return null
@@ -243,15 +273,28 @@ export function quemar(e: EstadoBatalla, uid: string): EventoPozo | null {
   devolverAMano(e, uid)
   e.tablero = e.tablero.filter((t) => t.uid !== uid)
   e.quemasRestantes -= 1
+  e.reveladas = e.reveladas.filter((x) => x !== uid)
+
+  // quemar bien tiene que SENTIRSE: tinta, bonificación y una carta nueva
+  const tinta = apocrifa ? 3 + ctx.lentes.tintaPorQuema : 0
+  const bonusMult = apocrifa ? 0.8 : 0
+  if (apocrifa) {
+    e.quemasAcertadas += 1
+    e.tintaGanada += tinta
+    e.bonusMult += bonusMult
+    robar(e, 1)
+  }
 
   const ev: EventoPozo = {
     accion: 'quemar', clase: p.clase, conceptId: p.conceptId, apocrifa, pertenece,
-    acertado: apocrifa, dimension: 'discriminacion',
+    acertado: apocrifa, dimension: 'discriminacion', titulo: p.titulo,
+    tinta, bonusMult,
     nota: apocrifa
-      ? `Bien visto. ${p.explicacion}`
+      ? `Bien visto: ${p.explicacion} Ganas ${tinta} de tinta, robas una carta y tu próximo diagrama multiplica +${bonusMult.toFixed(1)}.`
       : `«${p.titulo}» era legítima. La destruiste y no volverá en esta expedición.`
   }
   e.pozo.push(ev)
+  e.ultimoPozo = ev
   return ev
 }
 
@@ -270,7 +313,7 @@ export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
 
   const ev: EventoPozo = {
     accion: 'cambiar', clase: p.clase, conceptId: p.conceptId, apocrifa, pertenece,
-    acertado: !apocrifa,
+    acertado: !apocrifa, titulo: p.titulo, tinta: 0, bonusMult: 0,
     dimension: apocrifa ? 'discriminacion' : 'srl_accion',
     nota: apocrifa
       ? 'Era una falsificación y vuelve al mazo: cambiarla no la retira.'
@@ -279,8 +322,52 @@ export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
         : 'Guardada para más adelante.'
   }
   e.pozo.push(ev)
+  e.ultimoPozo = ev
   return ev
 }
+
+/* ============================== los sellos ================================ */
+
+export function usarSello(e: EstadoBatalla, id: SelloId): string | null {
+  if (!e.sellos.includes(id) || e.sellosUsados.includes(id)) return null
+  e.sellosUsados.push(id)
+  switch (id) {
+    case 'lupa': {
+      const falsas = e.mano.filter((p) => p.clase === 'apocrifa' ||
+        (p.clase === 'criterio' && p.sentido !== 'refuta'))
+      e.reveladas = [...new Set([...e.reveladas, ...falsas.map((p) => p.uid)])]
+      return falsas.length
+        ? `${falsas.length} falsificación(es) señalada(s) en tu mano.`
+        : 'No hay ninguna falsificación en tu mano ahora mismo.'
+    }
+    case 'pluma':
+      robar(e, 3)
+      return 'Robas tres cartas.'
+    case 'goma':
+      e.carrilCongelado = true
+      return 'El carril se detiene este turno.'
+    case 'atajo':
+      e.herramientas = [...e.herramientas, 'flecha', 'identidad']
+      return 'Una flecha y una identidad extra para este turno.'
+    case 'calco':
+      e.bonusMult += 2
+      return 'Tu próximo diagrama multiplica +2.0.'
+    case 'purga': {
+      e.descarte.push(...e.mano)
+      const n = e.mano.length
+      e.mano = []
+      robar(e, Math.max(e.manoBase, n))
+      return 'Mano nueva sin gastar cambios.'
+    }
+    default:
+      return null
+  }
+}
+
+export const selloDisponible = (e: EstadoBatalla, id: SelloId): boolean =>
+  e.sellos.includes(id) && !e.sellosUsados.includes(id)
+
+export const nombreSello = (id: SelloId): string => SELLOS[id].nombre
 
 /* ==========================================================================
    Afirmar el diagrama completo
@@ -288,7 +375,10 @@ export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
 
 export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno {
   const piezas = [...e.mano, ...e.descarte]
-  const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, ctx.lentes)
+  const lentesConBonus = e.bonusMult > 0
+    ? { ...ctx.lentes, multGlobal: ctx.lentes.multGlobal + e.bonusMult }
+    : ctx.lentes
+  const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, lentesConBonus)
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
 
@@ -367,6 +457,10 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   e.tablero = []
   e.trazos = []
   e.usadas = []
+  e.bonusMult = 0
+  e.inferenciasTotales += diag.veredictos.filter((v) => v.inferencia).length
+  // Impulso: cada acierto hace robar
+  if (ctx.lentes.robarPorAcierto) robar(e, diag.sostenidos * ctx.lentes.robarPorAcierto)
 
   e.ultima = r
   e.fase = vivos(e).length === 0 ? 'ganado' : 'resuelto'
@@ -377,6 +471,12 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
 
 export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: ResultadoTurno): void {
   if (e.fase === 'ganado') return
+  if (e.carrilCongelado) {
+    e.carrilCongelado = false
+    r.parteEnemiga.push({ texto: 'La Goma detiene el carril: nadie avanza ni golpea.', dano: 0 })
+    r.danoRecibido = r.diag.autodano
+    return
+  }
   let total = r.diag.autodano
   if (total > 0) {
     r.parteEnemiga.push({ texto: 'Afirmar lo que el texto no dice te cuesta lucidez.', dano: total })
@@ -433,5 +533,6 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
 export function siguienteTurno(e: EstadoBatalla): void {
   e.turno += 1
   e.fase = 'jugando'
+  e.ultimoPozo = null
   robar(e, Math.max(0, e.manoBase - e.mano.length))
 }

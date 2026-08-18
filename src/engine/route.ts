@@ -1,9 +1,10 @@
 import type { Contenido } from '../content/types'
 import type { Dificultad } from './lane'
-import { LENTES } from './lenses'
+import { LENTES, SELLOS, type SelloId } from './powers'
+import { HERRAMIENTAS, type HerramientaId } from './tools'
 import { Rng } from './rng'
 
-export type TipoNodo = 'oleada' | 'refugio' | 'taller' | 'jefe'
+export type TipoNodo = 'oleada' | 'refugio' | 'archivo' | 'jefe'
 export type EtiquetaRuta = 'consolidar' | 'elaborar' | 'umbral' | 'portal' | 'descanso'
 
 export interface Nodo {
@@ -128,7 +129,7 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
         let tipo: TipoNodo = 'oleada'
         if (esUltimo && ultima) tipo = 'jefe'
         else if (col === anchos.length - 2) tipo = 'refugio'
-        else if (col === 2 && f === 0) tipo = 'taller'
+        else if (col === 2 && f === 0) tipo = 'archivo'
 
         let etiqueta: EtiquetaRuta = 'descanso'
         let dificultad: Dificultad = 'facil'
@@ -145,7 +146,7 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
           if (col === anchos.length - 3 && f === 0) dificultad = 'dura'
         }
 
-        const conceptIds = tipo === 'refugio' || tipo === 'taller'
+        const conceptIds = tipo === 'refugio' || tipo === 'archivo'
           ? u.conceptIds
           : conceptosPara(contenido, u.conceptIds, etiqueta, rng)
         const casos = tipo === 'oleada' || tipo === 'jefe'
@@ -206,35 +207,43 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
 
 export type Recompensa =
   | { tipo: 'lente'; id: string }
+  | { tipo: 'sello'; id: SelloId }
+  | { tipo: 'herramienta'; id: HerramientaId }
   | { tipo: 'relacion'; tipoRelacion: string }
   | { tipo: 'caso'; id: string }
   | { tipo: 'tesis'; id: string }
   | { tipo: 'lucidez'; cantidad: number }
-  | { tipo: 'ranura'; }
+  | { tipo: 'tinta'; cantidad: number }
 
+/** Tras cada sala se elige una de tres. Nunca son de la misma familia, para
+ *  que la decisión sea «qué clase de run quiero» y no «cuál es la mejor». */
 export function ofrecerRecompensas(
-  contenido: Contenido, lentes: string[], relaciones: string[], rng: Rng,
-  dura: boolean
+  contenido: Contenido, cartera: {
+    lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[]
+  }, rng: Rng, dura: boolean
 ): Recompensa[] {
   const salida: Recompensa[] = []
 
-  const libres = LENTES.filter((l) => !lentes.includes(l.id) && (dura || !l.raro))
-  if (libres.length && lentes.length < 5) salida.push({ tipo: 'lente', id: rng.pick(libres).id })
+  const libres = LENTES.filter((l) => !cartera.lentes.includes(l.id) &&
+    (dura || l.rareza === 'comun'))
+  if (libres.length) salida.push({ tipo: 'lente', id: rng.pick(libres).id })
 
-  // relaciones raras del texto: las que más multiplican y menos tienes
-  const porRareza = Object.entries(contenido.frecuenciaRelacion)
-    .sort((a, b) => a[1] - b[1])
-    .map(([t]) => t)
-  const candidata = porRareza.find((t) => relaciones.filter((r) => r === t).length < 2) ?? porRareza[0]
-  if (candidata) salida.push({ tipo: 'relacion', tipoRelacion: candidata })
-
-  if (dura && contenido.tesis.length) {
-    salida.push({ tipo: 'tesis', id: rng.pick(contenido.tesis).id })
-  } else if (contenido.escenarios.length) {
-    const lejanos = contenido.escenarios.filter((s) => s.distancia !== 'cercana')
-    salida.push({ tipo: 'caso', id: rng.pick(lejanos.length ? lejanos : contenido.escenarios).id })
+  const sellosLibres = (Object.keys(SELLOS) as SelloId[]).filter((s) => !cartera.sellos.includes(s))
+  if (sellosLibres.length && (dura || rng.next() < 0.55)) {
+    salida.push({ tipo: 'sello', id: rng.pick(sellosLibres) })
   }
 
-  if (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: dura ? 16 : 10 })
+  const cuenta = (h: HerramientaId) => cartera.herramientas.filter((x) => x === h).length
+  const herramientas = (Object.keys(HERRAMIENTAS) as HerramientaId[])
+    .filter((h) => h !== 'eje' || contenido.ejes.length >= 1)
+    .sort((a, b) => cuenta(a) - cuenta(b))
+  if (salida.length < 3) salida.push({ tipo: 'herramienta', id: herramientas[rng.int(3)] })
+
+  const porRareza = Object.entries(contenido.frecuenciaRelacion)
+    .sort((a, b) => a[1] - b[1]).map(([t]) => t)
+  const rel = porRareza.find((t) => cartera.relaciones.filter((r) => r === t).length < 2) ?? porRareza[0]
+  if (rel && salida.length < 3) salida.push({ tipo: 'relacion', tipoRelacion: rel })
+
+  while (salida.length < 3) salida.push({ tipo: 'tinta', cantidad: dura ? 14 : 9 })
   return rng.shuffle(salida).slice(0, 3)
 }

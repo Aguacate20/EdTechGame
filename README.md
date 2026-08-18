@@ -194,7 +194,8 @@ src/
     graph.ts        semántica del grafo: simetrías, duales, familias y derivaciones
     pieces.ts       una sola forma de carta con roles; fábricas desde el bundle
     tools.ts        las nueve herramientas, su validación, los combos y el marcador
-    lenses.ts       los jokers y cómo reescriben la puntuación
+    powers.ts       22 lentes pasivas y 6 sellos activos
+    economy.ts      la tinta y las ofertas de El Archivo
     lane.ts         el carril, los once enemigos y el presupuesto de oleada
     battle.ts       tablero, trazos, pozo y turno del carril
     route.ts        grafo de rutas ramificado y recompensas

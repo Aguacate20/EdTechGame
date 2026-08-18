@@ -8,6 +8,7 @@ import {
   evaluarDiagrama, HERRAMIENTAS, listaHerramientas, type HerramientaId, type ModificadoresLente
 } from '../engine/tools'
 import { tipoPorId } from '../engine/lane'
+import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
 import { LaneView } from './LaneView'
 import { Chip } from './components'
 import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
@@ -20,6 +21,7 @@ export interface AccionesBatalla {
   continuar: () => void
   quemar: (uid: string) => void
   cambiar: (uid: string) => void
+  sello: (id: SelloId) => void
   huir: () => void
 }
 
@@ -80,9 +82,10 @@ const ETIQUETA: Record<Pieza['clase'], string> = {
   marco: 'Marco', intuicion: 'Intuición', subdimension: 'Atributo'
 }
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta, lentesIds }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number
+  tinta: number; lentesIds: string[]
 }) {
   const lienzo = useRef<HTMLDivElement>(null)
   const [herramienta, setHerramienta] = useState<HerramientaId | null>(null)
@@ -152,9 +155,55 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
       <LaneView
         enemigos={e.enemigos} lucidez={lucidez} lucidezMax={lucidezMax}
         alcance={resuelto ? 0 : previa.alcance}
-        gesto={resuelto ? (e.ultima && e.ultima.danoTotal > 0 ? 'afirma' : 'herido') : 'quieto'}
-        ultimosImpactos={resuelto && e.ultima ? e.ultima.impactos : []}
+        gesto={
+          resuelto && casc.terminada
+            ? (e.ultima && e.ultima.danoTotal > 0 ? 'afirma' : 'herido')
+            : 'quieto'
+        }
+        ultimosImpactos={resuelto && casc.terminada && e.ultima ? e.ultima.impactos : []}
+        disparoListo={resuelto && casc.terminada}
       />
+
+      <div className="estante">
+        <div className="estante-grupo">
+          <span className="eyebrow">Pasivas</span>
+          <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
+            {lentesIds.length === 0 && <span className="silencio dato">ninguna</span>}
+            {lentesIds.map((id) => {
+              const l = lentePorId(id)
+              return (
+                <span key={id} className="pastilla" data-ayuda={`${l.regla} — ${l.costo}`}>
+                  {l.nombre}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+        <div className="estante-grupo">
+          <span className="eyebrow">Sellos · un uso por combate</span>
+          <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
+            {e.sellos.length === 0 && <span className="silencio dato">ninguno</span>}
+            {e.sellos.map((id) => {
+              const x = selloPorId(id)
+              const gastado = e.sellosUsados.includes(id)
+              return (
+                <button
+                  key={id} className={`sello-btn${gastado ? ' gastado' : ''}`}
+                  disabled={gastado || resuelto} onClick={() => on.sello(id)}
+                  data-ayuda={x.efecto}
+                >
+                  <span className="glifo">{x.glifo}</span> {x.nombre}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        <div className="estante-grupo derecha">
+          <span className="eyebrow">Tinta</span>
+          <span className="tinta-marca grande">◈ {tinta}</span>
+          {e.bonusMult > 0 && <span className="pastilla brillo">próximo diagrama +{e.bonusMult.toFixed(1)}×</span>}
+        </div>
+      </div>
 
       <div className="fila" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span className="eyebrow">Tu diagrama · turno {e.turno}</span>
@@ -207,7 +256,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
               )
             }
             return (
-              <g key={t.uid} className={resuelto && !casc.trazosRevelados.has(t.uid) ? 'oculto' : 'trazo-vivo'}>
+              <g
+                key={t.uid}
+                className={
+                  (resuelto && !casc.trazosRevelados.has(t.uid) ? 'oculto' : 'trazo-vivo') +
+                  (trazoAbierto === t.uid ? ' resaltado' : trazoAbierto ? ' atenuado' : '')
+                }
+              >
                 {pts.slice(0, -1).map((a, i) => {
                   const b = pts[i + 1]
                   const est = t.tool === 'flecha' ? estiloRelacion(t.param) : null
@@ -297,7 +352,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
           return (
             <div
               key={p.uid}
-              className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}${seleccion === p.uid ? ' activa' : ''}`}
+              className={
+                `naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
+                `${seleccion === p.uid ? ' activa' : ''}` +
+                `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
+                `${trazoAbierto && trazosVisibles.find((t) => t.uid === trazoAbierto)?.piezas.includes(p.uid) ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}`
+              }
               style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cedulaDe(contenido, p)) }}
               draggable={!resuelto}
               onDragStart={() => setArrastrando(p.uid)}
@@ -312,6 +372,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
           )
         })}
       </div>
+
+      {e.ultimoPozo && !resuelto && (
+        <div className={`acuse ${e.ultimoPozo.acertado ? 'bien' : 'mal'}`}>
+          <strong>
+            {e.ultimoPozo.accion === 'quemar' ? 'Quemaste' : 'Cambiaste'} «{e.ultimoPozo.titulo}»
+          </strong>
+          <span>{e.ultimoPozo.nota}</span>
+          {e.ultimoPozo.tinta > 0 && (
+            <span className="premio">◈ +{e.ultimoPozo.tinta} · +{e.ultimoPozo.bonusMult.toFixed(1)}× · +1 carta</span>
+          )}
+        </div>
+      )}
 
       {/* ---------------------------- herramientas ---------------------------- */}
       {!resuelto && (
@@ -340,6 +412,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
       {h && !resuelto && (
         <div className="constructor">
           <span className="eyebrow">{h.nombre} · {h.afirma}</span>
+          <p className="ejemplo-herr">{h.ejemplo}</p>
           {h.parametro === 'relacion' && (
             <div className="fila" style={{ gap: 6, flexWrap: 'wrap' }}>
               {[...new Set(e.relacionesDisponibles)].map((tipo) => (
@@ -515,8 +588,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax }: {
             {enMano.map((p) => (
               <div
                 key={p.uid}
-                className={`naipe naipe-${p.clase}${seleccion === p.uid ? ' activa' : ''}`}
+                className={`naipe naipe-${p.clase}${seleccion === p.uid ? ' activa' : ''}${e.reveladas.includes(p.uid) ? ' senalada' : ''}`}
                 style={estiloDeCedula(cedulaDe(contenido, p))}
+                data-ayuda={p.cuerpo.length > 190 ? p.cuerpo : undefined}
                 draggable
                 onDragStart={(ev) => { setArrastrando(p.uid); ev.dataTransfer.setData('text/plain', p.uid) }}
                 onDragEnd={() => setArrastrando(null)}

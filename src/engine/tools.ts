@@ -29,6 +29,8 @@ export interface Herramienta {
   parametro: 'relacion' | 'eje' | null
   dimension: Dimension
   ordenada: boolean
+  /** un ejemplo con animales, para entender la herramienta sin saber del tema */
+  ejemplo: string
 }
 
 export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
@@ -36,55 +38,64 @@ export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
     id: 'flecha', nombre: 'Flecha', glifo: '→',
     afirma: 'Que existe este vínculo, con este tipo y en esta dirección.',
     aridad: [2, 2], rolesExigidos: ['nodo', 'nodo'], parametro: 'relacion',
-    dimension: 'relacion', ordenada: true
+    dimension: 'relacion', ordenada: true,
+    ejemplo: "«Sequía» —causa→ «Migración de las aves». Una idea empuja a la otra."
   },
   identidad: {
     id: 'identidad', nombre: 'Identidad', glifo: '=',
     afirma: 'Que este nombre y esta descripción son la misma cosa.',
     aridad: [2, 2], rolesExigidos: ['nodo', 'nodo'], parametro: null,
-    dimension: 'recuperacion', ordenada: false
+    dimension: 'recuperacion', ordenada: false,
+    ejemplo: "«Ballena» = «mamífero marino que filtra kril». El nombre y su descripción."
   },
   campo: {
     id: 'campo', nombre: 'Campo semántico', glifo: '◯',
     afirma: 'Que todo lo que encierro pertenece a la misma zona del texto.',
     aridad: [2, 6], rolesExigidos: ['nodo'], parametro: null,
-    dimension: 'estructura', ordenada: false
+    dimension: 'estructura', ordenada: false,
+    ejemplo: "◯ ( «Lobo» · «Zorro» · «Coyote» ) — todos son cánidos: la misma zona del mapa."
   },
   jerarquia: {
     id: 'jerarquia', nombre: 'Jerarquía', glifo: '⊃',
     afirma: 'Que el primero es la categoría que contiene al segundo.',
     aridad: [2, 4], rolesExigidos: ['nodo'], parametro: null,
-    dimension: 'estructura', ordenada: true
+    dimension: 'estructura', ordenada: true,
+    ejemplo: "«Ave» ⊃ «Pingüino». El primero es la categoría que contiene al segundo."
   },
   eje: {
     id: 'eje', nombre: 'Eje', glifo: '⊢',
     afirma: 'Que todo esto cae en el mismo extremo de un eje del dominio.',
     aridad: [2, 5], rolesExigidos: ['nodo'], parametro: 'eje',
-    dimension: 'relacion', ordenada: false
+    dimension: 'relacion', ordenada: false,
+    ejemplo: "⊢ vuela: ( «Águila» · «Colibrí» ). Los dos caen en el mismo extremo del eje."
   },
   secuencia: {
     id: 'secuencia', nombre: 'Secuencia', glifo: '⇢',
     afirma: 'Que esto ocurre en este orden, cada paso llevando al siguiente.',
     aridad: [3, 4], rolesExigidos: ['nodo'], parametro: null,
-    dimension: 'estructura', ordenada: true
+    dimension: 'estructura', ordenada: true,
+    ejemplo: "«Huevo» ⇢ «Oruga» ⇢ «Mariposa». Cada paso lleva al siguiente, en ese orden."
   },
   ancla: {
     id: 'ancla', nombre: 'Ancla', glifo: '⌖',
     afirma: 'Que estos conceptos son los que operan en este caso.',
     aridad: [2, 4], rolesExigidos: ['caso', 'nodo'], parametro: null,
-    dimension: 'transferencia', ordenada: true
+    dimension: 'transferencia', ordenada: true,
+    ejemplo: "⌖ «Un jardín sin abejas no da fruto» + ( «Polinización» · «Mutualismo» )."
   },
   balanza: {
     id: 'balanza', nombre: 'Balanza', glifo: '⚖',
     afirma: 'Que esto es lo que obligaría a revisar la tesis.',
     aridad: [2, 3], rolesExigidos: ['tesis', 'criterio'], parametro: null,
-    dimension: 'produccion', ordenada: true
+    dimension: 'produccion', ordenada: true,
+    ejemplo: "⚖ «Los cuervos usan herramientas» + «Un cuervo criado aislado no las usaría»."
   },
   tachon: {
     id: 'tachon', nombre: 'Tachón', glifo: '✗',
     afirma: 'Que esta carta es una falsificación.',
     aridad: [1, 1], rolesExigidos: ['nodo'], parametro: null,
-    dimension: 'discriminacion', ordenada: false
+    dimension: 'discriminacion', ordenada: false,
+    ejemplo: "✗ «Murciélago: ave nocturna que…» — no: es un mamífero. Eso es una falsificación."
   }
 }
 
@@ -135,6 +146,8 @@ export interface Veredicto {
   inferencia: boolean
 }
 
+/** Cada pasiva toca un eje distinto a propósito: así apilarlas nunca es
+ *  redundante y cada combinación produce una partida diferente. */
 export interface ModificadoresLente {
   multPorTipo: Record<string, number>
   multPorHerramienta: Partial<Record<HerramientaId, number>>
@@ -143,11 +156,32 @@ export interface ModificadoresLente {
   multPorUmbral: number
   multGlobal: number
   alcanceExtra: number
+  // — economía de mano y herramientas —
+  manoExtra: number
+  herramientasExtra: HerramientaId[]
+  quemasExtra: number
+  cambiosExtra: number
+  robarPorAcierto: number
+  // — economía de tinta —
+  tintaPorCombate: number
+  tintaPorQuema: number
+  tintaPorInferencia: number
+  // — la escalera de veredictos —
+  fichasPorInferencia: number
+  multPorAproximado: number
+  plausibleCuenta: boolean
+  sinCastigoInvertido: boolean
+  // — información —
+  revelaApocrifas: number
 }
 
 export const SIN_LENTES: ModificadoresLente = {
   multPorTipo: {}, multPorHerramienta: {}, multPorCombo: {},
-  fichasPorSostenido: 0, multPorUmbral: 0, multGlobal: 0, alcanceExtra: 0
+  fichasPorSostenido: 0, multPorUmbral: 0, multGlobal: 0, alcanceExtra: 0,
+  manoExtra: 0, herramientasExtra: [], quemasExtra: 0, cambiosExtra: 0,
+  robarPorAcierto: 0, tintaPorCombate: 0, tintaPorQuema: 0, tintaPorInferencia: 0,
+  fichasPorInferencia: 0, multPorAproximado: 0, plausibleCuenta: false,
+  sinCastigoInvertido: false, revelaApocrifas: 0
 }
 
 export type ComboId =
@@ -660,6 +694,14 @@ export function evaluarDiagrama(
     combos[combos.length - 1].nombre = 'Umbral'
   }
 
+  // bonificaciones de pasivas sobre la escalera
+  const nInf = veredictos.filter((v) => v.inferencia).length
+  if (nInf) fichas += lentes.fichasPorInferencia * nInf
+  if (aproximados.length) mult += lentes.multPorAproximado * aproximados.length
+  if (lentes.plausibleCuenta) {
+    const pl = veredictos.filter((v) => v.estado === 'plausible').length
+    fichas += pl * 6
+  }
   // un error resta, pero ya no derrumba el diagrama entero: lo demás sigue en pie
   if (errores.length) mult = Math.max(0.4, mult - 0.5 * errores.length)
   // usar una falsificación sin darse cuenta cuesta rendimiento, no la jugada
@@ -684,7 +726,7 @@ export function evaluarDiagrama(
     fusiona: [...new Set(sostenidos.flatMap((v) => v.fusiona))],
     apocrifasDetectadas: sostenidos.map((v) => v.apocrifaDetectada).filter((x): x is string => !!x),
     repertoriosReubicados: sostenidos.map((v) => v.repertorioReubicado).filter((x): x is string => !!x),
-    autodano: errores.length * 4 + invertidos.length * 3,
+    autodano: errores.length * 4 + (lentes.sinCastigoInvertido ? 0 : invertidos.length * 3),
     cierre: sostenidos.length ? sostenidos[sostenidos.length - 1].nota : null
   }
 }
