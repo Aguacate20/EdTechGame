@@ -4,8 +4,8 @@ import {
   piezaMarco, piezaTesis, piezasCriterio, piezasSubdimension, type Pieza
 } from './pieces'
 import {
-  evaluarDiagrama, HERRAMIENTAS, type Diagnostico, type Dimension, type HerramientaId,
-  type ModificadoresLente, type Trazo
+  esAcierto, evaluarDiagrama, HERRAMIENTAS, type Diagnostico, type Dimension,
+  type HerramientaId, type ModificadoresLente, type Trazo
 } from './tools'
 import {
   crearEnemigo, factorBlindaje, generarOleada, tipoPorId, type Dificultad, type Enemigo
@@ -93,19 +93,38 @@ export interface EstadoBatalla {
   carrilCongelado: boolean
   quemasAcertadas: number
   inferenciasTotales: number
-  /** todo lo que el jugador afirmó en este combate, para el mapa de cierre */
-  hallazgos: Hallazgo[]
+  /** lo que el jugador sostuvo en este combate, para el mapa de cierre */
+  hallazgos: Hallazgos
   mejorGolpe: { dano: number; fichas: number; mult: number; trazos: number }
 }
 
-/** Una afirmación registrada durante el combate. */
-export interface Hallazgo {
+/* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
+   Solo entran los ACIERTOS: el mapa final es lo que quedó en pie, no el borrador. */
+
+export interface Vinculo {
   from: string
   to: string
+  /** la etiqueta que se dibuja sobre la línea: «extiende», «ejemplifica»… */
   tipo: string
   estado: string
   herramienta: string
   nota: string
+  /** cuántas veces se sostuvo a lo largo del combate */
+  veces: number
+}
+
+export interface Grupo {
+  ids: string[]
+  etiqueta: string
+  herramienta: string
+  nota: string
+}
+
+export interface Hallazgos {
+  vinculos: Vinculo[]
+  grupos: Grupo[]
+  /** conceptos cuyo nombre emparejaste con su descripción */
+  reconocidos: string[]
 }
 
 export interface ContextoBatalla {
@@ -190,7 +209,7 @@ export function iniciarBatalla(
     sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
     bonusMult: 0, carrilCongelado: false,
     quemasAcertadas: 0, inferenciasTotales: 0,
-    hallazgos: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
+    hallazgos: { vinculos: [], grupos: [], reconocidos: [] }, mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
   }
   robar(e, e.manoBase)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
@@ -476,17 +495,10 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   e.bonusMult = 0
   e.inferenciasTotales += diag.veredictos.filter((v) => v.inferencia).length
 
-  // memoria del combate: qué se afirmó y cuál fue el mejor diagrama
-  for (const v of diag.veredictos) {
-    if (v.conceptIds.length < 2) continue
-    const [from, to] = v.conceptIds
-    if (!from || !to) continue
-    e.hallazgos.push({
-      from, to,
-      tipo: v.trazo.param?.split('::').pop() ?? v.trazo.tool,
-      estado: v.estado, herramienta: v.trazo.tool, nota: v.nota
-    })
-  }
+  // memoria del combate: los aciertos se acumulan turno a turno, de modo que
+  // «A extiende B» del turno 1 y «B ejemplifica C» del turno 3 acaban siendo
+  // una sola cadena en el mapa de cierre
+  registrarHallazgos(e, diag)
   if (diag.dano > e.mejorGolpe.dano) {
     e.mejorGolpe = {
       dano: diag.dano, fichas: diag.fichas, mult: diag.mult, trazos: e.trazos.length
@@ -501,6 +513,52 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
 }
 
 /* ------------------------------ turno del carril -------------------------- */
+
+/** Cada herramienta deja un rastro distinto: la flecha y la secuencia dejan
+ *  vínculos dirigidos; el campo y el eje dejan agrupaciones; la identidad deja
+ *  un concepto reconocido. Meterlo todo en «pares» fabricaba aristas falsas. */
+function registrarHallazgos(e: EstadoBatalla, diag: Diagnostico): void {
+  const h = e.hallazgos
+  for (const v of diag.veredictos) {
+    if (!esAcierto(v.estado)) continue
+    const tool = v.trazo.tool
+
+    if (tool === 'identidad') {
+      for (const id of v.conceptIds) {
+        if (!h.reconocidos.includes(id)) h.reconocidos.push(id)
+      }
+      continue
+    }
+
+    if (tool === 'campo' || tool === 'eje' || tool === 'ancla') {
+      const etiqueta = tool === 'campo' ? 'mismo campo'
+        : tool === 'eje' ? (v.trazo.param?.split('::').pop() ?? 'mismo eje')
+        : 'opera en el caso'
+      const clave = [...v.conceptIds].sort().join('|')
+      if (!h.grupos.some((g) => [...g.ids].sort().join('|') === clave)) {
+        h.grupos.push({ ids: v.conceptIds, etiqueta, herramienta: tool, nota: v.nota })
+      }
+      continue
+    }
+
+    // flecha, jerarquía y secuencia: las aristas literales cuando las hay,
+    // y si no (caso de una inferencia) el par que el jugador afirmó
+    const pares = v.aristas.length
+      ? v.aristas
+      : v.conceptIds.length >= 2
+        ? [{ from: v.conceptIds[0], to: v.conceptIds[1], tipo: v.trazo.param ?? tool }]
+        : []
+
+    for (const a of pares) {
+      const ya = h.vinculos.find((x) => x.from === a.from && x.to === a.to && x.tipo === a.tipo)
+      if (ya) { ya.veces += 1; continue }
+      h.vinculos.push({
+        from: a.from, to: a.to, tipo: a.tipo,
+        estado: v.estado, herramienta: tool, nota: v.nota, veces: 1
+      })
+    }
+  }
+}
 
 export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: ResultadoTurno): void {
   if (e.fase === 'ganado') return

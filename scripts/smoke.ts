@@ -248,7 +248,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
           if (!vivos(e).length || lucidez <= 0) break
           siguienteTurno(e)
         }
-        rep.hallazgos += e.hallazgos.length
+        rep.hallazgos += e.hallazgos.vinculos.length + e.hallazgos.grupos.length
         rep.mejorGolpe = Math.max(rep.mejorGolpe, e.mejorGolpe.dano)
         if (lucidez <= 0) { rep.lucidez = 0; return rep }
       }
@@ -331,7 +331,7 @@ const totalAprox = Object.values(escX).reduce((a, b) => a + b, 0) || 1
 const creditoAprox = (escX.equivalente ?? 0) + (escX.aproximado ?? 0) + (escX.derivado ?? 0) + (escX.sostenido ?? 0)
 // el mapa de cierre necesita material: sin hallazgos no hay nada que devolver
 const hallMedia = inf.reduce((n, r) => n + r.hallazgos, 0) / Math.max(1, inf.length)
-const ok8 = hallMedia >= 20
+const ok8 = hallMedia >= 15
 const solape = solapes.length ? solapes.reduce((a, b) => a + b, 0) / solapes.length : 1
 const ok9 = solapes.length > 0 && solape < 0.5
 const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
@@ -342,6 +342,6 @@ console.log(` ${ok4 ? 'PASA' : 'FALLA'}  una oleada dura entre 2 y 9 turnos (${t
 console.log(` ${ok5 ? 'PASA' : 'FALLA'}  los combos aparecen de verdad (${combos.size})`)
 console.log(` ${ok6 ? 'PASA' : 'FALLA'}  la escalera no premia al azar (${(100 * aciertaAzar / totalAzar).toFixed(0)}% de aciertos al azar)`)
 console.log(` ${ok7 ? 'PASA' : 'FALLA'}  quien razona bien y se equivoca de etiqueta recibe crédito (${(100 * creditoAprox / totalAprox).toFixed(0)}%, ${res.aproximado.filter((r) => r.gano).length}/${semillas.length} victorias)`)
-console.log(` ${ok8 ? 'PASA' : 'FALLA'}  el mapa de cierre tiene material (${hallMedia.toFixed(0)} hallazgos por run)`)
+console.log(` ${ok8 ? 'PASA' : 'FALLA'}  el mapa de cierre acumula aciertos (${hallMedia.toFixed(0)} vínculos y grupos por run)`)
 console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios distintos (${(100 * solape).toFixed(0)}% en ${solapes.length} columnas)`)
 if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9)) process.exit(1)
