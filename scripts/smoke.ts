@@ -17,7 +17,6 @@ import { HERRAMIENTAS, type HerramientaId } from '../src/engine/tools'
 import { DUALES, FAMILIAS } from '../src/engine/graph'
 import { generarRuta, hermanosPosibles, repartirEntreHermanos, solapeMedio, type Nodo } from '../src/engine/route'
 import { OBJETIVOS } from '../src/engine/objectives'
-import { tintaDeCombate } from '../src/engine/economy'
 import { Rng } from '../src/engine/rng'
 import type { Pieza } from '../src/engine/pieces'
 import type { Contenido } from '../src/content/types'
@@ -38,7 +37,7 @@ interface Rep {
   gano: boolean; turnos: number; oleadas: number; lucidez: number
   sostenidos: number; trazos: number; herramientasUsadas: Set<string>
   quemasBuenas: number; quemasMalas: number; fusiones: number; combos: Set<string>
-  estados: Record<string, number>; tinta: number
+  estados: Record<string, number>; hallazgos: number; mejorGolpe: number
 }
 
 /** Un jugador que lee: busca en su mano las piezas que sí sostienen algo.
@@ -189,7 +188,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
   const rep: Rep = {
     gano: false, turnos: 0, oleadas: 0, lucidez, sostenidos: 0, trazos: 0,
     herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0,
-    combos: new Set(), estados: {}, tinta: 0
+    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0
   }
   const herramientas: HerramientaId[] = [
     ...BASE,
@@ -212,7 +211,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
       else if (nodo.tipo !== 'taller') {
         rep.oleadas += 1
         const bolsa: Bolsa = {
-          sellos: [], manoExtra: 0,
+          sellos: [],
           herramientas,
           // el bot impreciso lleva todas las relaciones: así puede equivocarse
           // de etiqueta de verdad en vez de quedarse sin carta
@@ -249,10 +248,8 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
           if (!vivos(e).length || lucidez <= 0) break
           siguienteTurno(e)
         }
-        rep.tinta += tintaDeCombate(
-          e.ultima?.danoTotal ?? 0, e.ultima?.diag.sostenidos ?? 0,
-          e.inferenciasTotales, e.quemasAcertadas, nodo.dificultad, ctx.lentes
-        ).total + e.tintaGanada
+        rep.hallazgos += e.hallazgos.length
+        rep.mejorGolpe = Math.max(rep.mejorGolpe, e.mejorGolpe.dano)
         if (lucidez <= 0) { rep.lucidez = 0; return rep }
       }
       id = nodo.salidas.length ? rng.pick(nodo.salidas) : null
@@ -300,7 +297,8 @@ console.log(` herramientas ejercidas: ${[...usadas].join(' · ')}`)
 console.log(` combos vistos: ${[...combos].join(' · ') || 'ninguno'}`)
 console.log(` pozo: ${inf.reduce((n, r) => n + r.quemasBuenas, 0)} quemas acertadas · ${inf.reduce((n, r) => n + r.quemasMalas, 0)} erradas`)
 console.log(` fusiones nombre+descripción: ${inf.reduce((n, r) => n + r.fusiones, 0)}`)
-console.log(` tinta ganada por run (media): ${(inf.reduce((n, r) => n + r.tinta, 0) / inf.length).toFixed(0)}`)
+console.log(` hallazgos por run (media): ${(inf.reduce((n, r) => n + r.hallazgos, 0) / inf.length).toFixed(0)}` +
+  ` · mejor diagrama: ${Math.max(...inf.map((r) => r.mejorGolpe))}`)
 
 const sumar = (rs: Rep[]) => rs.reduce<Record<string, number>>((acc, r) => {
   for (const [k, v] of Object.entries(r.estados)) acc[k] = (acc[k] ?? 0) + v
@@ -331,8 +329,9 @@ const ok6 = aciertaAzar / totalAzar < 0.2
 // quien razona bien pero se equivoca de etiqueta debe recibir crédito parcial
 const totalAprox = Object.values(escX).reduce((a, b) => a + b, 0) || 1
 const creditoAprox = (escX.equivalente ?? 0) + (escX.aproximado ?? 0) + (escX.derivado ?? 0) + (escX.sostenido ?? 0)
-const tintaMedia = inf.reduce((n, r) => n + r.tinta, 0) / Math.max(1, inf.length)
-const ok8 = tintaMedia >= 60 && tintaMedia <= 400
+// el mapa de cierre necesita material: sin hallazgos no hay nada que devolver
+const hallMedia = inf.reduce((n, r) => n + r.hallazgos, 0) / Math.max(1, inf.length)
+const ok8 = hallMedia >= 20
 const solape = solapes.length ? solapes.reduce((a, b) => a + b, 0) / solapes.length : 1
 const ok9 = solapes.length > 0 && solape < 0.5
 const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
@@ -343,6 +342,6 @@ console.log(` ${ok4 ? 'PASA' : 'FALLA'}  una oleada dura entre 2 y 9 turnos (${t
 console.log(` ${ok5 ? 'PASA' : 'FALLA'}  los combos aparecen de verdad (${combos.size})`)
 console.log(` ${ok6 ? 'PASA' : 'FALLA'}  la escalera no premia al azar (${(100 * aciertaAzar / totalAzar).toFixed(0)}% de aciertos al azar)`)
 console.log(` ${ok7 ? 'PASA' : 'FALLA'}  quien razona bien y se equivoca de etiqueta recibe crédito (${(100 * creditoAprox / totalAprox).toFixed(0)}%, ${res.aproximado.filter((r) => r.gano).length}/${semillas.length} victorias)`)
-console.log(` ${ok8 ? 'PASA' : 'FALLA'}  la tinta alcanza para comprar sin sobrar (${tintaMedia.toFixed(0)} por run)`)
+console.log(` ${ok8 ? 'PASA' : 'FALLA'}  el mapa de cierre tiene material (${hallMedia.toFixed(0)} hallazgos por run)`)
 console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios distintos (${(100 * solape).toFixed(0)}% en ${solapes.length} columnas)`)
 if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9)) process.exit(1)

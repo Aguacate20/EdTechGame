@@ -155,10 +155,6 @@ export interface ModificadoresLente {
   quemasExtra: number
   cambiosExtra: number
   robarPorAcierto: number
-  // — economía de tinta —
-  tintaPorCombate: number
-  tintaPorQuema: number
-  tintaPorInferencia: number
   // — la escalera de veredictos —
   fichasPorInferencia: number
   multPorAproximado: number
@@ -172,8 +168,7 @@ export const SIN_LENTES: ModificadoresLente = {
   multPorTipo: {}, multPorHerramienta: {}, multPorCombo: {},
   fichasPorSostenido: 0, multPorUmbral: 0, multGlobal: 0, alcanceExtra: 0,
   manoExtra: 0, herramientasExtra: [], quemasExtra: 0, cambiosExtra: 0,
-  robarPorAcierto: 0, tintaPorCombate: 0, tintaPorQuema: 0, tintaPorInferencia: 0,
-  fichasPorInferencia: 0, multPorAproximado: 0, plausibleCuenta: false,
+  robarPorAcierto: 0, fichasPorInferencia: 0, multPorAproximado: 0, plausibleCuenta: false,
   sinCastigoInvertido: false, revelaApocrifas: 0
 }
 

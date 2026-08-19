@@ -4,7 +4,7 @@ import { LENTES, SELLOS, type SelloId } from './powers'
 import { HERRAMIENTAS, type HerramientaId } from './tools'
 import { Rng } from './rng'
 
-export type TipoNodo = 'oleada' | 'refugio' | 'archivo' | 'jefe'
+export type TipoNodo = 'oleada' | 'refugio' | 'jefe'
 export type EtiquetaRuta = 'consolidar' | 'elaborar' | 'umbral' | 'portal' | 'descanso'
 
 export interface Nodo {
@@ -20,8 +20,6 @@ export interface Nodo {
   temas: string[]
   casos: string[]
   tesis: string[]
-  /** tinta extra por despejarlo: lo difícil paga más */
-  tinta: number
   salidas: string[]
 }
 
@@ -166,7 +164,6 @@ function etiquetaPara(c: Contenido, ids: string[], rng: Rng): EtiquetaRuta {
 const DIFICULTAD: Record<EtiquetaRuta, Dificultad> = {
   consolidar: 'facil', elaborar: 'media', umbral: 'dura', portal: 'dura', descanso: 'facil'
 }
-const TINTA_EXTRA: Record<Dificultad, number> = { facil: 0, media: 3, dura: 7, jefe: 12 }
 
 function casosPara(c: Contenido, ids: string[], etiqueta: EtiquetaRuta, rng: Rng): string[] {
   const candidatos = [
@@ -223,7 +220,6 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
     const esUltimo = ai === unidades.length - 1
     const anchos = formaDelActo(contenido, u.conceptIds, rng, esUltimo)
     const columnas: Nodo[][] = []
-    const colArchivo = Math.max(1, Math.floor(anchos.length / 2) - 1)
 
     anchos.forEach((ancho, col) => {
       const ultima = col === anchos.length - 1
@@ -238,9 +234,8 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
         let tipo: TipoNodo = 'oleada'
         if (esUltimo && ultima) tipo = 'jefe'
         else if (penultima) tipo = 'refugio'
-        else if (col === colArchivo && f === 0) tipo = 'archivo'
 
-        const conceptIds = tipo === 'refugio' || tipo === 'archivo'
+        const conceptIds = tipo === 'refugio'
           ? u.conceptIds
           : reparto[f] ?? u.conceptIds
 
@@ -256,7 +251,7 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
         fila.push({
           id: `a${ai}c${col}f${f}`, columna: col, fila: f, actoIndex: ai,
           tipo, dificultad, etiquetaRuta: etiqueta, conceptIds,
-          temas: tipo === 'refugio' || tipo === 'archivo' ? [] : temasDe(contenido, conceptIds),
+          temas: tipo === 'refugio' ? [] : temasDe(contenido, conceptIds),
           casos: tipo === 'oleada' || tipo === 'jefe' ? casosPara(contenido, conceptIds, etiqueta, rng) : [],
           tesis: tipo === 'jefe'
             ? rng.sample(contenido.tesis.map((t) => t.id), 2)
@@ -264,7 +259,6 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
               ? rng.sample(contenido.tesis.filter((t) =>
                   t.conceptIds.some((x) => conceptIds.includes(x))).map((t) => t.id), 1)
               : [],
-          tinta: TINTA_EXTRA[dificultad],
           salidas: []
         })
       }
@@ -318,7 +312,7 @@ export type Recompensa =
   | { tipo: 'caso'; id: string }
   | { tipo: 'tesis'; id: string }
   | { tipo: 'lucidez'; cantidad: number }
-  | { tipo: 'tinta'; cantidad: number }
+  | { tipo: 'fichero' }
 
 export function ofrecerRecompensas(
   contenido: Contenido, cartera: {
@@ -347,6 +341,7 @@ export function ofrecerRecompensas(
   const rel = porRareza.find((t) => cartera.relaciones.filter((r) => r === t).length < 2) ?? porRareza[0]
   if (rel && salida.length < 3) salida.push({ tipo: 'relacion', tipoRelacion: rel })
 
-  while (salida.length < 3) salida.push({ tipo: 'tinta', cantidad: dura ? 14 : 9 })
+  if (salida.length < 3) salida.push({ tipo: 'fichero' })
+  while (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: dura ? 18 : 12 })
   return rng.shuffle(salida).slice(0, 3)
 }

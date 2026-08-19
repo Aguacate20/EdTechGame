@@ -31,7 +31,6 @@ export interface EventoPozo {
   dimension: Dimension
   nota: string
   /** recompensa inmediata: quemar bien tiene que sentirse */
-  tinta: number
   bonusMult: number
   titulo: string
 }
@@ -92,9 +91,21 @@ export interface EstadoBatalla {
   /** bonificación acumulada para el próximo diagrama */
   bonusMult: number
   carrilCongelado: boolean
-  tintaGanada: number
   quemasAcertadas: number
   inferenciasTotales: number
+  /** todo lo que el jugador afirmó en este combate, para el mapa de cierre */
+  hallazgos: Hallazgo[]
+  mejorGolpe: { dano: number; fichas: number; mult: number; trazos: number }
+}
+
+/** Una afirmación registrada durante el combate. */
+export interface Hallazgo {
+  from: string
+  to: string
+  tipo: string
+  estado: string
+  herramienta: string
+  nota: string
 }
 
 export interface ContextoBatalla {
@@ -116,7 +127,6 @@ export interface Bolsa {
   intuiciones: string[]
   fusionados: string[]
   sellos: SelloId[]
-  manoExtra: number
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -175,11 +185,12 @@ export function iniciarBatalla(
     quemasRestantes: (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
     cambiosRestantes: 3 + m.cambiosExtra,
     turno: 1, fase: 'jugando', ultima: null,
-    manoBase: manoBase + m.manoExtra + bolsa.manoExtra,
+    manoBase: manoBase + m.manoExtra,
     pozo: [], ultimoPozo: null, fusionados: [...bolsa.fusionados],
     sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
     bonusMult: 0, carrilCongelado: false,
-    tintaGanada: 0, quemasAcertadas: 0, inferenciasTotales: 0
+    quemasAcertadas: 0, inferenciasTotales: 0,
+    hallazgos: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
   }
   robar(e, e.manoBase)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
@@ -282,12 +293,10 @@ export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): Eve
   e.quemasRestantes -= 1
   e.reveladas = e.reveladas.filter((x) => x !== uid)
 
-  // quemar bien tiene que SENTIRSE: tinta, bonificación y una carta nueva
-  const tinta = apocrifa ? 3 + ctx.lentes.tintaPorQuema : 0
-  const bonusMult = apocrifa ? 0.8 : 0
+  // quemar bien tiene que SENTIRSE: bonificación al próximo diagrama y carta nueva
+  const bonusMult = apocrifa ? (ctx.lentes.quemasExtra >= 2 ? 1.6 : 0.8) : 0
   if (apocrifa) {
     e.quemasAcertadas += 1
-    e.tintaGanada += tinta
     e.bonusMult += bonusMult
     robar(e, 1)
   }
@@ -295,9 +304,9 @@ export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): Eve
   const ev: EventoPozo = {
     accion: 'quemar', clase: p.clase, conceptId: p.conceptId, apocrifa, pertenece,
     acertado: apocrifa, dimension: 'discriminacion', titulo: p.titulo,
-    tinta, bonusMult,
+    bonusMult,
     nota: apocrifa
-      ? `Bien visto: ${p.explicacion} Ganas ${tinta} de tinta, robas una carta y tu próximo diagrama multiplica +${bonusMult.toFixed(1)}.`
+      ? `Bien visto: ${p.explicacion} Robas una carta y tu próximo diagrama multiplica +${bonusMult.toFixed(1)}.`
       : `«${p.titulo}» era legítima. La destruiste y no volverá en esta expedición.`
   }
   e.pozo.push(ev)
@@ -320,7 +329,7 @@ export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
 
   const ev: EventoPozo = {
     accion: 'cambiar', clase: p.clase, conceptId: p.conceptId, apocrifa, pertenece,
-    acertado: !apocrifa, titulo: p.titulo, tinta: 0, bonusMult: 0,
+    acertado: !apocrifa, titulo: p.titulo, bonusMult: 0,
     dimension: apocrifa ? 'discriminacion' : 'srl_accion',
     nota: apocrifa
       ? 'Era una falsificación y vuelve al mazo: cambiarla no la retira.'
@@ -466,6 +475,23 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   e.usadas = []
   e.bonusMult = 0
   e.inferenciasTotales += diag.veredictos.filter((v) => v.inferencia).length
+
+  // memoria del combate: qué se afirmó y cuál fue el mejor diagrama
+  for (const v of diag.veredictos) {
+    if (v.conceptIds.length < 2) continue
+    const [from, to] = v.conceptIds
+    if (!from || !to) continue
+    e.hallazgos.push({
+      from, to,
+      tipo: v.trazo.param?.split('::').pop() ?? v.trazo.tool,
+      estado: v.estado, herramienta: v.trazo.tool, nota: v.nota
+    })
+  }
+  if (diag.dano > e.mejorGolpe.dano) {
+    e.mejorGolpe = {
+      dano: diag.dano, fichas: diag.fichas, mult: diag.mult, trazos: e.trazos.length
+    }
+  }
   // Impulso: cada acierto hace robar
   if (ctx.lentes.robarPorAcierto) robar(e, diag.sostenidos * ctx.lentes.robarPorAcierto)
 

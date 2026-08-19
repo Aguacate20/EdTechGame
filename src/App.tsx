@@ -7,22 +7,28 @@ import {
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
 import type { HerramientaId } from './engine/tools'
-import {
-  generarOfertas, tintaDeCombate, PRECIO_REROLL, type Cartera, type GananciaTinta, type Oferta
-} from './engine/economy'
 import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
 import { objetivoPorId, type Objetivo, type ObjetivoId } from './engine/objectives'
 import { Rng, semillaLegible } from './engine/rng'
 import { cargarAtlas, coberturaAtlas, descargarLog, guardarAtlas, registrar, type Atlas } from './engine/atlas'
 import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
-import {
-  AtlasView, CampfireView, EndView, MapView, ObjectiveView, RewardView, ShopView
-} from './ui/Screens'
+import { AtlasView, CampfireView, EndView, MapView, ObjectiveView, RewardView } from './ui/Screens'
+import { BattleMap } from './ui/BattleMap'
 import { Medidor } from './ui/components'
 import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 
-type Fase = 'cargar' | 'plan' | 'mapa' | 'batalla' | 'recompensa' | 'archivo' | 'refugio' | 'atlas' | 'fin'
+type Fase = 'cargar' | 'plan' | 'mapa' | 'batalla' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin'
+
+interface Cartera {
+  lentes: string[]
+  sellos: SelloId[]
+  herramientas: HerramientaId[]
+  relaciones: string[]
+  casos: string[]
+  tesis: string[]
+  manoExtra: number
+}
 
 const LUCIDEZ_MAX = 80
 
@@ -35,7 +41,6 @@ const HERRAMIENTAS_POR_PLAN: Record<ObjetivoId, HerramientaId[]> = {
   salir: ['ancla', 'flecha']
 }
 
-const SIN_TINTA: GananciaTinta = { total: 0, partes: [] }
 
 export default function App() {
   const [contenido, setContenido] = useState<Contenido | null>(null)
@@ -50,7 +55,7 @@ export default function App() {
 
   const [lucidez, setLucidez] = useState(LUCIDEZ_MAX)
   const [cartera, setCartera] = useState<Cartera>({
-    tinta: 0, lentes: [], sellos: [], herramientas: HERRAMIENTAS_BASE,
+    lentes: [], sellos: [], herramientas: HERRAMIENTAS_BASE,
     relaciones: [], casos: [], tesis: [], manoExtra: 0
   })
   const [fusionados, setFusionados] = useState<string[]>([])
@@ -59,9 +64,6 @@ export default function App() {
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
-  const [ganancia, setGanancia] = useState<GananciaTinta>(SIN_TINTA)
-  const [ofertas, setOfertas] = useState<Oferta[]>([])
-  const [comprados, setComprados] = useState<number[]>([])
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -88,7 +90,7 @@ export default function App() {
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
     setVisitados([]); setNodoActual(null); setLucidez(LUCIDEZ_MAX)
     setCartera({
-      tinta: 6, lentes: [obj.lenteInicial], sellos: [],
+      lentes: [obj.lenteInicial], sellos: [],
       herramientas: [...HERRAMIENTAS_BASE, ...HERRAMIENTAS_POR_PLAN[obj.id]],
       relaciones: obj.relacionesIniciales, casos: [], tesis: [], manoExtra: 0
     })
@@ -128,11 +130,6 @@ export default function App() {
     if (!contenido || !ruta || !ctx) return
     nodoRef.current = nodo
     if (nodo.tipo === 'refugio') { setFase('refugio'); return }
-    if (nodo.tipo === 'archivo') {
-      setOfertas(generarOfertas(contenido, cartera, rngRef.current, actoIdx))
-      setComprados([])
-      setFase('archivo'); return
-    }
     const acto = ruta.actos[actoIdx]
     const bolsa: Bolsa = {
       herramientas: cartera.herramientas,
@@ -140,10 +137,12 @@ export default function App() {
       casos: [...new Set([...nodo.casos, ...cartera.casos])],
       tesis: [...new Set([...nodo.tesis, ...cartera.tesis])],
       intuiciones, fusionados,
-      sellos: cartera.sellos,
-      manoExtra: cartera.manoExtra
+      sellos: cartera.sellos
     }
-    setBatalla(iniciarBatalla(ctx, nodo.conceptIds, bolsa, nodo.dificultad, actoIdx, acto.manoSugerida))
+    setBatalla(iniciarBatalla(
+      ctx, nodo.conceptIds, bolsa, nodo.dificultad, actoIdx,
+      acto.manoSugerida + cartera.manoExtra
+    ))
     setFase('batalla')
   }, [contenido, ruta, ctx, actoIdx, cartera, intuiciones, fusionados])
 
@@ -252,21 +251,8 @@ export default function App() {
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
-      const g = tintaDeCombate(
-        batalla.ultima?.danoTotal ?? 0, batalla.ultima?.diag.sostenidos ?? 0,
-        batalla.inferenciasTotales, batalla.quemasAcertadas,
-        batalla.dificultad, mods
-      )
-      const total = g.total + batalla.tintaGanada
-      setGanancia({
-        total,
-        partes: batalla.tintaGanada
-          ? [...g.partes, { concepto: 'quemas durante el combate', cantidad: batalla.tintaGanada }]
-          : g.partes
-      })
-      setCartera((c) => ({ ...c, tinta: c.tinta + total }))
       setRecompensas(ofrecerRecompensas(contenido, cartera, rngRef.current, dura))
-      setFase('recompensa'); return
+      setFase('resumen'); return
     }
     const e = { ...batalla }
     siguienteTurno(e)
@@ -282,40 +268,12 @@ export default function App() {
         case 'relacion': return { ...c, relaciones: [...c.relaciones, r.tipoRelacion] }
         case 'caso': return { ...c, casos: [...c.casos, r.id] }
         case 'tesis': return { ...c, tesis: [...c.tesis, r.id] }
-        case 'tinta': return { ...c, tinta: c.tinta + r.cantidad }
+        case 'fichero': return { ...c, manoExtra: c.manoExtra + 1 }
         default: return c
       }
     })
     if (r.tipo === 'lucidez') setLucidez((l) => Math.min(LUCIDEZ_MAX, l + r.cantidad))
     avanzar()
-  }
-
-  const comprar = (o: Oferta, i: number) => {
-    if (cartera.tinta < o.precio || comprados.includes(i)) return
-    sfx.fusion()
-    setComprados((x) => [...x, i])
-    setCartera((c) => {
-      const base = { ...c, tinta: c.tinta - o.precio }
-      switch (o.tipo) {
-        case 'lente': return { ...base, lentes: [...c.lentes, o.id] }
-        case 'sello': return { ...base, sellos: [...c.sellos, o.id] }
-        case 'herramienta': return { ...base, herramientas: [...c.herramientas, o.id] }
-        case 'relacion': return { ...base, relaciones: [...c.relaciones, o.tipoRelacion] }
-        case 'caso': return { ...base, casos: [...c.casos, o.id] }
-        case 'tesis': return { ...base, tesis: [...c.tesis, o.id] }
-        case 'mano': return { ...base, manoExtra: c.manoExtra + 1 }
-        default: return base
-      }
-    })
-    if (o.tipo === 'lucidez') setLucidez((l) => Math.min(LUCIDEZ_MAX, l + o.cantidad))
-  }
-
-  const reroll = () => {
-    if (!contenido || cartera.tinta < PRECIO_REROLL) return
-    setCartera((c) => ({ ...c, tinta: c.tinta - PRECIO_REROLL }))
-    setOfertas(generarOfertas(contenido, cartera, rngRef.current, actoIdx))
-    setComprados([])
-    sfx.trazar()
   }
 
   /* -------------------------------- render -------------------------------- */
@@ -342,7 +300,6 @@ export default function App() {
         <span className="eyebrow">{objetivoPorId(objetivoRun).nombre}</span>
         <span className="sep" />
         {fase !== 'batalla' && <Medidor valor={lucidez} max={LUCIDEZ_MAX} etiqueta="Lucidez" />}
-        <span className="tinta-marca" title="Tinta: se gasta en El Archivo">◈ {cartera.tinta}</span>
         <span className="dato silencio">Atlas {cob.pct}%</span>
         <button className="btn fantasma" onClick={() => { setFaseAnterior(fase); setFase('atlas') }}>Atlas</button>
         <button
@@ -363,8 +320,7 @@ export default function App() {
       {fase === 'batalla' && batalla && (
         <BoardView
           e={batalla} contenido={contenido} lentes={mods}
-          lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} tinta={cartera.tinta}
-          lentesIds={cartera.lentes}
+          lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={cartera.lentes}
           on={{
             cambio, afirmar, continuar, quemar, cambiar, sello,
             huir: () => { setVictoria(false); setFase('fin') }
@@ -372,17 +328,18 @@ export default function App() {
         />
       )}
 
-      {fase === 'recompensa' && (
-        <RewardView
-          opciones={recompensas} onElegir={tomarRecompensa} contenido={contenido}
-          tinta={ganancia} titulo="El carril queda despejado"
+      {fase === 'resumen' && batalla && (
+        <BattleMap
+          contenido={contenido} hallazgos={batalla.hallazgos} atlas={atlas}
+          mejorGolpe={batalla.mejorGolpe} enemigos={batalla.enemigos}
+          onSeguir={() => setFase('recompensa')}
         />
       )}
 
-      {fase === 'archivo' && (
-        <ShopView
-          ofertas={ofertas} tinta={cartera.tinta} comprados={comprados}
-          onComprar={comprar} onReroll={reroll} onSalir={avanzar} contenido={contenido}
+      {fase === 'recompensa' && (
+        <RewardView
+          opciones={recompensas} onElegir={tomarRecompensa} contenido={contenido}
+          titulo="Elige tu hallazgo"
         />
       )}
 
@@ -392,7 +349,7 @@ export default function App() {
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX}
           onDescansar={() => { setLucidez((l) => Math.min(LUCIDEZ_MAX, l + 26)); avanzar() }}
           onSoltarLente={(id) => {
-            setCartera((c) => ({ ...c, lentes: c.lentes.filter((y) => y !== id), tinta: c.tinta + 5 }))
+            setCartera((c) => ({ ...c, lentes: c.lentes.filter((y) => y !== id) }))
             avanzar()
           }}
         />

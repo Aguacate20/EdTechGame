@@ -638,17 +638,7 @@ label.campo > span { display: block; margin-bottom: 5px; }
 }
 
 /* --- texto completo al pasar el ratón --- */
-[data-ayuda] { position: relative; }
-[data-ayuda]:hover::after {
-  content: attr(data-ayuda);
-  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
-  width: min(340px, 70vw); z-index: 60;
-  background: #0d131b; color: var(--papel);
-  border: 1px solid var(--tinta-borde); border-radius: var(--r);
-  padding: 9px 12px; font-family: var(--serif); font-size: 13px; line-height: 1.5;
-  box-shadow: 0 10px 26px rgba(0,0,0,.5); pointer-events: none;
-  white-space: normal; text-align: left;
-}
+
 
 /* --- tienda --- */
 .naipe .precio {
@@ -753,8 +743,7 @@ label.campo > span { display: block; margin-bottom: 5px; }
   box-shadow: 0 20px 50px rgba(0,0,0,.55);
 }
 
-/* el tooltip respeta los saltos de línea del texto */
-[data-ayuda]:hover::after { white-space: pre-line; }
+
 
 /* en pantallas estrechas se apila y sí hay scroll */
 @media (max-width: 1080px) {
@@ -773,3 +762,55 @@ label.campo > span { display: block; margin-bottom: 5px; }
   border-top: 1px dashed var(--tinta-borde); padding-top: 4px;
 }
 .nodo-g .tinta-nodo { color: #8fb8d6; margin-top: 2px; }
+
+/* ================= v4.5 · tooltip, mapa de cierre y brillo discreto ================= */
+
+/* Un único globo en posición fija: ningún contenedor con overflow puede cortarlo. */
+.globo {
+  position: fixed; z-index: 200; width: 330px; pointer-events: none;
+  background: #0d131b; color: var(--papel);
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  padding: 10px 13px; font-family: var(--serif); font-size: 13.5px; line-height: 1.55;
+  box-shadow: 0 14px 34px rgba(0,0,0,.6);
+  white-space: pre-line; text-align: left;
+  animation: globoEntra .12s ease-out;
+}
+.globo.arriba { transform: translateY(calc(-100% - 16px)); }
+.globo.abajo { transform: translateY(18px); }
+@keyframes globoEntra { from { opacity: 0; } to { opacity: 1; } }
+
+/* Brillo discreto: solo dice "una pasiva mejora esto", nunca cuánto. */
+.apuesta.favorecida {
+  border-color: var(--verdigris); color: #9ad3c0;
+  box-shadow: 0 0 0 1px rgba(78,140,122,.25), 0 0 10px rgba(78,140,122,.22);
+}
+.apuesta.favorecida.activa { background: var(--verdigris); color: #06110d; }
+
+/* ---- mapa de cierre del combate ---- */
+.mapa-combate {
+  flex: 1 1 460px; min-height: 380px;
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  background:
+    radial-gradient(600px 300px at 50% 40%, rgba(255,255,255,.035), transparent 70%),
+    linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+}
+.mapa-combate svg { width: 100%; height: 100%; min-height: 380px; }
+.arista-nueva { animation: trazarArista .9s ease-out; }
+@keyframes trazarArista {
+  0% { opacity: 0; filter: brightness(2.6); }
+  40% { opacity: 1; filter: brightness(2.6); }
+  100% { opacity: 1; filter: brightness(1); }
+}
+
+.resumen-combate {
+  flex: 0 1 330px; display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid var(--tinta-borde); border-radius: var(--r); padding: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+}
+.lista-estados { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.lista-estados li { font-size: 13px; display: flex; align-items: center; gap: 8px; color: var(--niebla); }
+.lista-estados .punto { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .globo, .arista-nueva { animation: none; }
+}

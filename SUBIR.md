@@ -1,7 +1,7 @@
-# Subir v4.4 al repositorio
+# Subir v4.5 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v4.4/patch44/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v4.5/patch45/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v4.4/patch44/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v4.5/patch45/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,19 +25,16 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v4.4: mapa procedural con temarios distintos y batalla sin scroll
+git commit -m "v4.5: mapa de cierre, tooltip sin recortes y fuera la economia
 
-- route.ts: la forma del acto se deriva del grafo (largo por numero de conceptos,
-  ancho por material disponible); una unidad pequena no se ramifica
-- repartirEntreHermanos: los nodos de una misma columna reciben subconjuntos
-  distintos del temario, sesgados por cluster y completados con vecinos
-- el mapa anuncia los temas, la dificultad y la tinta de cada nodo
-- se retira el Tachon: la discriminacion ya la mide el pozo (quemar)
-- devolver una pieza pide confirmacion y recupera las herramientas de sus trazos
-- batalla en rejilla de 3 columnas sin scroll: herramientas a la izquierda,
-  mano en renglones a la derecha, acciones abajo, todo con texto al pasar el raton
-- bundle de muestra ampliado a 18 conceptos y 29 aristas para que ramifique
-- npm run smoke anade el criterio de solape entre hermanos (<50%)"
+- el tooltip pasa a ser una capa unica en posicion fija: los contenedores con
+  overflow recortaban el ::after y los textos largos no se veian
+- al despejar el carril aparece el mapa de lo afirmado en ese combate, con los
+  vinculos nuevos destacados, mas el mejor diagrama y a quien habria derribado
+- los multiplicadores de relacion dejan de mostrarse; solo un brillo discreto
+  indica que una pasiva favorece ese vinculo
+- se retiran la tinta y El Archivo: todas las mejoras salen de ganar el combate
+- quemar bien recompensa con carta y bonificacion en vez de moneda"
 
 git push origin main
 ```

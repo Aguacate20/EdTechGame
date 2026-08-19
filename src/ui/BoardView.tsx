@@ -47,15 +47,25 @@ const ETIQUETA: Record<Pieza['clase'], string> = {
   marco: 'Marco', intuicion: 'Intuición', subdimension: 'Atributo'
 }
 
+const GLOSA: Record<string, string> = {
+  apoya: 'A respalda o da evidencia a B.',
+  causa: 'A produce B.',
+  requiere: 'B es condición previa de A.',
+  contrasta: 'A se opone o se distingue de B.',
+  generaliza: 'A abstrae a B.',
+  ejemplifica: 'A es un caso concreto de B.',
+  extiende: 'A amplía el alcance de B.',
+  matiza: 'A precisa o limita a B.'
+}
+
 const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t)
 
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}`
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta, lentesIds }: {
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
-  on: AccionesBatalla; lucidez: number; lucidezMax: number
-  tinta: number; lentesIds: string[]
+  on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
 }) {
   const lienzo = useRef<HTMLDivElement>(null)
   const [herramienta, setHerramienta] = useState<HerramientaId | null>(null)
@@ -65,6 +75,19 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
+  const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
+
+  // Un solo tooltip en posición fija para toda la pantalla. Antes se pintaba con
+  // ::after dentro de cada elemento, y los contenedores con overflow lo cortaban.
+  const seguirRaton = (ev: React.MouseEvent) => {
+    const destino = (ev.target as HTMLElement).closest('[data-ayuda]') as HTMLElement | null
+    const texto = destino?.dataset.ayuda
+    if (!texto) { if (ayuda) setAyuda(null); return }
+    const ancho = 330
+    const x = Math.min(Math.max(12, ev.clientX - ancho / 2), window.innerWidth - ancho - 12)
+    const y = ev.clientY
+    setAyuda({ texto, x, y })
+  }
 
   const previa = useMemo(
     () => evaluarDiagrama(contenido, e.mano, e.trazos, lentes),
@@ -128,7 +151,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta
   }
 
   return (
-    <div className="batalla">
+    <div className="batalla" onMouseMove={seguirRaton} onMouseLeave={() => setAyuda(null)}>
+      {ayuda && (
+        <div
+          className={`globo${ayuda.y > window.innerHeight / 2 ? ' arriba' : ' abajo'}`}
+          style={{ left: ayuda.x, top: ayuda.y }}
+          role="tooltip"
+        >{ayuda.texto}</div>
+      )}
       {/* ============================ carril ============================ */}
       <div className="zona-carril">
         <LaneView
@@ -351,12 +381,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta
             <p className="ejemplo-herr">{h.ejemplo}</p>
             {h.parametro === 'relacion' && (
               <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
-                {[...new Set(e.relacionesDisponibles)].map((tipo) => (
-                  <button key={tipo} className={`apuesta${param === tipo ? ' activa' : ''}`}
-                    onClick={() => setParam(tipo)}>
-                    {tipo} <span className="dato">×{contenido.frecuenciaRelacion[tipo] ?? 0}</span>
-                  </button>
-                ))}
+                {[...new Set(e.relacionesDisponibles)].map((tipo) => {
+                  // el número nunca se muestra: solo se insinúa que una pasiva lo mejora
+                  const favorecida = (lentes.multPorTipo[tipo] ?? 0) > 0
+                  return (
+                    <button
+                      key={tipo}
+                      className={`apuesta${param === tipo ? ' activa' : ''}${favorecida ? ' favorecida' : ''}`}
+                      onClick={() => setParam(tipo)}
+                      data-ayuda={`${tipo.toUpperCase()}\n${GLOSA[tipo] ?? ''}${favorecida ? '\n\nUna de tus lentes favorece este vínculo.' : ''}`}
+                    >{tipo}</button>
+                  )
+                })}
               </div>
             )}
             {h.parametro === 'eje' && (
@@ -391,8 +427,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta
               {e.ultimoPozo.accion === 'quemar' ? 'Quemaste' : 'Cambiaste'} «{e.ultimoPozo.titulo}»
             </strong>
             <span>{e.ultimoPozo.nota}</span>
-            {e.ultimoPozo.tinta > 0 && (
-              <span className="premio">◈ +{e.ultimoPozo.tinta} · +{e.ultimoPozo.bonusMult.toFixed(1)}× · +1 carta</span>
+            {e.ultimoPozo.bonusMult > 0 && (
+              <span className="premio">próximo diagrama +{e.ultimoPozo.bonusMult.toFixed(1)}× · robas una carta</span>
             )}
           </div>
         )}
@@ -496,7 +532,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, tinta
               Cambiar {piezaSel ? `«${recorte(piezaSel.titulo, 18)}»` : 'concepto'}
               <span className="dato"> · {e.cambiosRestantes}</span>
             </button>
-            <span className="tinta-marca">◈ {tinta}</span>
             {objetivo && (
               <span className="silencio dato" data-ayuda={tipoPorId(objetivo.tipoId).glosa}>
                 al frente: {objetivo.nombre}
