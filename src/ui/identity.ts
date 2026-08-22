@@ -56,6 +56,7 @@ const BANDA: Record<Pieza['clase'], string> = {
   criterio: '#a08a4a',
   marco: '#4a7fb0',
   intuicion: '#b9ad92',
+  contexto: '#6f8f7d',
   subdimension: '#9aa17d'
 }
 

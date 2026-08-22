@@ -37,7 +37,7 @@ interface Rep {
   gano: boolean; turnos: number; oleadas: number; lucidez: number
   sostenidos: number; trazos: number; herramientasUsadas: Set<string>
   quemasBuenas: number; quemasMalas: number; fusiones: number; combos: Set<string>
-  estados: Record<string, number>; hallazgos: number; mejorGolpe: number
+  estados: Record<string, number>; hallazgos: number; mejorGolpe: number; terrenos: number
 }
 
 /** Un jugador que lee: busca en su mano las piezas que sí sostienen algo.
@@ -188,7 +188,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
   const rep: Rep = {
     gano: false, turnos: 0, oleadas: 0, lucidez, sostenidos: 0, trazos: 0,
     herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0,
-    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0
+    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0
   }
   const herramientas: HerramientaId[] = [
     ...BASE,
@@ -211,7 +211,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
       else if (nodo.tipo !== 'taller') {
         rep.oleadas += 1
         const bolsa: Bolsa = {
-          sellos: [],
+          sellos: [], terrenos: [], desafio: null, prediccion: 'justos' as const,
           herramientas,
           // el bot impreciso lleva todas las relaciones: así puede equivocarse
           // de etiqueta de verdad en vez de quedarse sin carta
@@ -249,6 +249,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
           siguienteTurno(e)
         }
         rep.hallazgos += e.hallazgos.vinculos.length + e.hallazgos.grupos.length
+        rep.terrenos += e.terrenosGanados.length
         rep.mejorGolpe = Math.max(rep.mejorGolpe, e.mejorGolpe.dano)
         if (lucidez <= 0) { rep.lucidez = 0; return rep }
       }
@@ -297,6 +298,7 @@ console.log(` herramientas ejercidas: ${[...usadas].join(' · ')}`)
 console.log(` combos vistos: ${[...combos].join(' · ') || 'ninguno'}`)
 console.log(` pozo: ${inf.reduce((n, r) => n + r.quemasBuenas, 0)} quemas acertadas · ${inf.reduce((n, r) => n + r.quemasMalas, 0)} erradas`)
 console.log(` fusiones nombre+descripción: ${inf.reduce((n, r) => n + r.fusiones, 0)}`)
+console.log(` terrenos ganados (total): ${inf.reduce((n, r) => n + r.terrenos, 0)}`)
 console.log(` hallazgos por run (media): ${(inf.reduce((n, r) => n + r.hallazgos, 0) / inf.length).toFixed(0)}` +
   ` · mejor diagrama: ${Math.max(...inf.map((r) => r.mejorGolpe))}`)
 

@@ -1,5 +1,5 @@
 import type {
-  Arista, Carga, Caso, Concepto, Contenido, Diagnostico, Distancia, Eje, Escenario,
+  Arista, Carga, Caso, Concepto, Contenido, Diagnostico, Distancia, Distractor, Eje, Escenario,
   Item, ItemA1, ItemA3, ItemB1, ItemB2, ItemC1, ItemE1, ItemE3, Marco, MecanicaId,
   Repertorio, Tesis, Unidad
 } from './types'
@@ -388,6 +388,37 @@ export function adaptarBundle(raw: unknown): Contenido {
     rivales: strArr(f?.rivales)
   }))
 
+  /* ---- pools de distractores: el extractor ya sabe con qué se confunde cada cosa ---- */
+  const distractores: Record<string, Distractor[]> = {}
+  const pools = b.distractor_pools
+  if (pools && typeof pools === 'object') {
+    for (const [cid, lista] of Object.entries(pools as Record<string, unknown>)) {
+      if (!conceptos[cid]) continue
+      const d = arr(lista).map((x) => ({
+        texto: str(x?.texto),
+        explicacion: str(x?.explicacion),
+        conceptoConfundido: str(x?.concepto_confundido) || null,
+        fuente: str(x?.fuente, 'desconocida'),
+        repertorioId: str(x?.repertoire_id) || null
+      })).filter((x) => x.texto)
+      if (d.length) distractores[cid] = d
+    }
+  }
+  const conPool = Object.keys(distractores).length
+  nota(
+    'pools del extractor',
+    conPool >= nConceptos * 0.8 ? 'ok' : conPool ? 'parcial' : 'ausente',
+    `${conPool}/${nConceptos} conceptos con distractores propios · ` +
+    `${Object.values(distractores).flat().filter((d) => d.explicacion).length} con explicación`
+  )
+
+  /* ---- dominios: para qué sirve esto fuera del texto ---- */
+  const dominios = [...new Set([
+    ...casos.map((c) => c.dominio),
+    ...escenarios.map((e) => e.dominio)
+  ])].filter(Boolean)
+  nota('dominios de aplicación', dominios.length ? 'ok' : 'ausente', dominios.join(' · ') || 'ninguno')
+
   /* ---- capacidades declaradas por el compilador ---- */
   const condicionesDisponibles = leerCondiciones(b)
   nota(
@@ -402,7 +433,7 @@ export function adaptarBundle(raw: unknown): Contenido {
     schema: str(b.compiled_from_schema, '—'),
     conceptos, ordenConceptos, aristas, frecuenciaRelacion, unidades, clusters,
     items, repertorios, casos, escenarios, tesis, marcos, ejes,
-    condicionesDisponibles, diagnostico: diag
+    distractores, dominios, condicionesDisponibles, diagnostico: diag
   }
 }
 

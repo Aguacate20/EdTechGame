@@ -18,6 +18,10 @@ export interface Nodo {
   conceptIds: string[]
   /** los títulos que se anuncian en el mapa: elegir ruta es elegir temario */
   temas: string[]
+  /** dominios donde se aplica este material: para qué sirve fuera del texto */
+  dominios: string[]
+  /** minutos estimados: el tiempo es la razón de abandono más citada */
+  minutos: number
   casos: string[]
   tesis: string[]
   salidas: string[]
@@ -175,6 +179,13 @@ function casosPara(c: Contenido, ids: string[], etiqueta: EtiquetaRuta, rng: Rng
   return rng.sample([...new Set(candidatos)], etiqueta === 'portal' ? 2 : 1)
 }
 
+/** Para qué sirve este material fuera del texto. Es el predictor más fuerte de
+ *  que alguien termine un curso, y estaba muerto en el bundle. */
+const dominiosDe = (c: Contenido, ids: string[]): string[] => [...new Set([
+  ...c.escenarios.filter((e) => e.conceptIds.some((x) => ids.includes(x))).map((e) => e.dominio),
+  ...c.casos.filter((k) => k.conceptIds.some((x) => ids.includes(x))).map((k) => k.dominio)
+])].filter(Boolean).slice(0, 3)
+
 const temasDe = (c: Contenido, ids: string[]): string[] =>
   [...ids]
     .sort((a, b) => (c.conceptos[b]?.importancia ?? 0) - (c.conceptos[a]?.importancia ?? 0))
@@ -252,6 +263,9 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
           id: `a${ai}c${col}f${f}`, columna: col, fila: f, actoIndex: ai,
           tipo, dificultad, etiquetaRuta: etiqueta, conceptIds,
           temas: tipo === 'refugio' ? [] : temasDe(contenido, conceptIds),
+          dominios: tipo === 'refugio' ? [] : dominiosDe(contenido, conceptIds),
+          minutos: tipo === 'refugio' ? 1
+            : Math.max(2, Math.round(conceptIds.length * 0.4) + (dificultad === 'jefe' ? 3 : dificultad === 'dura' ? 2 : 1)),
           casos: tipo === 'oleada' || tipo === 'jefe' ? casosPara(contenido, conceptIds, etiqueta, rng) : [],
           tesis: tipo === 'jefe'
             ? rng.sample(contenido.tesis.map((t) => t.id), 2)

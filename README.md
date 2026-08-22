@@ -192,6 +192,7 @@ src/
     types.ts        formas normalizadas
     adapter.ts      bundle del extractor -> Contenido, con lectores tolerantes
   engine/
+    srl.ts          encargos, desafíos, predicción y organizador previo
     graph.ts        semántica del grafo: simetrías, duales, familias y derivaciones
     pieces.ts       una sola forma de carta con roles; fábricas desde el bundle
     tools.ts        las nueve herramientas, su validación, los combos y el marcador

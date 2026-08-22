@@ -12,6 +12,8 @@ import {
 } from './lane'
 import type { Rng } from './rng'
 import { SELLOS, type SelloId } from './powers'
+import { piezaContexto } from './pieces'
+import type { DesafioId, Prediccion } from './srl'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -95,6 +97,15 @@ export interface EstadoBatalla {
   inferenciasTotales: number
   /** lo que el jugador sostuvo en este combate, para el mapa de cierre */
   hallazgos: Hallazgos
+  // — fase de previsión —
+  desafio: DesafioId | null
+  prediccion: Prediccion | null
+  /** cuándo se repartió la mano de este turno, para medir latencia */
+  inicioTurno: number
+  /** latencias por turno, y cuáles tenían una intuición en juego */
+  latencias: { ms: number; conIntuicion: boolean; trazos: number }[]
+  /** terrenos ganados: intuiciones que se conservan en vez de borrarse */
+  terrenosGanados: string[]
   mejorGolpe: { dano: number; fichas: number; mult: number; trazos: number }
 }
 
@@ -146,6 +157,10 @@ export interface Bolsa {
   intuiciones: string[]
   fusionados: string[]
   sellos: SelloId[]
+  /** terrenos ya conquistados: entran al mazo como comodines de campo */
+  terrenos: string[]
+  desafio: DesafioId | null
+  prediccion: Prediccion | null
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -177,6 +192,7 @@ export function montarMazo(
     if (p) { piezas.push(p); piezas.push(...piezasCriterio(c, id, rng)) }
   }
   for (const id of bolsa.intuiciones) { const p = piezaIntuicion(c, id); if (p) piezas.push(p) }
+  for (const id of bolsa.terrenos) { const p = piezaContexto(c, id); if (p) piezas.push(p) }
 
   // un marco si alguno cubre esta casilla: sirve como campo semántico
   const marco = c.marcos.find((m) => m.conceptIds.filter((x) => conceptIds.includes(x)).length >= 2)
@@ -201,15 +217,19 @@ export function iniciarBatalla(
     mano: [], descarte: [], tablero: [], trazos: [],
     herramientas: [...bolsa.herramientas, ...m.herramientasExtra], usadas: [],
     relacionesDisponibles: bolsa.relaciones,
-    quemasRestantes: (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
+    quemasRestantes: bolsa.desafio === 'sin_quemar'
+      ? 0
+      : (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
     cambiosRestantes: 3 + m.cambiosExtra,
     turno: 1, fase: 'jugando', ultima: null,
-    manoBase: manoBase + m.manoExtra,
+    manoBase: Math.max(4, manoBase + m.manoExtra - (bolsa.desafio === 'mano_corta' ? 2 : 0)),
     pozo: [], ultimoPozo: null, fusionados: [...bolsa.fusionados],
     sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
     bonusMult: 0, carrilCongelado: false,
     quemasAcertadas: 0, inferenciasTotales: 0,
-    hallazgos: { vinculos: [], grupos: [], reconocidos: [] }, mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
+    hallazgos: { vinculos: [], grupos: [], reconocidos: [] },
+    desafio: bolsa.desafio, prediccion: bolsa.prediccion,
+    inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
   }
   robar(e, e.manoBase)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
@@ -414,6 +434,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     ? { ...ctx.lentes, multGlobal: ctx.lentes.multGlobal + e.bonusMult }
     : ctx.lentes
   const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, lentesConBonus)
+  aplicarDesafio(e, ctx, diag)
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
 
@@ -486,7 +507,13 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     if (!p) continue
     e.mano = e.mano.filter((x) => x.uid !== p.uid)
     const reubicada = p.clase === 'intuicion' && p.refId && diag.repertoriosReubicados.includes(p.refId)
-    if (!reubicada) e.descarte.push(p)
+    if (reubicada && p.refId) {
+      // no se borra: el cambio conceptual es coexistencia, no reemplazo.
+      // vuelve al mazo dada la vuelta, sabiendo en qué terreno sí funcionaba
+      if (!e.terrenosGanados.includes(p.refId)) e.terrenosGanados.push(p.refId)
+      const terreno = piezaContexto(ctx.contenido, p.refId)
+      if (terreno) e.descarte.push(terreno)
+    } else e.descarte.push(p)
   }
   e.fusionados = [...new Set([...e.fusionados, ...diag.fusiona])]
   e.tablero = []
@@ -494,6 +521,17 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   e.usadas = []
   e.bonusMult = 0
   e.inferenciasTotales += diag.veredictos.filter((v) => v.inferencia).length
+
+  // La latencia solo dice algo cuando hay conflicto entre repertorios: si en la
+  // mano había una intuición que confunde a un concepto del diagrama, tardar
+  // más es el tira y afloja entre la idea previa y la científica.
+  const conceptosEnJuego = new Set(diag.conceptIds)
+  const conIntuicion = [...e.mano, ...e.descarte].some(
+    (p) => p.clase === 'intuicion' && p.conceptId && conceptosEnJuego.has(p.conceptId)
+  )
+  e.latencias.push({
+    ms: Date.now() - e.inicioTurno, conIntuicion, trazos: e.trazos.length
+  })
 
   // memoria del combate: los aciertos se acumulan turno a turno, de modo que
   // «A extiende B» del turno 1 y «B ejemplifica C» del turno 3 acaban siendo
@@ -513,6 +551,42 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
 }
 
 /* ------------------------------ turno del carril -------------------------- */
+
+/** El desafío que el jugador se impuso a sí mismo. No cambia si acertó: cambia
+ *  cuánto rinde. Autoimponerse una restricción es un acto de regulación, y por
+ *  eso el juego lo paga con una recompensa extra al terminar la sala. */
+function aplicarDesafio(e: EstadoBatalla, ctx: ContextoBatalla, diag: Diagnostico): void {
+  if (!e.desafio) return
+  const freqs = Object.values(ctx.contenido.frecuenciaRelacion)
+  const media = freqs.reduce((a, b) => a + b, 0) / Math.max(1, freqs.length)
+
+  switch (e.desafio) {
+    case 'sin_identidad':
+      if (e.trazos.some((t) => t.tool === 'identidad')) {
+        diag.mult = Math.max(0.3, diag.mult * 0.4)
+        diag.dano = Math.round(diag.fichas * diag.mult)
+      }
+      break
+    case 'solo_raras': {
+      const comunes = e.trazos.filter(
+        (t) => t.tool === 'flecha' && (ctx.contenido.frecuenciaRelacion[t.param ?? ''] ?? 0) > media
+      ).length
+      if (comunes) {
+        diag.mult = Math.max(0.3, diag.mult - 0.8 * comunes)
+        diag.dano = Math.round(diag.fichas * diag.mult)
+      }
+      break
+    }
+    case 'cadena_larga':
+      if (e.trazos.length < 3) {
+        diag.mult = Math.max(0.3, diag.mult * 0.45)
+        diag.dano = Math.round(diag.fichas * diag.mult)
+      }
+      break
+    default:
+      break
+  }
+}
 
 /** Cada herramienta deja un rastro distinto: la flecha y la secuencia dejan
  *  vínculos dirigidos; el campo y el eje dejan agrupaciones; la identidad deja
@@ -623,6 +697,7 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
 
 export function siguienteTurno(e: EstadoBatalla): void {
   e.turno += 1
+  e.inicioTurno = Date.now()
   e.fase = 'jugando'
   e.ultimoPozo = null
   robar(e, Math.max(0, e.manoBase - e.mano.length))

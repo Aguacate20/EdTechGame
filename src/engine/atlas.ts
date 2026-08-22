@@ -7,6 +7,10 @@ export interface EvidenciaConcepto {
   aciertos: number
   fallos: number
   mecanicas: string[]
+  /** con qué otros conceptos lo has sostenido: la memoria depende del contexto,
+   *  así que acertar siempre con el mismo vecino no es lo mismo que acertar
+   *  en varias zonas del grafo */
+  vecinos: string[]
   ultimaApuestaAcertada: string | null
 }
 
@@ -17,6 +21,8 @@ export interface Atlas {
   repertoriosEstabilizados: string[]
   runs: number
   victorias: number
+  /** historial del mejor diagrama por sala, para poder mostrar tu propia curva */
+  mejoresDiagramas: number[]
   apuestasTotales: number
   apuestasCalibradas: number
 }
@@ -24,7 +30,7 @@ export interface Atlas {
 export function atlasVacio(fuente: string): Atlas {
   return {
     fuente, aristas: {}, conceptos: {}, repertoriosEstabilizados: [],
-    runs: 0, victorias: 0, apuestasTotales: 0, apuestasCalibradas: 0
+    runs: 0, victorias: 0, mejoresDiagramas: [], apuestasTotales: 0, apuestasCalibradas: 0
   }
 }
 
@@ -51,8 +57,11 @@ export function guardarAtlas(a: Atlas): void {
 export function nivelDe(e: EvidenciaConcepto | undefined): number {
   if (!e) return 0
   const distintas = new Set(e.mecanicas).size
-  if (e.aciertos >= 5 && distintas >= 3) return 3
-  if (e.aciertos >= 3 && distintas >= 2) return 2
+  const contextos = new Set(e.vecinos ?? []).size
+  // el nivel máximo exige haberlo sostenido desde herramientas distintas Y en
+  // vecindades distintas: una respuesta aislada es la punta del iceberg
+  if (e.aciertos >= 5 && distintas >= 3 && contextos >= 3) return 3
+  if (e.aciertos >= 3 && distintas >= 2 && contextos >= 2) return 2
   if (e.aciertos >= 1) return 1
   return 0
 }

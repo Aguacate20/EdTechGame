@@ -139,6 +139,10 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
                     {n.temas.length > 0 && (
                       <span className="temas">{n.temas.join(' · ')}</span>
                     )}
+                    {n.dominios.length > 0 && (
+                      <span className="dominios-nodo">se usa en {n.dominios.join(' · ')}</span>
+                    )}
+                    {n.minutos > 0 && <span className="dato silencio">≈ {n.minutos} min</span>}
                     {n.casos.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae caso</Chip></span>}
                     {n.tesis.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae tesis</Chip></span>}
                   </button>
@@ -234,8 +238,11 @@ export function RewardView({ opciones, onElegir, titulo, contenido }: {
 /* -------------------------------- refugio --------------------------------- */
 
 export function CampfireView({
-  cartera, fusionados, contenido, onDescansar, onSoltarLente, lucidez, lucidezMax
+  cartera, fusionados, contenido, onDescansar, onSoltarLente, lucidez, lucidezMax,
+  dominios, onReflexionar
 }: {
+  dominios: string[]
+  onReflexionar: (dominio: string) => void
   cartera: {
     lentes: string[]; sellos: SelloId[]
     herramientas: HerramientaId[]; relaciones: string[]
@@ -254,6 +261,20 @@ export function CampfireView({
           Una lente mal elegida te empuja a buscar en el texto lo que el texto no tiene.
         </p>
       </div>
+
+      {dominios.length > 0 && (
+        <Panel titulo="¿Dónde te serviría lo que acabas de ver?">
+          <p className="silencio" style={{ fontSize: 13.5, margin: '0 0 10px' }}>
+            Un toque. No hay respuesta correcta: sirve para que el cierre no sea solo
+            seguir andando.
+          </p>
+          <div className="fila" style={{ gap: 6, flexWrap: 'wrap' }}>
+            {dominios.map((d) => (
+              <button key={d} className="apuesta" onClick={() => onReflexionar(d)}>{d}</button>
+            ))}
+          </div>
+        </Panel>
+      )}
 
       <div className="fila">
         <button className="btn primario" onClick={onDescansar}>

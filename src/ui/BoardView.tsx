@@ -44,7 +44,7 @@ const TONO_NOTA: Record<string, string> = {
 const ETIQUETA: Record<Pieza['clase'], string> = {
   etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Concepto',
   apocrifa: 'Concepto', caso: 'Caso', tesis: 'Tesis', criterio: 'Criterio',
-  marco: 'Marco', intuicion: 'Intuición', subdimension: 'Atributo'
+  marco: 'Marco', intuicion: 'Intuición', subdimension: 'Atributo', contexto: 'Terreno'
 }
 
 const GLOSA: Record<string, string> = {

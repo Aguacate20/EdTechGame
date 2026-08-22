@@ -291,6 +291,15 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
       ? { ...v, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.3, nota: a.cierre || 'La tesis queda situada.', conceptIds: [b.conceptId!] }
       : { ...v, estado: 'plausible', fichas: 3, nota: 'Una tesis se apoya en los conceptos que la sostienen o contrasta con los del marco rival.' }
   }
+  if (a.clase === 'contexto') {
+    // ya la reubicaste una vez: repetirlo vale, pero mucho menos
+    const ok = tipo === 'contrasta' && b.conceptId === a.conceptId
+    return ok
+      ? { ...v, estado: 'sostenido', fichas: 6 + lentes.fichasPorSostenido, mult: 0.5,
+          nota: `${a.explicacion} Su terreno: ${a.cierre}`,
+          conceptIds: a.conceptId ? [a.conceptId] : [] }
+      : { ...v, estado: 'plausible', nota: 'El terreno de una intuición se contrasta con el concepto que ocupaba su lugar.' }
+  }
   if (a.clase === 'intuicion') {
     const ok = tipo === 'contrasta' && b.conceptId === a.conceptId
     return ok
@@ -392,7 +401,9 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
   const v = vacio(t, 'estructura')
   const reserva = reservaDe(ps)
   const marco = ps.find((p) => p.clase === 'marco')
-  const conceptos = ps.filter((p) => p.conceptId && p.clase !== 'marco')
+  // el Terreno es comodín: sabes dónde vive esa intuición, así que ya no estorba
+  const terrenos = ps.filter((p) => p.clase === 'contexto')
+  const conceptos = ps.filter((p) => p.conceptId && p.clase !== 'marco' && p.clase !== 'contexto')
   if (conceptos.length < 2) return { ...v, reserva, nota: 'Un campo necesita al menos dos conceptos.' }
 
   if (marco) {
@@ -413,8 +424,12 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
   const clusters = new Set(conceptos.map((p) => c.conceptos[p.conceptId!]?.clusterId ?? '—'))
   if (clusters.size === 1 && !clusters.has('—')) {
     return {
-      ...v, reserva, estado: 'sostenido', fichas: 7 * conceptos.length + lentes.fichasPorSostenido,
-      mult: 0.9 + 0.25 * conceptos.length, nota: 'Comparten zona del texto.',
+      ...v, reserva, estado: 'sostenido',
+      fichas: 7 * conceptos.length + 5 * terrenos.length + lentes.fichasPorSostenido,
+      mult: 0.9 + 0.25 * conceptos.length + 0.5 * terrenos.length,
+      nota: terrenos.length
+        ? 'Comparten zona del texto, y sabes qué intuición convive con ellos.'
+        : 'Comparten zona del texto.',
       conceptIds: conceptos.map((p) => p.conceptId!)
     }
   }

@@ -1,7 +1,7 @@
-# Subir v4.6 al repositorio
+# Subir v5.0 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v4.6/patch45/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.0/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v4.6/patch45/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.0/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -20,23 +20,28 @@ rm -rf src scripts docs public
 # 3. copiar
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 35
+# 4. comprobar: debe decir 38
 find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v4.6: el mapa de cierre acumula cadenas y rotula las relaciones
+git commit -m "v5.0: fase de prevision, organizador previo y coexistencia de repertorios
 
-- solo se guardan los ACIERTOS, y se acumulan turno a turno: A extiende B del
-  turno 1 y B ejemplifica C del turno 3 se dibujan como una sola cadena
-- cada herramienta deja el rastro que le corresponde: flecha/jerarquia/secuencia
-  dejan vinculos dirigidos, campo/eje/ancla dejan agrupaciones, identidad marca
-  el concepto como reconocido. Antes se tomaban los dos primeros conceptIds de
-  cualquier trazo, lo que fabricaba aristas falsas desde un campo de 4 conceptos
-- el tipo de relacion se escribe sobre la linea, no solo se codifica en color
-- disposicion por fuerzas determinista: las cadenas se ven como cadenas, y el
-  resultado se reescala al final para que ningun rotulo se salga del lienzo
-- los titulos largos se parten en dos renglones dentro de su recuadro"
+Aprendizaje significativo revisitado (Bryce y Blown) + autorregulacion (Zimmerman,
+Littlejohn, Reparaz) sin tocar la dinamica de combate.
+
+- antesala antes de cada oleada: organizador previo (concepto mas inclusivo con lo
+  que ya sabes de el), prediccion de un toque y desafio opcional autoimpuesto
+- encargo de expedicion: meta comprobable elegida al empezar, visible en la barra
+- dominios de aplicacion en cada nodo y minutos estimados; reflexion de cierre de
+  acto eligiendo dominio, sin escritura
+- la intuicion reubicada YA NO se borra: vuelve como carta de Terreno. El cambio
+  conceptual es coexistencia y seleccion, no reemplazo
+- las apocrifas salen de distractor_pools con su concepto_confundido y su
+  explicacion, en vez de fabricarse por vecindad del grafo
+- el nivel del Atlas exige vecindades distintas ademas de herramientas distintas
+- latencia real, separada por si habia una intuicion compitiendo con el concepto
+- curva propia en el mapa de cierre y contraste de la prediccion"
 
 git push origin main
 ```

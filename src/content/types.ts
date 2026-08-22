@@ -142,6 +142,16 @@ export interface ItemE3 {
 
 export type Item = ItemA1 | ItemA3 | ItemB1 | ItemB2 | ItemC1 | ItemE1 | ItemE3
 
+/** Un distractor tal como lo emitió el extractor: el texto ya sabe con qué se
+ *  confunde cada concepto, así que no hace falta inventarlo por vecindad. */
+export interface Distractor {
+  texto: string
+  explicacion: string
+  conceptoConfundido: string | null
+  fuente: string
+  repertorioId: string | null
+}
+
 export interface Diagnostico {
   clave: string
   estado: 'ok' | 'parcial' | 'ausente'
@@ -165,6 +175,10 @@ export interface Contenido {
   tesis: Tesis[]
   marcos: Marco[]
   ejes: Eje[]
+  /** por concepto: con qué se confunde según el propio extractor */
+  distractores: Record<string, Distractor[]>
+  /** dominios de aplicación que aparecen en casos y escenarios */
+  dominios: string[]
   condicionesDisponibles: string[]
   diagnostico: Diagnostico[]
 }

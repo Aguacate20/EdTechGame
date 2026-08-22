@@ -21,6 +21,8 @@ export type Rol =
 export type ClasePieza =
   | 'etiqueta' | 'definicion' | 'concepto' | 'apocrifa'
   | 'caso' | 'tesis' | 'criterio' | 'marco' | 'intuicion' | 'subdimension'
+  /** una intuición ya reubicada: no se borra, se conserva sabiendo dónde vive */
+  | 'contexto'
 
 export interface Pieza {
   uid: string
@@ -93,10 +95,31 @@ export function piezaConcepto(c: Contenido, conceptId: string): Pieza | null {
   }
 }
 
-/** Apócrifa: el título de uno con la definición de otro. Sale del propio grafo. */
+/** Apócrifa: el título de uno con la definición de otro.
+ *  Primero se busca en los pools del extractor, que ya saben con qué se confunde
+ *  cada concepto y por qué; solo si no hay, se cae a la vecindad del grafo. */
 export function piezaApocrifa(c: Contenido, conceptId: string, rng: Rng): Pieza | null {
   const k = c.conceptos[conceptId]
   if (!k) return null
+
+  const propios = (c.distractores[conceptId] ?? []).filter((d) => d.texto !== k.definicionCorta)
+  if (propios.length) {
+    const d = rng.pick(propios)
+    const dueno = d.conceptoConfundido && c.conceptos[d.conceptoConfundido]
+      ? d.conceptoConfundido
+      : null
+    return {
+      ...base(), clase: 'apocrifa', roles: ['nodo', 'etiqueta', 'definicion'],
+      titulo: k.titulo, cuerpo: d.texto, conceptId,
+      umbral: k.esUmbral, importancia: k.importancia,
+      duenoReal: dueno,
+      refId: d.repertorioId,
+      explicacion: d.explicacion ||
+        (dueno
+          ? `Esa descripción es de «${c.conceptos[dueno].titulo}». ${k.titulo} es: ${k.definicionCorta}`
+          : `${k.titulo} es en realidad: ${k.definicionCorta}`)
+    }
+  }
   const vecinos = c.aristas
     .filter((a) => a.from === conceptId || a.to === conceptId)
     .map((a) => (a.from === conceptId ? a.to : a.from))
@@ -187,6 +210,24 @@ export function piezaIntuicion(c: Contenido, id: string): Pieza | null {
     ...base(), clase: 'intuicion', roles: ['nodo'],
     titulo: r.etiqueta, cuerpo: r.ejemplo, refId: r.id, conceptId: r.conceptId,
     explicacion: r.contrasteCientifico, cierre: r.contextoDondeFunciona
+  }
+}
+
+/** Una intuición reubicada NO se borra.
+ *  El cambio conceptual no es reemplazo sino coexistencia: la idea previa queda
+ *  intacta y lo que se gana es saber cuándo seleccionarla. Así que la carta
+ *  vuelve al mazo dada la vuelta, como Contexto: ya no estorba en un campo y
+ *  sabes en qué terreno sí funcionaba. */
+export function piezaContexto(c: Contenido, repertorioId: string): Pieza | null {
+  const r = c.repertorios.find((x) => x.id === repertorioId)
+  if (!r) return null
+  return {
+    ...base(), clase: 'contexto', roles: ['nodo'],
+    titulo: `Terreno de «${r.etiqueta}»`,
+    cuerpo: r.contextoDondeFunciona,
+    refId: r.id, conceptId: r.conceptId,
+    explicacion: r.contrasteCientifico,
+    cierre: r.contextoDondeFunciona
   }
 }
 

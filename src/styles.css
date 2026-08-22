@@ -815,3 +815,39 @@ label.campo > span { display: block; margin-bottom: 5px; }
 @media (prefers-reduced-motion: reduce) {
   .globo, .arista-nueva { animation: none; }
 }
+
+/* ================= v5 · previsión y autorregulación ================= */
+
+.antesala { max-width: 860px; }
+
+.organizador {
+  border: 1px solid var(--tinta-borde); border-left: 3px solid var(--laton);
+  border-radius: var(--r); padding: 16px 18px;
+  background: linear-gradient(180deg, rgba(201,162,39,.06), transparent);
+}
+.organizador .serif-lectura { font-size: 15px; line-height: 1.6; }
+
+.bloque-previo {
+  border: 1px solid var(--tinta-borde); border-radius: var(--r);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,.025), transparent);
+}
+
+.dominios {
+  font-size: 13.5px; color: #9ad3c0;
+  border-left: 2px solid var(--verdigris); padding-left: 10px;
+}
+.nodo-g .dominios-nodo {
+  font-family: var(--mono); font-size: 10px; color: #85c4b1; margin-top: 3px;
+}
+
+.encargo-marca {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+  border: 1px solid #6b5a1c; color: var(--laton); background: rgba(201,162,39,.09);
+  border-radius: 99px; padding: 3px 11px; cursor: help;
+}
+.encargo-marca.cumplido {
+  border-color: #3f7566; color: #85c4b1; background: rgba(78,140,122,.14);
+}
+
+.naipe-contexto { border-style: double; }

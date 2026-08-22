@@ -4,6 +4,7 @@ import type { Hallazgos } from '../engine/battle'
 import { tipoPorId } from '../engine/lane'
 import { estiloRelacion } from './identity'
 import { nivelDe, type Atlas } from '../engine/atlas'
+import { desafioPorId, juzgarPrediccion, type DesafioId, type Prediccion } from '../engine/srl'
 
 /* ==========================================================================
    El mapa del combate.
@@ -98,12 +99,17 @@ function renglones(t: string, max = 15): string[] {
   return [l[0], `${l.slice(1).join(' ').slice(0, max - 1)}…`]
 }
 
-export function BattleMap({ contenido, hallazgos, atlas, mejorGolpe, enemigos, onSeguir }: {
+export function BattleMap({
+  contenido, hallazgos, atlas, mejorGolpe, enemigos, prediccion, desafio, latencias, onSeguir
+}: {
   contenido: Contenido
   hallazgos: Hallazgos
   atlas: Atlas
   mejorGolpe: { dano: number; fichas: number; mult: number; trazos: number }
   enemigos: { tipoId: string; nombre: string; hpMax: number }[]
+  prediccion: Prediccion | null
+  desafio: DesafioId | null
+  latencias: { ms: number; conIntuicion: boolean; trazos: number }[]
   onSeguir: () => void
 }) {
   const { vinculos, grupos, reconocidos } = hallazgos
@@ -248,6 +254,50 @@ export function BattleMap({ contenido, hallazgos, atlas, mejorGolpe, enemigos, o
               ? `Ese golpe habría derribado de una sola vez a ${derribaria.nombre} (${derribaria.hpMax} de resistencia).`
               : 'Todavía no alcanza para derribar de un golpe a nadie de este frente: los diagramas grandes salen de encadenar herramientas.'}
           </p>
+
+          {prediccion && (() => {
+            const j = juzgarPrediccion(prediccion, vinculos.length)
+            return (
+              <>
+                <div className="separador" />
+                <span className="eyebrow">Tu apuesta de antes</span>
+                <p className={`nota ${j.acertada ? 'ok' : 'nota'}`} style={{ margin: 0 }}>{j.texto}</p>
+              </>
+            )
+          })()}
+
+          {(() => {
+            const previos = (atlas.mejoresDiagramas ?? [])
+            if (previos.length < 2) return null
+            const primero = previos[0]
+            if (mejorGolpe.dano <= primero) return null
+            return (
+              <p className="dato" style={{ margin: 0, color: '#8fb8d6' }}>
+                Tu primer diagrama de esta fuente hizo {primero}. Este hizo {mejorGolpe.dano}.
+              </p>
+            )
+          })()}
+
+          {desafio && (
+            <p className="dato" style={{ margin: 0, color: 'var(--laton)' }}>
+              Con la regla que te pusiste: {desafioPorId(desafio).nombre} · hallazgo extra
+            </p>
+          )}
+
+          {(() => {
+            const conI = latencias.filter((l) => l.conIntuicion)
+            const sinI = latencias.filter((l) => !l.conIntuicion)
+            if (!conI.length || !sinI.length) return null
+            const m = (l: typeof conI) => l.reduce((n, x) => n + x.ms, 0) / l.length / 1000
+            const dif = m(conI) - m(sinI)
+            if (dif < 2) return null
+            return (
+              <p className="dato silencio" style={{ margin: 0 }}>
+                Tardaste {dif.toFixed(0)} s más en los turnos donde una intuición previa
+                competía con el concepto.
+              </p>
+            )
+          })()}
 
           <div className="separador" />
           <span className="eyebrow">Lo que quedó en pie</span>
