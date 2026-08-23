@@ -851,3 +851,104 @@ label.campo > span { display: block; margin-bottom: 5px; }
 }
 
 .naipe-contexto { border-style: double; }
+
+/* ================= v5.1 · armas, animaciones y Atlas de inicio ================= */
+
+/* --- proyectiles: cada herramienta dispara distinto y se ve --- */
+.carril { position: relative; }
+.salva { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.proyectil {
+  position: absolute; left: 96px; top: 46%;
+  width: calc(9px * var(--escala, 1)); height: calc(9px * var(--escala, 1));
+  border-radius: 50%; background: var(--tono, var(--verdigris));
+  box-shadow: 0 0 calc(10px * var(--escala, 1)) var(--tono, var(--verdigris));
+  animation: volar var(--dur, 700ms) cubic-bezier(.35,.1,.7,1) var(--retardo, 0ms) forwards;
+  opacity: 0;
+}
+@keyframes volar {
+  0% { opacity: 0; transform: translateX(0) scale(.5); }
+  12% { opacity: 1; }
+  78% { opacity: 1; transform: translateX(calc(var(--destino) - 6%)) scale(1); }
+  100% { opacity: 0; transform: translateX(var(--destino)) scale(2.4); }
+}
+/* variaciones por forma de arma */
+.salva-maza .proyectil { border-radius: 2px; animation-timing-function: cubic-bezier(.7,0,.9,.4); }
+.salva-rayo .proyectil { width: calc(26px * var(--escala,1)); border-radius: 99px; }
+.salva-onda .proyectil {
+  background: transparent; border: 2px solid var(--tono);
+  width: calc(18px * var(--escala,1)); height: calc(18px * var(--escala,1));
+  box-shadow: 0 0 18px var(--tono) inset;
+}
+.salva-lluvia .proyectil { top: 12%; animation-name: llover; }
+@keyframes llover {
+  0% { opacity: 0; transform: translate(0, 0) scale(.5); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--destino), 46px) scale(1.6); }
+}
+.salva-gancho .proyectil { animation-name: saltar; }
+@keyframes saltar {
+  0% { opacity: 0; transform: translate(0,0); }
+  15% { opacity: 1; }
+  45% { transform: translate(calc(var(--destino) * .5), -26px); }
+  75% { transform: translate(calc(var(--destino) * .8), 8px); }
+  100% { opacity: 0; transform: translate(var(--destino), -6px) scale(2); }
+}
+.salva-tenaza .proyectil:nth-child(2) { top: 70%; }
+.salva-barrido .proyectil {
+  width: calc(34px * var(--escala,1)); height: 3px; border-radius: 0;
+}
+.salva-sello .proyectil {
+  width: calc(16px * var(--escala,1)); height: calc(16px * var(--escala,1));
+  border-radius: 3px; animation-timing-function: cubic-bezier(.8,0,.9,.3);
+}
+.nombre-arma {
+  position: absolute; left: 104px; top: 8px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  animation: entrar .3s ease-out;
+}
+
+/* --- el daño crece con el golpe --- */
+.flotante {
+  font-size: calc(15px * var(--peso, 1));
+  animation-duration: calc(1s + .25s * var(--peso, 1));
+}
+.flotante.fuerte { color: var(--laton); text-shadow: 0 0 12px rgba(201,162,39,.55); }
+.flotante.magnifico {
+  color: #ffe9a8;
+  text-shadow: 0 0 20px rgba(201,162,39,.8), 0 0 40px rgba(201,162,39,.4);
+  animation-name: estallar;
+}
+@keyframes estallar {
+  0% { opacity: 0; transform: translateY(8px) scale(.4); }
+  18% { opacity: 1; transform: translateY(0) scale(1.5); }
+  40% { transform: scale(1.1); }
+  100% { opacity: 0; transform: translateY(-34px) scale(1.25); }
+}
+
+/* --- Atlas de inicio --- */
+.inicio { max-width: 1100px; }
+.arranque {
+  display: flex; gap: 18px; align-items: center; justify-content: space-between;
+  flex-wrap: wrap;
+  border: 1px solid var(--tinta-borde); border-left: 3px solid var(--verdigris);
+  border-radius: var(--r); padding: 16px 20px;
+  background: linear-gradient(90deg, rgba(78,140,122,.1), transparent);
+}
+.barra-estados {
+  display: flex; height: 10px; border-radius: 99px; overflow: hidden; gap: 2px;
+}
+.barra-estados span { display: block; cursor: help; }
+.concepto-fila { cursor: help; }
+
+/* --- acuse del pozo con cierre --- */
+.acuse { position: relative; padding-right: 34px; }
+.acuse .cerrar {
+  position: absolute; top: 6px; right: 8px;
+  background: transparent; border: none; color: var(--niebla);
+  font-size: 15px; line-height: 1; cursor: pointer; padding: 2px 5px; border-radius: 3px;
+}
+.acuse .cerrar:hover { color: var(--papel); background: rgba(255,255,255,.08); }
+
+@media (prefers-reduced-motion: reduce) {
+  .proyectil, .nombre-arma, .flotante { animation: none; opacity: 0; }
+}

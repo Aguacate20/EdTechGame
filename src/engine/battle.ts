@@ -13,7 +13,7 @@ import {
 import type { Rng } from './rng'
 import { SELLOS, type SelloId } from './powers'
 import { piezaContexto } from './pieces'
-import type { DesafioId, Prediccion } from './srl'
+import { armarDisparo, type Disparo } from './weapons'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -45,6 +45,10 @@ export interface FotoDiagrama {
 
 export interface ResultadoTurno {
   diag: Diagnostico
+  /** con qué arma salió el ataque: la herramienta dominante decide la forma */
+  disparo: Disparo
+  /** vínculos descubiertos al derribar enemigos en este turno */
+  descubiertos: string[]
   /** el diagrama tal como quedó, para poder corregir SOBRE él */
   foto: FotoDiagrama
   impactos: { uid: string; nombre: string; dano: number; motivo: string | null; derribado: boolean }[]
@@ -97,9 +101,8 @@ export interface EstadoBatalla {
   inferenciasTotales: number
   /** lo que el jugador sostuvo en este combate, para el mapa de cierre */
   hallazgos: Hallazgos
-  // — fase de previsión —
-  desafio: DesafioId | null
-  prediccion: Prediccion | null
+  /** vínculos descubiertos DENTRO de este combate, al derribar enemigos */
+  relacionesNuevas: string[]
   /** cuándo se repartió la mano de este turno, para medir latencia */
   inicioTurno: number
   /** latencias por turno, y cuáles tenían una intuición en juego */
@@ -159,8 +162,6 @@ export interface Bolsa {
   sellos: SelloId[]
   /** terrenos ya conquistados: entran al mazo como comodines de campo */
   terrenos: string[]
-  desafio: DesafioId | null
-  prediccion: Prediccion | null
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -217,18 +218,16 @@ export function iniciarBatalla(
     mano: [], descarte: [], tablero: [], trazos: [],
     herramientas: [...bolsa.herramientas, ...m.herramientasExtra], usadas: [],
     relacionesDisponibles: bolsa.relaciones,
-    quemasRestantes: bolsa.desafio === 'sin_quemar'
-      ? 0
-      : (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
+    quemasRestantes: (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
     cambiosRestantes: 3 + m.cambiosExtra,
     turno: 1, fase: 'jugando', ultima: null,
-    manoBase: Math.max(4, manoBase + m.manoExtra - (bolsa.desafio === 'mano_corta' ? 2 : 0)),
+    manoBase: manoBase + m.manoExtra,
     pozo: [], ultimoPozo: null, fusionados: [...bolsa.fusionados],
     sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
     bonusMult: 0, carrilCongelado: false,
     quemasAcertadas: 0, inferenciasTotales: 0,
     hallazgos: { vinculos: [], grupos: [], reconocidos: [] },
-    desafio: bolsa.desafio, prediccion: bolsa.prediccion,
+    relacionesNuevas: [],
     inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
   }
   robar(e, e.manoBase)
@@ -434,7 +433,6 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     ? { ...ctx.lentes, multGlobal: ctx.lentes.multGlobal + e.bonusMult }
     : ctx.lentes
   const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, lentesConBonus)
-  aplicarDesafio(e, ctx, diag)
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
 
@@ -488,8 +486,30 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     }
   }
 
+  // descubrimiento: cada enemigo derribado revela un tipo de vínculo del texto
+  // que el jugador todavía no conocía. Las relaciones son de donde sale la
+  // información cognitiva, así que conviene que se ganen jugando y no de golpe.
+  const descubiertos: string[] = []
+  for (const im of impactos) {
+    if (!im.derribado) continue
+    const nuevo = relacionPorDescubrir(e, ctx)
+    if (nuevo) {
+      e.relacionesDisponibles = [...e.relacionesDisponibles, nuevo]
+      e.relacionesNuevas.push(nuevo)
+      descubiertos.push(nuevo)
+    }
+  }
+
   const r: ResultadoTurno = {
-    diag, impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
+    diag,
+    disparo: armarDisparo(
+      e.trazos.map((t) => t.tool),
+      e.trazos.map((t) => t.param ?? '').filter(Boolean),
+      diag.dano,
+      impactos.map((i) => i.uid)
+    ),
+    descubiertos,
+    impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
     intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0,
     // se congela ANTES de limpiar: el feedback ocurre sobre el propio dibujo
     foto: {
@@ -552,42 +572,6 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
 
 /* ------------------------------ turno del carril -------------------------- */
 
-/** El desafío que el jugador se impuso a sí mismo. No cambia si acertó: cambia
- *  cuánto rinde. Autoimponerse una restricción es un acto de regulación, y por
- *  eso el juego lo paga con una recompensa extra al terminar la sala. */
-function aplicarDesafio(e: EstadoBatalla, ctx: ContextoBatalla, diag: Diagnostico): void {
-  if (!e.desafio) return
-  const freqs = Object.values(ctx.contenido.frecuenciaRelacion)
-  const media = freqs.reduce((a, b) => a + b, 0) / Math.max(1, freqs.length)
-
-  switch (e.desafio) {
-    case 'sin_identidad':
-      if (e.trazos.some((t) => t.tool === 'identidad')) {
-        diag.mult = Math.max(0.3, diag.mult * 0.4)
-        diag.dano = Math.round(diag.fichas * diag.mult)
-      }
-      break
-    case 'solo_raras': {
-      const comunes = e.trazos.filter(
-        (t) => t.tool === 'flecha' && (ctx.contenido.frecuenciaRelacion[t.param ?? ''] ?? 0) > media
-      ).length
-      if (comunes) {
-        diag.mult = Math.max(0.3, diag.mult - 0.8 * comunes)
-        diag.dano = Math.round(diag.fichas * diag.mult)
-      }
-      break
-    }
-    case 'cadena_larga':
-      if (e.trazos.length < 3) {
-        diag.mult = Math.max(0.3, diag.mult * 0.45)
-        diag.dano = Math.round(diag.fichas * diag.mult)
-      }
-      break
-    default:
-      break
-  }
-}
-
 /** Cada herramienta deja un rastro distinto: la flecha y la secuencia dejan
  *  vínculos dirigidos; el campo y el eje dejan agrupaciones; la identidad deja
  *  un concepto reconocido. Meterlo todo en «pares» fabricaba aristas falsas. */
@@ -632,6 +616,22 @@ function registrarHallazgos(e: EstadoBatalla, diag: Diagnostico): void {
       })
     }
   }
+}
+
+/** Qué vínculo tiene sentido revelar aquí: uno que exista de verdad entre los
+ *  conceptos de esta sala y que el jugador aún no tenga. */
+function relacionPorDescubrir(e: EstadoBatalla, ctx: ContextoBatalla): string | null {
+  const enSala = new Set(e.conceptIdsCasilla)
+  const candidatos = [...new Set(
+    ctx.contenido.aristas
+      .filter((a) => enSala.has(a.from) || enSala.has(a.to))
+      .map((a) => a.tipo)
+  )].filter((t) => !e.relacionesDisponibles.includes(t))
+  if (!candidatos.length) return null
+  // primero los más escasos del texto: son los que más rinden y menos se ven
+  return candidatos.sort(
+    (a, b) => (ctx.contenido.frecuenciaRelacion[a] ?? 0) - (ctx.contenido.frecuenciaRelacion[b] ?? 0)
+  )[0]
 }
 
 export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: ResultadoTurno): void {

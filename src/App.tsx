@@ -8,47 +8,24 @@ import {
 import { combinarLentes, type SelloId } from './engine/powers'
 import type { HerramientaId } from './engine/tools'
 import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
-import { objetivoPorId, unidadesSelladas, type Objetivo, type ObjetivoId } from './engine/objectives'
+import { dominiosDeUnidad } from './engine/objectives'
 import { Rng, semillaLegible } from './engine/rng'
-import { cargarAtlas, coberturaAtlas, descargarLog, guardarAtlas, registrar, type Atlas } from './engine/atlas'
+import {
+  cargarAtlas, coberturaAtlas, descargarLog, guardarAtlas, registrar, type Atlas
+} from './engine/atlas'
 import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
-import { AtlasView, CampfireView, EndView, MapView, ObjectiveView, RewardView } from './ui/Screens'
+import { AtlasView, CampfireView, EndView, MapView, RewardView } from './ui/Screens'
 import { BattleMap } from './ui/BattleMap'
-import { Antesala } from './ui/Antesala'
-import { EncargoView } from './ui/EncargoView'
-import {
-  encargosPosibles, progresoDe, dominiosDeUnidad,
-  type DesafioId, type Encargo, type Prediccion
-} from './engine/srl'
+import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
 import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 
 type Fase =
-  | 'cargar' | 'plan' | 'encargo' | 'mapa' | 'antesala' | 'batalla'
+  | 'cargar' | 'inicio' | 'mapa' | 'batalla'
   | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin'
 
-interface Cartera {
-  lentes: string[]
-  sellos: SelloId[]
-  herramientas: HerramientaId[]
-  relaciones: string[]
-  casos: string[]
-  tesis: string[]
-  manoExtra: number
-}
-
 const LUCIDEZ_MAX = 80
-
-const HERRAMIENTAS_BASE: HerramientaId[] = [
-  'identidad', 'identidad', 'flecha', 'flecha', 'flecha', 'campo'
-]
-const HERRAMIENTAS_POR_PLAN: Record<ObjetivoId, HerramientaId[]> = {
-  consolidar: ['identidad', 'identidad'],
-  trazar: ['flecha', 'jerarquia'],
-  salir: ['ancla', 'flecha']
-}
-
 
 export default function App() {
   const [contenido, setContenido] = useState<Contenido | null>(null)
@@ -62,21 +39,12 @@ export default function App() {
   const [nodoActual, setNodoActual] = useState<string | null>(null)
 
   const [lucidez, setLucidez] = useState(LUCIDEZ_MAX)
-  const [cartera, setCartera] = useState<Cartera>({
-    lentes: [], sellos: [], herramientas: HERRAMIENTAS_BASE,
-    relaciones: [], casos: [], tesis: [], manoExtra: 0
-  })
+  /** lo que se gana DENTRO de la expedición; al terminar se funde con el progreso */
+  const [casos, setCasos] = useState<string[]>([])
+  const [tesis, setTesis] = useState<string[]>([])
   const [fusionados, setFusionados] = useState<string[]>([])
   const [intuiciones, setIntuiciones] = useState<string[]>([])
-  const [terrenos, setTerrenos] = useState<string[]>([])
-  const [encargo, setEncargo] = useState<Encargo | null>(null)
-  const [encargosOfrecidos, setEncargosOfrecidos] = useState<Encargo[]>([])
-  const [encargoCobrado, setEncargoCobrado] = useState(false)
-  const [contadores, setContadores] = useState({
-    vinculos: 0, intuicionesReubicadas: 0, inferencias: 0, anclasLejanas: 0
-  })
-  const [planElegido, setPlanElegido] = useState<Objetivo | null>(null)
-  const [objetivoRun, setObjetivoRun] = useState<ObjetivoId>('trazar')
+  const [manoExtra, setManoExtra] = useState(0)
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -88,47 +56,48 @@ export default function App() {
   const runIdRef = useRef('')
   const nodoRef = useRef<Nodo | null>(null)
 
-  const mods = useMemo(() => combinarLentes(cartera.lentes), [cartera.lentes])
+  const progreso = atlas?.progreso
+  const mods = useMemo(() => combinarLentes(progreso?.lentes ?? []), [progreso?.lentes])
   const ctx: ContextoBatalla | null = useMemo(
     () => (contenido ? { contenido, rng: rngRef.current, lentes: mods } : null),
     [contenido, mods]
   )
 
+  /** Todo lo ganado se guarda en el Atlas: las expediciones no empiezan de cero. */
+  const guardarProgreso = useCallback((f: (p: NonNullable<typeof progreso>) => Partial<NonNullable<typeof progreso>>) => {
+    setAtlas((prev) => {
+      if (!prev) return prev
+      const a = { ...prev, progreso: { ...prev.progreso, ...f(prev.progreso) } }
+      guardarAtlas(a)
+      return a
+    })
+  }, [])
+
   /* ------------------------------- arranque ------------------------------- */
 
-  const empezarRun = useCallback((c: Contenido, a: Atlas, obj: Objetivo, enc: Encargo) => {
+  const alCargar = useCallback((c: Contenido) => {
+    setContenido(c); setAtlas(cargarAtlas(c.fuente)); setFase('inicio')
+  }, [])
+
+  const empezarExpedicion = useCallback(() => {
+    if (!contenido || !atlas) return
     const semilla = semillaLegible()
     rngRef.current = new Rng(semilla)
     runIdRef.current = `${semilla}-${Date.now()}`
     let r: Ruta
-    try { r = generarRuta(c, semilla) } catch (err) { alert((err as Error).message); return }
+    try { r = generarRuta(contenido, semilla) } catch (err) { alert((err as Error).message); return }
 
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
     setVisitados([]); setNodoActual(null); setLucidez(LUCIDEZ_MAX)
-    setCartera({
-      lentes: [obj.lenteInicial], sellos: [],
-      herramientas: [...HERRAMIENTAS_BASE, ...HERRAMIENTAS_POR_PLAN[obj.id]],
-      relaciones: obj.relacionesIniciales, casos: [], tesis: [], manoExtra: 0
-    })
-    setFusionados([]); setIntuiciones([]); setTerrenos([])
-    setEncargo(enc); setEncargoCobrado(false)
-    setContadores({ vinculos: 0, intuicionesReubicadas: 0, inferencias: 0, anclasLejanas: 0 })
-    setObjetivoRun(obj.id); setBatalla(null); setVictoria(false)
-    const nuevo = { ...a, runs: a.runs + 1 }
-    setAtlas(nuevo); guardarAtlas(nuevo)
+    setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([]); setManoExtra(0)
+    setBatalla(null); setVictoria(false)
+    const a = {
+      ...atlas, runs: atlas.runs + 1,
+      progreso: { ...atlas.progreso, expediciones: atlas.progreso.expediciones + 1 }
+    }
+    setAtlas(a); guardarAtlas(a)
     setFase('mapa')
-  }, [])
-
-  const alCargar = useCallback((c: Contenido) => {
-    setContenido(c); setAtlas(cargarAtlas(c.fuente)); setFase('plan')
-  }, [])
-
-  const elegirPlan = useCallback((o: Objetivo) => {
-    if (!contenido) return
-    setPlanElegido(o)
-    setEncargosOfrecidos(encargosPosibles(contenido, rngRef.current))
-    setFase('encargo')
-  }, [contenido])
+  }, [contenido, atlas])
 
   /* -------------------------------- avanzar -------------------------------- */
 
@@ -144,12 +113,6 @@ export default function App() {
       setAlcanzables(ruta.actos[actoIdx + 1].entradas)
       setNodoActual(null); setFase('mapa'); return
     }
-    if (encargo && !encargoCobrado) {
-      const p = progresoDe(encargo, {
-        ...contadores, lucidez, unidadesSelladas: unidadesSelladas(atlas!, contenido!).length
-      })
-      if (p.cumplido) setEncargoCobrado(true)
-    }
     setVictoria(true)
     if (atlas) { const a = { ...atlas, victorias: atlas.victorias + 1 }; setAtlas(a); guardarAtlas(a) }
     setFase('fin')
@@ -158,31 +121,28 @@ export default function App() {
   /* ------------------------------ entrar a nodo ---------------------------- */
 
   const entrarNodo = useCallback((nodo: Nodo) => {
-    if (!contenido || !ruta || !ctx) return
+    if (!contenido || !ruta || !ctx || !progreso) return
     nodoRef.current = nodo
     if (nodo.tipo === 'refugio') { setFase('refugio'); return }
-    setFase('antesala')
-  }, [contenido, ruta, ctx])
-
-  const empezarBatalla = useCallback((prediccion: Prediccion, desafio: DesafioId | null) => {
-    const nodo = nodoRef.current
-    if (!contenido || !ruta || !ctx || !nodo) return
     const acto = ruta.actos[actoIdx]
     const bolsa: Bolsa = {
-      herramientas: cartera.herramientas,
-      relaciones: cartera.relaciones,
-      casos: [...new Set([...nodo.casos, ...cartera.casos])],
-      tesis: [...new Set([...nodo.tesis, ...cartera.tesis])],
-      intuiciones, fusionados, terrenos,
-      sellos: cartera.sellos,
-      desafio, prediccion
+      herramientas: progreso.herramientas as HerramientaId[],
+      relaciones: progreso.relaciones,
+      casos: [...new Set([...nodo.casos, ...casos])],
+      tesis: [...new Set([...nodo.tesis, ...tesis])],
+      intuiciones, fusionados,
+      terrenos: progreso.terrenos,
+      sellos: progreso.sellos as SelloId[]
     }
+    // el carril escala con las expediciones ya hechas: vuelves más fuerte, pero
+    // también encuentras enemigos más duros
+    const actoEfectivo = actoIdx + Math.min(3, Math.floor(progreso.expediciones / 2))
     setBatalla(iniciarBatalla(
-      ctx, nodo.conceptIds, bolsa, nodo.dificultad, actoIdx,
-      acto.manoSugerida + cartera.manoExtra
+      ctx, nodo.conceptIds, bolsa, nodo.dificultad, actoEfectivo,
+      acto.manoSugerida + manoExtra
     ))
     setFase('batalla')
-  }, [contenido, ruta, ctx, actoIdx, cartera, intuiciones, fusionados, terrenos])
+  }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados, manoExtra])
 
   /* ------------------------------- acciones -------------------------------- */
 
@@ -221,8 +181,7 @@ export default function App() {
   const sello = (id: SelloId) => setBatalla((prev) => {
     if (!prev) return prev
     const e = { ...prev }
-    const msg = usarSello(e, id)
-    if (msg) sfx.trazar()
+    if (usarSello(e, id)) sfx.trazar()
     return e
   })
 
@@ -239,20 +198,19 @@ export default function App() {
     if (nueva <= 0 && e.fase !== 'ganado') e.fase = 'perdido'
 
     setFusionados(e.fusionados)
-    setTerrenos(e.terrenosGanados)
-    setContadores((x) => ({
-      vinculos: x.vinculos + r.diag.aristas.length,
-      intuicionesReubicadas: x.intuicionesReubicadas + r.diag.repertoriosReubicados.length,
-      inferencias: x.inferencias + r.diag.veredictos.filter((v) => v.inferencia).length,
-      anclasLejanas: x.anclasLejanas + r.diag.veredictos.filter(
-        (v) => v.trazo.tool === 'ancla' && v.estado === 'sostenido'
-      ).length
-    }))
     if (r.intuicionesNuevas.length) {
       setIntuiciones((x) => [...new Set([...x, ...r.intuicionesNuevas])])
     }
 
     const a: Atlas = { ...atlas, conceptos: { ...atlas.conceptos }, aristas: { ...atlas.aristas } }
+    // los vínculos descubiertos y los terrenos ganados se conservan entre expediciones
+    if (r.descubiertos.length || e.terrenosGanados.length) {
+      a.progreso = {
+        ...a.progreso,
+        relaciones: [...new Set([...a.progreso.relaciones, ...r.descubiertos])],
+        terrenos: [...new Set([...a.progreso.terrenos, ...e.terrenosGanados])]
+      }
+    }
     for (const v of r.diag.veredictos) {
       if (v.estado === 'silencio') continue
       const ok = v.estado === 'sostenido' || v.estado === 'equivalente'
@@ -298,17 +256,15 @@ export default function App() {
   }
 
   const continuar = () => {
-    if (!batalla || !contenido) return
+    if (!batalla || !contenido || !progreso) return
     if (batalla.fase === 'perdido') { setVictoria(false); setFase('fin'); return }
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
-      const extra = batalla.desafio ? 1 : 0
-      const ofertas = [
-        ...ofrecerRecompensas(contenido, cartera, rngRef.current, dura),
-        ...(extra ? ofrecerRecompensas(contenido, cartera, rngRef.current, true).slice(0, 1) : [])
-      ]
-      setRecompensas(ofertas)
+      setRecompensas(ofrecerRecompensas(contenido, {
+        lentes: progreso.lentes, sellos: progreso.sellos as SelloId[],
+        herramientas: progreso.herramientas as HerramientaId[], relaciones: progreso.relaciones
+      }, rngRef.current, dura))
       if (atlas) {
         const a = { ...atlas, mejoresDiagramas: [...(atlas.mejoresDiagramas ?? []), batalla.mejorGolpe.dano] }
         setAtlas(a); guardarAtlas(a)
@@ -321,40 +277,40 @@ export default function App() {
   }
 
   const tomarRecompensa = (r: Recompensa) => {
-    setCartera((c) => {
-      switch (r.tipo) {
-        case 'lente': return { ...c, lentes: [...c.lentes, r.id] }
-        case 'sello': return { ...c, sellos: [...c.sellos, r.id] }
-        case 'herramienta': return { ...c, herramientas: [...c.herramientas, r.id] }
-        case 'relacion': return { ...c, relaciones: [...c.relaciones, r.tipoRelacion] }
-        case 'caso': return { ...c, casos: [...c.casos, r.id] }
-        case 'tesis': return { ...c, tesis: [...c.tesis, r.id] }
-        case 'fichero': return { ...c, manoExtra: c.manoExtra + 1 }
-        default: return c
-      }
-    })
-    if (r.tipo === 'lucidez') setLucidez((l) => Math.min(LUCIDEZ_MAX, l + r.cantidad))
+    switch (r.tipo) {
+      case 'lente': guardarProgreso((p) => ({ lentes: [...p.lentes, r.id] })); break
+      case 'sello': guardarProgreso((p) => ({ sellos: [...p.sellos, r.id] })); break
+      case 'herramienta': guardarProgreso((p) => ({ herramientas: [...p.herramientas, r.id] })); break
+      case 'relacion': guardarProgreso((p) => ({ relaciones: [...new Set([...p.relaciones, r.tipoRelacion])] })); break
+      case 'caso': setCasos((c) => [...c, r.id]); break
+      case 'tesis': setTesis((c) => [...c, r.id]); break
+      case 'fichero': setManoExtra((m) => m + 1); break
+      case 'lucidez': setLucidez((l) => Math.min(LUCIDEZ_MAX, l + r.cantidad)); break
+    }
     avanzar()
   }
 
   /* -------------------------------- render -------------------------------- */
 
-  if (fase === 'cargar' || !contenido || !atlas) {
+  if (fase === 'cargar' || !contenido || !atlas || !progreso) {
     return <div className="app"><BundleLoader onListo={alCargar} /></div>
   }
-  if (fase === 'plan') {
+  if (fase === 'inicio') {
     return (
       <div className="app">
-        <ObjectiveView contenido={contenido} onElegir={elegirPlan} />
-      </div>
-    )
-  }
-  if (fase === 'encargo') {
-    return (
-      <div className="app">
-        <EncargoView
-          encargos={encargosOfrecidos} contenido={contenido}
-          onElegir={(e) => planElegido && empezarRun(contenido, atlas, planElegido, e)}
+        <header className="barra">
+          <span className="marca">El Archivo Infinito</span>
+          <span className="sep" />
+          <button
+            className="btn fantasma" aria-pressed={mudo}
+            onClick={() => { const v = !mudo; silenciar(v); setMudo(v); if (!v) despertarAudio() }}
+          >{mudo ? 'Sonido off' : 'Sonido on'}</button>
+          <button className="btn fantasma" onClick={descargarLog}>Señales</button>
+        </header>
+        <HomeView
+          atlas={atlas} contenido={contenido}
+          onExpedicion={empezarExpedicion}
+          onCambiarTexto={() => { setContenido(null); setFase('cargar') }}
         />
       </div>
     )
@@ -368,23 +324,9 @@ export default function App() {
     <div className="app">
       <header className="barra">
         <span className="marca">El Archivo Infinito</span>
-        <span className="eyebrow">{objetivoPorId(objetivoRun).nombre}</span>
+        <span className="eyebrow">expedición {progreso.expediciones}</span>
         <span className="sep" />
         {fase !== 'batalla' && <Medidor valor={lucidez} max={LUCIDEZ_MAX} etiqueta="Lucidez" />}
-        {encargo && (() => {
-          const p = progresoDe(encargo, {
-            ...contadores, lucidez,
-            unidadesSelladas: unidadesSelladas(atlas, contenido).length
-          })
-          return (
-            <span
-              className={`encargo-marca${p.cumplido ? ' cumplido' : ''}`}
-              data-ayuda={`${encargo.nombre.toUpperCase()}\n${encargo.descripcion}\n\n${encargo.premio}`}
-            >
-              {p.cumplido ? '✓ ' : ''}{encargo.nombre} {Math.min(p.hecho, encargo.meta)}/{encargo.meta}
-            </span>
-          )
-        })()}
         <span className="dato silencio">Atlas {cob.pct}%</span>
         <button className="btn fantasma" onClick={() => { setFaseAnterior(fase); setFase('atlas') }}>Atlas</button>
         <button
@@ -398,21 +340,14 @@ export default function App() {
         <MapView
           ruta={ruta} acto={acto} alcanzables={alcanzables} visitados={visitados}
           actual={nodoActual} onElegir={entrarNodo} contenido={contenido} atlas={atlas}
-          lentes={cartera.lentes}
-        />
-      )}
-
-      {fase === 'antesala' && nodoRef.current && (
-        <Antesala
-          nodo={nodoRef.current} contenido={contenido} atlas={atlas}
-          onEntrar={empezarBatalla}
+          lentes={progreso.lentes}
         />
       )}
 
       {fase === 'batalla' && batalla && (
         <BoardView
           e={batalla} contenido={contenido} lentes={mods}
-          lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={cartera.lentes}
+          lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={progreso.lentes}
           on={{
             cambio, afirmar, continuar, quemar, cambiar, sello,
             huir: () => { setVictoria(false); setFase('fin') }
@@ -424,8 +359,7 @@ export default function App() {
         <BattleMap
           contenido={contenido} hallazgos={batalla.hallazgos} atlas={atlas}
           mejorGolpe={batalla.mejorGolpe} enemigos={batalla.enemigos}
-          prediccion={batalla.prediccion} desafio={batalla.desafio}
-          latencias={batalla.latencias}
+          latencias={batalla.latencias} descubiertos={batalla.relacionesNuevas}
           onSeguir={() => setFase('recompensa')}
         />
       )}
@@ -439,7 +373,11 @@ export default function App() {
 
       {fase === 'refugio' && (
         <CampfireView
-          cartera={cartera} fusionados={fusionados} contenido={contenido}
+          cartera={{
+            lentes: progreso.lentes, sellos: progreso.sellos as SelloId[],
+            herramientas: progreso.herramientas as HerramientaId[], relaciones: progreso.relaciones
+          }}
+          fusionados={fusionados} contenido={contenido}
           dominios={dominiosDeUnidad(contenido, acto.columnas.flat().flatMap((n) => n.conceptIds))}
           onReflexionar={(d) => registrar({
             ts: Date.now(), runId: runIdRef.current, nodoId: `acto${actoIdx}`,
@@ -451,7 +389,7 @@ export default function App() {
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX}
           onDescansar={() => { setLucidez((l) => Math.min(LUCIDEZ_MAX, l + 26)); avanzar() }}
           onSoltarLente={(id) => {
-            setCartera((c) => ({ ...c, lentes: c.lentes.filter((y) => y !== id) }))
+            guardarProgreso((p) => ({ lentes: p.lentes.filter((y) => y !== id) }))
             avanzar()
           }}
         />
@@ -464,7 +402,7 @@ export default function App() {
       {fase === 'fin' && (
         <EndView
           victoria={victoria} atlas={atlas} contenido={contenido}
-          onReiniciar={() => setFase('plan')}
+          onReiniciar={() => setFase('inicio')}
           onAtlas={() => { setFaseAnterior('fin'); setFase('atlas') }}
         />
       )}

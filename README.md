@@ -192,7 +192,7 @@ src/
     types.ts        formas normalizadas
     adapter.ts      bundle del extractor -> Contenido, con lectores tolerantes
   engine/
-    srl.ts          encargos, desafíos, predicción y organizador previo
+    weapons.ts      qué arma resulta de cada diagrama
     graph.ts        semántica del grafo: simetrías, duales, familias y derivaciones
     pieces.ts       una sola forma de carta con roles; fábricas desde el bundle
     tools.ts        las nueve herramientas, su validación, los combos y el marcador
@@ -242,4 +242,57 @@ seguir produciéndolos.
 - Reserva de una pieza entre turnos (señal de planeación).
 - Familia H (colaborar) requiere un segundo estudiante.
 - `docs/PEGLIN.md` describe la Mesa de Tiradas, que sigue sin implementar y que ahora
-  encaja mejor: las clavijas serían las piezas del tablero.
+  encaja mejor: las clavijas serían las piezas del tablero.### El Atlas es la pantalla de inicio
+
+No hay menú ni pantalla de planeación. Se entra al Atlas, que es **el modelo cognitivo
+del estudiante hecho visible**: cuánto lleva cubierto, qué conceptos domina, cuáles
+sostiene, cuáles se le resisten y cuáles no ha tocado. Una barra de proporciones arriba
+y el detalle concepto a concepto debajo, con la evidencia real al pasar el ratón
+(aciertos, fallos, herramientas distintas, vecindades distintas).
+
+De ahí sale la propuesta de la siguiente expedición: si hay conceptos que se le
+resisten, eso es lo que se le pone delante; si no, terreno nuevo; si ya está todo
+tocado, consolidar.
+
+### Lo que se conserva entre expediciones
+
+El progreso vive en el Atlas, no en la partida: **lentes, sellos, herramientas,
+vínculos descubiertos y terrenos ganados se quedan**. Cada expedición se empieza más
+fuerte — y el carril escala con las que llevas a la espalda, así que la dificultad
+sube contigo.
+
+### Los vínculos se descubren derribando enemigos
+
+Se arranca sabiendo trazar solo **apoya** y **contrasta**. Cada enemigo que cae revela
+un tipo de vínculo nuevo del texto, empezando por los más escasos, que son los que más
+rinden. En la simulación se pasa de 2 a 7 de los 8 disponibles a lo largo de una
+expedición.
+
+Las relaciones son de donde sale la información cognitiva, así que conviene que se
+ganen jugando en vez de estar todas disponibles desde el minuto uno.
+
+### Cada herramienta dispara distinto
+
+El ataque ya no es un número que baja: es un proyectil con forma propia, y la forma
+depende de con qué pensaste.
+
+| Herramienta o vínculo | Arma |
+|---|---|
+| `apoya` | perdigón limpio |
+| `causa` | descarga que atraviesa |
+| `requiere` | gancho que salta |
+| `contrasta` | tenaza: dos impactos a la vez |
+| `generaliza` | onda expansiva |
+| `ejemplifica` | lluvia de impactos |
+| `extiende` | barrido lateral |
+| Identidad | maza pesada de un solo blanco |
+| Campo | onda circular |
+| Secuencia | gancho encadenado, el más lento |
+| Balanza | sello: crítico único y contundente |
+
+**Combinar herramientas transforma el arma**: dos distintas la refuerzan, tres o más
+disparan una *Constelación*. Y el número del daño crece con el golpe: por encima de
+250 estalla en dorado. Las animaciones van entre 600 y 1200 ms a propósito, para que se
+entienda qué pasó.
+
+### El mapa de cierre

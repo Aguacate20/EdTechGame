@@ -4,7 +4,6 @@ import type { Hallazgos } from '../engine/battle'
 import { tipoPorId } from '../engine/lane'
 import { estiloRelacion } from './identity'
 import { nivelDe, type Atlas } from '../engine/atlas'
-import { desafioPorId, juzgarPrediccion, type DesafioId, type Prediccion } from '../engine/srl'
 
 /* ==========================================================================
    El mapa del combate.
@@ -100,16 +99,15 @@ function renglones(t: string, max = 15): string[] {
 }
 
 export function BattleMap({
-  contenido, hallazgos, atlas, mejorGolpe, enemigos, prediccion, desafio, latencias, onSeguir
+  contenido, hallazgos, atlas, mejorGolpe, enemigos, latencias, descubiertos, onSeguir
 }: {
   contenido: Contenido
   hallazgos: Hallazgos
   atlas: Atlas
   mejorGolpe: { dano: number; fichas: number; mult: number; trazos: number }
   enemigos: { tipoId: string; nombre: string; hpMax: number }[]
-  prediccion: Prediccion | null
-  desafio: DesafioId | null
   latencias: { ms: number; conIntuicion: boolean; trazos: number }[]
+  descubiertos: string[]
   onSeguir: () => void
 }) {
   const { vinculos, grupos, reconocidos } = hallazgos
@@ -255,17 +253,6 @@ export function BattleMap({
               : 'Todavía no alcanza para derribar de un golpe a nadie de este frente: los diagramas grandes salen de encadenar herramientas.'}
           </p>
 
-          {prediccion && (() => {
-            const j = juzgarPrediccion(prediccion, vinculos.length)
-            return (
-              <>
-                <div className="separador" />
-                <span className="eyebrow">Tu apuesta de antes</span>
-                <p className={`nota ${j.acertada ? 'ok' : 'nota'}`} style={{ margin: 0 }}>{j.texto}</p>
-              </>
-            )
-          })()}
-
           {(() => {
             const previos = (atlas.mejoresDiagramas ?? [])
             if (previos.length < 2) return null
@@ -277,12 +264,6 @@ export function BattleMap({
               </p>
             )
           })()}
-
-          {desafio && (
-            <p className="dato" style={{ margin: 0, color: 'var(--laton)' }}>
-              Con la regla que te pusiste: {desafioPorId(desafio).nombre} · hallazgo extra
-            </p>
-          )}
 
           {(() => {
             const conI = latencias.filter((l) => l.conIntuicion)
@@ -298,6 +279,17 @@ export function BattleMap({
               </p>
             )
           })()}
+
+          {descubiertos.length > 0 && (
+            <>
+              <div className="separador" />
+              <span className="eyebrow">Vínculos descubiertos</span>
+              <p className="nota ok" style={{ margin: 0 }}>
+                Al derribar enemigos aprendiste a trazar:{' '}
+                <strong>{descubiertos.join(' · ')}</strong>. Se quedan contigo.
+              </p>
+            </>
+          )}
 
           <div className="separador" />
           <span className="eyebrow">Lo que quedó en pie</span>

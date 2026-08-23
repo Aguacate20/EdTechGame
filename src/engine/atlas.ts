@@ -14,8 +14,22 @@ export interface EvidenciaConcepto {
   ultimaApuestaAcertada: string | null
 }
 
+/** Lo que el estudiante conserva entre expediciones. El Atlas deja de ser solo
+ *  un registro: es el estado del jugador y la pantalla de inicio. */
+export interface Progreso {
+  /** tipos de vínculo que ya descubrió: se desbloquean derribando enemigos */
+  relaciones: string[]
+  lentes: string[]
+  herramientas: string[]
+  sellos: string[]
+  terrenos: string[]
+  /** expediciones emprendidas: el carril escala con esto */
+  expediciones: number
+}
+
 export interface Atlas {
   fuente: string
+  progreso: Progreso
   aristas: Record<string, { from: string; to: string; tipo: string; aciertos: number }>
   conceptos: Record<string, EvidenciaConcepto>
   repertoriosEstabilizados: string[]
@@ -27,10 +41,21 @@ export interface Atlas {
   apuestasCalibradas: number
 }
 
+export const PROGRESO_INICIAL: Progreso = {
+  // se empieza sabiendo solo respaldar y oponer: el resto se descubre jugando
+  relaciones: ['apoya', 'contrasta'],
+  lentes: [],
+  herramientas: ['identidad', 'identidad', 'flecha', 'flecha', 'flecha', 'campo'],
+  sellos: [],
+  terrenos: [],
+  expediciones: 0
+}
+
 export function atlasVacio(fuente: string): Atlas {
   return {
-    fuente, aristas: {}, conceptos: {}, repertoriosEstabilizados: [],
-    runs: 0, victorias: 0, mejoresDiagramas: [], apuestasTotales: 0, apuestasCalibradas: 0
+    fuente, progreso: { ...PROGRESO_INICIAL }, aristas: {}, conceptos: {},
+    repertoriosEstabilizados: [], runs: 0, victorias: 0, mejoresDiagramas: [],
+    apuestasTotales: 0, apuestasCalibradas: 0
   }
 }
 
@@ -40,7 +65,8 @@ export function cargarAtlas(fuente: string): Atlas {
     if (!raw) return atlasVacio(fuente)
     const a = JSON.parse(raw) as Atlas
     if (a.fuente !== fuente) return atlasVacio(fuente)
-    return { ...atlasVacio(fuente), ...a }
+    const base = atlasVacio(fuente)
+    return { ...base, ...a, progreso: { ...base.progreso, ...(a.progreso ?? {}) } }
   } catch {
     return atlasVacio(fuente)
   }
@@ -73,6 +99,52 @@ export function coberturaAtlas(a: Atlas, c: Contenido): { aristas: number; conce
   const conceptos = Object.values(a.conceptos).filter((e) => nivelDe(e) > 0).length
   const pct = Math.round(((aristas / totalAristas) * 0.5 + (conceptos / totalConceptos) * 0.5) * 100)
   return { aristas, conceptos, pct }
+}
+
+/* ==========================================================================
+   El modelo cognitivo, visible para el propio estudiante.
+   No es una nota: es un mapa de en qué anda firme y en qué le está costando,
+   y es lo que decide qué se le propone en la siguiente expedición.
+   ========================================================================== */
+
+export type EstadoConcepto = 'dominado' | 'sostenido' | 'reconocido' | 'cuesta' | 'sin_tocar'
+
+export function estadoDe(e: EvidenciaConcepto | undefined): EstadoConcepto {
+  if (!e || (e.aciertos === 0 && e.fallos === 0)) return 'sin_tocar'
+  const n = nivelDe(e)
+  // más fallos que aciertos, habiéndolo intentado varias veces: le cuesta
+  if (e.fallos >= 2 && e.fallos > e.aciertos) return 'cuesta'
+  return n === 3 ? 'dominado' : n === 2 ? 'sostenido' : 'reconocido'
+}
+
+export const ETIQUETA_ESTADO: Record<EstadoConcepto, string> = {
+  dominado: 'lo dominas',
+  sostenido: 'lo sostienes',
+  reconocido: 'lo reconoces',
+  cuesta: 'se te resiste',
+  sin_tocar: 'sin tocar'
+}
+
+export interface Retrato {
+  dominados: string[]
+  sostenidos: string[]
+  reconocidos: string[]
+  cuestan: string[]
+  sinTocar: string[]
+}
+
+export function retratoDe(a: Atlas, ids: string[]): Retrato {
+  const r: Retrato = { dominados: [], sostenidos: [], reconocidos: [], cuestan: [], sinTocar: [] }
+  for (const id of ids) {
+    switch (estadoDe(a.conceptos[id])) {
+      case 'dominado': r.dominados.push(id); break
+      case 'sostenido': r.sostenidos.push(id); break
+      case 'reconocido': r.reconocidos.push(id); break
+      case 'cuesta': r.cuestan.push(id); break
+      default: r.sinTocar.push(id)
+    }
+  }
+  return r
 }
 
 /* ------------------------------- telemetría ------------------------------- */

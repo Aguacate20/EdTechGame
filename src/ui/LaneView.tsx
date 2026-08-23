@@ -1,5 +1,6 @@
 import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
 import { Retrato } from './assets'
+import type { Disparo } from '../engine/weapons'
 import { sfx } from './sfx'
 import { useEffect, useRef } from 'react'
 
@@ -48,7 +49,9 @@ function Copista({ gesto }: { gesto: 'quieto' | 'afirma' | 'herido' }) {
   )
 }
 
-export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo }: {
+export function LaneView({
+  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo
+}: {
   enemigos: Enemigo[]
   lucidez: number
   lucidezMax: number
@@ -58,8 +61,11 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
   ultimosImpactos: { uid: string; dano: number }[]
   /** el disparo solo se ve cuando la cuenta ha terminado */
   disparoListo?: boolean
+  /** con qué arma sale el ataque: cada herramienta dispara distinto */
+  disparo?: Disparo | null
 }) {
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
+  const vivosYcaidos = enemigos
   const gestosPrevios = useRef<Record<string, string>>({})
 
   useEffect(() => {
@@ -93,6 +99,35 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
         </div>
       </div>
 
+      {disparoListo && disparo && disparo.objetivos.length > 0 && (
+        <div className={`salva salva-${disparo.arma.forma}`} aria-hidden>
+          {Array.from({ length: disparo.arma.proyectiles }, (_, i) => {
+            const objetivo = vivosYcaidos.find((e) => e.uid === disparo.objetivos[
+              Math.min(i, disparo.objetivos.length - 1)
+            ])
+            const destino = objetivo ? (objetivo.posicion / LARGO_CARRIL) * 100 : 60
+            return (
+              <span
+                key={i}
+                className="proyectil"
+                style={{
+                  '--destino': `${destino}%`,
+                  '--dur': `${disparo.arma.duracion}ms`,
+                  '--retardo': `${i * 90}ms`,
+                  '--tono': disparo.arma.color,
+                  '--escala': 0.6 + disparo.magnitud * 1.6
+                } as React.CSSProperties}
+              />
+            )
+          })}
+          {disparo.combinado && (
+            <span className="nombre-arma" style={{ color: disparo.arma.color }}>
+              {disparo.combinado}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="carril-pista" role="list">
         {Array.from({ length: LARGO_CARRIL }, (_, i) => i + 1).map((casilla) => {
           const aqui = vivos.filter((e) => e.posicion === casilla)
@@ -109,7 +144,12 @@ export function LaneView({ enemigos, lucidez, lucidezMax, alcance, gesto, ultimo
                     className={`bicho bicho-${disparoListo === false ? 'quieto' : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
                     title={`${e.nombre} — ${t.glosa}`}
                   >
-                    {impacto && <span className="flotante">−{impacto.dano}</span>}
+                    {impacto && (
+                      <span
+                        className={`flotante${impacto.dano >= 250 ? ' magnifico' : impacto.dano >= 90 ? ' fuerte' : ''}`}
+                        style={{ '--peso': Math.min(3.2, 1 + impacto.dano / 220) } as React.CSSProperties}
+                      >−{impacto.dano}</span>
+                    )}
                     <Retrato
                       familia="enemigos" id={e.tipoId} alt={e.nombre}
                       tamano={34} gesto={e.gesto}

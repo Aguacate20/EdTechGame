@@ -5,44 +5,9 @@ import { HERRAMIENTAS, type HerramientaId } from '../engine/tools'
 import type { SelloId } from '../engine/powers'
 import { RUTAS, type Acto, type Nodo, type Recompensa, type Ruta } from '../engine/route'
 import { coberturaAtlas, nivelDe, type Atlas } from '../engine/atlas'
-import { OBJETIVOS, unidadesSelladas, edicionCriticaDisponible, type Objetivo } from '../engine/objectives'
+import { unidadesSelladas, edicionCriticaDisponible } from '../engine/objectives'
 import { descargarEdicion } from '../engine/export'
 import { Chip, Panel } from './components'
-
-/* ------------------------------ plan de ruta ------------------------------ */
-
-export function ObjectiveView({ onElegir, contenido }: {
-  onElegir: (o: Objetivo) => void; contenido: Contenido
-}) {
-  return (
-    <div className="envoltura pila">
-      <div>
-        <span className="eyebrow">Antes de entrar</span>
-        <h2 className="display" style={{ fontSize: 30 }}>¿Qué vienes a hacer con este texto?</h2>
-        <p className="silencio serif-lectura" style={{ maxWidth: 640 }}>
-          Tu mazo decide qué puedes demostrar. Elegir plan y construir mazo terminan siendo
-          la misma decisión, así que conviene elegir antes de que el mapa te empuje.
-        </p>
-      </div>
-      <div className="fila">
-        {OBJETIVOS.map((o) => (
-          <button key={o.id} className="objetivo-card" onClick={() => onElegir(o)}>
-            <span className="eyebrow">{o.dimensiones.join(' · ')}</span>
-            <span className="nom">{o.nombre}</span>
-            <span className="silencio" style={{ fontSize: 13.5 }}>{o.promesa}</span>
-            <span className="silencio" style={{ fontSize: 12.5, fontStyle: 'italic' }}>{o.costo}</span>
-            <span className="dato silencio" style={{ marginTop: 6 }}>
-              relaciones: {[...new Set(o.relacionesIniciales)].join(' · ')} — {lentePorId(o.lenteInicial).nombre}
-            </span>
-          </button>
-        ))}
-      </div>
-      <p className="silencio dato">
-        {Object.keys(contenido.conceptos).length} conceptos · {contenido.aristas.length} vínculos · {contenido.unidades.length} unidades
-      </p>
-    </div>
-  )
-}
 
 /* --------------------------------- grafo ---------------------------------- */
 
@@ -182,7 +147,7 @@ export function RewardView({ opciones, onElegir, titulo, contenido }: {
         const h = HERRAMIENTAS[r.id]
         return {
           tt: 'Herramienta', nom: `${h.glifo} ${h.nombre}`,
-          cuerpo: `Una más por turno. ${h.afirma}`, pie: `Señal: ${h.dimension}`
+          cuerpo: `Una más por turno. ${h.afirma}`, pie: h.ejemplo
         }
       }
       case 'relacion':

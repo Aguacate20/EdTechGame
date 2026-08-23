@@ -16,7 +16,6 @@ import { combinarLentes } from '../src/engine/powers'
 import { HERRAMIENTAS, type HerramientaId } from '../src/engine/tools'
 import { DUALES, FAMILIAS } from '../src/engine/graph'
 import { generarRuta, hermanosPosibles, repartirEntreHermanos, solapeMedio, type Nodo } from '../src/engine/route'
-import { OBJETIVOS } from '../src/engine/objectives'
 import { Rng } from '../src/engine/rng'
 import type { Pieza } from '../src/engine/pieces'
 import type { Contenido } from '../src/content/types'
@@ -37,7 +36,7 @@ interface Rep {
   gano: boolean; turnos: number; oleadas: number; lucidez: number
   sostenidos: number; trazos: number; herramientasUsadas: Set<string>
   quemasBuenas: number; quemasMalas: number; fusiones: number; combos: Set<string>
-  estados: Record<string, number>; hallazgos: number; mejorGolpe: number; terrenos: number
+  estados: Record<string, number>; hallazgos: number; mejorGolpe: number; terrenos: number; descubiertos: number
 }
 
 /** Un jugador que lee: busca en su mano las piezas que sí sostienen algo.
@@ -180,22 +179,18 @@ function jugarAzar(e: EstadoBatalla, rng: Rng): number {
 
 function jugarRun(semilla: string, estrategia: Estrategia): Rep {
   const rng = new Rng(semilla)
-  const obj = OBJETIVOS[rng.int(OBJETIVOS.length)]
-  const ctx: ContextoBatalla = { contenido, rng, lentes: combinarLentes([obj.lenteInicial]) }
+  const ctx: ContextoBatalla = { contenido, rng, lentes: combinarLentes([]) }
+  const conocidas: string[] = ['apoya', 'contrasta']
   const ruta = generarRuta(contenido, semilla)
   let lucidez = LUCIDEZ_MAX
   const fusionados: string[] = []
   const rep: Rep = {
     gano: false, turnos: 0, oleadas: 0, lucidez, sostenidos: 0, trazos: 0,
     herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0,
-    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0
+    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0, descubiertos: 2
   }
   const herramientas: HerramientaId[] = [
-    ...BASE,
-    ...(obj.id === 'consolidar' ? ['identidad', 'tachon'] as HerramientaId[]
-      : obj.id === 'trazar' ? ['flecha', 'jerarquia'] as HerramientaId[]
-      : ['ancla', 'flecha'] as HerramientaId[]),
-    'eje', 'secuencia', 'balanza'
+    ...BASE, 'jerarquia', 'ancla', 'eje', 'secuencia', 'balanza'
   ]
 
   for (const acto of ruta.actos) {
@@ -211,13 +206,13 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
       else if (nodo.tipo !== 'taller') {
         rep.oleadas += 1
         const bolsa: Bolsa = {
-          sellos: [], terrenos: [], desafio: null, prediccion: 'justos' as const,
+          sellos: [], terrenos: [],
           herramientas,
           // el bot impreciso lleva todas las relaciones: así puede equivocarse
           // de etiqueta de verdad en vez de quedarse sin carta
           relaciones: estrategia === 'aproximado'
             ? Object.keys(contenido.frecuenciaRelacion)
-            : obj.relacionesIniciales,
+            : conocidas,
           casos: nodo.casos, tesis: nodo.tesis, intuiciones: [], fusionados
         }
         const e = iniciarBatalla(ctx, nodo.conceptIds, bolsa, nodo.dificultad, acto.index, acto.manoSugerida)
@@ -244,6 +239,10 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
           rep.fusiones += r.diag.fusiona.length
           for (const c of r.diag.combos) rep.combos.add(c.nombre)
           fusionados.push(...r.diag.fusiona)
+          for (const nuevo of r.descubiertos) {
+            if (!conocidas.includes(nuevo)) conocidas.push(nuevo)
+          }
+          rep.descubiertos = conocidas.length
           rep.turnos++
           if (!vivos(e).length || lucidez <= 0) break
           siguienteTurno(e)
@@ -298,6 +297,7 @@ console.log(` herramientas ejercidas: ${[...usadas].join(' · ')}`)
 console.log(` combos vistos: ${[...combos].join(' · ') || 'ninguno'}`)
 console.log(` pozo: ${inf.reduce((n, r) => n + r.quemasBuenas, 0)} quemas acertadas · ${inf.reduce((n, r) => n + r.quemasMalas, 0)} erradas`)
 console.log(` fusiones nombre+descripción: ${inf.reduce((n, r) => n + r.fusiones, 0)}`)
+console.log(` vínculos conocidos al final (media): ${(inf.reduce((n, r) => n + r.descubiertos, 0) / inf.length).toFixed(1)} de ${Object.keys(contenido.frecuenciaRelacion).length}`)
 console.log(` terrenos ganados (total): ${inf.reduce((n, r) => n + r.terrenos, 0)}`)
 console.log(` hallazgos por run (media): ${(inf.reduce((n, r) => n + r.hallazgos, 0) / inf.length).toFixed(0)}` +
   ` · mejor diagrama: ${Math.max(...inf.map((r) => r.mejorGolpe))}`)
@@ -336,6 +336,8 @@ const hallMedia = inf.reduce((n, r) => n + r.hallazgos, 0) / Math.max(1, inf.len
 const ok8 = hallMedia >= 15
 const solape = solapes.length ? solapes.reduce((a, b) => a + b, 0) / solapes.length : 1
 const ok9 = solapes.length > 0 && solape < 0.5
+const descMedia = inf.reduce((n, r) => n + r.descubiertos, 0) / Math.max(1, inf.length)
+const ok10 = descMedia > 2 && descMedia <= Object.keys(contenido.frecuenciaRelacion).length
 const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
 console.log(` ${ok1 ? 'PASA' : 'FALLA'}  quien lee despeja el carril`)
 console.log(` ${ok2 ? 'PASA' : 'FALLA'}  trazar al azar nunca gana`)
@@ -346,4 +348,5 @@ console.log(` ${ok6 ? 'PASA' : 'FALLA'}  la escalera no premia al azar (${(100 *
 console.log(` ${ok7 ? 'PASA' : 'FALLA'}  quien razona bien y se equivoca de etiqueta recibe crédito (${(100 * creditoAprox / totalAprox).toFixed(0)}%, ${res.aproximado.filter((r) => r.gano).length}/${semillas.length} victorias)`)
 console.log(` ${ok8 ? 'PASA' : 'FALLA'}  el mapa de cierre acumula aciertos (${hallMedia.toFixed(0)} vínculos y grupos por run)`)
 console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios distintos (${(100 * solape).toFixed(0)}% en ${solapes.length} columnas)`)
-if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9)) process.exit(1)
+console.log(` ${ok10 ? 'PASA' : 'FALLA'}  los vínculos se descubren derribando enemigos (${descMedia.toFixed(1)} conocidos al final)`)
+if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10)) process.exit(1)

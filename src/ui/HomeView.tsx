@@ -1,0 +1,233 @@
+import type { Contenido } from '../content/types'
+import {
+  coberturaAtlas, estadoDe, ETIQUETA_ESTADO, nivelDe, retratoDe, type Atlas
+} from '../engine/atlas'
+import { unidadesSelladas } from '../engine/objectives'
+import { lentePorId, selloPorId } from '../engine/powers'
+import { HERRAMIENTAS, type HerramientaId } from '../engine/tools'
+import { GLOSA_RELACION } from '../ui/glosas'
+import { descargarEdicion } from '../engine/export'
+import { Panel } from './components'
+
+/* ==========================================================================
+   El Atlas como pantalla de inicio.
+   Deja de ser un anexo y pasa a ser el estado del estudiante: qué tiene firme,
+   qué se le resiste, qué herramientas ha ganado y qué vínculos ha descubierto.
+   De aquí sale lo que se le propone en la siguiente expedición.
+   ========================================================================== */
+
+const COLOR_ESTADO: Record<string, string> = {
+  dominado: '#5fa78f',
+  sostenido: '#7fc0a8',
+  reconocido: '#b0a06a',
+  cuesta: '#c0705f',
+  sin_tocar: '#4a5262'
+}
+
+export function HomeView({ atlas, contenido, onExpedicion, onCambiarTexto }: {
+  atlas: Atlas
+  contenido: Contenido
+  onExpedicion: () => void
+  onCambiarTexto: () => void
+}) {
+  const ids = contenido.ordenConceptos
+  const r = retratoDe(atlas, ids)
+  const cob = coberturaAtlas(atlas, contenido)
+  const selladas = unidadesSelladas(atlas, contenido)
+  const p = atlas.progreso
+
+  const relacionesPorDescubrir = Object.keys(contenido.frecuenciaRelacion)
+    .filter((t) => !p.relaciones.includes(t))
+
+  // qué propone el sistema para la siguiente expedición
+  const propuesta = r.cuestan.length
+    ? { texto: 'Volver sobre lo que se te resiste', detalle: r.cuestan.slice(0, 3).map((id) => contenido.conceptos[id]?.titulo).join(' · ') }
+    : r.sinTocar.length
+      ? { texto: 'Terreno nuevo', detalle: r.sinTocar.slice(0, 3).map((id) => contenido.conceptos[id]?.titulo).join(' · ') }
+      : { texto: 'Consolidar lo que ya sostienes', detalle: 'Todo el texto tiene evidencia. Ahora toca afianzarlo.' }
+
+  return (
+    <div className="envoltura pila inicio">
+      <header>
+        <span className="eyebrow">{contenido.fuente}</span>
+        <h1 className="display" style={{ fontSize: 34 }}>Tu Atlas</h1>
+        <p className="silencio serif-lectura" style={{ maxWidth: 700, margin: 0 }}>
+          Esto no es una nota. Es el mapa de en qué andas firme y en qué te estás
+          atascando, construido con lo que has sostenido jugando. De aquí sale lo que
+          te va a proponer la próxima expedición.
+        </p>
+      </header>
+
+      {/* ------------------------------ cifras ------------------------------ */}
+      <div className="fila">
+        {[
+          ['Cobertura', `${cob.pct}%`, ''],
+          ['Vínculos trazados', `${cob.aristas}`, `/${contenido.aristas.length}`],
+          ['Unidades selladas', `${selladas.length}`, `/${contenido.unidades.length}`],
+          ['Expediciones', `${p.expediciones}`, atlas.victorias ? ` · ${atlas.victorias} completas` : ''],
+          ['Mejor diagrama', `${Math.max(0, ...(atlas.mejoresDiagramas ?? [0]))}`, '']
+        ].map(([t, v, s]) => (
+          <div className="celda" key={t} style={{ flex: '1 1 140px' }}>
+            <span className="eyebrow">{t}</span>
+            <div style={{ fontSize: 26, fontFamily: 'var(--mono)' }}>
+              {v}<span className="silencio" style={{ fontSize: 14 }}>{s}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* --------------------------- el arranque --------------------------- */}
+      <div className="arranque">
+        <div>
+          <span className="eyebrow">Siguiente expedición</span>
+          <h2 className="h2" style={{ margin: '2px 0 2px' }}>{propuesta.texto}</h2>
+          <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>{propuesta.detalle}</p>
+          {p.expediciones > 0 && (
+            <p className="dato silencio" style={{ margin: '6px 0 0' }}>
+              El carril viene más duro: llevas {p.expediciones} expedición
+              {p.expediciones === 1 ? '' : 'es'} a la espalda.
+            </p>
+          )}
+        </div>
+        <button className="btn primario grande" onClick={onExpedicion}>Salir de expedición</button>
+      </div>
+
+      {/* ------------------------- lo que has ganado ------------------------ */}
+      <Panel titulo="Lo que llevas encima">
+        <div className="rejilla">
+          <div className="celda">
+            <span className="eyebrow">Vínculos que sabes trazar</span>
+            <div className="fila" style={{ gap: 5, flexWrap: 'wrap', marginTop: 6 }}>
+              {p.relaciones.map((t) => (
+                <span key={t} className="pastilla" data-ayuda={`${t.toUpperCase()}\n${GLOSA_RELACION[t] ?? ''}`}>
+                  {t}
+                </span>
+              ))}
+            </div>
+            {relacionesPorDescubrir.length > 0 && (
+              <p className="silencio" style={{ fontSize: 12.5, margin: '8px 0 0' }}>
+                Quedan {relacionesPorDescubrir.length} por descubrir. Se revelan al derribar
+                enemigos: cada uno que cae te enseña un vínculo nuevo del texto.
+              </p>
+            )}
+          </div>
+
+          <div className="celda">
+            <span className="eyebrow">Herramientas</span>
+            <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+              {[...new Set(p.herramientas)].map((h) =>
+                `${HERRAMIENTAS[h as HerramientaId].glifo} ${HERRAMIENTAS[h as HerramientaId].nombre} ×${p.herramientas.filter((x) => x === h).length}`
+              ).join(' · ')}
+            </p>
+          </div>
+
+          <div className="celda">
+            <span className="eyebrow">Lentes</span>
+            <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+              {p.lentes.length
+                ? p.lentes.map((l) => lentePorId(l).nombre).join(' · ')
+                : 'ninguna todavía'}
+            </p>
+            {p.sellos.length > 0 && (
+              <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+                Sellos: {p.sellos.map((x) => selloPorId(x as never).nombre).join(' · ')}
+              </p>
+            )}
+          </div>
+
+          {p.terrenos.length > 0 && (
+            <div className="celda">
+              <span className="eyebrow">Intuiciones reubicadas</span>
+              <p style={{ margin: '6px 0 0', fontSize: 13 }}>
+                {p.terrenos.map((t) =>
+                  contenido.repertorios.find((x) => x.id === t)?.etiqueta ?? t
+                ).join(' · ')}
+              </p>
+            </div>
+          )}
+        </div>
+      </Panel>
+
+      {/* ------------------------ el modelo cognitivo ----------------------- */}
+      <Panel titulo="Cómo andas con cada concepto">
+        <div className="barra-estados">
+          {(['dominados', 'sostenidos', 'reconocidos', 'cuestan', 'sinTocar'] as const).map((k) => {
+            const n = r[k].length
+            if (!n) return null
+            const clave = k === 'sinTocar' ? 'sin_tocar' : k.slice(0, -1)
+            return (
+              <span
+                key={k}
+                style={{ flex: n, background: COLOR_ESTADO[clave === 'cuesta' ? 'cuesta' : clave] }}
+                data-ayuda={`${n} concepto(s): ${ETIQUETA_ESTADO[(clave === 'cuesta' ? 'cuesta' : clave) as never]}`}
+              />
+            )
+          })}
+        </div>
+
+        <div className="rejilla" style={{ marginTop: 12 }}>
+          {ids.map((id) => {
+            const c = contenido.conceptos[id]
+            if (!c) return null
+            const est = estadoDe(atlas.conceptos[id])
+            const ev = atlas.conceptos[id]
+            return (
+              <div
+                className="celda concepto-fila" key={id}
+                style={{ borderLeft: `3px solid ${COLOR_ESTADO[est]}` }}
+                data-ayuda={`${c.titulo.toUpperCase()}\n${c.definicionCorta}${
+                  ev ? `\n\n${ev.aciertos} aciertos · ${ev.fallos} fallos · ${new Set(ev.mecanicas).size} herramientas · ${new Set(ev.vecinos ?? []).size} vecindades` : ''
+                }`}
+              >
+                <div className="fila" style={{ justifyContent: 'space-between', gap: 6 }}>
+                  <strong style={{ fontSize: 13.5 }}>{c.titulo}</strong>
+                  {c.esUmbral && <span className="pastilla brillo">umbral</span>}
+                </div>
+                <p className="silencio" style={{ fontSize: 12.5, margin: '3px 0 0' }}>
+                  {ETIQUETA_ESTADO[est]}
+                </p>
+                <div className="barrita"><span style={{ width: `${(nivelDe(ev) / 3) * 100}%` }} /></div>
+              </div>
+            )
+          })}
+        </div>
+      </Panel>
+
+      {r.cuestan.length > 0 && (
+        <Panel titulo="Lo que se te está resistiendo">
+          <p className="silencio" style={{ fontSize: 13.5, margin: '0 0 10px' }}>
+            Más fallos que aciertos. No es un reproche: es dónde conviene volver, y es lo
+            que la próxima expedición te va a poner delante.
+          </p>
+          <div className="rejilla">
+            {r.cuestan.map((id) => {
+              const c = contenido.conceptos[id]
+              const ev = atlas.conceptos[id]
+              const confundido = Object.values(atlas.aristas).find((a) => a.from === id || a.to === id)
+              return (
+                <div className="celda" key={id} style={{ borderLeft: '3px solid #c0705f' }}>
+                  <strong style={{ fontSize: 13.5 }}>{c?.titulo}</strong>
+                  <p className="silencio" style={{ fontSize: 12.5, margin: '4px 0 0' }}>
+                    {c?.definicionCorta}
+                  </p>
+                  <p className="dato silencio" style={{ margin: '6px 0 0' }}>
+                    {ev?.fallos} fallo(s) frente a {ev?.aciertos} acierto(s)
+                    {confundido ? ' · ya lo has enlazado alguna vez' : ''}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </Panel>
+      )}
+
+      <div className="fila">
+        <button
+          className="btn" disabled={selladas.length < contenido.unidades.length}
+          onClick={() => descargarEdicion(atlas, contenido)}
+        >Descargar la edición crítica</button>
+        <button className="btn fantasma" onClick={onCambiarTexto}>Cambiar de texto</button>
+      </div>
+    </div>
+  )
+}

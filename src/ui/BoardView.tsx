@@ -11,6 +11,7 @@ import {
 import { tipoPorId } from '../engine/lane'
 import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
 import { LaneView } from './LaneView'
+import { GLOSA_RELACION as GLOSA } from './glosas'
 import { Chip } from './components'
 import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
 import { useCascada } from './cascade'
@@ -47,16 +48,6 @@ const ETIQUETA: Record<Pieza['clase'], string> = {
   marco: 'Marco', intuicion: 'Intuición', subdimension: 'Atributo', contexto: 'Terreno'
 }
 
-const GLOSA: Record<string, string> = {
-  apoya: 'A respalda o da evidencia a B.',
-  causa: 'A produce B.',
-  requiere: 'B es condición previa de A.',
-  contrasta: 'A se opone o se distingue de B.',
-  generaliza: 'A abstrae a B.',
-  ejemplifica: 'A es un caso concreto de B.',
-  extiende: 'A amplía el alcance de B.',
-  matiza: 'A precisa o limita a B.'
-}
 
 const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t)
 
@@ -75,6 +66,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
+  const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
   const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
 
   // Un solo tooltip en posición fija para toda la pantalla. Antes se pintaba con
@@ -168,6 +160,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             ? (e.ultima && e.ultima.danoTotal > 0 ? 'afirma' : 'herido') : 'quieto'}
           ultimosImpactos={resuelto && casc.terminada && e.ultima ? e.ultima.impactos : []}
           disparoListo={resuelto && casc.terminada}
+          disparo={resuelto && casc.terminada && e.ultima ? e.ultima.disparo : null}
         />
       </div>
 
@@ -421,8 +414,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         )}
 
         {/* ------------------------- acuse del pozo ------------------------- */}
-        {e.ultimoPozo && !resuelto && (
+        {e.ultimoPozo && !resuelto && acuseCerrado !== e.ultimoPozo.titulo && (
           <div className={`acuse ${e.ultimoPozo.acertado ? 'bien' : 'mal'}`}>
+            <button
+              className="cerrar" aria-label="Cerrar aviso"
+              onClick={() => setAcuseCerrado(e.ultimoPozo?.titulo ?? null)}
+            >✕</button>
             <strong>
               {e.ultimoPozo.accion === 'quemar' ? 'Quemaste' : 'Cambiaste'} «{e.ultimoPozo.titulo}»
             </strong>
@@ -469,6 +466,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 </div>
               )
             })()}
+            {casc.terminada && e.ultima.descubiertos.length > 0 && (
+              <p className="nota ok" style={{ margin: 0 }}>
+                <strong>Descubriste «{e.ultima.descubiertos.join('» y «')}»</strong> — un vínculo
+                nuevo que ya puedes trazar, aquí y en las próximas expediciones.
+              </p>
+            )}
             {casc.terminada && e.ultima.parteEnemiga.length > 0 && (
               <ul className="parte">
                 {e.ultima.parteEnemiga.map((p, i) => (
