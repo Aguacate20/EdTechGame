@@ -85,25 +85,8 @@ export function HomeView({
         ))}
       </div>
 
-      {enTutorial && (
-        <div className="arranque retomar">
-          <div>
-            <span className="eyebrow">Modo tutorial</span>
-            <h2 className="h2" style={{ margin: '2px 0 2px' }}>Dos combates guiados</h2>
-            <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>
-              Con abejas, flores y murciélagos: se aprende la mecánica, no el tema. Nada
-              de lo que hagas aquí toca el Atlas de tus textos.
-            </p>
-          </div>
-          <div className="fila" style={{ gap: 8 }}>
-            <button className="btn primario grande" onClick={onEmpezarTutorial}>Empezar</button>
-            <button className="btn fantasma" onClick={onTutorial}>Salir del tutorial</button>
-          </div>
-        </div>
-      )}
-
       {/* --------------------------- el arranque --------------------------- */}
-      {guardada && (
+      {guardada && !enTutorial && (
         <div className="arranque retomar">
           <div>
             <span className="eyebrow">Expedición a medias</span>
@@ -119,12 +102,18 @@ export function HomeView({
         </div>
       )}
 
-      <div className="arranque">
+      <div className={`arranque${enTutorial ? ' retomar' : ''}`}>
         <div>
-          <span className="eyebrow">Siguiente expedición</span>
-          <h2 className="h2" style={{ margin: '2px 0 2px' }}>{propuesta.texto}</h2>
-          <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>{propuesta.detalle}</p>
-          {p.expediciones > 0 && (
+          <span className="eyebrow">{enTutorial ? 'Modo tutorial' : 'Siguiente expedición'}</span>
+          <h2 className="h2" style={{ margin: '2px 0 2px' }}>
+            {enTutorial ? 'Dos combates guiados' : propuesta.texto}
+          </h2>
+          <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>
+            {enTutorial
+              ? 'Con abejas, flores y murciélagos: aquí se aprende la mecánica, no el tema. Las cartas y los enemigos son siempre los mismos, y una guía te va diciendo qué hacer.'
+              : propuesta.detalle}
+          </p>
+          {!enTutorial && p.expediciones > 0 && (
             <p className="dato silencio" style={{ margin: '6px 0 0' }}>
               El carril viene más duro: llevas {p.expediciones} expedición
               {p.expediciones === 1 ? '' : 'es'} a la espalda. Las lentes y las
@@ -133,6 +122,11 @@ export function HomeView({
           )}
         </div>
         <div className="fila" style={{ gap: 8, flexWrap: 'wrap' }}>
+          {enTutorial ? (
+            <button className="btn primario grande" onClick={onEmpezarTutorial}>
+              Empezar el tutorial
+            </button>
+          ) : (<>
           <button className="btn primario grande" onClick={() => onExpedicion(false)}>
             {guardada ? 'Empezar otra desde cero' : 'Salir de expedición'}
           </button>
@@ -140,6 +134,7 @@ export function HomeView({
             className="btn grande" onClick={() => onExpedicion(true)}
             data-ayuda={'MODO APRENDIZAJE\nLos conceptos que no has tocado llegan enteros, las falsificaciones vienen señaladas al principio, cada sala se abre con la idea que engloba a las demás y la expedición no se pierde por quedarte sin lucidez.\n\nLa evidencia cuenta, pero queda marcada como obtenida con apoyo: para «lo dominas» hace falta al menos una vez sin andamio.'}
           >Con andamio</button>
+          </>)}
         </div>
       </div>
 

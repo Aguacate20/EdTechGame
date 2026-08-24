@@ -164,9 +164,8 @@ export const ES_TUTORIAL = 'Tutorial · animales'
 import type { EstadoBatalla } from '../engine/battle'
 import { crearEnemigo, type Enemigo } from '../engine/lane'
 import {
-  piezaApocrifa, piezaCaso, piezaConcepto, piezaDefinicion, piezaEtiqueta, type Pieza
+  piezaApocrifaDe, piezaCaso, piezaConcepto, piezaDefinicion, piezaEtiqueta, type Pieza
 } from '../engine/pieces'
-import { Rng } from '../engine/rng'
 import type { HerramientaId } from '../engine/tools'
 
 export interface PasoGuia {
@@ -183,7 +182,7 @@ export interface SalaTutorial {
   conceptIds: string[]
   herramientas: HerramientaId[]
   relaciones: string[]
-  mazo: (c: Contenido, rng: Rng) => Pieza[]
+  mazo: (c: Contenido) => Pieza[]
   enemigos: (escala: number) => Enemigo[]
   pasos: PasoGuia[]
 }
@@ -239,12 +238,14 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
     conceptIds: ['abeja', 'polinizacion', 'fruto', 'murcielago', 'mamifero'],
     herramientas: ['flecha', 'flecha', 'identidad', 'campo'],
     relaciones: ['apoya', 'causa', 'generaliza'],
-    mazo: (c, rng) => [
+    // la falsificación es siempre la misma y es la confusión clásica: un
+    // murciélago con la descripción de un ave. En un tutorial nada al azar.
+    mazo: (c) => [
       piezaConcepto(c, 'abeja')!,
       piezaConcepto(c, 'polinizacion')!,
       piezaConcepto(c, 'fruto')!,
       piezaConcepto(c, 'mamifero')!,
-      piezaApocrifa(c, 'murcielago', rng)!,
+      piezaApocrifaDe(c, 'murcielago', 'ave')!,
       piezaCaso(c, 'huerto')!
     ],
     enemigos: (escala) => [

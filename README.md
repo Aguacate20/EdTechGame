@@ -285,8 +285,10 @@ información honesta y además motivadora.
 
 ### El tutorial
 
-Se **activa y se desactiva** desde el menú, sin perder el texto que estuvieras usando:
-al salir se recupera tal cual, con su Atlas y su expedición a medias si la había.
+Se **activa y se desactiva** con el botón *Tutorial* al pie del menú, sin perder el
+texto que estuvieras usando: al salir se recupera tal cual, con su Atlas y su expedición
+a medias si la había. Mientras está activo no se pueden lanzar expediciones generadas
+sobre el contenido del tutorial: hay un solo camino, que son las dos salas guionizadas.
 
 Son **dos combates prefabricados** con mano fija, frente fijo y una guía que avanza sola
 cuando haces lo que toca:
@@ -300,6 +302,10 @@ La guía vive en un panel fijo abajo a la izquierda, con los pasos marcados. Cad
 tiene una condición real sobre el estado de la partida —«hay dos piezas en el tablero»,
 «has trazado una identidad», «quemaste la apócrifa»— así que avanza cuando de verdad lo
 hiciste, no por tiempo.
+
+Todo es determinista: la mano, el frente y la falsificación son siempre los mismos. La
+apócrifa de la segunda sala es la confusión clásica —un murciélago con la descripción de
+un ave— y no una cualquiera del pool.
 
 El contenido son diez conceptos de abejas, flores y murciélagos, construidos con **la
 misma forma que emite el extractor**: pasan por el mismo adaptador y el mismo motor, así

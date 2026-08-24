@@ -168,7 +168,7 @@ export default function App() {
       herramientas: sala.herramientas, relaciones: sala.relaciones,
       casos: [], tesis: [], intuiciones: [], fusionados: [], terrenos: [], sellos: [],
       apoyo: true, sinTocar: [],
-      mazoFijo: sala.mazo(c, rng),
+      mazoFijo: sala.mazo(c),
       enemigosFijos: sala.enemigos(1)
     }, 'facil', 0, 6))
     setFase('batalla')
@@ -204,6 +204,7 @@ export default function App() {
     nodoRef.current = nodo
     if (nodo.tipo === 'refugio') { setFase('refugio'); return }
     const acto = ruta.actos[actoIdx]
+    void acto
     const bolsa: Bolsa = {
       herramientas,
       relaciones: progreso.relaciones,
@@ -437,9 +438,11 @@ export default function App() {
       </div>
     )
   }
-  if (!ruta) return <div className="app"><BundleLoader onListo={alCargar} /></div>
+  if (!ruta && tutorial === null) {
+    return <div className="app"><BundleLoader onListo={alCargar} /></div>
+  }
 
-  const acto = ruta.actos[actoIdx]
+  const acto = ruta?.actos[actoIdx] ?? null
   const cob = coberturaAtlas(atlas, contenido)
 
   return (
@@ -462,7 +465,7 @@ export default function App() {
         <button className="btn fantasma" onClick={descargarLog}>Señales</button>
       </header>
 
-      {fase === 'mapa' && (
+      {fase === 'mapa' && ruta && acto && (
         <MapView
           ruta={ruta} acto={acto} alcanzables={alcanzables} visitados={visitados}
           actual={nodoActual} onElegir={entrarNodo} contenido={contenido} atlas={atlas}

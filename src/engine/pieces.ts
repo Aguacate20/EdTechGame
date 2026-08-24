@@ -213,6 +213,21 @@ export function piezaIntuicion(c: Contenido, id: string): Pieza | null {
   }
 }
 
+/** Una apócrifa concreta, elegida a mano. El tutorial la necesita: allí la
+ *  falsificación tiene que ser siempre la misma y tiene que ser la confusión
+ *  clásica, no una cualquiera del pool. */
+export function piezaApocrifaDe(c: Contenido, conceptId: string, impostorId: string): Pieza | null {
+  const k = c.conceptos[conceptId]
+  const impostor = c.conceptos[impostorId]
+  if (!k || !impostor) return null
+  return {
+    ...base(), clase: 'apocrifa', roles: ['nodo', 'etiqueta', 'definicion'],
+    titulo: k.titulo, cuerpo: impostor.definicionCorta, conceptId,
+    umbral: k.esUmbral, importancia: k.importancia, duenoReal: impostorId,
+    explicacion: `Esa descripción es de «${impostor.titulo}». ${k.titulo} es en realidad: ${k.definicionCorta}`
+  }
+}
+
 /** Una intuición reubicada NO se borra.
  *  El cambio conceptual no es reemplazo sino coexistencia: la idea previa queda
  *  intacta y lo que se gana es saber cuándo seleccionarla. Así que la carta
