@@ -955,38 +955,6 @@ label.campo > span { display: block; margin-bottom: 5px; }
 
 /* ================= v5.2 · panel de trazo, potencia y refugio ================= */
 
-.velo-suave { background: rgba(10,14,20,.55); }
-.constructor-panel {
-  background: var(--tinta-alta); border: 1px solid #6b5a1c; border-radius: var(--r);
-  padding: 20px 22px; width: min(760px, 94vw);
-  display: flex; flex-direction: column; gap: 12px;
-  box-shadow: 0 24px 60px rgba(0,0,0,.6);
-}
-
-.frase { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; }
-.frase-parte { display: flex; align-items: center; gap: 8px; flex: 1 1 210px; }
-.ranura-frase {
-  position: relative; flex: 1; min-height: 92px; border-radius: var(--r);
-  border: 1px dashed var(--tinta-borde); padding: 9px 11px;
-  display: flex; flex-direction: column; gap: 3px; justify-content: center;
-}
-.ranura-frase.llena {
-  background: var(--papel); color: #1b2430; border-style: solid; border-color: var(--papel-som);
-}
-.ranura-frase .tt { font-family: var(--mono); font-size: 8.5px; letter-spacing: .13em;
-  text-transform: uppercase; color: #6b7280; }
-.ranura-frase .nom { font-size: 14px; font-weight: 600; line-height: 1.2; }
-.ranura-frase .cuerpo { font-size: 11.5px; line-height: 1.35; color: #333b47; }
-.ranura-frase .hueco-frase { font-size: 12px; color: var(--niebla); text-align: center; }
-.ranura-frase .quitar {
-  position: absolute; top: 3px; right: 5px; background: transparent; border: none;
-  color: #6b7280; cursor: pointer; font-size: 12px;
-}
-.conector {
-  font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--laton);
-  text-transform: uppercase; white-space: nowrap; flex: 0 0 auto;
-}
-
 /* potencia sin números: cuerpo y filo */
 .potencia {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
@@ -1007,3 +975,55 @@ label.campo > span { display: block; margin-bottom: 5px; }
 }
 
 .con-apoyo { color: #b0a06a; font-style: italic; }
+
+/* ================= v5.3 · rastro que sigue al cursor ================= */
+
+/* Recordatorio flotante de lo que se está relacionando. No captura clics:
+   el tablero es justo donde hay que tocar mientras esto está abierto. */
+.rastro {
+  position: fixed; z-index: 120; width: 232px; pointer-events: none;
+  background: rgba(13, 19, 27, .82);
+  border: 1px solid rgba(201,162,39,.45); border-radius: var(--r);
+  padding: 8px 10px; backdrop-filter: blur(4px);
+  display: flex; flex-direction: column; gap: 5px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.45);
+  animation: entrar .14s ease-out;
+}
+.rastro .cabecera {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--laton);
+  display: flex; align-items: center; gap: 6px;
+}
+.rastro .cabecera .glifo { font-size: 15px; }
+.rastro .vacio { font-size: 11.5px; line-height: 1.4; color: var(--niebla); }
+.rastro .cadena { display: flex; flex-direction: column; gap: 2px; }
+.rastro .eslabon { display: flex; flex-direction: column; }
+.rastro .eslabon b {
+  font-size: 12.5px; font-weight: 600; color: var(--papel); line-height: 1.25;
+}
+.rastro .eslabon.pendiente b { color: #6b7684; }
+.rastro .conector-rastro {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--laton); font-style: normal;
+  padding: 1px 0 1px 8px; position: relative;
+}
+.rastro .conector-rastro::before {
+  content: ''; position: absolute; left: 2px; top: -1px; bottom: -1px;
+  width: 1px; background: rgba(201,162,39,.5);
+}
+.rastro .aviso-rastro {
+  font-family: var(--mono); font-size: 9.5px; color: var(--oxido); letter-spacing: .06em;
+}
+
+/* barra compacta dentro del lienzo: lo único que necesita clics */
+.barra-trazo {
+  position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 12;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  border: 1px solid #6b5a1c; border-radius: var(--r);
+  background: rgba(19, 26, 36, .93); backdrop-filter: blur(6px);
+  padding: 8px 12px; box-shadow: 0 -6px 24px rgba(0,0,0,.4);
+}
+.barra-trazo .glifo-barra { font-size: 20px; color: var(--laton); line-height: 1; }
+.apuesta.chica { padding: 4px 9px; font-size: 11.5px; }
+
+@media (prefers-reduced-motion: reduce) { .rastro { animation: none; } }

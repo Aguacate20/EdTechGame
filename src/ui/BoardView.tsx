@@ -49,6 +49,25 @@ const ETIQUETA: Record<Pieza['clase'], string> = {
 }
 
 
+/** Cómo se lee la afirmación que se está montando, según la herramienta. */
+function conectorDe(id: string, i: number, param: string | null): string {
+  switch (id) {
+    case 'flecha': return param ?? '· · ·'
+    case 'identidad': return 'es'
+    case 'jerarquia': return 'contiene a'
+    case 'secuencia': return 'lleva a'
+    case 'ancla': return i === 0 ? 'opera con' : 'y con'
+    case 'balanza': return 'se limita con'
+    case 'contraejemplo': return i === 0 ? 'NO opera' : 'ni'
+    case 'analogia': return i === 1 ? 'es a lo que' : 'es a'
+    case 'alcance': return 'vale bajo'
+    case 'descomposicion': return i === 0 ? 'se compone de' : 'y de'
+    case 'campo': return 'junto a'
+    case 'eje': return 'y'
+    default: return '·'
+  }
+}
+
 const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t)
 
 const ayudaDe = (p: Pieza) =>
@@ -68,10 +87,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
   const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
   const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
+  const [raton, setRaton] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
 
   // Un solo tooltip en posición fija para toda la pantalla. Antes se pintaba con
   // ::after dentro de cada elemento, y los contenedores con overflow lo cortaban.
   const seguirRaton = (ev: React.MouseEvent) => {
+    setRaton({ x: ev.clientX, y: ev.clientY })
     const destino = (ev.target as HTMLElement).closest('[data-ayuda]') as HTMLElement | null
     const texto = destino?.dataset.ayuda
     if (!texto) { if (ayuda) setAyuda(null); return }
@@ -144,6 +165,47 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
   return (
     <div className="batalla" onMouseMove={seguirRaton} onMouseLeave={() => setAyuda(null)}>
+      {h && !resuelto && (
+        <div
+          className="rastro"
+          style={{
+            left: Math.min(raton.x + 18, window.innerWidth - 250),
+            top: Math.min(raton.y + 18, window.innerHeight - 150)
+          }}
+          aria-hidden
+        >
+          <span className="cabecera">
+            <span className="glifo">{h.glifo}</span> {h.nombre}
+          </span>
+          {pendientes.length === 0 ? (
+            <span className="vacio">{h.ejemplo}</span>
+          ) : (
+            <div className="cadena">
+              {pendientes.map((uid, k) => {
+                const pieza = enTablero.find((x) => x.p.uid === uid)?.p
+                return (
+                  <span key={uid} className="eslabon">
+                    <b>{recorte(pieza?.titulo ?? '—', 26)}</b>
+                    {k < pendientes.length - 1 && (
+                      <i className="conector-rastro">{conectorDe(h.id, k, param)}</i>
+                    )}
+                  </span>
+                )
+              })}
+              {pendientes.length < h.aridad[1] && (
+                <span className="eslabon pendiente">
+                  <i className="conector-rastro">{conectorDe(h.id, pendientes.length - 1, param)}</i>
+                  <b>…</b>
+                </span>
+              )}
+            </div>
+          )}
+          {h.parametro === 'relacion' && !param && (
+            <span className="aviso-rastro">Elige el tipo de vínculo abajo</span>
+          )}
+        </div>
+      )}
+
       {ayuda && (
         <div
           className={`globo${ayuda.y > window.innerHeight / 2 ? ' arriba' : ' abajo'}`}
@@ -361,99 +423,51 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
 
         {/* --------------------- barra de construcción --------------------- */}
+        {/* Barra compacta dentro del lienzo: lo único que necesita clics.
+            El tablero sigue accesible, que es donde hay que tocar. */}
         {h && !resuelto && (
-          <div className="velo velo-suave" onClick={() => reset()}>
-            <div className="constructor-panel" onClick={(ev) => ev.stopPropagation()}>
-              <div className="fila" style={{ gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
-                <strong style={{ fontSize: 17 }}>{h.glifo} {h.nombre}</strong>
-                <span className="silencio" style={{ fontSize: 13 }}>{h.afirma}</span>
-              </div>
-              <p className="ejemplo-herr">{h.ejemplo}</p>
+          <div className="barra-trazo">
+            <span className="glifo-barra">{h.glifo}</span>
+            <div className="pila" style={{ gap: 3, flex: '1 1 auto', minWidth: 0 }}>
+              <strong style={{ fontSize: 13.5 }}>{h.nombre}</strong>
+              <span className="silencio" style={{ fontSize: 11.5 }}>
+                {pendientes.length === 0
+                  ? 'Toca en el tablero las piezas que quieras relacionar.'
+                  : `${pendientes.length}/${h.aridad[0] === h.aridad[1] ? h.aridad[0] : `${h.aridad[0]}–${h.aridad[1]}`}${h.ordenada ? ' · el orden importa' : ''}`}
+              </span>
+            </div>
 
-              {/* la afirmación tal como quedará leída */}
-              <div className="frase">
-                {Array.from({ length: Math.max(h.aridad[0], pendientes.length + (pendientes.length < h.aridad[1] ? 1 : 0)) }, (_, k) => {
-                  const uid = pendientes[k]
-                  const pieza = uid ? enTablero.find((x) => x.p.uid === uid)?.p : null
+            {h.parametro === 'relacion' && (
+              <div className="fila" style={{ gap: 4, flexWrap: 'wrap', maxWidth: 420 }}>
+                {[...new Set(e.relacionesDisponibles)].map((tipo) => {
+                  const favorecida = (lentes.multPorTipo[tipo] ?? 0) > 0
                   return (
-                    <div key={k} className="frase-parte">
-                      <div className={`ranura-frase${pieza ? ' llena' : ''}`}>
-                        {pieza ? (
-                          <>
-                            <span className="tt">{ETIQUETA[pieza.clase]}</span>
-                            <span className="nom">{recorte(pieza.titulo, 34)}</span>
-                            {pieza.cuerpo && <span className="cuerpo">{recorte(pieza.cuerpo, 110)}</span>}
-                            <button className="quitar" onClick={() =>
-                              setPendientes((x) => x.filter((y) => y !== uid))
-                            }>✕</button>
-                          </>
-                        ) : (
-                          <span className="hueco-frase">
-                            {k === 0 ? 'toca una pieza del tablero' : 'y otra más'}
-                          </span>
-                        )}
-                      </div>
-                      {k < Math.max(h.aridad[0], pendientes.length + 1) - 1 && (
-                        <span className="conector">
-                          {h.parametro === 'relacion'
-                            ? (param ?? '· · ·')
-                            : h.id === 'analogia' ? (k === 1 ? 'es a lo que' : 'es a')
-                            : h.id === 'alcance' ? 'vale bajo'
-                            : h.id === 'descomposicion' ? 'se compone de'
-                            : h.id === 'contraejemplo' ? 'no opera en'
-                            : h.id === 'identidad' ? 'es'
-                            : h.id === 'jerarquia' ? 'contiene a'
-                            : h.id === 'secuencia' ? 'lleva a'
-                            : h.id === 'ancla' ? 'opera en'
-                            : h.id === 'balanza' ? 'se limita con'
-                            : 'junto a'}
-                        </span>
-                      )}
-                    </div>
+                    <button
+                      key={tipo}
+                      className={`apuesta chica${param === tipo ? ' activa' : ''}${favorecida ? ' favorecida' : ''}`}
+                      onClick={() => setParam(tipo)}
+                      data-ayuda={`${tipo.toUpperCase()}\n${GLOSA[tipo] ?? ''}${favorecida ? '\n\nUna de tus lentes favorece este vínculo.' : ''}`}
+                    >{tipo}</button>
                   )
                 })}
               </div>
-
-              {h.parametro === 'relacion' && (
-                <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
-                  {[...new Set(e.relacionesDisponibles)].map((tipo) => {
-                    const favorecida = (lentes.multPorTipo[tipo] ?? 0) > 0
-                    return (
-                      <button
-                        key={tipo}
-                        className={`apuesta${param === tipo ? ' activa' : ''}${favorecida ? ' favorecida' : ''}`}
-                        onClick={() => setParam(tipo)}
-                        data-ayuda={`${tipo.toUpperCase()}\n${GLOSA[tipo] ?? ''}${favorecida ? '\n\nUna de tus lentes favorece este vínculo.' : ''}`}
-                      >{tipo}</button>
-                    )
-                  })}
-                </div>
-              )}
-              {h.parametro === 'eje' && (
-                <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
-                  {contenido.ejes.flatMap((eje) =>
-                    [...new Set(Object.values(eje.valores).map(String))].map((valor) => (
-                      <button key={`${eje.id}::${valor}`}
-                        className={`apuesta${param === `${eje.id}::${valor}` ? ' activa' : ''}`}
-                        onClick={() => setParam(`${eje.id}::${valor}`)}>
-                        {eje.nombre}: {valor}
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-
-              <div className="fila" style={{ justifyContent: 'space-between' }}>
-                <span className="dato silencio">
-                  {pendientes.length}/{h.aridad[0] === h.aridad[1] ? h.aridad[0] : `${h.aridad[0]}–${h.aridad[1]}`}
-                  {h.ordenada ? ' · el orden importa' : ''}
-                </span>
-                <div className="fila">
-                  <button className="btn fantasma" onClick={reset}>Cancelar</button>
-                  <button className="btn primario" disabled={!puedeCerrar} onClick={cerrarTrazo}>Trazar</button>
-                </div>
+            )}
+            {h.parametro === 'eje' && (
+              <div className="fila" style={{ gap: 4, flexWrap: 'wrap', maxWidth: 420 }}>
+                {contenido.ejes.flatMap((eje) =>
+                  [...new Set(Object.values(eje.valores).map(String))].map((valor) => (
+                    <button key={`${eje.id}::${valor}`}
+                      className={`apuesta chica${param === `${eje.id}::${valor}` ? ' activa' : ''}`}
+                      onClick={() => setParam(`${eje.id}::${valor}`)}>
+                      {eje.nombre.split(' ')[0]}: {valor}
+                    </button>
+                  ))
+                )}
               </div>
-            </div>
+            )}
+
+            <button className="btn primario" disabled={!puedeCerrar} onClick={cerrarTrazo}>Trazar</button>
+            <button className="btn fantasma" onClick={reset}>✕</button>
           </div>
         )}
 

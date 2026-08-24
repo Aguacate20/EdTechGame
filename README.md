@@ -339,10 +339,15 @@ entienda qué pasó.
 
 ### Trazar es leer una frase
 
-Al elegir una herramienta se abre un panel: a la izquierda el primer concepto, a la
-derecha el segundo, y en medio el conector escrito —*es*, *contiene a*, *vale bajo*,
-*no opera en*, *se compone de*, o el tipo de vínculo elegido. Se lee como una frase
-antes de trazarla, que era donde estaba la confusión.
+Al elegir una herramienta aparece un **rastro que sigue al cursor**: pequeño,
+translúcido y sin capturar clics, porque el tablero es justo donde hay que tocar. Va
+recogiendo lo que seleccionas y lo lee como una frase, con el conector escrito —*es*,
+*contiene a*, *vale bajo*, *no opera en*, *se compone de*, *es a lo que*, o el tipo de
+vínculo elegido. Crece con la aridad de la herramienta, así que una agrupación de cuatro
+conceptos se lee entera.
+
+Lo único que necesita clics —los tipos de vínculo, *Trazar* y cerrar— vive en una barra
+compacta al pie del lienzo.
 
 ### Cuerpo y filo
 
