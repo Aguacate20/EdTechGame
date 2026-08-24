@@ -8,14 +8,15 @@ import {
 import { combinarLentes, type SelloId } from './engine/powers'
 import type { HerramientaId } from './engine/tools'
 import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
-import { dominiosDeUnidad } from './engine/objectives'
 import { Rng, semillaLegible } from './engine/rng'
 import {
   cargarAtlas, coberturaAtlas, descargarLog, guardarAtlas, registrar, type Atlas
 } from './engine/atlas'
+import { contenidoTutorial } from './content/tutorial'
 import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
-import { AtlasView, CampfireView, EndView, MapView, RewardView } from './ui/Screens'
+import { AtlasView, EndView, MapView, RewardView } from './ui/Screens'
+import { RefugioView } from './ui/RefugioView'
 import { BattleMap } from './ui/BattleMap'
 import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
@@ -45,6 +46,7 @@ export default function App() {
   const [fusionados, setFusionados] = useState<string[]>([])
   const [intuiciones, setIntuiciones] = useState<string[]>([])
   const [manoExtra, setManoExtra] = useState(0)
+  const [aprendizaje, setAprendizaje] = useState(false)
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -79,8 +81,9 @@ export default function App() {
     setContenido(c); setAtlas(cargarAtlas(c.fuente)); setFase('inicio')
   }, [])
 
-  const empezarExpedicion = useCallback(() => {
+  const empezarExpedicion = useCallback((conApoyo: boolean) => {
     if (!contenido || !atlas) return
+    setAprendizaje(conApoyo)
     const semilla = semillaLegible()
     rngRef.current = new Rng(semilla)
     runIdRef.current = `${semilla}-${Date.now()}`
@@ -132,7 +135,9 @@ export default function App() {
       tesis: [...new Set([...nodo.tesis, ...tesis])],
       intuiciones, fusionados,
       terrenos: progreso.terrenos,
-      sellos: progreso.sellos as SelloId[]
+      sellos: progreso.sellos as SelloId[],
+      apoyo: aprendizaje,
+      sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id])
     }
     // el carril escala con las expediciones ya hechas: vuelves más fuerte, pero
     // también encuentras enemigos más duros
@@ -142,7 +147,7 @@ export default function App() {
       acto.manoSugerida + manoExtra
     ))
     setFase('batalla')
-  }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados, manoExtra])
+  }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados, manoExtra, aprendizaje, atlas])
 
   /* ------------------------------- acciones -------------------------------- */
 
@@ -194,8 +199,10 @@ export default function App() {
     let nueva = lucidez - r.danoRecibido
     if (r.diag.repertoriosReubicados.length) nueva += 6
     nueva = Math.min(LUCIDEZ_MAX, nueva)
-    setLucidez(Math.max(0, nueva))
-    if (nueva <= 0 && e.fase !== 'ganado') e.fase = 'perdido'
+    // con andamio la expedición no se pierde: se pierde tiempo, no el intento
+    const suelo = aprendizaje ? 1 : 0
+    setLucidez(Math.max(suelo, nueva))
+    if (nueva <= 0 && !aprendizaje && e.fase !== 'ganado') e.fase = 'perdido'
 
     setFusionados(e.fusionados)
     if (r.intuicionesNuevas.length) {
@@ -216,13 +223,14 @@ export default function App() {
       const ok = v.estado === 'sostenido' || v.estado === 'equivalente'
       for (const cid of v.conceptIds) {
         const prev = a.conceptos[cid] ??
-          { aciertos: 0, fallos: 0, mecanicas: [], vecinos: [], ultimaApuestaAcertada: null }
+          { aciertos: 0, fallos: 0, mecanicas: [], vecinos: [], conApoyo: 0, ultimaApuestaAcertada: null }
         const otros = v.conceptIds.filter((x) => x !== cid)
         a.conceptos[cid] = {
           aciertos: prev.aciertos + (ok ? 1 : 0),
           fallos: prev.fallos + (ok ? 0 : 1),
           mecanicas: ok ? [...new Set([...prev.mecanicas, v.trazo.tool])] : prev.mecanicas,
           vecinos: ok ? [...new Set([...(prev.vecinos ?? []), ...otros])] : (prev.vecinos ?? []),
+          conApoyo: (prev.conApoyo ?? 0) + (ok && e.apoyo ? 1 : 0),
           ultimaApuestaAcertada: prev.ultimaApuestaAcertada
         }
       }
@@ -310,6 +318,11 @@ export default function App() {
         <HomeView
           atlas={atlas} contenido={contenido}
           onExpedicion={empezarExpedicion}
+          onTutorial={() => {
+            const t = contenidoTutorial()
+            setContenido(t); setAtlas(cargarAtlas(t.fuente))
+            setTimeout(() => setFase('inicio'), 0)
+          }}
           onCambiarTexto={() => { setContenido(null); setFase('cargar') }}
         />
       </div>
@@ -324,7 +337,9 @@ export default function App() {
     <div className="app">
       <header className="barra">
         <span className="marca">El Archivo Infinito</span>
-        <span className="eyebrow">expedición {progreso.expediciones}</span>
+        <span className="eyebrow">
+          expedición {progreso.expediciones}{aprendizaje ? ' · aprendizaje' : ''}
+        </span>
         <span className="sep" />
         {fase !== 'batalla' && <Medidor valor={lucidez} max={LUCIDEZ_MAX} etiqueta="Lucidez" />}
         <span className="dato silencio">Atlas {cob.pct}%</span>
@@ -372,24 +387,20 @@ export default function App() {
       )}
 
       {fase === 'refugio' && (
-        <CampfireView
-          cartera={{
-            lentes: progreso.lentes, sellos: progreso.sellos as SelloId[],
-            herramientas: progreso.herramientas as HerramientaId[], relaciones: progreso.relaciones
-          }}
-          fusionados={fusionados} contenido={contenido}
-          dominios={dominiosDeUnidad(contenido, acto.columnas.flat().flatMap((n) => n.conceptIds))}
-          onReflexionar={(d) => registrar({
-            ts: Date.now(), runId: runIdRef.current, nodoId: `acto${actoIdx}`,
-            arquetipo: 'reflexion', condicion: null, mecanica: 'work_reflection',
-            itemId: `dominio:${d}`, conceptIds: [], operacion: 'reflexionar',
-            improvisado: false, seleccion: [d], correcto: true, apuesta: '—',
-            calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
-          })}
+        <RefugioView
+          atlas={atlas} contenido={contenido} semilla={nodoRef.current?.id ?? 'r'}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX}
-          onDescansar={() => { setLucidez((l) => Math.min(LUCIDEZ_MAX, l + 26)); avanzar() }}
-          onSoltarLente={(id) => {
-            guardarProgreso((p) => ({ lentes: p.lentes.filter((y) => y !== id) }))
+          onSeguir={(gana, acierto) => {
+            setLucidez((l) => Math.min(LUCIDEZ_MAX, l + gana))
+            if (acierto !== null) {
+              registrar({
+                ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+                arquetipo: 'refugio', condicion: null, mecanica: 'autoevaluacion',
+                itemId: 'autoconocimiento', conceptIds: [], operacion: 'reflexionar',
+                improvisado: false, seleccion: [], correcto: acierto, apuesta: '—',
+                calibrado: acierto, latenciaMs: 0, ayuda: false, repertorioTocado: null
+              })
+            }
             avanzar()
           }}
         />

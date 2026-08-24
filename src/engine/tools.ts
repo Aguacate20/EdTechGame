@@ -11,6 +11,8 @@ import { juzgarVinculo } from './graph'
 export type HerramientaId =
   | 'flecha' | 'campo' | 'jerarquia' | 'eje' | 'identidad'
   | 'ancla' | 'balanza' | 'secuencia'
+  // las cuatro que faltaban: falsar, analogizar, acotar y descomponer
+  | 'contraejemplo' | 'analogia' | 'alcance' | 'descomposicion'
 
 export type Dimension =
   | 'recuperacion' | 'discriminacion' | 'relacion' | 'estructura'
@@ -89,6 +91,35 @@ export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
     aridad: [2, 3], rolesExigidos: ['tesis', 'criterio'], parametro: null,
     dimension: 'produccion', ordenada: true,
     ejemplo: "⚖ «Los cuervos usan herramientas» + «Un cuervo criado aislado no las usaría»."
+  }
+  ,
+  contraejemplo: {
+    id: 'contraejemplo', nombre: 'Contraejemplo', glifo: '⊘',
+    afirma: 'Que este concepto NO opera en este caso, aunque lo parezca.',
+    aridad: [2, 3], rolesExigidos: ['caso', 'nodo'], parametro: null,
+    dimension: 'discriminacion', ordenada: true,
+    ejemplo: '⊘ «Un pingüino no vuela» + «Aerodinámica del vuelo batido». Se le parece, pero ahí no aplica.'
+  },
+  analogia: {
+    id: 'analogia', nombre: 'Analogía', glifo: '≈',
+    afirma: 'Que A es a B lo que C es a D, en dos zonas distintas del texto.',
+    aridad: [4, 4], rolesExigidos: ['nodo'], parametro: null,
+    dimension: 'transferencia', ordenada: true,
+    ejemplo: '≈ «Corazón» es a «Sangre» lo que «Raíz» es a «Savia». Misma estructura, otro reino.'
+  },
+  alcance: {
+    id: 'alcance', nombre: 'Alcance', glifo: '⊣',
+    afirma: 'Que lo primero solo vale bajo la condición que pone lo segundo.',
+    aridad: [2, 2], rolesExigidos: ['nodo', 'nodo'], parametro: null,
+    dimension: 'discriminacion', ordenada: true,
+    ejemplo: '⊣ «Los osos hibernan» vale bajo «Climas con invierno marcado». Fuera de ahí, no.'
+  },
+  descomposicion: {
+    id: 'descomposicion', nombre: 'Descomposición', glifo: '⊟',
+    afirma: 'Que lo primero se compone de las partes que siguen.',
+    aridad: [2, 4], rolesExigidos: ['nodo'], parametro: null,
+    dimension: 'estructura', ordenada: true,
+    ejemplo: '⊟ «Colmena» ⊟ ( «Obreras» · «Zánganos» · «Reina» ). El todo y sus partes.'
   }
 }
 
@@ -565,6 +596,173 @@ function validarBalanza(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificado
   return { ...v, nota: 'Ese criterio pertenece a otra tesis.' }
 }
 
+/* --------------------- las cuatro herramientas nuevas --------------------- */
+
+/** Falsar: decir dónde algo NO opera. Solo cuenta si el concepto era candidato
+ *  plausible —vecino de lo que sí opera en el caso—; negar algo que nadie
+ *  habría afirmado no demuestra nada. */
+function validarContraejemplo(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
+  const v = vacio(t, 'discriminacion')
+  const reserva = reservaDe(ps)
+  const caso = ps.find((p) => p.clase === 'caso')
+  const resto = ps.filter((p) => p !== caso && p.conceptId)
+  if (!caso) return { ...v, reserva, nota: 'El contraejemplo necesita un caso.' }
+  if (!resto.length) return { ...v, reserva, nota: 'Señala qué concepto NO opera ahí.' }
+
+  const dentro = new Set(caso.conceptIds)
+  const vecinosDelCaso = new Set(
+    c.aristas
+      .filter((a) => dentro.has(a.from) || dentro.has(a.to))
+      .flatMap((a) => [a.from, a.to])
+  )
+
+  const errados = resto.filter((p) => dentro.has(p.conceptId!))
+  if (errados.length) {
+    return {
+      ...v, reserva, estado: 'invertido', mult: -1,
+      nota: `«${errados[0].titulo}» sí opera en ese caso: ${caso.cierre}`,
+      conceptIds: errados.map((p) => p.conceptId!)
+    }
+  }
+  const finos = resto.filter((p) => vecinosDelCaso.has(p.conceptId!))
+  if (finos.length === resto.length) {
+    return {
+      ...v, reserva, estado: 'sostenido',
+      fichas: 14 * resto.length + lentes.fichasPorSostenido,
+      mult: 1.5 + 0.3 * resto.length,
+      nota: `Buena distinción: se le parece, pero el texto no lo pone a operar ahí. ${caso.cierre}`,
+      conceptIds: resto.map((p) => p.conceptId!)
+    }
+  }
+  return {
+    ...v, reserva, estado: 'plausible', fichas: 4,
+    nota: 'Cierto, pero demasiado fácil: ese concepto ni siquiera rondaba el caso.',
+    conceptIds: resto.map((p) => p.conceptId!)
+  }
+}
+
+/** Analogizar: A es a B lo que C es a D. La jugada más difícil del juego y la
+ *  única que mide transferencia estructural en vez de aplicación reconocida.
+ *  Solo vale si los dos pares están unidos por el MISMO tipo de vínculo y viven
+ *  en zonas distintas del texto. */
+function validarAnalogia(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
+  const v = vacio(t, 'transferencia')
+  const reserva = reservaDe(ps)
+  const ids = ps.map((p) => p.conceptId).filter((x): x is string => !!x)
+  if (ids.length < 4) return { ...v, reserva, nota: 'La analogía necesita cuatro conceptos: A, B, C y D.' }
+  const [a, b, cc, d] = ids
+
+  const tipos1 = c.aristas.filter((x) => x.from === a && x.to === b).map((x) => x.tipo)
+  const tipos2 = c.aristas.filter((x) => x.from === cc && x.to === d).map((x) => x.tipo)
+  const comun = tipos1.find((x) => tipos2.includes(x))
+
+  if (!comun) {
+    const hayAlgo = tipos1.length && tipos2.length
+    return {
+      ...v, reserva, estado: hayAlgo ? 'aproximado' : 'silencio',
+      fichas: hayAlgo ? 6 : 0,
+      nota: hayAlgo
+        ? `Los dos pares existen, pero no con el mismo vínculo: «${tipos1[0]}» frente a «${tipos2[0]}». La analogía exige la misma forma.`
+        : 'Al menos uno de los dos pares no está en el texto.',
+      conceptIds: ids
+    }
+  }
+  const zona = (id: string) => c.conceptos[id]?.clusterId ?? '—'
+  const lejos = zona(a) !== zona(cc) || zona(b) !== zona(d)
+  return {
+    ...v, reserva, estado: 'sostenido',
+    fichas: 26 + lentes.fichasPorSostenido,
+    mult: lejos ? 3 : 1.4,
+    nota: lejos
+      ? `Misma estructura en dos zonas distintas del texto: ambos pares se unen por «${comun}». Eso es transferencia de verdad.`
+      : `Los dos pares se unen por «${comun}», pero son de la misma zona: la analogía es correcta y algo fácil.`,
+    conceptIds: ids
+  }
+}
+
+/** Acotar: bajo qué condición vale algo. Es la discriminabilidad de la que
+ *  depende poder seleccionar entre repertorios, y usa las aristas `matiza`
+ *  y el campo `tensiones`, que estaba sin usar. */
+function validarAlcance(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
+  const v = vacio(t, 'discriminacion')
+  const reserva = reservaDe(ps)
+  const [a, b] = ps
+  if (!a?.conceptId || !b?.conceptId) return { ...v, reserva, nota: 'El alcance necesita dos conceptos.' }
+
+  const matiza = c.aristas.find(
+    (x) => x.tipo === 'matiza' &&
+      ((x.from === b.conceptId && x.to === a.conceptId) || (x.from === a.conceptId && x.to === b.conceptId))
+  )
+  if (matiza) {
+    return {
+      ...v, reserva, estado: 'sostenido', fichas: 16 + lentes.fichasPorSostenido, mult: 1.8,
+      nota: `${matiza.descripcion} Saber dónde deja de valer algo es tan importante como saber qué es.`,
+      conceptIds: [a.conceptId, b.conceptId],
+      aristas: [{ from: b.conceptId, to: a.conceptId, tipo: 'matiza' }]
+    }
+  }
+  const tension = (c.conceptos[a.conceptId]?.tensiones ?? []).some(
+    (x) => x.toLowerCase().includes((c.conceptos[b.conceptId!]?.titulo ?? '').toLowerCase())
+  )
+  if (tension) {
+    return {
+      ...v, reserva, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.5,
+      nota: 'El texto reconoce esa tensión: ahí está el límite de lo que afirma.',
+      conceptIds: [a.conceptId, b.conceptId]
+    }
+  }
+  const requiere = c.aristas.find(
+    (x) => x.tipo === 'requiere' && x.from === a.conceptId && x.to === b.conceptId
+  )
+  if (requiere) {
+    return {
+      ...v, reserva, estado: 'aproximado', fichas: 7,
+      nota: `Va por ahí: el texto lo dice como prerrequisito, no como límite. ${requiere.descripcion}`,
+      conceptIds: [a.conceptId, b.conceptId]
+    }
+  }
+  return { ...v, reserva, nota: 'El texto no pone esa condición sobre ese concepto.' }
+}
+
+/** Descomponer: el todo y sus partes. No es lo mismo que jerarquizar: una
+ *  categoría contiene ejemplares, un todo contiene componentes. */
+function validarDescomposicion(_c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
+  const v = vacio(t, 'estructura')
+  const reserva = reservaDe(ps)
+  const todo = ps[0]
+  const partes = ps.slice(1)
+  if (!todo?.conceptId || !partes.length) {
+    return { ...v, reserva, nota: 'Pon primero el todo y después sus partes.' }
+  }
+  const buenas = partes.filter((p) => p.clase === 'subdimension' && p.conceptId === todo.conceptId)
+  const ajenas = partes.filter((p) => p.clase === 'subdimension' && p.conceptId !== todo.conceptId)
+
+  if (buenas.length === partes.length) {
+    return {
+      ...v, reserva, estado: 'sostenido',
+      fichas: 11 * buenas.length + lentes.fichasPorSostenido,
+      mult: 1.2 + 0.35 * buenas.length,
+      nota: `El texto desglosa «${todo.titulo}» exactamente en esas partes.`,
+      conceptIds: [todo.conceptId]
+    }
+  }
+  if (ajenas.length) {
+    return {
+      ...v, reserva, estado: 'invertido', mult: -1,
+      nota: `«${ajenas[0].titulo}» es parte de otro concepto, no de «${todo.titulo}».`,
+      conceptIds: [todo.conceptId]
+    }
+  }
+  if (buenas.length) {
+    return {
+      ...v, reserva, estado: 'aproximado', fichas: 6 * buenas.length,
+      nota: 'Parte del desglose se sostiene; el resto no son componentes de eso.',
+      conceptIds: [todo.conceptId]
+    }
+  }
+  return { ...v, reserva, nota: 'Las partes se toman de las subdimensiones que el texto declara.' }
+}
+
 const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l: ModificadoresLente) => Veredicto> = {
   flecha: validarFlecha,
   identidad: validarIdentidad,
@@ -574,6 +772,10 @@ const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l
   secuencia: validarSecuencia,
   ancla: validarAncla,
   balanza: validarBalanza,
+  contraejemplo: validarContraejemplo,
+  analogia: validarAnalogia,
+  alcance: validarAlcance,
+  descomposicion: validarDescomposicion,
 }
 
 /* ==========================================================================

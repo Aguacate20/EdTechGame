@@ -63,6 +63,8 @@ export interface ResultadoTurno {
 export interface PiezaEnTablero { uid: string; x: number; y: number }
 
 export interface EstadoBatalla {
+  /** modo aprendizaje activo en esta sala */
+  apoyo: boolean
   dificultad: Dificultad
   acto: number
   conceptIdsCasilla: string[]
@@ -162,6 +164,10 @@ export interface Bolsa {
   sellos: SelloId[]
   /** terrenos ya conquistados: entran al mazo como comodines de campo */
   terrenos: string[]
+  /** modo aprendizaje: el andamio no se retira solo, se declara */
+  apoyo: boolean
+  /** conceptos que el estudiante aún no ha tocado: con apoyo llegan enteros */
+  sinTocar: string[]
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -172,7 +178,10 @@ export function montarMazo(
   const piezas: Pieza[] = []
 
   for (const id of conceptIds) {
-    if (bolsa.fusionados.includes(id)) {
+    // con andamio, lo que nunca has visto llega entero: primero se aprende qué
+    // es, y solo después se pone a prueba si lo reconoces por su descripción
+    const enteroPorApoyo = bolsa.apoyo && bolsa.sinTocar.includes(id)
+    if (bolsa.fusionados.includes(id) || enteroPorApoyo) {
       // ya lo aprendiste: entra como concepto completo, vale más y ocupa un hueco
       const p = piezaConcepto(c, id)
       if (p) piezas.push(p)
@@ -201,7 +210,7 @@ export function montarMazo(
 
   // subdimensiones de los conceptos más ricos: atributos para el eje
   const conSub = conceptIds.filter((id) => (c.conceptos[id]?.subdimensiones.length ?? 0) > 0)
-  for (const id of rng.sample(conSub, 2)) piezas.push(...piezasSubdimension(c, id).slice(0, 1))
+  for (const id of rng.sample(conSub, 2)) piezas.push(...piezasSubdimension(c, id).slice(0, 3))
 
   return rng.shuffle(piezas)
 }
@@ -212,6 +221,7 @@ export function iniciarBatalla(
 ): EstadoBatalla {
   const m = ctx.lentes
   const e: EstadoBatalla = {
+    apoyo: bolsa.apoyo,
     dificultad, acto, conceptIdsCasilla: conceptIds,
     enemigos: generarOleada(dificultad, acto, ctx.rng),
     mazo: montarMazo(ctx.contenido, conceptIds, bolsa, dificultad, ctx.rng),
@@ -232,9 +242,10 @@ export function iniciarBatalla(
   }
   robar(e, e.manoBase)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
-  if (m.revelaApocrifas > 0) {
+  const aRevelar = m.revelaApocrifas + (bolsa.apoyo && acto <= 1 ? 9 : 0)
+  if (aRevelar > 0) {
     e.reveladas = e.mano.filter((p) => p.clase === 'apocrifa')
-      .slice(0, m.revelaApocrifas).map((p) => p.uid)
+      .slice(0, aRevelar).map((p) => p.uid)
   }
   return e
 }

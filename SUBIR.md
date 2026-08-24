@@ -1,7 +1,7 @@
-# Subir v5.1 al repositorio
+# Subir v5.2 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.1/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.2/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.1/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.2/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -20,27 +20,25 @@ rm -rf src scripts docs public
 # 3. copiar
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 38
+# 4. comprobar: debe decir 40
 find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.1: el Atlas como inicio, progreso persistente y armas por herramienta
+git commit -m "v5.2: cuatro herramientas nuevas, modo aprendizaje, tutorial y refugio con autoevaluacion
 
-- fuera la planeacion previa: sin pantalla de plan, sin encargo y sin antesala.
-  Esas ayudas volveran en un modo Aprendizaje aparte
-- el Atlas pasa a ser la pantalla de inicio y el modelo cognitivo visible:
-  dominado / sostenido / reconocido / se te resiste / sin tocar, con la evidencia
-  real detras, y de ahi sale la propuesta de la siguiente expedicion
-- lentes, sellos, herramientas, vinculos y terrenos se conservan entre expediciones;
-  el carril escala con las expediciones ya hechas
-- se empieza con apoya y contrasta: cada enemigo derribado revela un vinculo nuevo
-- cada herramienta y cada tipo de vinculo dispara con forma propia (perdigon, rayo,
-  onda, lluvia, gancho, tenaza, barrido, maza, sello); combinar herramientas
-  transforma el arma y tres o mas disparan una Constelacion
-- el numero del dano crece con el golpe y estalla en dorado por encima de 250
-- fuera las etiquetas tecnicas de senal cognitiva en la interfaz del estudiante
-- el aviso del pozo se puede cerrar con una X"
+- Contraejemplo, Analogia, Alcance y Descomposicion: falsar, analogizar, acotar y
+  descomponer, que eran los movimientos que faltaban. Cada una con arma propia
+- modo Aprendizaje: conceptos sin tocar llegan enteros, falsificaciones senaladas
+  al principio, la expedicion no se pierde. La evidencia con andamio cuenta pero
+  queda marcada, y el nivel dominado exige al menos un acierto sin apoyo
+- tutorial con diez conceptos de animales, construido con la forma real del
+  extractor para que pase por el mismo adaptador y el mismo motor
+- el refugio pasa a ser una comprobacion de autoconocimiento: que se te resiste,
+  que ya sostienes, que vinculo trazaste. Acertar sobre uno mismo paga lucidez
+- al elegir herramienta se abre un panel que lee la afirmacion como frase:
+  concepto A, conector escrito, concepto B
+- la potencia se muestra como cuerpo y filo en barras, sin anticipar el numero"
 
 git push origin main
 ```

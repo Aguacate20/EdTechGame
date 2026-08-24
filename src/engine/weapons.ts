@@ -47,7 +47,11 @@ const ARMA_POR_HERRAMIENTA: Partial<Record<HerramientaId, Arma>> = {
   eje:       { forma: 'barrido', nombre: 'Eje',            color: '#6fa8b8', duracion: 860, proyectiles: 1 },
   secuencia: { forma: 'gancho',  nombre: 'Secuencia',      color: '#e0b64a', duracion: 1020, proyectiles: 1 },
   ancla:     { forma: 'rayo',    nombre: 'Ancla',          color: '#7a6fb0', duracion: 840, proyectiles: 1 },
-  balanza:   { forma: 'sello',   nombre: 'Refutación',     color: '#c9a227', duracion: 1100, proyectiles: 1 }
+  balanza:   { forma: 'sello',   nombre: 'Refutación',     color: '#c9a227', duracion: 1100, proyectiles: 1 },
+  contraejemplo: { forma: 'sello',   nombre: 'Contraejemplo', color: '#c0705f', duracion: 1000, proyectiles: 1 },
+  analogia:      { forma: 'tenaza',  nombre: 'Analogía',      color: '#e8dcae', duracion: 1150, proyectiles: 2 },
+  alcance:       { forma: 'barrido', nombre: 'Alcance',       color: '#b0a06a', duracion: 880, proyectiles: 1 },
+  descomposicion:{ forma: 'lluvia',  nombre: 'Descomposición', color: '#9aa17d', duracion: 980, proyectiles: 4 }
 }
 
 export interface Disparo {

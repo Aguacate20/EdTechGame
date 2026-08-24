@@ -11,6 +11,9 @@ export interface EvidenciaConcepto {
    *  así que acertar siempre con el mismo vecino no es lo mismo que acertar
    *  en varias zonas del grafo */
   vecinos: string[]
+  /** cuántos de esos aciertos fueron con el andamio del modo aprendizaje.
+   *  La evidencia con apoyo cuenta, pero no es la misma evidencia. */
+  conApoyo: number
   ultimaApuestaAcertada: string | null
 }
 
@@ -86,7 +89,10 @@ export function nivelDe(e: EvidenciaConcepto | undefined): number {
   const contextos = new Set(e.vecinos ?? []).size
   // el nivel máximo exige haberlo sostenido desde herramientas distintas Y en
   // vecindades distintas: una respuesta aislada es la punta del iceberg
-  if (e.aciertos >= 5 && distintas >= 3 && contextos >= 3) return 3
+  const sinApoyo = e.aciertos - (e.conApoyo ?? 0)
+  // el nivel máximo exige al menos un acierto sin andamio: si no, el modelo
+  // cognitivo estaría diciendo «lo domina» de algo que solo sostiene con ayuda
+  if (e.aciertos >= 5 && distintas >= 3 && contextos >= 3 && sinApoyo >= 1) return 3
   if (e.aciertos >= 3 && distintas >= 2 && contextos >= 2) return 2
   if (e.aciertos >= 1) return 1
   return 0
@@ -116,6 +122,11 @@ export function estadoDe(e: EvidenciaConcepto | undefined): EstadoConcepto {
   if (e.fallos >= 2 && e.fallos > e.aciertos) return 'cuesta'
   return n === 3 ? 'dominado' : n === 2 ? 'sostenido' : 'reconocido'
 }
+
+/** ¿Todo lo que sostiene de esto lo sostuvo con andamio? Es información honesta
+ *  y además motivadora: «lo sostienes, pero siempre con ayuda». */
+export const soloConApoyo = (e: EvidenciaConcepto | undefined): boolean =>
+  !!e && e.aciertos > 0 && (e.conApoyo ?? 0) >= e.aciertos
 
 export const ETIQUETA_ESTADO: Record<EstadoConcepto, string> = {
   dominado: 'lo dominas',

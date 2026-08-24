@@ -37,7 +37,7 @@ Pulsas *Afirmar el diagrama* y todo se evalúa contra el grafo del texto:
 El daño **nunca** se conoce antes de resolver, y el alcance depende de cuántas
 afirmaciones sostengas: la complejidad de lo que dices es su alcance en el carril.
 
-### Las ocho herramientas cognitivas
+### Las doce herramientas cognitivas
 
 | | Herramienta | Afirma | Señal |
 |---|---|---|---|
@@ -50,7 +50,19 @@ afirmaciones sostengas: la complejidad de lo que dices es su alcance en el carri
 | `⌖` | Ancla | que estos conceptos son los que operan en este caso | transferencia |
 | `⚖` | Balanza | que esto es lo que obligaría a revisar la tesis | producción |
 
-La discriminación se mide en el pozo: **quemar** afirma que la carta es falsa.
+| `⊘` | Contraejemplo | que este concepto NO opera en este caso, aunque lo parezca |
+| `≈` | Analogía | que A es a B lo que C es a D, en zonas distintas del texto |
+| `⊣` | Alcance | que lo primero solo vale bajo la condición que pone lo segundo |
+| `⊟` | Descomposición | que lo primero se compone de las partes que siguen |
+
+Las cuatro últimas cubren lo que faltaba: **falsar**, **analogizar**, **acotar** y
+**descomponer**. El Contraejemplo solo puntúa si el concepto era candidato plausible
+—vecino de lo que sí opera en el caso—: negar algo que nadie habría afirmado no
+demuestra nada. La Analogía es la jugada más difícil y la única que mide transferencia
+estructural, y triplica si los dos pares viven en zonas distintas del texto. El Alcance
+usa las aristas `matiza` y el campo `tensiones`, que estaban sin usar.
+
+La discriminación se mide también en el pozo: **quemar** afirma que la carta es falsa.
 
 Las herramientas son **el mazo del jugador**: se acumulan, se gastan por turno y son
 lo que define tu estilo. El contenido lo reparte el currículo.
@@ -242,7 +254,37 @@ seguir produciéndolos.
 - Reserva de una pieza entre turnos (señal de planeación).
 - Familia H (colaborar) requiere un segundo estudiante.
 - `docs/PEGLIN.md` describe la Mesa de Tiradas, que sigue sin implementar y que ahora
-  encaja mejor: las clavijas serían las piezas del tablero.### El Atlas es la pantalla de inicio
+  encaja mejor: las clavijas serían las piezas del tablero.### El modo Aprendizaje
+
+Se activa al salir de expedición, y no es un modo fácil: es **otra vía al mismo sitio**.
+
+- Los conceptos que nunca has tocado llegan **enteros** (nombre y descripción juntos)
+  en vez de partidos: primero se aprende qué es algo, después se pone a prueba.
+- Las falsificaciones llegan **señaladas** en los dos primeros actos.
+- La expedición **no se pierde**: la lucidez no baja de 1. Pierdes tiempo, no el intento.
+
+Y la decisión importante: **la evidencia con andamio cuenta, pero queda marcada**. El
+Atlas guarda cuántos aciertos fueron con apoyo, y el nivel «lo dominas» exige **al menos
+uno sin andamio**. El estudiante ve «lo sostienes, pero siempre con ayuda», que es
+información honesta y además motivadora.
+
+### El tutorial
+
+Siempre disponible desde el inicio. Un bundle sintético de diez conceptos —abejas,
+flores, murciélagos, ecolocalización— construido con **la misma forma que emite el
+extractor**, así que pasa por el mismo adaptador y el mismo motor: no hay un camino de
+código especial que pueda quedar sin probar. Lo que se aprende es la mecánica, no el
+tema.
+
+### El alto en el camino
+
+El refugio dejó de ser un botón de curar. Ahora hace **una pregunta sobre ti**: cuál de
+estos conceptos se te está resistiendo más, cuál ya tienes firme, o qué vínculo trazaste
+antes entre dos conceptos. El juego compara tu respuesta con lo que el Atlas sabe de
+verdad y te lo enseña. Acertar sobre uno mismo paga más lucidez; fallar también informa,
+porque te enseña que te estabas leyendo mal.
+
+### El Atlas es la pantalla de inicio
 
 No hay menú ni pantalla de planeación. Se entra al Atlas, que es **el modelo cognitivo
 del estudiante hecho visible**: cuánto lleva cubierto, qué conceptos domina, cuáles
@@ -294,5 +336,20 @@ depende de con qué pensaste.
 disparan una *Constelación*. Y el número del daño crece con el golpe: por encima de
 250 estalla en dorado. Las animaciones van entre 600 y 1200 ms a propósito, para que se
 entienda qué pasó.
+
+### Trazar es leer una frase
+
+Al elegir una herramienta se abre un panel: a la izquierda el primer concepto, a la
+derecha el segundo, y en medio el conector escrito —*es*, *contiene a*, *vale bajo*,
+*no opera en*, *se compone de*, o el tipo de vínculo elegido. Se lee como una frase
+antes de trazarla, que era donde estaba la confusión.
+
+### Cuerpo y filo
+
+El marcador nunca anticipa el número, pero sí de dónde sale la fuerza: dos barras,
+**cuerpo** (cuánto material verdadero sostienes) y **filo** (cuánto lo amplifican los
+vínculos escasos, los conceptos umbral, los combos y las lentes). Al resolver, la cuenta
+lleva esas mismas dos etiquetas, así que la relación entre lo que hiciste y lo que salió
+se entiende sin ver fórmulas.
 
 ### El mapa de cierre

@@ -362,53 +362,97 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
         {/* --------------------- barra de construcción --------------------- */}
         {h && !resuelto && (
-          <div className="constructor compacto">
-            <div className="fila" style={{ gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
-              <strong>{h.glifo} {h.nombre}</strong>
-              <span className="silencio" style={{ fontSize: 12.5 }}>{h.afirma}</span>
-              <span className="dato silencio">
-                {pendientes.length}/{h.aridad[0] === h.aridad[1] ? h.aridad[0] : `${h.aridad[0]}–${h.aridad[1]}`}
-                {h.ordenada ? ' en orden' : ''}
-              </span>
-            </div>
-            <p className="ejemplo-herr">{h.ejemplo}</p>
-            {h.parametro === 'relacion' && (
-              <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
-                {[...new Set(e.relacionesDisponibles)].map((tipo) => {
-                  // el número nunca se muestra: solo se insinúa que una pasiva lo mejora
-                  const favorecida = (lentes.multPorTipo[tipo] ?? 0) > 0
+          <div className="velo velo-suave" onClick={() => reset()}>
+            <div className="constructor-panel" onClick={(ev) => ev.stopPropagation()}>
+              <div className="fila" style={{ gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
+                <strong style={{ fontSize: 17 }}>{h.glifo} {h.nombre}</strong>
+                <span className="silencio" style={{ fontSize: 13 }}>{h.afirma}</span>
+              </div>
+              <p className="ejemplo-herr">{h.ejemplo}</p>
+
+              {/* la afirmación tal como quedará leída */}
+              <div className="frase">
+                {Array.from({ length: Math.max(h.aridad[0], pendientes.length + (pendientes.length < h.aridad[1] ? 1 : 0)) }, (_, k) => {
+                  const uid = pendientes[k]
+                  const pieza = uid ? enTablero.find((x) => x.p.uid === uid)?.p : null
                   return (
-                    <button
-                      key={tipo}
-                      className={`apuesta${param === tipo ? ' activa' : ''}${favorecida ? ' favorecida' : ''}`}
-                      onClick={() => setParam(tipo)}
-                      data-ayuda={`${tipo.toUpperCase()}\n${GLOSA[tipo] ?? ''}${favorecida ? '\n\nUna de tus lentes favorece este vínculo.' : ''}`}
-                    >{tipo}</button>
+                    <div key={k} className="frase-parte">
+                      <div className={`ranura-frase${pieza ? ' llena' : ''}`}>
+                        {pieza ? (
+                          <>
+                            <span className="tt">{ETIQUETA[pieza.clase]}</span>
+                            <span className="nom">{recorte(pieza.titulo, 34)}</span>
+                            {pieza.cuerpo && <span className="cuerpo">{recorte(pieza.cuerpo, 110)}</span>}
+                            <button className="quitar" onClick={() =>
+                              setPendientes((x) => x.filter((y) => y !== uid))
+                            }>✕</button>
+                          </>
+                        ) : (
+                          <span className="hueco-frase">
+                            {k === 0 ? 'toca una pieza del tablero' : 'y otra más'}
+                          </span>
+                        )}
+                      </div>
+                      {k < Math.max(h.aridad[0], pendientes.length + 1) - 1 && (
+                        <span className="conector">
+                          {h.parametro === 'relacion'
+                            ? (param ?? '· · ·')
+                            : h.id === 'analogia' ? (k === 1 ? 'es a lo que' : 'es a')
+                            : h.id === 'alcance' ? 'vale bajo'
+                            : h.id === 'descomposicion' ? 'se compone de'
+                            : h.id === 'contraejemplo' ? 'no opera en'
+                            : h.id === 'identidad' ? 'es'
+                            : h.id === 'jerarquia' ? 'contiene a'
+                            : h.id === 'secuencia' ? 'lleva a'
+                            : h.id === 'ancla' ? 'opera en'
+                            : h.id === 'balanza' ? 'se limita con'
+                            : 'junto a'}
+                        </span>
+                      )}
+                    </div>
                   )
                 })}
               </div>
-            )}
-            {h.parametro === 'eje' && (
-              <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
-                {contenido.ejes.flatMap((eje) =>
-                  [...new Set(Object.values(eje.valores).map(String))].map((valor) => (
-                    <button key={`${eje.id}::${valor}`}
-                      className={`apuesta${param === `${eje.id}::${valor}` ? ' activa' : ''}`}
-                      onClick={() => setParam(`${eje.id}::${valor}`)}>
-                      {eje.nombre}: {valor}
-                    </button>
-                  ))
-                )}
-                {contenido.ejes.length === 0 && (
-                  <span className="silencio" style={{ fontSize: 12.5 }}>
-                    Este texto no trae ejes legibles.
-                  </span>
-                )}
+
+              {h.parametro === 'relacion' && (
+                <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
+                  {[...new Set(e.relacionesDisponibles)].map((tipo) => {
+                    const favorecida = (lentes.multPorTipo[tipo] ?? 0) > 0
+                    return (
+                      <button
+                        key={tipo}
+                        className={`apuesta${param === tipo ? ' activa' : ''}${favorecida ? ' favorecida' : ''}`}
+                        onClick={() => setParam(tipo)}
+                        data-ayuda={`${tipo.toUpperCase()}\n${GLOSA[tipo] ?? ''}${favorecida ? '\n\nUna de tus lentes favorece este vínculo.' : ''}`}
+                      >{tipo}</button>
+                    )
+                  })}
+                </div>
+              )}
+              {h.parametro === 'eje' && (
+                <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
+                  {contenido.ejes.flatMap((eje) =>
+                    [...new Set(Object.values(eje.valores).map(String))].map((valor) => (
+                      <button key={`${eje.id}::${valor}`}
+                        className={`apuesta${param === `${eje.id}::${valor}` ? ' activa' : ''}`}
+                        onClick={() => setParam(`${eje.id}::${valor}`)}>
+                        {eje.nombre}: {valor}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+
+              <div className="fila" style={{ justifyContent: 'space-between' }}>
+                <span className="dato silencio">
+                  {pendientes.length}/{h.aridad[0] === h.aridad[1] ? h.aridad[0] : `${h.aridad[0]}–${h.aridad[1]}`}
+                  {h.ordenada ? ' · el orden importa' : ''}
+                </span>
+                <div className="fila">
+                  <button className="btn fantasma" onClick={reset}>Cancelar</button>
+                  <button className="btn primario" disabled={!puedeCerrar} onClick={cerrarTrazo}>Trazar</button>
+                </div>
               </div>
-            )}
-            <div className="fila">
-              <button className="btn primario" disabled={!puedeCerrar} onClick={cerrarTrazo}>Trazar</button>
-              <button className="btn fantasma" onClick={reset}>Cancelar</button>
             </div>
           </div>
         )}
@@ -434,8 +478,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         {resuelto && e.ultima && (
           <div className="resolucion compacta">
             <div className="cuenta" onClick={casc.saltar} title="Toca para saltar la cuenta">
+              <span className="etiqueta-cuenta">cuerpo</span>
               <span className="fichas" key={`f${casc.fichas}`}>{casc.fichas}</span>
               <span className="por">×</span>
+              <span className="etiqueta-cuenta">filo</span>
               <span className="mult" key={`m${casc.mult.toFixed(1)}`}>{casc.mult.toFixed(1)}</span>
               {casc.total !== null && (<><span className="por">=</span><span className="total">{casc.total}</span></>)}
             </div>

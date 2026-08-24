@@ -1,6 +1,6 @@
 import type { Contenido } from '../content/types'
 import {
-  coberturaAtlas, estadoDe, ETIQUETA_ESTADO, nivelDe, retratoDe, type Atlas
+  coberturaAtlas, estadoDe, ETIQUETA_ESTADO, nivelDe, retratoDe, soloConApoyo, type Atlas
 } from '../engine/atlas'
 import { unidadesSelladas } from '../engine/objectives'
 import { lentePorId, selloPorId } from '../engine/powers'
@@ -24,10 +24,11 @@ const COLOR_ESTADO: Record<string, string> = {
   sin_tocar: '#4a5262'
 }
 
-export function HomeView({ atlas, contenido, onExpedicion, onCambiarTexto }: {
+export function HomeView({ atlas, contenido, onExpedicion, onTutorial, onCambiarTexto }: {
   atlas: Atlas
   contenido: Contenido
-  onExpedicion: () => void
+  onExpedicion: (conApoyo: boolean) => void
+  onTutorial: () => void
   onCambiarTexto: () => void
 }) {
   const ids = contenido.ordenConceptos
@@ -89,7 +90,15 @@ export function HomeView({ atlas, contenido, onExpedicion, onCambiarTexto }: {
             </p>
           )}
         </div>
-        <button className="btn primario grande" onClick={onExpedicion}>Salir de expedición</button>
+        <div className="fila" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn primario grande" onClick={() => onExpedicion(false)}>
+            Salir de expedición
+          </button>
+          <button
+            className="btn grande" onClick={() => onExpedicion(true)}
+            data-ayuda={'MODO APRENDIZAJE\nLos conceptos que no has tocado llegan enteros, las falsificaciones vienen señaladas al principio, cada sala se abre con la idea que engloba a las demás y la expedición no se pierde por quedarte sin lucidez.\n\nLa evidencia cuenta, pero queda marcada como obtenida con apoyo: para «lo dominas» hace falta al menos una vez sin andamio.'}
+          >Con andamio</button>
+        </div>
       </div>
 
       {/* ------------------------- lo que has ganado ------------------------ */}
@@ -185,6 +194,7 @@ export function HomeView({ atlas, contenido, onExpedicion, onCambiarTexto }: {
                 </div>
                 <p className="silencio" style={{ fontSize: 12.5, margin: '3px 0 0' }}>
                   {ETIQUETA_ESTADO[est]}
+                  {soloConApoyo(ev) && <span className="con-apoyo"> · siempre con ayuda</span>}
                 </p>
                 <div className="barrita"><span style={{ width: `${(nivelDe(ev) / 3) * 100}%` }} /></div>
               </div>
@@ -226,6 +236,7 @@ export function HomeView({ atlas, contenido, onExpedicion, onCambiarTexto }: {
           className="btn" disabled={selladas.length < contenido.unidades.length}
           onClick={() => descargarEdicion(atlas, contenido)}
         >Descargar la edición crítica</button>
+        <button className="btn fantasma" onClick={onTutorial}>Tutorial</button>
         <button className="btn fantasma" onClick={onCambiarTexto}>Cambiar de texto</button>
       </div>
     </div>

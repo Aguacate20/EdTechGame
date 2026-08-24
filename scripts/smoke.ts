@@ -159,6 +159,43 @@ function jugarInformado(e: EstadoBatalla, c: Contenido, rng: Rng, aprox = false)
       }
     }
   }
+  // 10. contraejemplo: un caso y un vecino que NO opera en él
+  if (libres().includes('contraejemplo')) {
+    const caso2 = e.mano.find((x) => x.clase === 'caso')
+    if (caso2) {
+      const vecinos = new Set(c.aristas
+        .filter((a) => caso2.conceptIds.includes(a.from) || caso2.conceptIds.includes(a.to))
+        .flatMap((a) => [a.from, a.to]))
+      const fuera = nodos.find((p) => p.conceptId && vecinos.has(p.conceptId) && !caso2.conceptIds.includes(p.conceptId))
+      if (fuera) {
+        poner(caso2); poner(fuera)
+        if (trazar(e, 'contraejemplo', [caso2.uid, fuera.uid], null)) trazados++
+      }
+    }
+  }
+  // 11. analogía: dos pares con el mismo tipo de vínculo
+  if (libres().includes('analogia')) {
+    for (const a1 of c.aristas) {
+      const a2 = c.aristas.find((x) => x.tipo === a1.tipo && x.from !== a1.from && x.to !== a1.to)
+      if (!a2) continue
+      const ps = [a1.from, a1.to, a2.from, a2.to].map((id) => nodos.find((p) => p.conceptId === id))
+      if (ps.every(Boolean)) {
+        ps.forEach((p) => poner(p!))
+        if (trazar(e, 'analogia', ps.map((p) => p!.uid), null)) trazados++
+        break
+      }
+    }
+  }
+  // 12. descomposición: un concepto y sus subdimensiones
+  if (libres().includes('descomposicion')) {
+    const sub = e.mano.find((x) => x.clase === 'subdimension')
+    const todo = sub ? nodos.find((p) => p.conceptId === sub.conceptId && p.clase !== 'subdimension') : null
+    if (sub && todo) {
+      const hermanas = e.mano.filter((x) => x.clase === 'subdimension' && x.conceptId === sub.conceptId)
+      hermanas.forEach(poner); poner(todo)
+      if (trazar(e, 'descomposicion', [todo.uid, ...hermanas.map((x) => x.uid)], null)) trazados++
+    }
+  }
   // si no salió nada, gestionar la mano
   if (trazados === 0 && e.cambiosRestantes > 0 && e.mano.length) cambiar(e, e.mano[0].uid)
   return trazados
@@ -190,7 +227,8 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
     combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0, descubiertos: 2
   }
   const herramientas: HerramientaId[] = [
-    ...BASE, 'jerarquia', 'ancla', 'eje', 'secuencia', 'balanza'
+    ...BASE, 'jerarquia', 'ancla', 'eje', 'secuencia', 'balanza',
+    'contraejemplo', 'analogia', 'alcance', 'descomposicion'
   ]
 
   for (const acto of ruta.actos) {
@@ -206,7 +244,7 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
       else if (nodo.tipo !== 'taller') {
         rep.oleadas += 1
         const bolsa: Bolsa = {
-          sellos: [], terrenos: [],
+          sellos: [], terrenos: [], apoyo: false, sinTocar: [],
           herramientas,
           // el bot impreciso lleva todas las relaciones: así puede equivocarse
           // de etiqueta de verdad en vez de quedarse sin carta
@@ -320,7 +358,7 @@ console.log(` escalera (azar):      ${pinta(escA)}`)
 console.log('\n— criterios de aceptación —')
 const ok1 = inf.filter((r) => r.gano).length >= semillas.length - 1
 const ok2 = res.azar.filter((r) => r.gano).length === 0
-const ok3 = usadas.size >= 7
+const ok3 = usadas.size >= 9
 const tpo = inf.reduce((n, r) => n + r.turnos, 0) / Math.max(1, inf.reduce((n, r) => n + r.oleadas, 0))
 const ok4 = tpo >= 2 && tpo <= 9
 const ok5 = combos.size >= 2
@@ -341,7 +379,7 @@ const ok10 = descMedia > 2 && descMedia <= Object.keys(contenido.frecuenciaRelac
 const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
 console.log(` ${ok1 ? 'PASA' : 'FALLA'}  quien lee despeja el carril`)
 console.log(` ${ok2 ? 'PASA' : 'FALLA'}  trazar al azar nunca gana`)
-console.log(` ${ok3 ? 'PASA' : 'FALLA'}  al menos 7 de las 9 herramientas son instanciables (${usadas.size})`)
+console.log(` ${ok3 ? 'PASA' : 'FALLA'}  al menos 9 de las 12 herramientas son instanciables (${usadas.size})`)
 console.log(` ${ok4 ? 'PASA' : 'FALLA'}  una oleada dura entre 2 y 9 turnos (${tpo.toFixed(1)})`)
 console.log(` ${ok5 ? 'PASA' : 'FALLA'}  los combos aparecen de verdad (${combos.size})`)
 console.log(` ${ok6 ? 'PASA' : 'FALLA'}  la escalera no premia al azar (${(100 * aciertaAzar / totalAzar).toFixed(0)}% de aciertos al azar)`)
