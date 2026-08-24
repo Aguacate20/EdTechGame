@@ -1,7 +1,7 @@
-# Subir v5.3 al repositorio
+# Subir v5.4 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.3/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.4/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.3/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.4/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,14 +25,13 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.3: el panel de trazo deja de bloquear el tablero
+git commit -m "v5.4: el rastro sustituye a la ayuda flotante y previsualiza al pasar
 
-- el modal a pantalla completa se sustituye por un rastro pequeno y translucido
-  que sigue al cursor, con pointer-events none: el tablero sigue accesible
-- el rastro lee la afirmacion como frase y crece con la aridad de la herramienta,
-  asi que una agrupacion de varios conceptos se lee entera
-- lo unico que necesita clics (tipos de vinculo, Trazar, cerrar) baja a una barra
-  compacta al pie del lienzo"
+- con una herramienta activa, pasar el raton por una pieza del tablero ya no abre
+  un globo aparte: su descripcion completa entra tenue en la ranura siguiente del
+  rastro, con aviso de clic para fijar
+- al pulsar queda fijada y la previsualizacion salta a la ranura siguiente
+- las ranuras van marcadas A, B, C y muestran titulo mas descripcion recortada"
 
 git push origin main
 ```

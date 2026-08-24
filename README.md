@@ -340,11 +340,16 @@ entienda qué pasó.
 ### Trazar es leer una frase
 
 Al elegir una herramienta aparece un **rastro que sigue al cursor**: pequeño,
-translúcido y sin capturar clics, porque el tablero es justo donde hay que tocar. Va
-recogiendo lo que seleccionas y lo lee como una frase, con el conector escrito —*es*,
-*contiene a*, *vale bajo*, *no opera en*, *se compone de*, *es a lo que*, o el tipo de
-vínculo elegido. Crece con la aridad de la herramienta, así que una agrupación de cuatro
-conceptos se lee entera.
+translúcido y sin capturar clics, porque el tablero es justo donde hay que tocar.
+
+Mientras está abierto **sustituye a la ayuda flotante**, en vez de competir con ella.
+Al pasar por encima de una pieza del tablero, su descripción completa entra tenue en la
+ranura siguiente —A, B, C…— con un «clic para fijar»; al pulsar, se queda. Así se ve la
+frase montándose antes de comprometerse, y nunca hay dos cuadros de texto a la vez.
+
+El conector va escrito —*es*, *contiene a*, *vale bajo*, *no opera en*, *se compone de*,
+*es a lo que*, o el tipo de vínculo elegido— y la cadena crece con la aridad de la
+herramienta, así que una agrupación de cuatro conceptos se lee entera.
 
 Lo único que necesita clics —los tipos de vínculo, *Trazar* y cerrar— vive en una barra
 compacta al pie del lienzo.

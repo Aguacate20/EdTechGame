@@ -88,12 +88,20 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
   const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
   const [raton, setRaton] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  /** pieza del tablero bajo el cursor: se previsualiza en la ranura siguiente */
+  const [previsualizada, setPrevisualizada] = useState<string | null>(null)
 
   // Un solo tooltip en posición fija para toda la pantalla. Antes se pintaba con
   // ::after dentro de cada elemento, y los contenedores con overflow lo cortaban.
   const seguirRaton = (ev: React.MouseEvent) => {
     setRaton({ x: ev.clientX, y: ev.clientY })
     const destino = (ev.target as HTMLElement).closest('[data-ayuda]') as HTMLElement | null
+    // con una herramienta en la mano, la descripción se lee en el rastro y no
+    // en un globo aparte: dos cuadros a la vez confunden más de lo que ayudan
+    if (herramienta && destino?.classList.contains('en-tablero')) {
+      if (ayuda) setAyuda(null)
+      return
+    }
     const texto = destino?.dataset.ayuda
     if (!texto) { if (ayuda) setAyuda(null); return }
     const ancho = 330
@@ -126,7 +134,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const puedeCerrar = !!h && pendientes.length >= h.aridad[0] && (!h.parametro || !!param)
   const piezaSel = enMano.find((p) => p.uid === seleccion) ?? null
 
-  const reset = () => { setHerramienta(null); setParam(null); setPendientes([]) }
+  const reset = () => {
+    setHerramienta(null); setParam(null); setPendientes([]); setPrevisualizada(null)
+  }
 
   const posicionEnLienzo = (ev: { clientX: number; clientY: number }) => {
     const r = lienzo.current?.getBoundingClientRect()
@@ -177,29 +187,44 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           <span className="cabecera">
             <span className="glifo">{h.glifo}</span> {h.nombre}
           </span>
-          {pendientes.length === 0 ? (
-            <span className="vacio">{h.ejemplo}</span>
-          ) : (
-            <div className="cadena">
-              {pendientes.map((uid, k) => {
-                const pieza = enTablero.find((x) => x.p.uid === uid)?.p
-                return (
-                  <span key={uid} className="eslabon">
-                    <b>{recorte(pieza?.titulo ?? '—', 26)}</b>
-                    {k < pendientes.length - 1 && (
-                      <i className="conector-rastro">{conectorDe(h.id, k, param)}</i>
-                    )}
-                  </span>
-                )
-              })}
-              {pendientes.length < h.aridad[1] && (
-                <span className="eslabon pendiente">
-                  <i className="conector-rastro">{conectorDe(h.id, pendientes.length - 1, param)}</i>
-                  <b>…</b>
-                </span>
-              )}
-            </div>
-          )}
+          {(() => {
+            // ranuras: las fijadas, la que está bajo el cursor y el hueco siguiente
+            const enPrevia = previsualizada && !pendientes.includes(previsualizada)
+              ? previsualizada
+              : null
+            const cadena: { uid: string | null; previa: boolean }[] = [
+              ...pendientes.map((uid) => ({ uid, previa: false })),
+              ...(enPrevia && pendientes.length < h.aridad[1] ? [{ uid: enPrevia, previa: true }] : [])
+            ]
+            const faltan = Math.max(0, h.aridad[0] - cadena.length)
+            const huecos = Array.from({ length: Math.min(faltan, 2) }, () => ({ uid: null, previa: false }))
+            const todas = [...cadena, ...huecos]
+
+            if (todas.length === 0) {
+              return <span className="vacio">{h.ejemplo}</span>
+            }
+            return (
+              <div className="cadena">
+                {todas.map((slot, k) => {
+                  const pieza = slot.uid ? enTablero.find((x) => x.p.uid === slot.uid)?.p : null
+                  return (
+                    <span key={k} className={`eslabon${slot.previa ? ' previa' : ''}${!slot.uid ? ' pendiente' : ''}`}>
+                      {k > 0 && <i className="conector-rastro">{conectorDe(h.id, k - 1, param)}</i>}
+                      <span className="marca-ranura">{String.fromCharCode(65 + k)}</span>
+                      {pieza ? (
+                        <>
+                          <b>{recorte(pieza.titulo, 30)}</b>
+                          {pieza.cuerpo && <em>{recorte(pieza.cuerpo, 120)}</em>}
+                        </>
+                      ) : (
+                        <b>…</b>
+                      )}
+                    </span>
+                  )
+                })}
+              </div>
+            )
+          })()}
           {h.parametro === 'relacion' && !param && (
             <span className="aviso-rastro">Elige el tipo de vínculo abajo</span>
           )}
@@ -409,6 +434,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => tocarPieza(p.uid)}
                 onDoubleClick={() => pedirDevolver(p.uid)}
+                onMouseEnter={() => herramienta && setPrevisualizada(p.uid)}
+                onMouseLeave={() => setPrevisualizada((x) => (x === p.uid ? null : x))}
                 data-ayuda={ayudaDe(p)}
               >
                 {marcada && <span className="orden">{orden + 1}</span>}

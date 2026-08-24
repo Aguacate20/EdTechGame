@@ -981,7 +981,7 @@ label.campo > span { display: block; margin-bottom: 5px; }
 /* Recordatorio flotante de lo que se está relacionando. No captura clics:
    el tablero es justo donde hay que tocar mientras esto está abierto. */
 .rastro {
-  position: fixed; z-index: 120; width: 232px; pointer-events: none;
+  position: fixed; z-index: 120; width: 258px; pointer-events: none;
   background: rgba(13, 19, 27, .82);
   border: 1px solid rgba(201,162,39,.45); border-radius: var(--r);
   padding: 8px 10px; backdrop-filter: blur(4px);
@@ -996,19 +996,36 @@ label.campo > span { display: block; margin-bottom: 5px; }
 }
 .rastro .cabecera .glifo { font-size: 15px; }
 .rastro .vacio { font-size: 11.5px; line-height: 1.4; color: var(--niebla); }
-.rastro .cadena { display: flex; flex-direction: column; gap: 2px; }
-.rastro .eslabon { display: flex; flex-direction: column; }
+.rastro .cadena { display: flex; flex-direction: column; gap: 3px; }
+.rastro .eslabon {
+  display: flex; flex-direction: column; position: relative; padding-left: 15px;
+}
 .rastro .eslabon b {
   font-size: 12.5px; font-weight: 600; color: var(--papel); line-height: 1.25;
 }
+.rastro .eslabon em {
+  font-style: normal; font-size: 10.5px; line-height: 1.35; color: #98a3b0;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
 .rastro .eslabon.pendiente b { color: #6b7684; }
+/* la que está bajo el cursor entra tenue: aún no está fijada */
+.rastro .eslabon.previa { opacity: .62; }
+.rastro .eslabon.previa b { font-style: italic; }
+.rastro .eslabon.previa::after {
+  content: 'clic para fijar'; font-family: var(--mono); font-size: 8.5px;
+  letter-spacing: .1em; color: var(--laton); margin-top: 1px;
+}
+.rastro .marca-ranura {
+  position: absolute; left: 0; top: 1px;
+  font-family: var(--mono); font-size: 9.5px; color: var(--laton); opacity: .8;
+}
 .rastro .conector-rastro {
   font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--laton); font-style: normal;
-  padding: 1px 0 1px 8px; position: relative;
+  margin: 1px 0 2px -15px; padding-left: 15px; position: relative;
 }
 .rastro .conector-rastro::before {
-  content: ''; position: absolute; left: 2px; top: -1px; bottom: -1px;
+  content: ''; position: absolute; left: 4px; top: -3px; height: 4px;
   width: 1px; background: rgba(201,162,39,.5);
 }
 .rastro .aviso-rastro {
