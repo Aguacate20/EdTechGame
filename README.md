@@ -94,7 +94,8 @@ verdad. Por eso un vínculo no se juzga como acierto o error, sino en una escale
 | **Equivalente** | forma dual o simétrica (`generaliza`↔`ejemplifica`, `contrasta`) | completo |
 | **Derivado** | no lo dice, pero **se sigue** de dos vínculos que sí están | 70% y se marca como inferencia |
 | **Aproximado** | el vínculo existe; tu tipo es de la misma familia | 50% |
-| **Plausible** | vecino común o misma zona del texto, sin camino | 18%, sin castigo |
+| **Convive** | el texto los trata juntos en el mismo caso, escenario, tesis o marco | 55% |
+| **Plausible** | vecino común, misma zona o misma página | 18%, sin castigo |
 | **Mudo** | nada | cero, sin castigo |
 | **Invertido** | el texto dice lo contrario, con un tipo que sí tiene dirección | castigo |
 
@@ -108,6 +109,20 @@ invertirse, porque ahí la dirección **es** la afirmación.
 *A → C* y el texto tiene *A → B → C*, el juego responde «no lo dice directamente, pero
 se sigue», te da crédito y lo registra como inferencia. El Atlas, en cambio, solo recoge
 lo que el texto afirma literalmente.
+
+### Convivencia: cuando el texto los junta sin enunciar el vínculo
+
+Un grafo nunca recoge todo lo que un autor pone en la misma escena. Si dos conceptos
+aparecen juntos en **el mismo caso, el mismo escenario, la misma tesis o el mismo marco
+teórico**, eso es evidencia real de que el texto los relaciona, aunque no enuncie qué
+vínculo tienen. Antes eso caía en «plausible» y valía casi nada; ahora es su propio
+peldaño y rinde el 55 %.
+
+Compartir página **no** basta: en un texto denso casi todo comparte página. Eso se queda
+en plausible, con un mensaje que lo dice: *«el autor los expone en la misma página pero
+no llega a enlazarlos; puede ser tuya la conexión»*.
+
+Y las derivaciones llegan ahora hasta **tres pasos**, no dos.
 
 ### Las apócrifas ya no derrumban el diagrama
 
@@ -296,12 +311,26 @@ De ahí sale la propuesta de la siguiente expedición: si hay conceptos que se l
 resisten, eso es lo que se le pone delante; si no, terreno nuevo; si ya está todo
 tocado, consolidar.
 
-### Lo que se conserva entre expediciones
+### Lo que se conserva y lo que no
 
-El progreso vive en el Atlas, no en la partida: **lentes, sellos, herramientas,
-vínculos descubiertos y terrenos ganados se quedan**. Cada expedición se empieza más
-fuerte — y el carril escala con las que llevas a la espalda, así que la dificultad
-sube contigo.
+La línea es clara: **lo que se aprende se queda, lo que se equipa no**.
+
+| Persiste siempre | Se arma de nuevo cada expedición |
+|---|---|
+| evidencia del Atlas, vínculos trazados | lentes |
+| tipos de vínculo descubiertos | sellos |
+| intuiciones reubicadas (Terrenos) | herramientas extra, tamaño de mano |
+
+Así cada expedición vuelve a ser una partida de verdad, y el conocimiento sigue siendo
+acumulativo. El carril escala con las expediciones que llevas.
+
+### Retomar a medias
+
+El tiempo es la razón de abandono más citada en cursos en línea, así que **se puede
+salir y volver**. Al abandonar una expedición se guarda el estado del mapa y el equipo;
+al volver al Atlas aparece un aviso de *expedición a medias* con el acto, la lucidez y
+cuándo la dejaste. Se guarda el mapa, no el tablero a medio trazar: si te vas en mitad
+de una sala, vuelves al inicio de esa sala.
 
 ### Los vínculos se descubren derribando enemigos
 

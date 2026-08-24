@@ -6,7 +6,8 @@ import {
   type EstadoBatalla
 } from '../engine/battle'
 import {
-  evaluarDiagrama, HERRAMIENTAS, listaHerramientas, type HerramientaId, type ModificadoresLente
+  aceptaEnRanura, evaluarDiagrama, HERRAMIENTAS, listaHerramientas, pistaDeRanura,
+  type HerramientaId, type ModificadoresLente
 } from '../engine/tools'
 import { tipoPorId } from '../engine/lane'
 import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
@@ -50,9 +51,20 @@ const ETIQUETA: Record<Pieza['clase'], string> = {
 
 
 /** Cómo se lee la afirmación que se está montando, según la herramienta. */
+const VERBO_RELACION: Record<string, string> = {
+  apoya: 'respalda o da evidencia a',
+  causa: 'produce',
+  requiere: 'necesita antes',
+  contrasta: 'se opone o se distingue de',
+  generaliza: 'abstrae a',
+  ejemplifica: 'es un caso concreto de',
+  extiende: 'amplía el alcance de',
+  matiza: 'precisa o limita a'
+}
+
 function conectorDe(id: string, i: number, param: string | null): string {
   switch (id) {
-    case 'flecha': return param ?? '· · ·'
+    case 'flecha': return param ? (VERBO_RELACION[param] ?? param) : 'elige el vínculo abajo'
     case 'identidad': return 'es'
     case 'jerarquia': return 'contiene a'
     case 'secuencia': return 'lleva a'
@@ -90,6 +102,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [raton, setRaton] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   /** pieza del tablero bajo el cursor: se previsualiza en la ranura siguiente */
   const [previsualizada, setPrevisualizada] = useState<string | null>(null)
+  /** el rastro solo estorba fuera del tablero: allí no hay nada que señalar */
+  const [sobreTablero, setSobreTablero] = useState(false)
 
   // Un solo tooltip en posición fija para toda la pantalla. Antes se pintaba con
   // ::after dentro de cada elemento, y los contenedores con overflow lo cortaban.
@@ -151,8 +165,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     despertarAudio()
     if (resuelto) return
     if (h) {
+      if (pendientes.includes(uid)) { setPendientes((x) => x.filter((y) => y !== uid)); return }
+      const pieza = enTablero.find((x) => x.p.uid === uid)?.p
+      // no se deja gastar la herramienta en una pieza que la ranura no admite
+      if (!pieza || !aceptaEnRanura(h.id, pendientes.length, pieza)) return
       sfx.tomar()
-      setPendientes((x) => (x.includes(uid) ? x.filter((y) => y !== uid) : [...x, uid]))
+      setPendientes((x) => [...x, uid])
       return
     }
     setSeleccion(seleccion === uid ? null : uid)
@@ -175,7 +193,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
   return (
     <div className="batalla" onMouseMove={seguirRaton} onMouseLeave={() => setAyuda(null)}>
-      {h && !resuelto && (
+      {h && !resuelto && sobreTablero && (
         <div
           className="rastro"
           style={{
@@ -187,6 +205,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           <span className="cabecera">
             <span className="glifo">{h.glifo}</span> {h.nombre}
           </span>
+          {h.parametro === 'relacion' && param && (
+            <span className="glosa-rastro">{GLOSA[param]}</span>
+          )}
           {(() => {
             // ranuras: las fijadas, la que está bajo el cursor y el hueco siguiente
             const enPrevia = previsualizada && !pendientes.includes(previsualizada)
@@ -209,15 +230,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   const pieza = slot.uid ? enTablero.find((x) => x.p.uid === slot.uid)?.p : null
                   return (
                     <span key={k} className={`eslabon${slot.previa ? ' previa' : ''}${!slot.uid ? ' pendiente' : ''}`}>
-                      {k > 0 && <i className="conector-rastro">{conectorDe(h.id, k - 1, param)}</i>}
+                      {k > 0 && (
+                        <i className="conector-rastro">{conectorDe(h.id, k - 1, param)}</i>
+                      )}
                       <span className="marca-ranura">{String.fromCharCode(65 + k)}</span>
                       {pieza ? (
                         <>
-                          <b>{recorte(pieza.titulo, 30)}</b>
-                          {pieza.cuerpo && <em>{recorte(pieza.cuerpo, 120)}</em>}
+                          <b>{pieza.titulo}</b>
+                          {pieza.cuerpo && <em>{pieza.cuerpo}</em>}
                         </>
                       ) : (
-                        <b>…</b>
+                        <b className="hueco-rastro">{pistaDeRanura(h.id, k)}</b>
                       )}
                     </span>
                   )
@@ -310,6 +333,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       <main className="zona-lienzo">
         <div
           className="lienzo" ref={lienzo}
+          onMouseEnter={() => setSobreTablero(true)}
+          onMouseLeave={() => { setSobreTablero(false); setPrevisualizada(null) }}
           onDragOver={(ev) => ev.preventDefault()}
           onDrop={(ev) => {
             ev.preventDefault()
@@ -421,20 +446,23 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             const marcada = pendientes.includes(p.uid)
             const orden = pendientes.indexOf(p.uid)
             const enFoco = trazoAbierto && trazosVisibles.find((x) => x.uid === trazoAbierto)?.piezas.includes(p.uid)
+            const inservible = !!h && !pendientes.includes(p.uid) &&
+              !aceptaEnRanura(h.id, pendientes.length, p)
             const cd = cedulaDe(contenido, p)
             return (
               <div
                 key={p.uid}
                 className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
-                  `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}`}
+                  `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}` +
+                  `${inservible ? ' inservible' : ''}`}
                 style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd) }}
                 draggable={!resuelto}
                 onDragStart={() => setArrastrando(p.uid)}
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => tocarPieza(p.uid)}
                 onDoubleClick={() => pedirDevolver(p.uid)}
-                onMouseEnter={() => herramienta && setPrevisualizada(p.uid)}
+                onMouseEnter={() => herramienta && !inservible && setPrevisualizada(p.uid)}
                 onMouseLeave={() => setPrevisualizada((x) => (x === p.uid ? null : x))}
                 data-ayuda={ayudaDe(p)}
               >

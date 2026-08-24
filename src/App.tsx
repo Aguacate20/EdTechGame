@@ -10,8 +10,11 @@ import type { HerramientaId } from './engine/tools'
 import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
 import { Rng, semillaLegible } from './engine/rng'
 import {
-  cargarAtlas, coberturaAtlas, descargarLog, guardarAtlas, registrar, type Atlas
+  cargarAtlas, coberturaAtlas, descargarLog, EQUIPO_INICIAL, guardarAtlas, registrar, type Atlas
 } from './engine/atlas'
+import {
+  borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
+} from './engine/savegame'
 import { contenidoTutorial } from './content/tutorial'
 import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
@@ -47,6 +50,13 @@ export default function App() {
   const [intuiciones, setIntuiciones] = useState<string[]>([])
   const [manoExtra, setManoExtra] = useState(0)
   const [aprendizaje, setAprendizaje] = useState(false)
+  const [lentes, setLentes] = useState<string[]>([])
+  const [sellos, setSellos] = useState<SelloId[]>([])
+  const [herramientas, setHerramientas] = useState<HerramientaId[]>(
+    EQUIPO_INICIAL.herramientas as HerramientaId[]
+  )
+  const [semilla, setSemilla] = useState('')
+  const [guardada, setGuardada] = useState<ExpedicionGuardada | null>(null)
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -59,41 +69,41 @@ export default function App() {
   const nodoRef = useRef<Nodo | null>(null)
 
   const progreso = atlas?.progreso
-  const mods = useMemo(() => combinarLentes(progreso?.lentes ?? []), [progreso?.lentes])
+  const mods = useMemo(() => combinarLentes(lentes), [lentes])
   const ctx: ContextoBatalla | null = useMemo(
     () => (contenido ? { contenido, rng: rngRef.current, lentes: mods } : null),
     [contenido, mods]
   )
 
   /** Todo lo ganado se guarda en el Atlas: las expediciones no empiezan de cero. */
-  const guardarProgreso = useCallback((f: (p: NonNullable<typeof progreso>) => Partial<NonNullable<typeof progreso>>) => {
-    setAtlas((prev) => {
-      if (!prev) return prev
-      const a = { ...prev, progreso: { ...prev.progreso, ...f(prev.progreso) } }
-      guardarAtlas(a)
-      return a
-    })
-  }, [])
+
 
   /* ------------------------------- arranque ------------------------------- */
 
   const alCargar = useCallback((c: Contenido) => {
-    setContenido(c); setAtlas(cargarAtlas(c.fuente)); setFase('inicio')
+    setContenido(c); setAtlas(cargarAtlas(c.fuente))
+    setGuardada(leerExpedicion(c.fuente))
+    setFase('inicio')
   }, [])
 
   const empezarExpedicion = useCallback((conApoyo: boolean) => {
     if (!contenido || !atlas) return
     setAprendizaje(conApoyo)
-    const semilla = semillaLegible()
-    rngRef.current = new Rng(semilla)
-    runIdRef.current = `${semilla}-${Date.now()}`
+    const sem = semillaLegible()
+    setSemilla(sem)
+    rngRef.current = new Rng(sem)
+    runIdRef.current = `${sem}-${Date.now()}`
     let r: Ruta
-    try { r = generarRuta(contenido, semilla) } catch (err) { alert((err as Error).message); return }
+    try { r = generarRuta(contenido, sem) } catch (err) { alert((err as Error).message); return }
 
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
     setVisitados([]); setNodoActual(null); setLucidez(LUCIDEZ_MAX)
     setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([]); setManoExtra(0)
+    // el equipo NO se hereda: cada expedición se arma de nuevo
+    setLentes([]); setSellos([])
+    setHerramientas(EQUIPO_INICIAL.herramientas as HerramientaId[])
     setBatalla(null); setVictoria(false)
+    borrarExpedicion(); setGuardada(null)
     const a = {
       ...atlas, runs: atlas.runs + 1,
       progreso: { ...atlas.progreso, expediciones: atlas.progreso.expediciones + 1 }
@@ -104,22 +114,59 @@ export default function App() {
 
   /* -------------------------------- avanzar -------------------------------- */
 
+  /** Se guarda al pisar el mapa: si te vas a mitad de una sala, vuelves a su inicio. */
+  const guardarAqui = useCallback((acto: number, alc: string[], vis: string[], nodo: string | null) => {
+    if (!contenido || !ruta) return
+    guardarExpedicion({
+      fuente: contenido.fuente, semilla, runId: runIdRef.current,
+      actoIdx: acto, alcanzables: alc, visitados: vis, nodoActual: nodo,
+      lucidez, aprendizaje, lentes, sellos, herramientas, manoExtra,
+      casos, tesis, fusionados, intuiciones, guardadaEn: Date.now()
+    })
+  }, [contenido, ruta, semilla, lucidez, aprendizaje, lentes, sellos, herramientas,
+      manoExtra, casos, tesis, fusionados, intuiciones])
+
+  const retomar = useCallback(() => {
+    if (!contenido || !guardada) return
+    let r: Ruta
+    try { r = generarRuta(contenido, guardada.semilla) } catch { return }
+    rngRef.current = new Rng(guardada.semilla)
+    runIdRef.current = guardada.runId
+    setSemilla(guardada.semilla)
+    setRuta(r); setActoIdx(guardada.actoIdx)
+    setAlcanzables(guardada.alcanzables); setVisitados(guardada.visitados)
+    setNodoActual(guardada.nodoActual); setLucidez(guardada.lucidez)
+    setAprendizaje(guardada.aprendizaje)
+    setLentes(guardada.lentes); setSellos(guardada.sellos)
+    setHerramientas(guardada.herramientas); setManoExtra(guardada.manoExtra)
+    setCasos(guardada.casos); setTesis(guardada.tesis)
+    setFusionados(guardada.fusionados); setIntuiciones(guardada.intuiciones)
+    setBatalla(null); setVictoria(false)
+    setFase('mapa')
+  }, [contenido, guardada])
+
   const avanzar = useCallback(() => {
     if (!ruta) return
     const nodo = nodoRef.current
     if (!nodo) { setFase('mapa'); return }
     setVisitados((v) => (v.includes(nodo.id) ? v : [...v, nodo.id]))
     setNodoActual(nodo.id)
-    if (nodo.salidas.length) { setAlcanzables(nodo.salidas); setFase('mapa'); return }
-    if (actoIdx + 1 < ruta.actos.length) {
-      setActoIdx(actoIdx + 1)
-      setAlcanzables(ruta.actos[actoIdx + 1].entradas)
-      setNodoActual(null); setFase('mapa'); return
+    const vistos = visitados.includes(nodo.id) ? visitados : [...visitados, nodo.id]
+    if (nodo.salidas.length) {
+      setAlcanzables(nodo.salidas); guardarAqui(actoIdx, nodo.salidas, vistos, nodo.id)
+      setFase('mapa'); return
     }
+    if (actoIdx + 1 < ruta.actos.length) {
+      const entradas = ruta.actos[actoIdx + 1].entradas
+      setActoIdx(actoIdx + 1); setAlcanzables(entradas)
+      setNodoActual(null); guardarAqui(actoIdx + 1, entradas, vistos, null)
+      setFase('mapa'); return
+    }
+    borrarExpedicion(); setGuardada(null)
     setVictoria(true)
     if (atlas) { const a = { ...atlas, victorias: atlas.victorias + 1 }; setAtlas(a); guardarAtlas(a) }
     setFase('fin')
-  }, [ruta, actoIdx, atlas])
+  }, [ruta, actoIdx, atlas, visitados, guardarAqui])
 
   /* ------------------------------ entrar a nodo ---------------------------- */
 
@@ -129,13 +176,13 @@ export default function App() {
     if (nodo.tipo === 'refugio') { setFase('refugio'); return }
     const acto = ruta.actos[actoIdx]
     const bolsa: Bolsa = {
-      herramientas: progreso.herramientas as HerramientaId[],
+      herramientas,
       relaciones: progreso.relaciones,
       casos: [...new Set([...nodo.casos, ...casos])],
       tesis: [...new Set([...nodo.tesis, ...tesis])],
       intuiciones, fusionados,
       terrenos: progreso.terrenos,
-      sellos: progreso.sellos as SelloId[],
+      sellos,
       apoyo: aprendizaje,
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id])
     }
@@ -147,7 +194,8 @@ export default function App() {
       acto.manoSugerida + manoExtra
     ))
     setFase('batalla')
-  }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados, manoExtra, aprendizaje, atlas])
+  }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados,
+      manoExtra, aprendizaje, atlas, herramientas, sellos])
 
   /* ------------------------------- acciones -------------------------------- */
 
@@ -265,13 +313,15 @@ export default function App() {
 
   const continuar = () => {
     if (!batalla || !contenido || !progreso) return
-    if (batalla.fase === 'perdido') { setVictoria(false); setFase('fin'); return }
+    if (batalla.fase === 'perdido') {
+      borrarExpedicion(); setGuardada(null)
+      setVictoria(false); setFase('fin'); return
+    }
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
       setRecompensas(ofrecerRecompensas(contenido, {
-        lentes: progreso.lentes, sellos: progreso.sellos as SelloId[],
-        herramientas: progreso.herramientas as HerramientaId[], relaciones: progreso.relaciones
+        lentes, sellos, herramientas, relaciones: progreso.relaciones
       }, rngRef.current, dura))
       if (atlas) {
         const a = { ...atlas, mejoresDiagramas: [...(atlas.mejoresDiagramas ?? []), batalla.mejorGolpe.dano] }
@@ -286,10 +336,19 @@ export default function App() {
 
   const tomarRecompensa = (r: Recompensa) => {
     switch (r.tipo) {
-      case 'lente': guardarProgreso((p) => ({ lentes: [...p.lentes, r.id] })); break
-      case 'sello': guardarProgreso((p) => ({ sellos: [...p.sellos, r.id] })); break
-      case 'herramienta': guardarProgreso((p) => ({ herramientas: [...p.herramientas, r.id] })); break
-      case 'relacion': guardarProgreso((p) => ({ relaciones: [...new Set([...p.relaciones, r.tipoRelacion])] })); break
+      case 'lente': setLentes((x) => [...x, r.id]); break
+      case 'sello': setSellos((x) => [...x, r.id]); break
+      case 'herramienta': setHerramientas((x) => [...x, r.id]); break
+      case 'relacion':
+        setAtlas((prev) => {
+          if (!prev) return prev
+          const a = {
+            ...prev,
+            progreso: { ...prev.progreso, relaciones: [...new Set([...prev.progreso.relaciones, r.tipoRelacion])] }
+          }
+          guardarAtlas(a); return a
+        })
+        break
       case 'caso': setCasos((c) => [...c, r.id]); break
       case 'tesis': setTesis((c) => [...c, r.id]); break
       case 'fichero': setManoExtra((m) => m + 1); break
@@ -316,8 +375,9 @@ export default function App() {
           <button className="btn fantasma" onClick={descargarLog}>Señales</button>
         </header>
         <HomeView
-          atlas={atlas} contenido={contenido}
+          atlas={atlas} contenido={contenido} guardada={guardada}
           onExpedicion={empezarExpedicion}
+          onRetomar={retomar}
           onTutorial={() => {
             const t = contenidoTutorial()
             setContenido(t); setAtlas(cargarAtlas(t.fuente))
@@ -355,17 +415,21 @@ export default function App() {
         <MapView
           ruta={ruta} acto={acto} alcanzables={alcanzables} visitados={visitados}
           actual={nodoActual} onElegir={entrarNodo} contenido={contenido} atlas={atlas}
-          lentes={progreso.lentes}
+          lentes={lentes}
         />
       )}
 
       {fase === 'batalla' && batalla && (
         <BoardView
           e={batalla} contenido={contenido} lentes={mods}
-          lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={progreso.lentes}
+          lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
             cambio, afirmar, continuar, quemar, cambiar, sello,
-            huir: () => { setVictoria(false); setFase('fin') }
+            huir: () => {
+              guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
+              setGuardada(leerExpedicion(contenido.fuente))
+              setFase('inicio')
+            }
           }}
         />
       )}

@@ -59,7 +59,43 @@ export function derivacion(c: Contenido, from: string, to: string, tipo: string)
     const p2 = c.aristas.find((a) => a.from === p1.to && a.to === to && admitidos.includes(a.tipo))
     if (p2) return { pasos: [p1, p2] }
   }
+  // tres pasos: la cadena se debilita, pero sigue siendo una inferencia legítima
+  for (const p1 of primeros) {
+    for (const p2 of c.aristas.filter((a) => a.from === p1.to && admitidos.includes(a.tipo))) {
+      const p3 = c.aristas.find((a) => a.from === p2.to && a.to === to && admitidos.includes(a.tipo))
+      if (p3) return { pasos: [p1, p2, p3] }
+    }
+  }
   return null
+}
+
+/** ¿El texto los trata JUNTOS aunque no enuncie el vínculo?
+ *  Un caso, un escenario, una tesis o un marco que menciona a los dos es
+ *  evidencia real de que el autor los pone en la misma escena. No es lo mismo
+ *  que afirmar la relación, pero está muy por encima de la casualidad: aquí es
+ *  donde antes se perdían las conexiones legítimas que el grafo no recoge. */
+export function convivencia(c: Contenido, a: string, b: string): string | null {
+  const caso = c.casos.find((k) => k.conceptIds.includes(a) && k.conceptIds.includes(b))
+  if (caso) return `El texto los pone a operar juntos en el mismo caso: ${caso.descripcion.slice(0, 120)}…`
+
+  const esc = c.escenarios.find((k) => k.conceptIds.includes(a) && k.conceptIds.includes(b))
+  if (esc) return `Los dos operan en la misma situación (${esc.dominio}): ${esc.descripcion.slice(0, 110)}…`
+
+  const t = c.tesis.find((k) => k.conceptIds.includes(a) && k.conceptIds.includes(b))
+  if (t) return `La misma tesis del texto se apoya en los dos: «${t.enunciado.slice(0, 120)}…»`
+
+  const m = c.marcos.find((k) => k.conceptIds.includes(a) && k.conceptIds.includes(b))
+  if (m) return `Los dos pertenecen al mismo marco teórico (${m.etiqueta}).`
+
+  return null
+}
+
+/** Compartir página es señal débil: en un texto denso casi todo comparte página.
+ *  No sube a «convive», pero sí mejora el mensaje de «plausible». */
+export function mismaPagina(c: Contenido, a: string, b: string): number[] {
+  const pa = c.conceptos[a]?.paginas ?? []
+  const pb = c.conceptos[b]?.paginas ?? []
+  return pa.filter((x) => pb.includes(x))
 }
 
 /** ¿Están cerca en el grafo aunque no haya vínculo directo?
@@ -78,7 +114,7 @@ export function proximidad(c: Contenido, a: string, b: string): 'vecino_comun' |
 }
 
 export interface Hallazgo {
-  estado: 'sostenida' | 'equivalente' | 'aproximada' | 'derivada' | 'plausible' | 'muda' | 'invertida'
+  estado: 'sostenida' | 'equivalente' | 'aproximada' | 'derivada' | 'convive' | 'plausible' | 'muda' | 'invertida'
   tipoReal: string | null
   nota: string
   camino: Camino | null
@@ -164,14 +200,26 @@ export function juzgarVinculo(
       nota: `El texto los relaciona, pero desde el otro lado: «${T(to)} ${inversa[0].tipo} ${T(from)}».`
     }
   }
+  // el texto los trata juntos aunque no enuncie el vínculo
+  const juntos = convivencia(c, from, to)
+  if (juntos) {
+    return { estado: 'convive', tipoReal: null, camino: null, nota: juntos }
+  }
   // cerca en el grafo: plausible, sin castigo
   const cerca = proximidad(c, from, to)
+  const paginas = mismaPagina(c, from, to)
   if (cerca) {
     return {
       estado: 'plausible', tipoReal: null, camino: null,
       nota: cerca === 'vecino_comun'
         ? 'El texto no los conecta entre sí, pero ambos se conectan con lo mismo: la intuición no era descabellada.'
         : 'Son de la misma zona del texto, aunque el autor no los enlaza.'
+    }
+  }
+  if (paginas.length) {
+    return {
+      estado: 'plausible', tipoReal: null, camino: null,
+      nota: `El autor los expone en la misma página (${paginas.join(', ')}) pero no llega a enlazarlos. Puede ser tuya la conexión.`
     }
   }
   return { estado: 'muda', tipoReal: null, camino: null, nota: 'El texto no afirma nada entre esos dos.' }

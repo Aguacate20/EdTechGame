@@ -123,6 +123,40 @@ export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
   }
 }
 
+/** Qué clase de pieza admite cada ranura. Se usa para no dejar que el jugador
+ *  gaste una herramienta en una combinación que el motor va a rechazar. */
+export function aceptaEnRanura(h: HerramientaId, ranura: number, p: Pieza): boolean {
+  switch (h) {
+    case 'ancla':
+    case 'contraejemplo':
+      return ranura === 0 ? p.clase === 'caso' : p.roles.includes('nodo') && p.clase !== 'caso'
+    case 'balanza':
+      return ranura === 0 ? p.clase === 'tesis' : p.clase === 'criterio'
+    case 'descomposicion':
+      return ranura === 0
+        ? !!p.conceptId && p.clase !== 'subdimension'
+        : p.clase === 'subdimension'
+    case 'identidad':
+      return p.roles.includes('etiqueta') || p.roles.includes('definicion')
+    case 'eje':
+      return !!p.conceptId && p.clase !== 'subdimension'
+    default:
+      return p.roles.includes('nodo')
+  }
+}
+
+/** Lo que hay que poner en esta ranura, dicho en llano. */
+export function pistaDeRanura(h: HerramientaId, ranura: number): string {
+  switch (h) {
+    case 'ancla': return ranura === 0 ? 'un caso' : 'un concepto que opere en él'
+    case 'contraejemplo': return ranura === 0 ? 'un caso' : 'un concepto que NO opere en él'
+    case 'balanza': return ranura === 0 ? 'una tesis' : 'un criterio que la limite'
+    case 'descomposicion': return ranura === 0 ? 'el todo' : 'una de sus partes'
+    case 'identidad': return ranura === 0 ? 'un nombre' : 'su descripción'
+    default: return 'un concepto'
+  }
+}
+
 export const listaHerramientas = Object.values(HERRAMIENTAS)
 
 /* --------------------------------- trazos --------------------------------- */
@@ -141,6 +175,7 @@ export type Estado =
   | 'sostenido'    // el texto lo dice tal cual
   | 'equivalente'  // forma dual o simétrica: la misma afirmación dicha al revés
   | 'derivado'     // no lo dice, pero se sigue de dos vínculos que sí están
+  | 'convive'      // el texto los trata juntos, aunque no enuncie el vínculo
   | 'aproximado'   // el vínculo existe; el tipo es de la misma familia o vecino
   | 'plausible'    // no lo dice, pero están cerca en el grafo: sin castigo
   | 'silencio'     // nada
@@ -283,6 +318,7 @@ const PESO: Record<Estado, { f: number; m: number }> = {
   sostenido: { f: 1, m: 1 },
   equivalente: { f: 1, m: 1 },
   derivado: { f: 0.7, m: 0.65 },
+  convive: { f: 0.55, m: 0.45 },
   aproximado: { f: 0.5, m: 0.35 },
   plausible: { f: 0.18, m: 0 },
   silencio: { f: 0, m: 0 },
@@ -371,7 +407,8 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
 
   const MAPA: Record<string, Estado> = {
     sostenida: 'sostenido', equivalente: 'equivalente', derivada: 'derivado',
-    aproximada: 'aproximado', plausible: 'plausible', muda: 'silencio', invertida: 'invertido'
+    aproximada: 'aproximado', convive: 'convive', plausible: 'plausible',
+    muda: 'silencio', invertida: 'invertido'
   }
   const estado = MAPA[h.estado] ?? 'silencio'
   const imp = (a.importancia + b.importancia) / 2

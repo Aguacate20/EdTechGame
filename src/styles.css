@@ -981,7 +981,8 @@ label.campo > span { display: block; margin-bottom: 5px; }
 /* Recordatorio flotante de lo que se está relacionando. No captura clics:
    el tablero es justo donde hay que tocar mientras esto está abierto. */
 .rastro {
-  position: fixed; z-index: 120; width: 258px; pointer-events: none;
+  position: fixed; z-index: 120; width: 272px; max-height: 66vh; overflow: hidden;
+  pointer-events: none;
   background: rgba(13, 19, 27, .82);
   border: 1px solid rgba(201,162,39,.45); border-radius: var(--r);
   padding: 8px 10px; backdrop-filter: blur(4px);
@@ -1004,8 +1005,13 @@ label.campo > span { display: block; margin-bottom: 5px; }
   font-size: 12.5px; font-weight: 600; color: var(--papel); line-height: 1.25;
 }
 .rastro .eslabon em {
-  font-style: normal; font-size: 10.5px; line-height: 1.35; color: #98a3b0;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  font-style: normal; font-size: 10.5px; line-height: 1.4; color: #98a3b0;
+}
+.rastro .eslabon b { overflow-wrap: anywhere; }
+.rastro .hueco-rastro { color: #6b7684; font-weight: 400; font-style: italic; }
+.rastro .glosa-rastro {
+  font-size: 11px; line-height: 1.35; color: #9ad3c0;
+  border-left: 2px solid var(--verdigris); padding-left: 7px;
 }
 .rastro .eslabon.pendiente b { color: #6b7684; }
 /* la que está bajo el cursor entra tenue: aún no está fijada */
@@ -1044,3 +1050,8 @@ label.campo > span { display: block; margin-bottom: 5px; }
 .apuesta.chica { padding: 4px 9px; font-size: 11.5px; }
 
 @media (prefers-reduced-motion: reduce) { .rastro { animation: none; } }
+
+/* piezas que la ranura activa no admite: no se pueden marcar */
+.naipe.en-tablero.inservible { opacity: .3; filter: grayscale(.7); cursor: not-allowed; }
+
+.arranque.retomar { border-left-color: var(--laton); background: linear-gradient(90deg, rgba(201,162,39,.1), transparent); }

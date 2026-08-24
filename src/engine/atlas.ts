@@ -19,12 +19,13 @@ export interface EvidenciaConcepto {
 
 /** Lo que el estudiante conserva entre expediciones. El Atlas deja de ser solo
  *  un registro: es el estado del jugador y la pantalla de inicio. */
+/** Lo que se APRENDE se conserva; lo que se EQUIPA no.
+ *  Los vínculos descubiertos y las intuiciones reubicadas son conocimiento y
+ *  viajan con el estudiante. Las lentes, los sellos y las herramientas extra
+ *  son poder de partida: cada expedición se arma de nuevo, o no habría run. */
 export interface Progreso {
   /** tipos de vínculo que ya descubrió: se desbloquean derribando enemigos */
   relaciones: string[]
-  lentes: string[]
-  herramientas: string[]
-  sellos: string[]
   terrenos: string[]
   /** expediciones emprendidas: el carril escala con esto */
   expediciones: number
@@ -47,11 +48,16 @@ export interface Atlas {
 export const PROGRESO_INICIAL: Progreso = {
   // se empieza sabiendo solo respaldar y oponer: el resto se descubre jugando
   relaciones: ['apoya', 'contrasta'],
-  lentes: [],
-  herramientas: ['identidad', 'identidad', 'flecha', 'flecha', 'flecha', 'campo'],
-  sellos: [],
   terrenos: [],
   expediciones: 0
+}
+
+/** Con lo que se arranca cada expedición. El resto se gana jugando. */
+export const EQUIPO_INICIAL = {
+  lentes: [] as string[],
+  sellos: [] as string[],
+  herramientas: ['identidad', 'identidad', 'flecha', 'flecha', 'flecha', 'campo'],
+  manoExtra: 0
 }
 
 export function atlasVacio(fuente: string): Atlas {

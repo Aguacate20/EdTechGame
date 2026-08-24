@@ -3,10 +3,9 @@ import {
   coberturaAtlas, estadoDe, ETIQUETA_ESTADO, nivelDe, retratoDe, soloConApoyo, type Atlas
 } from '../engine/atlas'
 import { unidadesSelladas } from '../engine/objectives'
-import { lentePorId, selloPorId } from '../engine/powers'
-import { HERRAMIENTAS, type HerramientaId } from '../engine/tools'
 import { GLOSA_RELACION } from '../ui/glosas'
 import { descargarEdicion } from '../engine/export'
+import { haceCuanto } from '../engine/savegame'
 import { Panel } from './components'
 
 /* ==========================================================================
@@ -24,10 +23,15 @@ const COLOR_ESTADO: Record<string, string> = {
   sin_tocar: '#4a5262'
 }
 
-export function HomeView({ atlas, contenido, onExpedicion, onTutorial, onCambiarTexto }: {
+export function HomeView({
+  atlas, contenido, guardada, onExpedicion, onRetomar, onTutorial, onCambiarTexto
+}: {
   atlas: Atlas
   contenido: Contenido
+  /** expedición dejada a medias, si la hay */
+  guardada: { actoIdx: number; lucidez: number; aprendizaje: boolean; guardadaEn: number } | null
   onExpedicion: (conApoyo: boolean) => void
+  onRetomar: () => void
   onTutorial: () => void
   onCambiarTexto: () => void
 }) {
@@ -78,6 +82,22 @@ export function HomeView({ atlas, contenido, onExpedicion, onTutorial, onCambiar
       </div>
 
       {/* --------------------------- el arranque --------------------------- */}
+      {guardada && (
+        <div className="arranque retomar">
+          <div>
+            <span className="eyebrow">Expedición a medias</span>
+            <h2 className="h2" style={{ margin: '2px 0 2px' }}>
+              Acto {guardada.actoIdx + 1}{guardada.aprendizaje ? ' · con andamio' : ''}
+            </h2>
+            <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>
+              La dejaste {haceCuanto(guardada.guardadaEn)} con {guardada.lucidez} de lucidez.
+              Vuelves con el mismo equipo y en la misma sala.
+            </p>
+          </div>
+          <button className="btn primario grande" onClick={onRetomar}>Retomar</button>
+        </div>
+      )}
+
       <div className="arranque">
         <div>
           <span className="eyebrow">Siguiente expedición</span>
@@ -86,13 +106,14 @@ export function HomeView({ atlas, contenido, onExpedicion, onTutorial, onCambiar
           {p.expediciones > 0 && (
             <p className="dato silencio" style={{ margin: '6px 0 0' }}>
               El carril viene más duro: llevas {p.expediciones} expedición
-              {p.expediciones === 1 ? '' : 'es'} a la espalda.
+              {p.expediciones === 1 ? '' : 'es'} a la espalda. Las lentes y las
+              herramientas se arman de nuevo cada vez; lo aprendido se queda.
             </p>
           )}
         </div>
         <div className="fila" style={{ gap: 8, flexWrap: 'wrap' }}>
           <button className="btn primario grande" onClick={() => onExpedicion(false)}>
-            Salir de expedición
+            {guardada ? 'Empezar otra desde cero' : 'Salir de expedición'}
           </button>
           <button
             className="btn grande" onClick={() => onExpedicion(true)}
@@ -102,7 +123,7 @@ export function HomeView({ atlas, contenido, onExpedicion, onTutorial, onCambiar
       </div>
 
       {/* ------------------------- lo que has ganado ------------------------ */}
-      <Panel titulo="Lo que llevas encima">
+      <Panel titulo="Lo que has aprendido">
         <div className="rejilla">
           <div className="celda">
             <span className="eyebrow">Vínculos que sabes trazar</span>
@@ -117,29 +138,6 @@ export function HomeView({ atlas, contenido, onExpedicion, onTutorial, onCambiar
               <p className="silencio" style={{ fontSize: 12.5, margin: '8px 0 0' }}>
                 Quedan {relacionesPorDescubrir.length} por descubrir. Se revelan al derribar
                 enemigos: cada uno que cae te enseña un vínculo nuevo del texto.
-              </p>
-            )}
-          </div>
-
-          <div className="celda">
-            <span className="eyebrow">Herramientas</span>
-            <p style={{ margin: '6px 0 0', fontSize: 13 }}>
-              {[...new Set(p.herramientas)].map((h) =>
-                `${HERRAMIENTAS[h as HerramientaId].glifo} ${HERRAMIENTAS[h as HerramientaId].nombre} ×${p.herramientas.filter((x) => x === h).length}`
-              ).join(' · ')}
-            </p>
-          </div>
-
-          <div className="celda">
-            <span className="eyebrow">Lentes</span>
-            <p style={{ margin: '6px 0 0', fontSize: 13 }}>
-              {p.lentes.length
-                ? p.lentes.map((l) => lentePorId(l).nombre).join(' · ')
-                : 'ninguna todavía'}
-            </p>
-            {p.sellos.length > 0 && (
-              <p style={{ margin: '6px 0 0', fontSize: 13 }}>
-                Sellos: {p.sellos.map((x) => selloPorId(x as never).nombre).join(' · ')}
               </p>
             )}
           </div>
