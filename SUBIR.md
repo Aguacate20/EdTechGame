@@ -1,7 +1,7 @@
-# Subir v5.5 al repositorio
+# Subir v5.6 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.5/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.6/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.5/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.6/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,21 +25,16 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.5: convivencia, retomar expedicion y restricciones de ranura
+git commit -m "v5.6: tutorial guiado de dos combates y conmutable desde el menu
 
-- nuevo peldano CONVIVE: si el texto trata dos conceptos juntos en el mismo caso,
-  escenario, tesis o marco, eso es evidencia real aunque no enuncie el vinculo.
-  Antes esas conexiones legitimas caian en plausible y valian casi nada
-- compartir pagina se queda en plausible, con mensaje propio; las derivaciones
-  llegan ahora a tres pasos
-- el rastro solo aparece con el raton sobre el tablero, muestra el texto completo
-  y dice el vinculo en llano (respalda o da evidencia a, se opone o se distingue de)
-- cada ranura admite solo la clase de carta que le corresponde: el Ancla exige un
-  caso en la primera, la Balanza una tesis, la Descomposicion una parte. Lo que no
-  encaja se atenua y no se puede marcar
-- se puede retomar una expedicion dejada a medias: se guarda el mapa y el equipo
-- lo que se APRENDE persiste (vinculos, terrenos, Atlas); lo que se EQUIPA no
-  (lentes, sellos, herramientas): cada expedicion vuelve a ser una partida"
+- dos salas prefabricadas con mano fija y frente fijo: la primera ensena a poner
+  piezas, emparejar con la Identidad y afirmar; la segunda a encadenar flechas,
+  detectar una falsificacion y recoger la mejora
+- panel de guia con pasos que avanzan por condicion real sobre el estado de la
+  partida, no por tiempo
+- el tutorial se activa y se desactiva sin perder el texto cargado: al salir se
+  recupera con su Atlas y su expedicion a medias
+- iniciarBatalla acepta mazo y enemigos fijos, para poder guionizar salas"
 
 git push origin main
 ```

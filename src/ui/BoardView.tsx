@@ -85,9 +85,11 @@ const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).t
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}`
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds }: {
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
+  /** paso del tutorial que toca ahora, si estamos en él */
+  guia?: { titulo: string; texto: string; indice: number; total: number } | null
 }) {
   const lienzo = useRef<HTMLDivElement>(null)
   const [herramienta, setHerramienta] = useState<HerramientaId | null>(null)
@@ -252,6 +254,21 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <span className="aviso-rastro">Elige el tipo de vínculo abajo</span>
           )}
         </div>
+      )}
+
+      {guia && (
+        <aside className="guia">
+          <span className="eyebrow">
+            Tutorial · paso {guia.indice + 1} de {guia.total}
+          </span>
+          <strong>{guia.titulo}</strong>
+          <p>{guia.texto}</p>
+          <div className="pasos-puntos">
+            {Array.from({ length: guia.total }, (_, i) => (
+              <i key={i} className={i <= guia.indice ? 'hecho' : ''} />
+            ))}
+          </div>
+        </aside>
       )}
 
       {ayuda && (

@@ -285,11 +285,25 @@ información honesta y además motivadora.
 
 ### El tutorial
 
-Siempre disponible desde el inicio. Un bundle sintético de diez conceptos —abejas,
-flores, murciélagos, ecolocalización— construido con **la misma forma que emite el
-extractor**, así que pasa por el mismo adaptador y el mismo motor: no hay un camino de
-código especial que pueda quedar sin probar. Lo que se aprende es la mecánica, no el
-tema.
+Se **activa y se desactiva** desde el menú, sin perder el texto que estuvieras usando:
+al salir se recupera tal cual, con su Atlas y su expedición a medias si la había.
+
+Son **dos combates prefabricados** con mano fija, frente fijo y una guía que avanza sola
+cuando haces lo que toca:
+
+| Sala | Enseña | Frente |
+|---|---|---|
+| **Poner y emparejar** | arrastrar piezas, usar la Identidad, afirmar | dos Copistas |
+| **Relacionar y desconfiar** | encadenar dos flechas, detectar una falsificación, recoger mejora | Copista, Errata y Apócrifo |
+
+La guía vive en un panel fijo abajo a la izquierda, con los pasos marcados. Cada paso
+tiene una condición real sobre el estado de la partida —«hay dos piezas en el tablero»,
+«has trazado una identidad», «quemaste la apócrifa»— así que avanza cuando de verdad lo
+hiciste, no por tiempo.
+
+El contenido son diez conceptos de abejas, flores y murciélagos, construidos con **la
+misma forma que emite el extractor**: pasan por el mismo adaptador y el mismo motor, así
+que no hay un camino de código especial que pueda quedar sin probar.
 
 ### El alto en el camino
 

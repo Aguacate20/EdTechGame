@@ -24,7 +24,8 @@ const COLOR_ESTADO: Record<string, string> = {
 }
 
 export function HomeView({
-  atlas, contenido, guardada, onExpedicion, onRetomar, onTutorial, onCambiarTexto
+  atlas, contenido, guardada, enTutorial,
+  onExpedicion, onRetomar, onTutorial, onEmpezarTutorial, onCambiarTexto
 }: {
   atlas: Atlas
   contenido: Contenido
@@ -32,7 +33,10 @@ export function HomeView({
   guardada: { actoIdx: number; lucidez: number; aprendizaje: boolean; guardadaEn: number } | null
   onExpedicion: (conApoyo: boolean) => void
   onRetomar: () => void
+  /** el tutorial se activa y se desactiva sin perder el texto que estabas usando */
+  enTutorial: boolean
   onTutorial: () => void
+  onEmpezarTutorial: () => void
   onCambiarTexto: () => void
 }) {
   const ids = contenido.ordenConceptos
@@ -80,6 +84,23 @@ export function HomeView({
           </div>
         ))}
       </div>
+
+      {enTutorial && (
+        <div className="arranque retomar">
+          <div>
+            <span className="eyebrow">Modo tutorial</span>
+            <h2 className="h2" style={{ margin: '2px 0 2px' }}>Dos combates guiados</h2>
+            <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>
+              Con abejas, flores y murciélagos: se aprende la mecánica, no el tema. Nada
+              de lo que hagas aquí toca el Atlas de tus textos.
+            </p>
+          </div>
+          <div className="fila" style={{ gap: 8 }}>
+            <button className="btn primario grande" onClick={onEmpezarTutorial}>Empezar</button>
+            <button className="btn fantasma" onClick={onTutorial}>Salir del tutorial</button>
+          </div>
+        </div>
+      )}
 
       {/* --------------------------- el arranque --------------------------- */}
       {guardada && (
@@ -234,7 +255,9 @@ export function HomeView({
           className="btn" disabled={selladas.length < contenido.unidades.length}
           onClick={() => descargarEdicion(atlas, contenido)}
         >Descargar la edición crítica</button>
-        <button className="btn fantasma" onClick={onTutorial}>Tutorial</button>
+        <button className="btn fantasma" onClick={onTutorial}>
+          {enTutorial ? 'Salir del tutorial' : 'Tutorial'}
+        </button>
         <button className="btn fantasma" onClick={onCambiarTexto}>Cambiar de texto</button>
       </div>
     </div>

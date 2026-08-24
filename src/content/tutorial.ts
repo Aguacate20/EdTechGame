@@ -153,6 +153,125 @@ export function contenidoTutorial(): Contenido {
 
 export const ES_TUTORIAL = 'Tutorial · animales'
 
+/* ==========================================================================
+   El guion.
+   Dos combates prefabricados: mano fija, frente fijo y una guía que avanza sola
+   cuando el jugador hace lo que toca. La primera sala enseña a poner piezas y
+   emparejar; la segunda, a relacionar, a detectar una falsificación y a que el
+   carril aprieta si te duermes.
+   ========================================================================== */
+
+import type { EstadoBatalla } from '../engine/battle'
+import { crearEnemigo, type Enemigo } from '../engine/lane'
+import {
+  piezaApocrifa, piezaCaso, piezaConcepto, piezaDefinicion, piezaEtiqueta, type Pieza
+} from '../engine/pieces'
+import { Rng } from '../engine/rng'
+import type { HerramientaId } from '../engine/tools'
+
+export interface PasoGuia {
+  clave: string
+  titulo: string
+  texto: string
+  /** cuando esto se cumple, el paso se da por hecho y aparece el siguiente */
+  hecho: (e: EstadoBatalla) => boolean
+}
+
+export interface SalaTutorial {
+  titulo: string
+  intro: string
+  conceptIds: string[]
+  herramientas: HerramientaId[]
+  relaciones: string[]
+  mazo: (c: Contenido, rng: Rng) => Pieza[]
+  enemigos: (escala: number) => Enemigo[]
+  pasos: PasoGuia[]
+}
+
+const enTablero = (e: EstadoBatalla, n: number) => e.tablero.length >= n
+const trazosDe = (e: EstadoBatalla, tool: HerramientaId) =>
+  e.trazos.filter((t) => t.tool === tool).length
+
+export const SALAS_TUTORIAL: SalaTutorial[] = [
+  {
+    titulo: 'Sala 1 · Poner y emparejar',
+    intro: 'Dos criaturas se acercan. Lo único que tienes son fichas de papel: nombres por un lado, descripciones por otro. Juntarlas correctamente es tu primer ataque.',
+    conceptIds: ['abeja', 'flor', 'polinizacion'],
+    herramientas: ['identidad', 'identidad', 'flecha'],
+    relaciones: ['apoya', 'causa'],
+    mazo: (c) => [
+      piezaEtiqueta(c, 'abeja')!,
+      piezaDefinicion(c, 'abeja')!,
+      piezaEtiqueta(c, 'flor')!,
+      piezaDefinicion(c, 'flor')!,
+      piezaConcepto(c, 'polinizacion')!
+    ],
+    enemigos: (escala) => [
+      crearEnemigo('copista', escala * 0.55, 6),
+      crearEnemigo('copista', escala * 0.55, 8)
+    ],
+    pasos: [
+      {
+        clave: 'arrastrar', titulo: 'Saca dos fichas al tablero',
+        texto: 'A la derecha tienes tu mano. Arrastra al centro «Abeja» y la descripción que empieza por «Insecto social…». Todavía no pasa nada: solo las pones sobre la mesa.',
+        hecho: (e) => enTablero(e, 2)
+      },
+      {
+        clave: 'identidad', titulo: 'Ahora di que son lo mismo',
+        texto: 'Pulsa la Identidad (=) en la columna izquierda. Verás un recuadro junto al cursor. Toca el nombre y después su descripción: se irán colocando en A y en B. Cuando estén las dos, pulsa Trazar abajo.',
+        hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1
+      },
+      {
+        clave: 'afirmar', titulo: 'Afirma lo que has dicho',
+        texto: 'Pulsa «Afirmar el diagrama». El juego comprueba tu afirmación contra el texto y la convierte en un ataque: cuanto más verdadero y más articulado, más fuerte pega.',
+        hecho: (e) => e.turno > 1 || e.fase !== 'jugando'
+      },
+      {
+        clave: 'repetir', titulo: 'Otra vez, y a por ellos',
+        texto: 'Empareja también «Flor» con su descripción, o une dos conceptos con la Flecha (→). El carril avanza una casilla por cada afirmación que hagas, así que no te duermas.',
+        hecho: (e) => e.enemigos.every((x) => x.hp <= 0)
+      }
+    ]
+  },
+  {
+    titulo: 'Sala 2 · Relacionar y desconfiar',
+    intro: 'Ahora hay tres. Y entre tus fichas se ha colado una falsificación: un nombre con la descripción de otra cosa. Si la usas, tu diagrama pierde fuerza; si la detectas, ganas ventaja.',
+    conceptIds: ['abeja', 'polinizacion', 'fruto', 'murcielago', 'mamifero'],
+    herramientas: ['flecha', 'flecha', 'identidad', 'campo'],
+    relaciones: ['apoya', 'causa', 'generaliza'],
+    mazo: (c, rng) => [
+      piezaConcepto(c, 'abeja')!,
+      piezaConcepto(c, 'polinizacion')!,
+      piezaConcepto(c, 'fruto')!,
+      piezaConcepto(c, 'mamifero')!,
+      piezaApocrifa(c, 'murcielago', rng)!,
+      piezaCaso(c, 'huerto')!
+    ],
+    enemigos: (escala) => [
+      crearEnemigo('copista', escala * 0.6, 5),
+      crearEnemigo('errata', escala * 0.55, 7),
+      crearEnemigo('apocrifo', escala * 0.6, 8)
+    ],
+    pasos: [
+      {
+        clave: 'cadena', titulo: 'Encadena dos ideas',
+        texto: 'Saca «Abeja», «Polinización» y «Fruto». Con la Flecha (→) di que la abeja causa la polinización, y luego que la polinización causa el fruto. Dos trazos en el mismo diagrama pegan mucho más que uno.',
+        hecho: (e) => trazosDe(e, 'flecha') >= 2 || e.turno > 2
+      },
+      {
+        clave: 'sospecha', titulo: 'Cuidado con la falsificación',
+        texto: 'Una de tus fichas lleva el nombre de «Murciélago» con una descripción que no es suya. Selecciónala en la mano y pulsa «Quemar»: si aciertas, robas una carta y tu próximo diagrama multiplica más.',
+        hecho: (e) => e.quemasAcertadas >= 1 || e.pozo.length >= 1
+      },
+      {
+        clave: 'mejora', titulo: 'Termina y recoge',
+        texto: 'Despeja el carril. Al acabar verás el mapa de todo lo que afirmaste y podrás elegir una mejora: una lente que cambia cómo puntúas, un sello de un uso, o una herramienta más por turno.',
+        hecho: (e) => e.enemigos.every((x) => x.hp <= 0)
+      }
+    ]
+  }
+]
+
 /** Los avisos que van apareciendo. Se muestran una vez cada uno. */
 export const PASOS_TUTORIAL: { clave: string; titulo: string; texto: string }[] = [
   {

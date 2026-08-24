@@ -166,6 +166,9 @@ export interface Bolsa {
   terrenos: string[]
   /** modo aprendizaje: el andamio no se retira solo, se declara */
   apoyo: boolean
+  /** el tutorial reparte una mano y un frente fijos, para poder guiar paso a paso */
+  mazoFijo?: Pieza[]
+  enemigosFijos?: Enemigo[]
   /** conceptos que el estudiante aún no ha tocado: con apoyo llegan enteros */
   sinTocar: string[]
 }
@@ -223,8 +226,8 @@ export function iniciarBatalla(
   const e: EstadoBatalla = {
     apoyo: bolsa.apoyo,
     dificultad, acto, conceptIdsCasilla: conceptIds,
-    enemigos: generarOleada(dificultad, acto, ctx.rng),
-    mazo: montarMazo(ctx.contenido, conceptIds, bolsa, dificultad, ctx.rng),
+    enemigos: bolsa.enemigosFijos ?? generarOleada(dificultad, acto, ctx.rng),
+    mazo: bolsa.mazoFijo ?? montarMazo(ctx.contenido, conceptIds, bolsa, dificultad, ctx.rng),
     mano: [], descarte: [], tablero: [], trazos: [],
     herramientas: [...bolsa.herramientas, ...m.herramientasExtra], usadas: [],
     relacionesDisponibles: bolsa.relaciones,

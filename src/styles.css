@@ -1055,3 +1055,30 @@ label.campo > span { display: block; margin-bottom: 5px; }
 .naipe.en-tablero.inservible { opacity: .3; filter: grayscale(.7); cursor: not-allowed; }
 
 .arranque.retomar { border-left-color: var(--laton); background: linear-gradient(90deg, rgba(201,162,39,.1), transparent); }
+
+/* ================= v5.6 · guía del tutorial ================= */
+
+.guia {
+  position: fixed; left: 14px; bottom: 78px; z-index: 90; width: 296px;
+  background: rgba(13, 19, 27, .95); backdrop-filter: blur(6px);
+  border: 1px solid var(--verdigris); border-left-width: 3px; border-radius: var(--r);
+  padding: 13px 15px; display: flex; flex-direction: column; gap: 6px;
+  box-shadow: 0 14px 34px rgba(0,0,0,.5);
+  animation: entrar .25s ease-out;
+}
+.guia strong { font-size: 15px; }
+.guia p { margin: 0; font-size: 13px; line-height: 1.5; color: #b8c2cc; }
+.pasos-puntos { display: flex; gap: 5px; margin-top: 3px; }
+.pasos-puntos i {
+  width: 20px; height: 3px; border-radius: 99px; background: var(--tinta-borde);
+  transition: background .3s;
+}
+.pasos-puntos i.hecho { background: var(--verdigris); }
+
+.intro-sala {
+  border: 1px solid var(--verdigris); border-left-width: 3px; border-radius: var(--r);
+  padding: 14px 16px; background: linear-gradient(90deg, rgba(78,140,122,.1), transparent);
+}
+
+@media (max-width: 1080px) { .guia { position: static; width: auto; } }
+@media (prefers-reduced-motion: reduce) { .guia { animation: none; } }

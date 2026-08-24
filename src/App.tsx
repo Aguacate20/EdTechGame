@@ -15,7 +15,7 @@ import {
 import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
 } from './engine/savegame'
-import { contenidoTutorial } from './content/tutorial'
+import { contenidoTutorial, SALAS_TUTORIAL } from './content/tutorial'
 import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
 import { AtlasView, EndView, MapView, RewardView } from './ui/Screens'
@@ -57,6 +57,9 @@ export default function App() {
   )
   const [semilla, setSemilla] = useState('')
   const [guardada, setGuardada] = useState<ExpedicionGuardada | null>(null)
+  /** el tutorial se superpone: al salir se recupera el texto que estabas usando */
+  const [tutorial, setTutorial] = useState<number | null>(null)
+  const previoRef = useRef<{ contenido: Contenido; atlas: Atlas } | null>(null)
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -144,6 +147,32 @@ export default function App() {
     setBatalla(null); setVictoria(false)
     setFase('mapa')
   }, [contenido, guardada])
+
+  /** El tutorial no usa el generador de rutas: son dos salas escritas a mano,
+   *  con mano y frente fijos, para poder guiar paso a paso. */
+  const empezarTutorial = useCallback((indice: number) => {
+    const c = contenidoTutorial()
+    const a = cargarAtlas(c.fuente)
+    const sala = SALAS_TUTORIAL[indice]
+    if (!sala) { setTutorial(null); setFase('inicio'); return }
+    const rng = new Rng(`tutorial-${indice}`)
+    rngRef.current = rng
+    runIdRef.current = `tutorial-${indice}-${Date.now()}`
+    setContenido(c); setAtlas(a); setTutorial(indice)
+    setLucidez(LUCIDEZ_MAX); setAprendizaje(true)
+    setLentes([]); setSellos([]); setHerramientas(sala.herramientas)
+    setManoExtra(0); setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([])
+    setVictoria(false)
+    const ctxT: ContextoBatalla = { contenido: c, rng, lentes: combinarLentes([]) }
+    setBatalla(iniciarBatalla(ctxT, sala.conceptIds, {
+      herramientas: sala.herramientas, relaciones: sala.relaciones,
+      casos: [], tesis: [], intuiciones: [], fusionados: [], terrenos: [], sellos: [],
+      apoyo: true, sinTocar: [],
+      mazoFijo: sala.mazo(c, rng),
+      enemigosFijos: sala.enemigos(1)
+    }, 'facil', 0, 6))
+    setFase('batalla')
+  }, [])
 
   const avanzar = useCallback(() => {
     if (!ruta) return
@@ -313,6 +342,12 @@ export default function App() {
 
   const continuar = () => {
     if (!batalla || !contenido || !progreso) return
+    if (tutorial !== null && (batalla.fase === 'ganado' || vivos(batalla).length === 0)) {
+      const siguiente = tutorial + 1
+      if (SALAS_TUTORIAL[siguiente]) { empezarTutorial(siguiente); return }
+      setFase('inicio'); return
+    }
+    if (tutorial !== null && batalla.fase === 'perdido') { setFase('inicio'); return }
     if (batalla.fase === 'perdido') {
       borrarExpedicion(); setGuardada(null)
       setVictoria(false); setFase('fin'); return
@@ -378,11 +413,25 @@ export default function App() {
           atlas={atlas} contenido={contenido} guardada={guardada}
           onExpedicion={empezarExpedicion}
           onRetomar={retomar}
+          enTutorial={tutorial !== null}
           onTutorial={() => {
+            if (tutorial !== null) {
+              // salir: se devuelve el texto que estaba cargado
+              const prev = previoRef.current
+              setTutorial(null)
+              if (prev) {
+                setContenido(prev.contenido); setAtlas(prev.atlas)
+                setGuardada(leerExpedicion(prev.contenido.fuente))
+              }
+              return
+            }
+            if (contenido && atlas) previoRef.current = { contenido, atlas }
             const t = contenidoTutorial()
             setContenido(t); setAtlas(cargarAtlas(t.fuente))
-            setTimeout(() => setFase('inicio'), 0)
+            setTutorial(0)
+            setGuardada(null)
           }}
+          onEmpezarTutorial={() => empezarTutorial(0)}
           onCambiarTexto={() => { setContenido(null); setFase('cargar') }}
         />
       </div>
@@ -398,7 +447,9 @@ export default function App() {
       <header className="barra">
         <span className="marca">El Archivo Infinito</span>
         <span className="eyebrow">
-          expedición {progreso.expediciones}{aprendizaje ? ' · aprendizaje' : ''}
+          {tutorial !== null
+            ? `Tutorial · ${SALAS_TUTORIAL[tutorial]?.titulo ?? ''}`
+            : `expedición ${progreso.expediciones}${aprendizaje ? ' · aprendizaje' : ''}`}
         </span>
         <span className="sep" />
         {fase !== 'batalla' && <Medidor valor={lucidez} max={LUCIDEZ_MAX} etiqueta="Lucidez" />}
@@ -421,6 +472,15 @@ export default function App() {
 
       {fase === 'batalla' && batalla && (
         <BoardView
+          guia={(() => {
+            if (tutorial === null) return null
+            const sala = SALAS_TUTORIAL[tutorial]
+            if (!sala) return null
+            const i = sala.pasos.findIndex((x) => !x.hecho(batalla))
+            const idx = i < 0 ? sala.pasos.length - 1 : i
+            const paso = sala.pasos[idx]
+            return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length }
+          })()}
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
