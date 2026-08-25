@@ -271,17 +271,53 @@ seguir produciéndolos.
 - `docs/PEGLIN.md` describe la Mesa de Tiradas, que sigue sin implementar y que ahora
   encaja mejor: las clavijas serían las piezas del tablero.### El modo Aprendizaje
 
-Se activa al salir de expedición, y no es un modo fácil: es **otra vía al mismo sitio**.
+No es un modo fácil: es **otra vía al mismo sitio**, con el andamio puesto y anunciado.
 
-- Los conceptos que nunca has tocado llegan **enteros** (nombre y descripción juntos)
-  en vez de partidos: primero se aprende qué es algo, después se pone a prueba.
-- Las falsificaciones llegan **señaladas** en los dos primeros actos.
-- La expedición **no se pierde**: la lucidez no baja de 1. Pierdes tiempo, no el intento.
+**El Vistazo.** Antes de cada sala, el concepto que engloba a los demás —material *más
+general* que lo que viene, no un adelanto de lo mismo— y **una pregunta abierta** que la
+sala va a responder, sacada de las `tensiones` del concepto o de un caso sin resolver.
 
-Y la decisión importante: **la evidencia con andamio cuenta, pero queda marcada**. El
-Atlas guarda cuántos aciertos fueron con apoyo, y el nivel «lo dominas» exige **al menos
-uno sin andamio**. El estudiante ve «lo sostienes, pero siempre con ayuda», que es
-información honesta y además motivadora.
+Y se puede saltar, porque saltarlo es **una apuesta**: quien lo lee entra con una
+falsificación ya señalada; quien lo salta, con una herramienta extra. No hay opción
+correcta, y elegir queda registrado como señal de regulación.
+
+**El Fragmento.** Una sala no es un combate largo con todo encima: son **tres oleadas
+cortas**, y cada una añade conceptos y una herramienta.
+
+| Oleada | Herramienta | Qué se pide |
+|---|---|---|
+| Reconocer | Identidad | emparejar nombre y descripción |
+| Relacionar | Flecha | enlazar lo nuevo con lo de la oleada 1 |
+| Sostener | Campo y las tuyas | estructurar usando las dos anteriores |
+
+Lo que ya identificaste **vuelve entero** en la oleada siguiente: te lo ganaste. Lo nuevo
+llega partido cuando el andamio ya se retiró.
+
+**No se avanza acumulando, se avanza reusando.** Si el diagrama no toca ningún concepto
+de las oleadas anteriores, rinde la mitad, y el juego lo dice.
+
+**El desvanecimiento.** El andamio se retira en orden y anunciándolo, que es lo que lo
+separa de una muleta:
+
+| Oleada | Conceptos | Falsificaciones | Lucidez |
+|---|---|---|---|
+| 1 · total | partidos, para poder emparejar | señaladas | no baja |
+| 2 · parcial | los ya vistos, enteros | señaladas | no baja |
+| 3 · ninguno | partidos | sin señalar | baja normal |
+
+**El error vuelve, no castiga.** Los pares que fallaste reaparecen en la oleada
+siguiente: práctica espaciada dentro de la propia sala.
+
+**El nudo.** Si el concepto puerta de la unidad sigue sin evidencia en el Atlas, la sala
+**no se cierra** aunque el carril esté vacío: entra una oleada más centrada en él. El
+progreso se mide por lo aprendido, no por lo derrotado.
+
+**Rutas más cortas.** Tres oleadas por sala alargan mucho, así que en aprendizaje el acto
+se acorta: de 16 salas a 10.
+
+Y la decisión de fondo: **la evidencia con andamio cuenta, pero queda marcada**. El nivel
+«lo dominas» exige al menos un acierto sin apoyo, y el Atlas muestra «lo sostienes, pero
+siempre con ayuda».
 
 ### El tutorial
 

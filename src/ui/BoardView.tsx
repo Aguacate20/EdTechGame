@@ -10,6 +10,7 @@ import {
   type HerramientaId, type ModificadoresLente
 } from '../engine/tools'
 import { tipoPorId } from '../engine/lane'
+import { oleadaActual } from '../engine/battle'
 import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
 import { LaneView } from './LaneView'
 import { GLOSA_RELACION as GLOSA } from './glosas'
@@ -363,6 +364,22 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
       {/* ============================ lienzo ============================ */}
       <main className={`zona-lienzo${zona('lienzo')}`}>
+        {(() => {
+          const ol = oleadaActual(e)
+          if (!ol) return null
+          return (
+            <div className={`aviso-oleada apoyo-${ol.apoyo}`}>
+              <strong>{ol.titulo}</strong>
+              <span>{ol.aviso}</span>
+              {ol.previos.length > 0 && (
+                <span className="reusar">
+                  Apóyate en lo de antes: {ol.previos.slice(0, 4)
+                    .map((id) => contenido.conceptos[id]?.titulo).filter(Boolean).join(' · ')}
+                </span>
+              )}
+            </div>
+          )
+        })()}
         <div
           className="lienzo" ref={lienzo}
           onMouseEnter={() => setSobreTablero(true)}
@@ -705,6 +722,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           <button className="btn primario grande" disabled={!casc.terminada}
             onClick={() => { setTrazoAbierto(null); on.continuar() }}>
             {e.fase === 'ganado' ? 'El carril queda despejado'
+              : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda'
               : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}
           </button>
         )}

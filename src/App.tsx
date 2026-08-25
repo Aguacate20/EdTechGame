@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Contenido } from './content/types'
 import {
-  afirmar as afirmarDiagrama, cambiar as cambiarPieza, iniciarBatalla, quemar as quemarPieza,
+  afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
+  quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
@@ -21,13 +22,14 @@ import { BoardView } from './ui/BoardView'
 import { AtlasView, EndView, MapView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
 import { BattleMap } from './ui/BattleMap'
+import { VistazoView } from './ui/VistazoView'
 import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
 import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 
 type Fase =
   | 'cargar' | 'inicio' | 'mapa' | 'batalla'
-  | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin'
+  | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin'
 
 const LUCIDEZ_MAX = 80
 
@@ -100,7 +102,8 @@ export default function App() {
     rngRef.current = new Rng(sem)
     runIdRef.current = `${sem}-${Date.now()}`
     let r: Ruta
-    try { r = generarRuta(contenido, sem) } catch (err) { alert((err as Error).message); return }
+    try { r = generarRuta(contenido, sem, conApoyo) }
+    catch (err) { alert((err as Error).message); return }
 
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
     setVisitados([]); setNodoActual(null); setLucidez(LUCIDEZ_MAX)
@@ -135,7 +138,7 @@ export default function App() {
   const retomar = useCallback(() => {
     if (!contenido || !guardada) return
     let r: Ruta
-    try { r = generarRuta(contenido, guardada.semilla) } catch { return }
+    try { r = generarRuta(contenido, guardada.semilla, guardada.aprendizaje) } catch { return }
     rngRef.current = new Rng(guardada.semilla)
     runIdRef.current = guardada.runId
     setSemilla(guardada.semilla)
@@ -232,18 +235,27 @@ export default function App() {
     if (!contenido || !ruta || !ctx || !progreso) return
     nodoRef.current = nodo
     if (nodo.tipo === 'refugio') { setFase('refugio'); return }
+    if (aprendizaje) { setFase('vistazo'); return }
+    lanzarSala(nodo, false)
+  }, [contenido, ruta, ctx, aprendizaje])
+
+  const lanzarSala = useCallback((nodo: Nodo, leido: boolean) => {
+    if (!contenido || !ruta || !ctx || !progreso) return
     const acto = ruta.actos[actoIdx]
     void acto
     const bolsa: Bolsa = {
-      herramientas,
+      herramientas: [...herramientas, ...(leido ? [] : ['flecha' as HerramientaId])],
       relaciones: progreso.relaciones,
       casos: [...new Set([...nodo.casos, ...casos])],
       tesis: [...new Set([...nodo.tesis, ...tesis])],
       intuiciones, fusionados,
       terrenos: progreso.terrenos,
       sellos,
+      // la apuesta del vistazo: leerlo señala una falsificación, saltarlo da
+      // una herramienta más
       apoyo: aprendizaje,
-      sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id])
+      sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
+      sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id])
     }
     // el carril escala con las expediciones ya hechas: vuelves más fuerte, pero
     // también encuentras enemigos más duros
@@ -306,10 +318,11 @@ export default function App() {
     let nueva = lucidez - r.danoRecibido
     if (r.diag.repertoriosReubicados.length) nueva += 6
     nueva = Math.min(LUCIDEZ_MAX, nueva)
-    // con andamio la expedición no se pierde: se pierde tiempo, no el intento
-    const suelo = aprendizaje ? 1 : 0
+    // el suelo de lucidez solo mientras el andamio está puesto: en la última
+    // oleada ya se juega sin red
+    const suelo = aprendizaje && e.nivelApoyo !== 'ninguno' ? 1 : 0
     setLucidez(Math.max(suelo, nueva))
-    if (nueva <= 0 && !aprendizaje && e.fase !== 'ganado') e.fase = 'perdido'
+    if (nueva <= 0 && suelo === 0 && e.fase !== 'ganado') e.fase = 'perdido'
 
     setFusionados(e.fusionados)
     if (r.intuicionesNuevas.length) {
@@ -381,6 +394,23 @@ export default function App() {
     if (batalla.fase === 'perdido') {
       borrarExpedicion(); setGuardada(null)
       setVictoria(false); setFase('fin'); return
+    }
+    // en aprendizaje la sala tiene varias oleadas: se encadenan sin salir
+    if (batalla.fase !== 'ganado' && vivos(batalla).length === 0 && batalla.oleadas.length && ctx && progreso) {
+      const e = { ...batalla }
+      const nodo = nodoRef.current
+      const bolsa: Bolsa = {
+        herramientas, relaciones: progreso.relaciones,
+        casos: [...new Set([...(nodo?.casos ?? []), ...casos])],
+        tesis: [...new Set([...(nodo?.tesis ?? []), ...tesis])],
+        intuiciones, fusionados, terrenos: progreso.terrenos, sellos,
+        apoyo: true, sinTocar: [],
+        sinEvidencia: (nodo?.conceptIds ?? []).filter((id) => !atlas?.conceptos[id])
+      }
+      const siguiente = avanzarOleada(e, ctx, bolsa)
+      if (siguiente) { setBatalla(e); return }
+      e.fase = 'ganado'
+      setBatalla(e)
     }
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
       const nodo = nodoRef.current
@@ -499,6 +529,23 @@ export default function App() {
           ruta={ruta} acto={acto} alcanzables={alcanzables} visitados={visitados}
           actual={nodoActual} onElegir={entrarNodo} contenido={contenido} atlas={atlas}
           lentes={lentes}
+        />
+      )}
+
+      {fase === 'vistazo' && nodoRef.current && (
+        <VistazoView
+          nodo={nodoRef.current} contenido={contenido} atlas={atlas}
+          onEntrar={(leido) => {
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'vistazo', condicion: null, mecanica: 'srl_accion',
+              itemId: leido ? 'vistazo:leido' : 'vistazo:saltado', conceptIds: [],
+              operacion: 'vistazo', improvisado: false, seleccion: [], correcto: true,
+              apuesta: leido ? 'leer' : 'saltar', calibrado: true,
+              latenciaMs: 0, ayuda: leido, repertorioTocado: null
+            })
+            if (nodoRef.current) lanzarSala(nodoRef.current, leido)
+          }}
         />
       )}
 

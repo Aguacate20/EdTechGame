@@ -14,6 +14,7 @@ import type { Rng } from './rng'
 import { SELLOS, type SelloId } from './powers'
 import { piezaContexto } from './pieces'
 import { armarDisparo, type Disparo } from './weapons'
+import { componerOleadas, oleadaDePuerta, type NivelApoyo, type Oleada } from './aprendizaje'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -65,6 +66,16 @@ export interface PiezaEnTablero { uid: string; x: number; y: number }
 export interface EstadoBatalla {
   /** modo aprendizaje activo en esta sala */
   apoyo: boolean
+  /** oleadas de la sala en modo aprendizaje; vacío en modo normal */
+  oleadas: Oleada[]
+  oleadaIdx: number
+  nivelApoyo: NivelApoyo
+  /** conceptos de oleadas anteriores: hay que reusarlos */
+  previos: string[]
+  /** pares que fallaste: vuelven en la siguiente oleada */
+  paresFallados: [string, string][]
+  /** conceptos de la sala sin evidencia, para decidir la oleada del nudo */
+  sinEvidencia: string[]
   dificultad: Dificultad
   acto: number
   conceptIdsCasilla: string[]
@@ -171,6 +182,8 @@ export interface Bolsa {
   enemigosFijos?: Enemigo[]
   /** conceptos que el estudiante aún no ha tocado: con apoyo llegan enteros */
   sinTocar: string[]
+  /** conceptos de la sala sin evidencia: deciden si hace falta la oleada del nudo */
+  sinEvidencia?: string[]
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -225,6 +238,9 @@ export function iniciarBatalla(
   const m = ctx.lentes
   const e: EstadoBatalla = {
     apoyo: bolsa.apoyo,
+    oleadas: [], oleadaIdx: 0,
+    nivelApoyo: bolsa.apoyo ? 'total' : 'ninguno',
+    previos: [], paresFallados: [], sinEvidencia: bolsa.sinEvidencia ?? [],
     dificultad, acto, conceptIdsCasilla: conceptIds,
     enemigos: bolsa.enemigosFijos ?? generarOleada(dificultad, acto, ctx.rng),
     mazo: bolsa.mazoFijo ?? montarMazo(ctx.contenido, conceptIds, bolsa, dificultad, ctx.rng),
@@ -242,6 +258,21 @@ export function iniciarBatalla(
     hallazgos: { vinculos: [], grupos: [], reconocidos: [] },
     relacionesNuevas: [],
     inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
+  }
+  if (bolsa.apoyo && !bolsa.mazoFijo) {
+    e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
+    const primera = e.oleadas[0]
+    if (primera) {
+      e.enemigos = primera.enemigos
+      e.herramientas = primera.herramientas
+      e.nivelApoyo = primera.apoyo
+      // partidas: la primera tanda es de reconocer, y la Identidad necesita
+      // un nombre y una descripción sueltos para poder emparejarlos
+      e.mazo = montarMazo(
+        ctx.contenido, primera.conceptIds, { ...bolsa, sinTocar: [] }, 'facil', ctx.rng
+      )
+      e.mano = []
+    }
   }
   robar(e, e.manoBase)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
@@ -447,6 +478,16 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     ? { ...ctx.lentes, multGlobal: ctx.lentes.multGlobal + e.bonusMult }
     : ctx.lentes
   const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, lentesConBonus)
+  // no se avanza acumulando, se avanza reusando: si el diagrama no toca nada de
+  // las oleadas anteriores, rinde la mitad
+  if (e.previos.length && diag.dano > 0) {
+    const tocaPrevios = diag.conceptIds.some((id) => e.previos.includes(id))
+    if (!tocaPrevios) {
+      diag.mult = Math.max(0.4, diag.mult * 0.5)
+      diag.dano = Math.round(diag.fichas * diag.mult)
+      diag.cierre = 'Esto no engancha con lo de antes: en aprendizaje lo nuevo tiene que apoyarse en lo ya visto.'
+    }
+  }
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
 
@@ -579,9 +620,87 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   // Impulso: cada acierto hace robar
   if (ctx.lentes.robarPorAcierto) robar(e, diag.sostenidos * ctx.lentes.robarPorAcierto)
 
+  // los pares que fallaste vuelven en la oleada siguiente: el error es la vía,
+  // no el castigo
+  for (const v of diag.veredictos) {
+    if (v.estado === 'invertido' || v.estado === 'error') {
+      const [a, b] = v.conceptIds
+      if (a && b) e.paresFallados.push([a, b])
+    }
+  }
+
   e.ultima = r
-  e.fase = vivos(e).length === 0 ? 'ganado' : 'resuelto'
+  if (vivos(e).length === 0 && e.oleadas.length && hayMasOleadas(e, ctx)) {
+    e.fase = 'resuelto'
+  } else {
+    e.fase = vivos(e).length === 0 ? 'ganado' : 'resuelto'
+  }
   return r
+}
+
+/* ==========================================================================
+   Las oleadas del modo aprendizaje
+   ========================================================================== */
+
+function hayMasOleadas(e: EstadoBatalla, ctx: ContextoBatalla): boolean {
+  if (e.oleadaIdx + 1 < e.oleadas.length) return true
+  // ¿queda el nudo? el concepto que ordena la unidad sigue sin sostenerse
+  return !!oleadaDePuerta(
+    ctx.contenido, e.conceptIdsCasilla, e.sinEvidencia, e.acto, e.previos
+  ) && !e.oleadas.some((o) => o.esPuerta)
+}
+
+export const oleadaActual = (e: EstadoBatalla): Oleada | null =>
+  e.oleadas[e.oleadaIdx] ?? null
+
+/** Entra la siguiente tanda: más conceptos, una herramienta más y un apoyo menos. */
+export function avanzarOleada(e: EstadoBatalla, ctx: ContextoBatalla, bolsa: Bolsa): Oleada | null {
+  let siguiente = e.oleadas[e.oleadaIdx + 1]
+  if (!siguiente) {
+    const nudo = oleadaDePuerta(
+      ctx.contenido, e.conceptIdsCasilla, e.sinEvidencia, e.acto, e.previos
+    )
+    if (!nudo || e.oleadas.some((o) => o.esPuerta)) return null
+    e.oleadas = [...e.oleadas, nudo]
+    siguiente = nudo
+  }
+  e.oleadaIdx += 1
+  e.previos = [...new Set([...e.previos, ...(oleadaActual(e)?.previos ?? []), ...e.conceptIdsCasilla
+    .filter((id) => e.oleadas.slice(0, e.oleadaIdx).some((o) => o.conceptIds.includes(id)))])]
+  e.enemigos = siguiente.enemigos
+  e.herramientas = [...e.herramientas, ...siguiente.herramientas]
+  e.usadas = []
+  e.nivelApoyo = siguiente.apoyo
+  e.reveladas = []
+
+  // los conceptos nuevos entran al mazo, y con ellos los pares que fallaste
+  const vuelven = [...new Set(e.paresFallados.flat())].filter(
+    (id) => !siguiente!.conceptIds.includes(id) && e.conceptIdsCasilla.includes(id)
+  )
+  // lo que ya identificaste vuelve entero: te lo ganaste. Lo nuevo llega
+  // partido si el andamio ya se retiró, y entero mientras siga puesto.
+  const nuevas = montarMazo(
+    ctx.contenido,
+    [...siguiente.conceptIds, ...vuelven],
+    {
+      ...bolsa,
+      fusionados: [...new Set([...bolsa.fusionados, ...e.fusionados, ...e.previos])],
+      sinTocar: siguiente.apoyo === 'parcial' ? siguiente.conceptIds : []
+    },
+    siguiente.apoyo === 'ninguno' ? 'media' : 'facil',
+    ctx.rng
+  )
+  e.mazo = ctx.rng.shuffle([...e.mazo, ...nuevas])
+  e.paresFallados = []
+  e.tablero = []
+  e.trazos = []
+  e.turno += 1
+  e.fase = 'jugando'
+  robar(e, Math.max(0, e.manoBase - e.mano.length))
+  if (siguiente.apoyo !== 'ninguno') {
+    e.reveladas = e.mano.filter((p) => p.clase === 'apocrifa').map((p) => p.uid)
+  }
+  return siguiente
 }
 
 /* ------------------------------ turno del carril -------------------------- */

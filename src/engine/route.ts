@@ -219,7 +219,9 @@ function formaDelActo(c: Contenido, conceptIds: string[], rng: Rng, esUltimo: bo
   return forma
 }
 
-export function generarRuta(contenido: Contenido, semilla: string): Ruta {
+/** En modo aprendizaje cada sala son tres oleadas, así que el acto se acorta:
+ *  doce combates por acto serían una maratón. */
+export function generarRuta(contenido: Contenido, semilla: string, corto = false): Ruta {
   const rng = new Rng(semilla)
   const unidades = contenido.unidades.filter((u) => u.conceptIds.length >= 2).slice(0, 5)
   if (!unidades.length) {
@@ -229,7 +231,13 @@ export function generarRuta(contenido: Contenido, semilla: string): Ruta {
 
   unidades.forEach((u, ai) => {
     const esUltimo = ai === unidades.length - 1
-    const anchos = formaDelActo(contenido, u.conceptIds, rng, esUltimo)
+    let anchos = formaDelActo(contenido, u.conceptIds, rng, esUltimo)
+    if (corto) {
+      // se conserva la entrada, una bifurcación, el refugio y el cierre
+      anchos = esUltimo
+        ? [anchos[0], anchos[1] ?? 1, 1, 1]
+        : [anchos[0], anchos[1] ?? 1, 1]
+    }
     const columnas: Nodo[][] = []
 
     anchos.forEach((ancho, col) => {
