@@ -244,6 +244,7 @@ export const SIN_LENTES: ModificadoresLente = {
 export type ComboId =
   | 'articulacion' | 'constelacion' | 'cierre' | 'doble_registro'
   | 'refutacion_completa' | 'traduccion' | 'coherencia'
+  | 'veta' | 'mestizaje'
 
 export interface Combo {
   id: ComboId
@@ -260,7 +261,9 @@ const NOMBRE_COMBO: Record<ComboId, string> = {
   doble_registro: 'Doble registro',
   refutacion_completa: 'Refutación completa',
   traduccion: 'Traducción',
-  coherencia: 'Coherencia'
+  coherencia: 'Coherencia',
+  veta: 'Veta',
+  mestizaje: 'Mestizaje'
 }
 
 export interface Diagnostico {
@@ -486,8 +489,16 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
   const marco = ps.find((p) => p.clase === 'marco')
   // el Terreno es comodín: sabes dónde vive esa intuición, así que ya no estorba
   const terrenos = ps.filter((p) => p.clase === 'contexto')
-  const conceptos = ps.filter((p) => p.conceptId && p.clase !== 'marco' && p.clase !== 'contexto')
-  if (conceptos.length < 2) return { ...v, reserva, nota: 'Un campo necesita al menos dos conceptos.' }
+  // un caso o una tesis pertenecen al campo del que hablan: se representan por
+  // los conceptos que ponen en juego, no se ignoran
+  const portadores = ps.filter((p) => (p.clase === 'caso' || p.clase === 'tesis') && p.conceptIds.length)
+  const conceptos = ps.filter(
+    (p) => p.conceptId && p.clase !== 'marco' && p.clase !== 'contexto' &&
+      p.clase !== 'caso' && p.clase !== 'tesis'
+  )
+  if (conceptos.length + portadores.length < 2) {
+    return { ...v, reserva, nota: 'Un campo necesita al menos dos piezas que hablen de conceptos.' }
+  }
 
   if (marco) {
     const dentro = conceptos.filter((p) => marco.conceptIds.includes(p.conceptId!))
@@ -504,16 +515,48 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
           conceptIds: dentro.map((p) => p.conceptId!)
         }
   }
-  const clusters = new Set(conceptos.map((p) => c.conceptos[p.conceptId!]?.clusterId ?? '—'))
-  if (clusters.size === 1 && !clusters.has('—')) {
+  // el cluster de un caso o una tesis es el de los conceptos que arrastra
+  const clusterDe = (p: Pieza): string[] => p.conceptId
+    ? [c.conceptos[p.conceptId]?.clusterId ?? '—']
+    : [...new Set(p.conceptIds.map((id) => c.conceptos[id]?.clusterId ?? '—'))]
+
+  const clustersConcepto = conceptos.flatMap(clusterDe)
+  const clustersPortador = portadores.map(clusterDe)
+  const clusters = new Set(clustersConcepto)
+  // el portador encaja si alguno de sus conceptos cae en el campo
+  const portadoresDentro = clustersPortador.filter(
+    (cl) => clustersConcepto.length === 0 || cl.some((x) => clusters.has(x))
+  ).length
+  if (portadores.length && !clustersConcepto.length) {
+    // solo portadores: encajan si comparten alguna zona entre ellos
+    const comunes = clustersPortador.reduce<string[]>(
+      (acc, cl) => (acc.length ? acc.filter((x) => cl.includes(x)) : cl), []
+    )
+    return comunes.length && comunes[0] !== '—'
+      ? {
+          ...v, reserva, estado: 'sostenido',
+          fichas: 9 * portadores.length + lentes.fichasPorSostenido, mult: 1.3,
+          nota: 'Los dos hablan de la misma zona del texto.',
+          conceptIds: portadores.flatMap((p) => p.conceptIds)
+        }
+      : { ...v, reserva, nota: 'Esos casos no comparten zona del texto.' }
+  }
+
+  if (clusters.size === 1 && !clusters.has('—') && portadoresDentro === portadores.length) {
     return {
       ...v, reserva, estado: 'sostenido',
-      fichas: 7 * conceptos.length + 5 * terrenos.length + lentes.fichasPorSostenido,
-      mult: 0.9 + 0.25 * conceptos.length + 0.5 * terrenos.length,
-      nota: terrenos.length
-        ? 'Comparten zona del texto, y sabes qué intuición convive con ellos.'
-        : 'Comparten zona del texto.',
-      conceptIds: conceptos.map((p) => p.conceptId!)
+      fichas: 7 * conceptos.length + 5 * terrenos.length + 9 * portadores.length +
+        lentes.fichasPorSostenido,
+      mult: 0.9 + 0.25 * conceptos.length + 0.5 * terrenos.length + 0.4 * portadores.length,
+      nota: portadores.length
+        ? 'Comparten zona del texto, y el caso que has metido opera justo ahí.'
+        : terrenos.length
+          ? 'Comparten zona del texto, y sabes qué intuición convive con ellos.'
+          : 'Comparten zona del texto.',
+      conceptIds: [
+        ...conceptos.map((p) => p.conceptId!),
+        ...portadores.flatMap((p) => p.conceptIds)
+      ]
     }
   }
   return {
@@ -928,6 +971,35 @@ export function evaluarDiagrama(
     if (sostenidos.some((v) => v.trazo.tool === 'ancla') && identificados.size > 0) {
       anadir('traduccion', 14, 1.4, 'Llevas el concepto al caso sin perder de vista qué era.')
     }
+    // Veta: sostener un vínculo de los que el autor apenas usa. Lo raro está
+    // menos trillado y es más difícil de ver, así que se paga siempre: premiar
+    // la creatividad al azar enseñaría que no es fiable.
+    const freqs = Object.values(c.frecuenciaRelacion).sort((a, b) => a - b)
+    const umbral = freqs[Math.floor(freqs.length / 3)] ?? 0
+    const vetas = sostenidos.filter(
+      (v) => v.trazo.tool === 'flecha' && v.trazo.param &&
+        (c.frecuenciaRelacion[v.trazo.param] ?? 99) <= umbral
+    ).length
+    if (vetas > 0) {
+      anadir('veta', 8 * vetas, 1.1 * vetas,
+        `${vetas} vínculo(s) de los que el autor casi no usa.`)
+    }
+
+    // Mestizaje: cruzar clases de pieza distintas en un mismo diagrama —un caso
+    // con un concepto, una tesis con un criterio, un terreno con un campo—.
+    // Es la marca de quien juega con el material en vez de repetirlo.
+    const clases = new Set(
+      sostenidos
+        .flatMap((v) => v.trazo.piezas)
+        .map((u) => porUid.get(u)?.clase)
+        .filter((x): x is NonNullable<typeof x> => !!x)
+        .map((cl) => (cl === 'apocrifa' ? 'concepto' : cl))
+    )
+    if (clases.size >= 3 && sostenidos.length >= 2) {
+      anadir('mestizaje', 12 * (clases.size - 2), 1.2 * (clases.size - 2),
+        `${clases.size} clases de pieza distintas en la misma afirmación.`)
+    }
+
     // coherencia: todas las flechas del mismo tipo
     const tipos = new Set(sostenidos.filter((v) => v.trazo.tool === 'flecha').map((v) => v.trazo.param))
     if (tipos.size === 1 && sostenidos.filter((v) => v.trazo.tool === 'flecha').length >= 2) {

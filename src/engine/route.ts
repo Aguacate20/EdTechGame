@@ -336,11 +336,15 @@ export type Recompensa =
   | { tipo: 'lucidez'; cantidad: number }
   | { tipo: 'fichero' }
 
+/** El refuerzo variable vive AQUÍ y solo aquí: en el botín, nunca en si acertaste.
+ *  La probabilidad sube con lo bien que resolviste, pero no llega nunca a 1, así
+ *  que el hallazgo raro se busca y a veces aparece. Lo que jamás varía al azar es
+ *  el veredicto de una afirmación: eso corrompería la señal cognitiva. */
 export function ofrecerRecompensas(
   contenido: Contenido, cartera: {
     lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[]
-  }, rng: Rng, dura: boolean
-): Recompensa[] {
+  }, rng: Rng, dura: boolean, calidad = 0
+): { opciones: Recompensa[]; veta: boolean } {
   const salida: Recompensa[] = []
 
   const libres = LENTES.filter((l) => !cartera.lentes.includes(l.id) &&
@@ -365,5 +369,13 @@ export function ofrecerRecompensas(
 
   if (salida.length < 3) salida.push({ tipo: 'fichero' })
   while (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: dura ? 18 : 12 })
-  return rng.shuffle(salida).slice(0, 3)
+  const opciones = rng.shuffle(salida).slice(0, 3)
+
+  // la veta: una cuarta opción rara, más probable cuanto mejor lo hiciste
+  const probabilidad = Math.min(0.55, 0.12 + calidad * 0.4 + (dura ? 0.1 : 0))
+  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id))
+  const veta = raras.length > 0 && rng.next() < probabilidad
+  if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
+
+  return { opciones, veta }
 }

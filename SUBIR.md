@@ -1,7 +1,7 @@
-# Subir v5.9.1 al repositorio
+# Subir v5.10 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.9.1/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.10/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.9.1/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.10/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,14 +25,15 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.9.1: los vinculos no son alternativas
+git commit -m "v5.10: creatividad recompensada y refuerzo variable en el botin
 
-- nuevo peldano COMPATIBLE al 90%: si el texto dice extiende, afirmar requiere no
-  es un matiz peor sino otra faceta verdadera del mismo par. Implicaciones
-  direccionales: extiende->requiere, ejemplifica->apoya, matiza->contrasta,
-  generaliza->requiere
-- el adaptador avisa cuando la descripcion de una arista no menciona a sus dos
-  extremos: en esos casos el feedback sale confuso y la culpa es del extractor"
+- un caso o una tesis pertenecen al campo semantico del que hablan: antes se
+  ignoraban y el campo decia que faltaban conceptos
+- combo Veta: sostener vinculos de los que el autor apenas usa
+- combo Mestizaje: cruzar tres o mas clases de pieza en la misma afirmacion
+- refuerzo variable SOLO en el botin: una cuarta opcion rara tras el combate,
+  con probabilidad que sube con la calidad del mejor diagrama (11% a 49%)
+- el veredicto de una afirmacion nunca depende del azar"
 
 git push origin main
 ```

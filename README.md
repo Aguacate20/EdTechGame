@@ -117,6 +117,28 @@ invertirse, porque ahí la dirección **es** la afirmación.
 se sigue», te da crédito y lo registra como inferencia. El Atlas, en cambio, solo recoge
 lo que el texto afirma literalmente.
 
+### La creatividad se paga siempre; la suerte, solo en el botín
+
+Dos combos nuevos premian jugar con el material en vez de repetirlo, y los dos son
+**deterministas**: recompensar la creatividad al azar enseñaría que no es fiable.
+
+- **Veta** — sostener vínculos de los que el autor apenas usa. Lo raro está menos
+  trillado y cuesta más verlo.
+- **Mestizaje** — cruzar tres o más clases de pieza en la misma afirmación: un caso con
+  un concepto, una tesis con un criterio, un terreno con un campo.
+
+Y un caso o una tesis **pertenecen al campo semántico del que hablan**: se representan
+por los conceptos que ponen en juego en vez de quedar ignorados, que es lo que pasaba
+antes.
+
+**El refuerzo variable vive solo en el botín.** Tras un combate puede aparecer una
+cuarta opción rara —la *veta*— con probabilidad que sube con lo bien que resolviste: del
+11 % con un diagrama flojo al 49 % con uno excelente, sin llegar nunca a la certeza.
+
+Lo que **jamás** varía al azar es el veredicto de una afirmación. Si acertar dependiera
+de la suerte, el Atlas dejaría de distinguir a quien leyó de quien tuvo un buen día, y
+ese Atlas es el producto.
+
 ### La capa propia del lector
 
 Decir *«razonable, el texto no lo dice»* describe lo que el autor no hizo, no lo que

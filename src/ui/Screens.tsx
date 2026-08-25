@@ -129,9 +129,11 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
 
 /* ------------------------------- recompensa ------------------------------- */
 
-export function RewardView({ opciones, onElegir, titulo, contenido }: {
+export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
   opciones: Recompensa[]; onElegir: (r: Recompensa) => void; titulo: string
   contenido: Contenido
+  /** apareció una cuarta opción rara: se anuncia, para que se note cuando pasa */
+  veta?: boolean
 }) {
   const describir = (r: Recompensa): { tt: string; nom: string; cuerpo: string; pie?: string } => {
     switch (r.tipo) {
@@ -181,13 +183,22 @@ export function RewardView({ opciones, onElegir, titulo, contenido }: {
       <div>
         <span className="eyebrow">Hallazgo</span>
         <h2 className="display" style={{ fontSize: 28 }}>{titulo}</h2>
+        {veta && (
+          <p className="aviso-veta">
+            ✦ Una veta. Aquí había algo que no siempre está.
+          </p>
+        )}
       </div>
 
       <div className="mano-naipes" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
         {opciones.map((r, i) => {
           const d = describir(r)
+          const esVeta = veta && i === opciones.length - 1
           return (
-            <button key={i} className="naipe" onClick={() => onElegir(r)} style={{ minHeight: 160 }}>
+            <button
+              key={i} className={`naipe${esVeta ? ' veta' : ''}`}
+              onClick={() => onElegir(r)} style={{ minHeight: 160 }}
+            >
               <span className="tt">{d.tt}</span>
               <span className="nom">{d.nom}</span>
               <span className="cuerpo">{d.cuerpo}</span>

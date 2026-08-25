@@ -69,6 +69,7 @@ export default function App() {
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
+  const [veta, setVeta] = useState(false)
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -433,9 +434,12 @@ export default function App() {
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
-      setRecompensas(ofrecerRecompensas(contenido, {
+      // la calidad del mejor diagrama inclina la suerte, sin garantizarla
+      const calidad = Math.min(1, batalla.mejorGolpe.dano / 420)
+      const r = ofrecerRecompensas(contenido, {
         lentes, sellos, herramientas, relaciones: progreso.relaciones
-      }, rngRef.current, dura))
+      }, rngRef.current, dura, calidad)
+      setRecompensas(r.opciones); setVeta(r.veta)
       if (atlas) {
         const a = { ...atlas, mejoresDiagramas: [...(atlas.mejoresDiagramas ?? []), batalla.mejorGolpe.dano] }
         setAtlas(a); guardarAtlas(a)
@@ -603,7 +607,7 @@ export default function App() {
       {fase === 'recompensa' && (
         <RewardView
           opciones={recompensas} onElegir={tomarRecompensa} contenido={contenido}
-          titulo="Elige tu hallazgo"
+          titulo="Elige tu hallazgo" veta={veta}
         />
       )}
 

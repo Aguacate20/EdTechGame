@@ -1193,3 +1193,18 @@ label.campo > span { display: block; margin-bottom: 5px; }
 }
 .celda.propuesta { border-left: 3px solid #a78bd0; }
 .celda.propuesta em { font-family: var(--mono); font-size: 11px; color: #a78bd0; font-style: normal; }
+
+/* ================= v5.10 · la veta ================= */
+
+.aviso-veta {
+  margin: 6px 0 0; font-family: var(--mono); font-size: 12px; letter-spacing: .06em;
+  color: var(--laton); animation: entrar .4s ease-out;
+}
+.naipe.veta {
+  border-color: var(--laton); border-width: 2px;
+  box-shadow: 0 0 0 1px rgba(201,162,39,.3), 0 0 26px rgba(201,162,39,.28), var(--sombra);
+}
+.naipe.veta::before {
+  content: '✦'; position: absolute; top: 6px; right: 8px;
+  color: #8a6a25; font-size: 13px;
+}
