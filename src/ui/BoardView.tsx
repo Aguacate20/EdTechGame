@@ -30,18 +30,20 @@ export interface AccionesBatalla {
 }
 
 const COLOR_ESTADO: Record<string, string> = {
-  sostenido: 'var(--verdigris)', equivalente: 'var(--verdigris)', derivado: '#7fa8d6',
+  sostenido: 'var(--verdigris)', equivalente: 'var(--verdigris)',
+  compatible: 'var(--verdigris)', derivado: '#7fa8d6',
   aproximado: 'var(--laton)', plausible: '#a78bd0', silencio: 'var(--niebla)',
   invertido: 'var(--oxido)', error: 'var(--oxido)'
 }
 const ETIQUETA_ESTADO: Record<string, string> = {
   sostenido: 'sostenido', equivalente: 'lo mismo dicho al revés',
+  compatible: 'también es cierto',
   derivado: 'se sigue del texto', aproximado: 'vas bien, otro matiz',
   plausible: 'propuesta tuya', silencio: 'el texto no lo dice',
   invertido: 'al revés', error: 'falla'
 }
 const TONO_NOTA: Record<string, string> = {
-  sostenido: 'ok', equivalente: 'ok', derivado: 'ok', aproximado: 'nota',
+  sostenido: 'ok', equivalente: 'ok', compatible: 'ok', derivado: 'ok', aproximado: 'nota',
   plausible: 'nota', silencio: 'nota', invertido: 'mal', error: 'mal'
 }
 const ETIQUETA: Record<Pieza['clase'], string> = {
@@ -454,6 +456,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                       fill={color} fontSize="11" textAnchor="middle"
                       style={{ fontFamily: 'var(--mono)' }}>
                       {ver.estado === 'sostenido' ? '✓' : ver.estado === 'equivalente' ? '✓ ='
+                      : ver.estado === 'compatible' ? '✓ también'
                         : ver.estado === 'derivado' ? '✓ se sigue' : ver.estado === 'aproximado' ? '≈'
                         : ver.estado === 'plausible' ? '✎' : ver.estado === 'invertido' ? '↺' : '·'}
                     </text>

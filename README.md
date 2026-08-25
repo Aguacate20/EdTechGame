@@ -92,12 +92,19 @@ verdad. Por eso un vínculo no se juzga como acierto o error, sino en una escale
 |---|---|---|
 | **Sostenido** | el texto lo dice, con ese tipo y esa dirección | completo |
 | **Equivalente** | forma dual o simétrica (`generaliza`↔`ejemplifica`, `contrasta`) | completo |
+| **También es cierto** | el texto lo enuncia de otro modo, pero lo tuyo se sostiene igual | 90% |
 | **Derivado** | no lo dice, pero **se sigue** de dos vínculos que sí están | 70% y se marca como inferencia |
 | **Aproximado** | el vínculo existe; tu tipo es de la misma familia | 50% |
 | **Convive** | el texto los trata juntos en el mismo caso, escenario, tesis o marco | 55% |
 | **Propuesta tuya** | vecino común, misma zona o misma página | 18%, y se guarda aparte |
 | **Mudo** | nada | cero, sin castigo |
 | **Invertido** | el texto dice lo contrario, con un tipo que sí tiene dirección | castigo |
+
+**Los vínculos no son alternativas.** Si el texto dice que A *extiende* B, también es
+cierto que A *requiere* B: no se amplía lo que no está antes. El extractor emite un tipo
+por par, pero un par puede sostener varios a la vez, así que afirmar otro de esos tipos
+no es un matiz peor — es otra faceta verdadera. Las implicaciones son direccionales:
+extender presupone, pero requerir no amplía.
 
 `contrasta` es simétrica: afirmarla en cualquier dirección vale igual.
 `generaliza` y `ejemplifica` son duales: decir *A generaliza B* o *B ejemplifica A* es

@@ -174,6 +174,7 @@ export interface Trazo {
 export type Estado =
   | 'sostenido'    // el texto lo dice tal cual
   | 'equivalente'  // forma dual o simétrica: la misma afirmación dicha al revés
+  | 'compatible'   // el texto lo dice de otro modo, pero lo tuyo también es cierto
   | 'derivado'     // no lo dice, pero se sigue de dos vínculos que sí están
   | 'convive'      // el texto los trata juntos, aunque no enuncie el vínculo
   | 'aproximado'   // el vínculo existe; el tipo es de la misma familia o vecino
@@ -183,7 +184,7 @@ export type Estado =
   | 'error'        // falsificación afirmada como verdadera, o tachón injusto
 
 /** Los que cuentan como acierto para combos, alcance y Atlas. */
-export const ACIERTA: Estado[] = ['sostenido', 'equivalente', 'derivado']
+export const ACIERTA: Estado[] = ['sostenido', 'equivalente', 'compatible', 'derivado']
 export const esAcierto = (e: Estado): boolean => ACIERTA.includes(e)
 
 export interface Veredicto {
@@ -321,6 +322,7 @@ function resolver(p: Pieza): { id: string | null; reserva: string | null } {
 const PESO: Record<Estado, { f: number; m: number }> = {
   sostenido: { f: 1, m: 1 },
   equivalente: { f: 1, m: 1 },
+  compatible: { f: 0.9, m: 0.85 },
   derivado: { f: 0.7, m: 0.65 },
   convive: { f: 0.55, m: 0.45 },
   aproximado: { f: 0.5, m: 0.35 },
@@ -410,7 +412,8 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
   }
 
   const MAPA: Record<string, Estado> = {
-    sostenida: 'sostenido', equivalente: 'equivalente', derivada: 'derivado',
+    sostenida: 'sostenido', equivalente: 'equivalente', compatible: 'compatible',
+    derivada: 'derivado',
     aproximada: 'aproximado', convive: 'convive', plausible: 'plausible',
     muda: 'silencio', invertida: 'invertido'
   }
@@ -441,7 +444,7 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
       : null,
     conceptIds: [desde, hasta],
     // el Atlas solo recoge lo que el texto afirma literalmente, no lo inferido
-    aristas: estado === 'sostenido' || estado === 'equivalente'
+    aristas: estado === 'sostenido' || estado === 'equivalente' || estado === 'compatible'
       ? [{ from: desde, to: hasta, tipo: h.tipoReal ?? tipo }]
       : []
   }

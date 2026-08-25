@@ -388,6 +388,28 @@ export function adaptarBundle(raw: unknown): Contenido {
     rivales: strArr(f?.rivales)
   }))
 
+  /* ---- ¿la descripción de cada arista habla de sus dos extremos? ---- */
+  {
+    const palabras = (t: string) =>
+      t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .split(/[^a-z]+/).filter((x) => x.length > 4)
+    const encaja = (a: Arista) => {
+      const d = palabras(a.descripcion)
+      const cerca = (t: string[]) => t.length === 0 || t.some((w) => d.some((x) => x.startsWith(w.slice(0, 5))))
+      return cerca(palabras(conceptos[a.from]?.titulo ?? '')) &&
+        cerca(palabras(conceptos[a.to]?.titulo ?? ''))
+    }
+    const malas = aristas.filter((a) => !encaja(a))
+    nota(
+      'descripciones de los vínculos',
+      malas.length === 0 ? 'ok' : malas.length <= aristas.length * 0.15 ? 'parcial' : 'ausente',
+      malas.length === 0
+        ? `las ${aristas.length} hablan de sus dos extremos`
+        : `${malas.length} de ${aristas.length} no mencionan a uno de sus extremos; ` +
+          `el feedback saldrá confuso en esos casos (p. ej. ${conceptos[malas[0].from]?.titulo} → ${conceptos[malas[0].to]?.titulo})`
+    )
+  }
+
   /* ---- pools de distractores: el extractor ya sabe con qué se confunde cada cosa ---- */
   const distractores: Record<string, Distractor[]> = {}
   const pools = b.distractor_pools

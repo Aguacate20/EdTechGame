@@ -13,7 +13,7 @@ import { nivelDe, type Atlas } from '../engine/atlas'
    ========================================================================== */
 
 const COLOR: Record<string, string> = {
-  sostenido: '#5fa78f', equivalente: '#5fa78f', derivado: '#7fa8d6'
+  sostenido: '#5fa78f', equivalente: '#5fa78f', compatible: '#5fa78f', derivado: '#7fa8d6'
 }
 
 interface Nodo { id: string; titulo: string; x: number; y: number }

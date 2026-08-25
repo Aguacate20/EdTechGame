@@ -30,6 +30,26 @@ export const FAMILIAS: Record<string, string> = {
   contrasta: 'oposicion'
 }
 
+/** Tipos que NO se excluyen entre sí.
+ *  Los vínculos no son alternativas: si un texto dice que A extiende B, también
+ *  es cierto que A requiere B, porque no se amplía lo que no existe. El
+ *  extractor emite un tipo por par, pero el par puede sostener varios a la vez.
+ *  Aquí: si el texto dice la clave, lo que el jugador afirme de la lista es
+ *  igual de verdadero, no un matiz peor.
+ *  La dirección importa: extender presupone, pero requerir no amplía. */
+export const IMPLICA: Record<string, string[]> = {
+  extiende: ['requiere'],
+  ejemplifica: ['apoya'],
+  matiza: ['contrasta'],
+  generaliza: ['requiere']
+}
+
+export const razonDeCompatible: Record<string, string> = {
+  requiere: 'no se amplía ni se especializa lo que no está antes: si lo extiende, lo necesita',
+  apoya: 'un caso concreto respalda aquello de lo que es caso',
+  contrasta: 'precisar los límites de algo es una forma de distinguirlo'
+}
+
 /** Tipos donde invertir la dirección SÍ es un error conceptual grave. */
 export const ANTISIMETRICOS = new Set(['causa', 'requiere', 'generaliza', 'ejemplifica'])
 
@@ -114,7 +134,7 @@ export function proximidad(c: Contenido, a: string, b: string): 'vecino_comun' |
 }
 
 export interface Hallazgo {
-  estado: 'sostenida' | 'equivalente' | 'aproximada' | 'derivada' | 'convive' | 'plausible' | 'muda' | 'invertida'
+  estado: 'sostenida' | 'equivalente' | 'compatible' | 'aproximada' | 'derivada' | 'convive' | 'plausible' | 'muda' | 'invertida'
   tipoReal: string | null
   nota: string
   camino: Camino | null
@@ -170,6 +190,17 @@ export function juzgarVinculo(
       }
     }
   }
+  // el texto lo dice de otro modo, pero lo tuyo TAMBIÉN es cierto
+  const compatible = directa.find((x) => (IMPLICA[x.tipo] ?? []).includes(tipo))
+  if (compatible) {
+    return {
+      estado: 'compatible', tipoReal: compatible.tipo, camino: null,
+      nota: `El texto lo enuncia como «${compatible.tipo}», pero lo tuyo también se sostiene: ` +
+        `${razonDeCompatible[tipo] ?? 'las dos cosas son ciertas del mismo par'}. ` +
+        `${compatible.descripcion}`
+    }
+  }
+
   // misma familia en la misma dirección: impreciso, no falso
   const pariente = directa.find((x) => mismaFamilia(x.tipo, tipo))
   if (pariente) {
