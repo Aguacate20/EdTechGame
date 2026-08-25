@@ -1,6 +1,6 @@
 import type { Contenido } from '../content/types'
 import type { Pieza, Rol } from './pieces'
-import { juzgarVinculo } from './graph'
+import { admisibleComoPropuesta, juzgarVinculo } from './graph'
 
 /* ==========================================================================
    Las herramientas cognitivas. Cada una es una forma de AFIRMAR algo sobre
@@ -203,6 +203,8 @@ export interface Veredicto {
   reserva: string | null
   /** el veredicto salió de una inferencia, no de una lectura literal */
   inferencia: boolean
+  /** conexión que el texto no hace y que el lector propone: se guarda aparte */
+  propuesta: { from: string; to: string; tipo: string; motivo: string } | null
 }
 
 /** Cada pasiva toca un eje distinto a propósito: así apilarlas nunca es
@@ -277,6 +279,8 @@ export interface Diagnostico {
   conceptIds: string[]
   aristas: { from: string; to: string; tipo: string }[]
   fusiona: string[]
+  /** lo que el lector propone y el texto no dice: capa aparte del Atlas */
+  propuestas: { from: string; to: string; tipo: string; motivo: string }[]
   apocrifasDetectadas: string[]
   repertoriosReubicados: string[]
   autodano: number
@@ -297,7 +301,7 @@ export function rarezaRelacion(c: Contenido, tipo: string): number {
 const vacio = (t: Trazo, d: Dimension): Veredicto => ({
   trazo: t, estado: 'silencio', fichas: 0, mult: 0, nota: '', dimension: d,
   conceptIds: [], aristas: [], fusiona: [], apocrifaDetectada: null,
-  repertorioReubicado: null, reserva: null, inferencia: false
+  repertorioReubicado: null, reserva: null, inferencia: false, propuesta: null
 })
 
 /** Una apócrifa ya NO derrumba el diagrama.
@@ -427,6 +431,14 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
       : h.nota,
     reserva,
     inferencia: estado === 'derivado',
+    // una propuesta solo se guarda si los conceptos están cerca en el grafo:
+    // el listón evita que la capa propia se llene de corazonadas sin fondo
+    propuesta: estado === 'plausible' && !ra.reserva && !rb.reserva
+      ? (() => {
+          const motivo = admisibleComoPropuesta(c, desde, hasta)
+          return motivo ? { from: desde, to: hasta, tipo, motivo } : null
+        })()
+      : null,
     conceptIds: [desde, hasta],
     // el Atlas solo recoge lo que el texto afirma literalmente, no lo inferido
     aristas: estado === 'sostenido' || estado === 'equivalente'
@@ -838,6 +850,23 @@ export function evaluarDiagrama(
   }
 
   // acierto = lo que el texto sostiene, dicho al derecho, al revés o inferido
+  // Una propuesta deja de ser corazonada si en el MISMO diagrama anclas los dos
+  // conceptos al mismo caso: ahí ya has mostrado dónde operan juntos.
+  const anclas = veredictos.filter((v) => v.trazo.tool === 'ancla' && esAcierto(v.estado))
+  if (anclas.length) {
+    for (const v of veredictos) {
+      if (v.estado !== 'plausible' || v.conceptIds.length < 2) continue
+      const [a, b] = v.conceptIds
+      const sostenida = anclas.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
+      if (!sostenida) continue
+      v.estado = 'convive'
+      v.fichas = Math.round(v.fichas * 3)
+      v.mult = 0.8
+      v.propuesta = null
+      v.nota = 'Lo has sostenido con un caso: los dos operan ahí, así que ya no es una corazonada.'
+    }
+  }
+
   const sostenidos = veredictos.filter((v) => esAcierto(v.estado))
   const aproximados = veredictos.filter((v) => v.estado === 'aproximado')
   const errores = veredictos.filter((v) => v.estado === 'error')
@@ -941,6 +970,7 @@ export function evaluarDiagrama(
     conceptIds: [...new Set(veredictos.flatMap((v) => v.conceptIds))],
     aristas: sostenidos.flatMap((v) => v.aristas),
     fusiona: [...new Set(sostenidos.flatMap((v) => v.fusiona))],
+    propuestas: veredictos.map((v) => v.propuesta).filter((x): x is NonNullable<typeof x> => !!x),
     apocrifasDetectadas: sostenidos.map((v) => v.apocrifaDetectada).filter((x): x is string => !!x),
     repertoriosReubicados: sostenidos.map((v) => v.repertorioReubicado).filter((x): x is string => !!x),
     autodano: errores.length * 4 + (lentes.sinCastigoInvertido ? 0 : invertidos.length * 3),

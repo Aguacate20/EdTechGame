@@ -1,6 +1,7 @@
 import type { Contenido } from '../content/types'
 import {
-  coberturaAtlas, estadoDe, ETIQUETA_ESTADO, nivelDe, retratoDe, soloConApoyo, type Atlas
+  coberturaAtlas, contarPropuestas, estadoDe, ETIQUETA_ESTADO, nivelDe, retratoDe,
+  soloConApoyo, type Atlas
 } from '../engine/atlas'
 import { unidadesSelladas } from '../engine/objectives'
 import { GLOSA_RELACION } from '../ui/glosas'
@@ -216,6 +217,40 @@ export function HomeView({
           })}
         </div>
       </Panel>
+
+      {(() => {
+        const props = Object.values(atlas.propuestas ?? {})
+        if (!props.length) return null
+        const { confirmadas } = contarPropuestas(atlas)
+        return (
+          <Panel titulo="Tu lectura">
+            <p className="silencio" style={{ fontSize: 13.5, margin: '0 0 10px' }}>
+              {props.length} conexión(es) que el texto no hace y tú sí.
+              {confirmadas > 0 && ` De ellas, ${confirmadas} resultaron estar en el texto más adelante.`}
+              {' '}No cuentan como evidencia —el autor no las afirma— pero son tuyas y van a
+              la edición crítica.
+            </p>
+            <div className="rejilla">
+              {props.slice(0, 8).map((x) => (
+                <div className="celda propuesta" key={`${x.from}|${x.to}|${x.tipo}`}>
+                  <strong style={{ fontSize: 13 }}>
+                    {contenido.conceptos[x.from]?.titulo} <em>{x.tipo}</em>{' '}
+                    {contenido.conceptos[x.to]?.titulo}
+                  </strong>
+                  <p className="silencio" style={{ fontSize: 12, margin: '4px 0 0' }}>
+                    {x.motivo}
+                  </p>
+                  {x.confirmada && (
+                    <p className="dato" style={{ margin: '5px 0 0', color: '#85c4b1' }}>
+                      el texto acabó dándote la razón
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )
+      })()}
 
       {r.cuestan.length > 0 && (
         <Panel titulo="Lo que se te está resistiendo">

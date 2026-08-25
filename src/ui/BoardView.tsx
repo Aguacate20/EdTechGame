@@ -31,13 +31,13 @@ export interface AccionesBatalla {
 
 const COLOR_ESTADO: Record<string, string> = {
   sostenido: 'var(--verdigris)', equivalente: 'var(--verdigris)', derivado: '#7fa8d6',
-  aproximado: 'var(--laton)', plausible: '#7a6fb0', silencio: 'var(--niebla)',
+  aproximado: 'var(--laton)', plausible: '#a78bd0', silencio: 'var(--niebla)',
   invertido: 'var(--oxido)', error: 'var(--oxido)'
 }
 const ETIQUETA_ESTADO: Record<string, string> = {
   sostenido: 'sostenido', equivalente: 'lo mismo dicho al revés',
   derivado: 'se sigue del texto', aproximado: 'vas bien, otro matiz',
-  plausible: 'razonable, el texto no lo dice', silencio: 'el texto no lo dice',
+  plausible: 'propuesta tuya', silencio: 'el texto no lo dice',
   invertido: 'al revés', error: 'falla'
 }
 const TONO_NOTA: Record<string, string> = {
@@ -455,7 +455,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                       style={{ fontFamily: 'var(--mono)' }}>
                       {ver.estado === 'sostenido' ? '✓' : ver.estado === 'equivalente' ? '✓ ='
                         : ver.estado === 'derivado' ? '✓ se sigue' : ver.estado === 'aproximado' ? '≈'
-                        : ver.estado === 'plausible' ? '~' : ver.estado === 'invertido' ? '↺' : '·'}
+                        : ver.estado === 'plausible' ? '✎' : ver.estado === 'invertido' ? '↺' : '·'}
                     </text>
                   )}
                 </g>

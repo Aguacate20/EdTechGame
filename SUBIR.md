@@ -1,7 +1,7 @@
-# Subir v5.8 al repositorio
+# Subir v5.9 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.8/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.9/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.8/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.9/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,21 +25,20 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.8: el modo Aprendizaje pasa a ser fragmentado y con andamio que se retira
+git commit -m "v5.9: la capa propia del lector
 
-- una sala son tres oleadas cortas: reconocer, relacionar, sostener. Cada una
-  anade conceptos y una herramienta, y quita una ayuda
-- el andamio se retira en orden y anunciandolo: total, parcial, ninguno. En la
-  ultima oleada la lucidez ya baja
-- no se avanza acumulando sino reusando: si el diagrama no toca nada de las
-  oleadas anteriores, rinde la mitad
-- los pares fallados vuelven en la oleada siguiente
-- el nudo: si el concepto puerta sigue sin evidencia, la sala no se cierra aunque
-  el carril este vacio
-- el Vistazo antes de cada sala, con pregunta abierta y apuesta de leerlo o saltarlo
-- rutas mas cortas en aprendizaje (10 salas en vez de 16)
-- el cierre del tutorial estaba duplicado; la guia se aparta cuando tapa el foco
-- Con andamio pasa a llamarse Modo aprendizaje"
+- razonable, el texto no lo dice pasa a ser propuesta tuya: violeta, glifo de
+  pluma y mensaje al derecho. Describe lo que hizo el lector, no lo que falto
+  al autor
+- las propuestas se guardan en una capa aparte del Atlas, con panel propio y
+  seccion propia en la edicion critica. No cuentan como evidencia: subir su
+  multiplicador corromperia el modelo cognitivo
+- liston de admision para que no sea un basurero: solo entran las cercanas en el
+  grafo. Compartir pagina puntua en combate pero no se anota (86 de 112)
+- ascenso por caso: anclar los dos conceptos al mismo caso en el mismo diagrama
+  sube la propuesta a convive y triplica sus fichas
+- confirmacion retroactiva: si mas adelante aparece la arista, la propuesta queda
+  marcada y el juego lo anuncia"
 
 git push origin main
 ```

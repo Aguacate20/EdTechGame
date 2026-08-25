@@ -11,7 +11,8 @@ import type { HerramientaId } from './engine/tools'
 import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
 import { Rng, semillaLegible } from './engine/rng'
 import {
-  cargarAtlas, coberturaAtlas, descargarLog, EQUIPO_INICIAL, guardarAtlas, registrar, type Atlas
+  anotarPropuesta, cargarAtlas, coberturaAtlas, confirmarPropuestas, descargarLog,
+  EQUIPO_INICIAL, guardarAtlas, registrar, type Atlas
 } from './engine/atlas'
 import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
@@ -329,7 +330,24 @@ export default function App() {
       setIntuiciones((x) => [...new Set([...x, ...r.intuicionesNuevas])])
     }
 
-    const a: Atlas = { ...atlas, conceptos: { ...atlas.conceptos }, aristas: { ...atlas.aristas } }
+    const a: Atlas = {
+      ...atlas, conceptos: { ...atlas.conceptos }, aristas: { ...atlas.aristas },
+      propuestas: { ...atlas.propuestas }
+    }
+
+    // la capa propia: lo que el texto no dice y tú sí. No se mezcla con la
+    // evidencia, pero se guarda y se cuenta.
+    for (const pr of r.diag.propuestas) anotarPropuesta(a, pr)
+    // ¿el texto te acabó dando la razón?
+    const confirmadas = confirmarPropuestas(a, r.diag.aristas)
+    if (confirmadas.length) {
+      r.parteEnemiga.unshift({
+        texto: `Lo que propusiste antes estaba en el texto: ${confirmadas
+          .map((x) => `${contenido.conceptos[x.from]?.titulo} ${x.tipo} ${contenido.conceptos[x.to]?.titulo}`)
+          .join(' · ')}.`,
+        dano: 0
+      })
+    }
     // los vínculos descubiertos y los terrenos ganados se conservan entre expediciones
     if (r.descubiertos.length || e.terrenosGanados.length) {
       a.progreso = {

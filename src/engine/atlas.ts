@@ -31,9 +31,27 @@ export interface Progreso {
   expediciones: number
 }
 
+/** Lo que el lector propone y el texto no dice. Vive en su propia capa: no se
+ *  mezcla con la evidencia, porque si se mezclara el modelo cognitivo dejaría de
+ *  distinguir a quien leyó de quien improvisó. Pero se guarda, se cuenta y se
+ *  mira, porque proponer conexiones que el autor no hace es exactamente lo que
+ *  hace un lector crítico. */
+export interface Propuesta {
+  from: string
+  to: string
+  tipo: string
+  motivo: string
+  veces: number
+  /** el texto acabó dándote la razón: apareció la arista más adelante */
+  confirmada: boolean
+  ts: number
+}
+
 export interface Atlas {
   fuente: string
   progreso: Progreso
+  /** capa propia: clave `from|to|tipo` */
+  propuestas: Record<string, Propuesta>
   aristas: Record<string, { from: string; to: string; tipo: string; aciertos: number }>
   conceptos: Record<string, EvidenciaConcepto>
   repertoriosEstabilizados: string[]
@@ -62,7 +80,7 @@ export const EQUIPO_INICIAL = {
 
 export function atlasVacio(fuente: string): Atlas {
   return {
-    fuente, progreso: { ...PROGRESO_INICIAL }, aristas: {}, conceptos: {},
+    fuente, progreso: { ...PROGRESO_INICIAL }, propuestas: {}, aristas: {}, conceptos: {},
     repertoriosEstabilizados: [], runs: 0, victorias: 0, mejoresDiagramas: [],
     apuestasTotales: 0, apuestasCalibradas: 0
   }
@@ -75,7 +93,11 @@ export function cargarAtlas(fuente: string): Atlas {
     const a = JSON.parse(raw) as Atlas
     if (a.fuente !== fuente) return atlasVacio(fuente)
     const base = atlasVacio(fuente)
-    return { ...base, ...a, progreso: { ...base.progreso, ...(a.progreso ?? {}) } }
+    return {
+      ...base, ...a,
+      progreso: { ...base.progreso, ...(a.progreso ?? {}) },
+      propuestas: a.propuestas ?? {}
+    }
   } catch {
     return atlasVacio(fuente)
   }
@@ -162,6 +184,38 @@ export function retratoDe(a: Atlas, ids: string[]): Retrato {
     }
   }
   return r
+}
+
+/** Guarda una propuesta. Devuelve true si es nueva. */
+export function anotarPropuesta(
+  a: Atlas, p: { from: string; to: string; tipo: string; motivo: string }
+): boolean {
+  const k = `${p.from}|${p.to}|${p.tipo}`
+  const ya = a.propuestas[k]
+  if (ya) { ya.veces += 1; return false }
+  a.propuestas[k] = { ...p, veces: 1, confirmada: false, ts: Date.now() }
+  return true
+}
+
+/** ¿Alguna propuesta anterior acaba de aparecer en el texto?
+ *  Es el mejor momento del sistema: lo que aventuraste hace tres salas resulta
+ *  que estaba ahí. Se marca y se paga. */
+export function confirmarPropuestas(
+  a: Atlas, aristas: { from: string; to: string; tipo: string }[]
+): Propuesta[] {
+  const nuevas: Propuesta[] = []
+  for (const ar of aristas) {
+    for (const k of [`${ar.from}|${ar.to}|${ar.tipo}`, `${ar.to}|${ar.from}|${ar.tipo}`]) {
+      const p = a.propuestas[k]
+      if (p && !p.confirmada) { p.confirmada = true; nuevas.push(p) }
+    }
+  }
+  return nuevas
+}
+
+export const contarPropuestas = (a: Atlas) => {
+  const t = Object.values(a.propuestas)
+  return { total: t.length, confirmadas: t.filter((x) => x.confirmada).length }
 }
 
 /* ------------------------------- telemetría ------------------------------- */

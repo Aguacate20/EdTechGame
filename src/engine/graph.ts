@@ -123,6 +123,20 @@ export interface Hallazgo {
 /** El corazón del arreglo: una escalera de veredictos en vez de acierto/error.
  *  Mantiene la cientificidad —solo se premia lo que el texto sostiene o lo que
  *  se sigue de él— y deja de exigir memoria de etiquetas. */
+/** ¿Merece guardarse como propuesta del lector?
+ *  Solo si los dos conceptos están CERCA en el grafo. Una corazonada entre dos
+ *  cosas que no tienen nada que ver no es una lectura crítica, es ruido, y si
+ *  todo entrara la capa propia acabaría siendo un basurero sin significado. */
+export function admisibleComoPropuesta(c: Contenido, a: string, b: string): string | null {
+  const cerca = proximidad(c, a, b)
+  if (cerca === 'vecino_comun') return 'ambos cuelgan de un mismo concepto'
+  if (cerca === 'mismo_cluster') return 'están en la misma zona del texto'
+  // compartir página NO basta para guardarla: en un texto denso casi todo
+  // comparte página, y la capa propia acabaría siendo un listado sin sentido.
+  // Sigue puntuando en combate, pero no se anota.
+  return null
+}
+
 export function juzgarVinculo(
   c: Contenido, from: string, to: string, tipo: string
 ): Hallazgo {
@@ -212,14 +226,14 @@ export function juzgarVinculo(
     return {
       estado: 'plausible', tipoReal: null, camino: null,
       nota: cerca === 'vecino_comun'
-        ? 'El texto no los conecta entre sí, pero ambos se conectan con lo mismo: la intuición no era descabellada.'
-        : 'Son de la misma zona del texto, aunque el autor no los enlaza.'
+        ? 'Esto lo pones tú: el autor no los enlaza, pero los dos cuelgan de lo mismo. Queda anotado en tu lectura.'
+        : 'Esto lo pones tú: el autor los deja en la misma zona sin llegar a enlazarlos. Queda anotado en tu lectura.'
     }
   }
   if (paginas.length) {
     return {
       estado: 'plausible', tipoReal: null, camino: null,
-      nota: `El autor los expone en la misma página (${paginas.join(', ')}) pero no llega a enlazarlos. Puede ser tuya la conexión.`
+      nota: `Esto lo pones tú: el autor los expone juntos en la página ${paginas.join(', ')} pero no da el paso. Queda anotado en tu lectura.`
     }
   }
   return { estado: 'muda', tipoReal: null, camino: null, nota: 'El texto no afirma nada entre esos dos.' }

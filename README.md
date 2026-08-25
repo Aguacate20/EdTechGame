@@ -95,7 +95,7 @@ verdad. Por eso un vínculo no se juzga como acierto o error, sino en una escale
 | **Derivado** | no lo dice, pero **se sigue** de dos vínculos que sí están | 70% y se marca como inferencia |
 | **Aproximado** | el vínculo existe; tu tipo es de la misma familia | 50% |
 | **Convive** | el texto los trata juntos en el mismo caso, escenario, tesis o marco | 55% |
-| **Plausible** | vecino común, misma zona o misma página | 18%, sin castigo |
+| **Propuesta tuya** | vecino común, misma zona o misma página | 18%, y se guarda aparte |
 | **Mudo** | nada | cero, sin castigo |
 | **Invertido** | el texto dice lo contrario, con un tipo que sí tiene dirección | castigo |
 
@@ -109,6 +109,31 @@ invertirse, porque ahí la dirección **es** la afirmación.
 *A → C* y el texto tiene *A → B → C*, el juego responde «no lo dice directamente, pero
 se sigue», te da crédito y lo registra como inferencia. El Atlas, en cambio, solo recoge
 lo que el texto afirma literalmente.
+
+### La capa propia del lector
+
+Decir *«razonable, el texto no lo dice»* describe lo que el autor no hizo, no lo que
+hiciste tú. Ahora se llama **propuesta tuya**, va en violeta con el glifo `✎`, y el
+mensaje está al derecho: *«esto lo pones tú: el autor los deja en la misma zona sin
+llegar a enlazarlos»*.
+
+Y lo importante: **se guarda**. El Atlas tiene una capa aparte con las conexiones que el
+texto no hace y tú sí. No cuentan como evidencia —subir su multiplicador sería mentir y
+corromper el modelo cognitivo— pero se cuentan, se miran y van a la edición crítica en su
+propia sección.
+
+**El listón para que no sea un basurero:** solo entran las que están cerca en el grafo —
+vecino común o misma zona. Compartir página puntúa en combate pero **no se anota**: en un
+texto denso casi todo comparte página. Medido sobre el fixture: de 112 propuestas
+posibles se anotan 86, el 28 % de los pares.
+
+**Dos formas de ascender**, ambas por acción tuya:
+
+- **Sostenerla con un caso.** Si en el mismo diagrama anclas los dos conceptos al mismo
+  caso, deja de ser corazonada: sube a *convive* y triplica sus fichas.
+- **Que el texto te dé la razón después.** Si más adelante aparece esa arista, la
+  propuesta se marca como confirmada y el juego lo anuncia: *«lo que propusiste antes
+  estaba en el texto»*.
 
 ### Convivencia: cuando el texto los junta sin enunciar el vínculo
 
