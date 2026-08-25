@@ -89,7 +89,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
   /** paso del tutorial que toca ahora, si estamos en él */
-  guia?: { titulo: string; texto: string; indice: number; total: number } | null
+  guia?: {
+    titulo: string; texto: string; indice: number; total: number
+    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[] }
+  } | null
 }) {
   const lienzo = useRef<HTMLDivElement>(null)
   const [herramienta, setHerramienta] = useState<HerramientaId | null>(null)
@@ -150,6 +153,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const puedeCerrar = !!h && pendientes.length >= h.aridad[0] && (!h.parametro || !!param)
   const piezaSel = enMano.find((p) => p.uid === seleccion) ?? null
 
+  /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
+  const foco = guia?.foco
+  const zona = (z: string) => (foco?.zona === z ? ' destacada' : '')
+  const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
+  const herrLibre = (id: HerramientaId) => !foco?.herramientas || foco.herramientas.includes(id)
+
   const reset = () => {
     setHerramienta(null); setParam(null); setPendientes([]); setPrevisualizada(null)
   }
@@ -194,7 +203,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   }
 
   return (
-    <div className="batalla" onMouseMove={seguirRaton} onMouseLeave={() => setAyuda(null)}>
+    <div
+      className={`batalla${foco ? ' con-foco' : ''}`}
+      onMouseMove={seguirRaton} onMouseLeave={() => setAyuda(null)}
+    >
       {h && !resuelto && sobreTablero && (
         <div
           className="rastro"
@@ -292,16 +304,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </div>
 
       {/* ========================= herramientas ========================= */}
-      <aside className="zona-herramientas">
+      <aside className={`zona-herramientas${zona('herramientas')}`}>
         <span className="eyebrow">Herramientas</span>
         {listaHerramientas.map((t) => {
           const quedan = e.herramientas.filter((x) => x === t.id).length -
             e.usadas.filter((x) => x === t.id).length
-          const disponible = libres.includes(t.id) && !resuelto
+          const disponible = libres.includes(t.id) && !resuelto && herrLibre(t.id)
+          const senalada = !!foco?.herramientas?.includes(t.id)
           return (
             <button
               key={t.id}
-              className={`herr-v${herramienta === t.id ? ' activa' : ''}`}
+              className={`herr-v${herramienta === t.id ? ' activa' : ''}${senalada ? ' senala' : ''}`}
               disabled={!disponible}
               onClick={() => { if (herramienta === t.id) reset(); else { setHerramienta(t.id); setParam(null); setPendientes([]) } }}
               data-ayuda={`${t.nombre.toUpperCase()}\n${t.afirma}\n\n${t.ejemplo}`}
@@ -313,13 +326,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           )
         })}
 
-        <div className="separador" />
-        <span className="eyebrow">Pasivas</span>
+        <div className={`separador${zona('pasivas')}`} />
+        <span className={`eyebrow${zona('pasivas')}`}>Pasivas</span>
         {lentesIds.length === 0 && <span className="silencio dato">ninguna</span>}
         {lentesIds.map((id) => {
           const l = lentePorId(id)
           return (
-            <span key={id} className="pastilla ancha" data-ayuda={`${l.nombre.toUpperCase()}\n${l.regla}\n\n${l.costo}`}>
+            <span key={id} className={`pastilla ancha${zona('pasivas') ? ' senala' : ''}`} data-ayuda={`${l.nombre.toUpperCase()}\n${l.regla}\n\n${l.costo}`}>
               {l.nombre}
             </span>
           )
@@ -347,7 +360,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main className="zona-lienzo">
+      <main className={`zona-lienzo${zona('lienzo')}`}>
         <div
           className="lienzo" ref={lienzo}
           onMouseEnter={() => setSobreTablero(true)}
@@ -463,8 +476,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             const marcada = pendientes.includes(p.uid)
             const orden = pendientes.indexOf(p.uid)
             const enFoco = trazoAbierto && trazosVisibles.find((x) => x.uid === trazoAbierto)?.piezas.includes(p.uid)
-            const inservible = !!h && !pendientes.includes(p.uid) &&
-              !aceptaEnRanura(h.id, pendientes.length, p)
+            const inservible = (!!h && !pendientes.includes(p.uid) &&
+              !aceptaEnRanura(h.id, pendientes.length, p)) || !piezaLibre(p.uid)
             const cd = cedulaDe(contenido, p)
             return (
               <div
@@ -616,7 +629,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </main>
 
       {/* ============================== mano ============================== */}
-      <aside className="zona-mano">
+      <aside className={`zona-mano${zona('mano') || zona('pozo')}`}>
         <div className="fila" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="eyebrow">Mano</span>
           <span className="dato silencio">mazo {e.mazo.length}</span>
@@ -627,12 +640,20 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             return (
               <div
                 key={p.uid}
-                className={`renglon${seleccion === p.uid ? ' activa' : ''}${e.reveladas.includes(p.uid) ? ' senalada' : ''}`}
+                className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
+                  `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
+                  `${foco?.piezas ? (piezaLibre(p.uid) ? ' senala' : ' bloqueada') : ''}`}
                 style={{ borderLeftColor: cd.banda, background: cd.tono }}
-                draggable={!resuelto}
-                onDragStart={(ev) => { setArrastrando(p.uid); ev.dataTransfer.setData('text/plain', p.uid) }}
+                draggable={!resuelto && piezaLibre(p.uid)}
+                onDragStart={(ev) => {
+                  if (!piezaLibre(p.uid)) { ev.preventDefault(); return }
+                  setArrastrando(p.uid); ev.dataTransfer.setData('text/plain', p.uid)
+                }}
                 onDragEnd={() => setArrastrando(null)}
-                onClick={() => { setSeleccion(seleccion === p.uid ? null : p.uid); despertarAudio() }}
+                onClick={() => {
+                  if (!piezaLibre(p.uid)) return
+                  setSeleccion(seleccion === p.uid ? null : p.uid); despertarAudio()
+                }}
                 data-ayuda={ayudaDe(p)}
               >
                 <span className="tt">{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
@@ -645,14 +666,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ acciones ============================ */}
-      <footer className="zona-acciones">
+      <footer className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
         {!resuelto ? (
           <>
-            <button className="btn primario grande" onClick={on.afirmar} disabled={e.trazos.length === 0}>
+            <button
+              className={`btn primario grande${zona('afirmar') ? ' senala' : ''}`}
+              onClick={on.afirmar} disabled={e.trazos.length === 0}
+            >
               Afirmar el diagrama {e.trazos.length > 0 && <span className="dato">· {e.trazos.length} trazos</span>}
             </button>
             <button
-              className="btn peligro" disabled={!piezaSel || e.quemasRestantes <= 0}
+              className={`btn peligro${zona('pozo') ? ' senala' : ''}`}
+              disabled={!piezaSel || e.quemasRestantes <= 0}
               onClick={() => { if (piezaSel) { on.quemar(piezaSel.uid); setSeleccion(null) } }}
               data-ayuda={'QUEMAR\nAfirmas que la carta es una falsificación. Si aciertas: tinta, una carta nueva y bonificación. Si te equivocas, destruyes material bueno.'}
             >

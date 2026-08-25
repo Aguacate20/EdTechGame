@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Contenido } from './content/types'
 import {
   afirmar as afirmarDiagrama, cambiar as cambiarPieza, iniciarBatalla, quemar as quemarPieza,
@@ -27,7 +27,7 @@ import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 
 type Fase =
   | 'cargar' | 'inicio' | 'mapa' | 'batalla'
-  | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin'
+  | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin' | 'tutorial-fin'
 
 const LUCIDEZ_MAX = 80
 
@@ -59,6 +59,9 @@ export default function App() {
   const [guardada, setGuardada] = useState<ExpedicionGuardada | null>(null)
   /** el tutorial se superpone: al salir se recupera el texto que estabas usando */
   const [tutorial, setTutorial] = useState<number | null>(null)
+  /** los pasos del tutorial son monótonos: una vez hechos, no vuelven atrás
+   *  aunque afirmar limpie el tablero y la condición deje de cumplirse */
+  const [pasosHechos, setPasosHechos] = useState<string[]>([])
   const previoRef = useRef<{ contenido: Contenido; atlas: Atlas } | null>(null)
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
@@ -148,6 +151,19 @@ export default function App() {
     setFase('mapa')
   }, [contenido, guardada])
 
+  // Un paso cumplido lo está para siempre: afirmar limpia el tablero, así que
+  // recalcular la condición cada turno hacía volver la guía al primer paso.
+  useEffect(() => {
+    if (tutorial === null || !batalla) return
+    const sala = SALAS_TUTORIAL[tutorial]
+    if (!sala) return
+    const nuevos = sala.pasos.filter((x) => x.hecho(batalla)).map((x) => x.clave)
+    if (!nuevos.length) return
+    setPasosHechos((prev) =>
+      nuevos.every((k) => prev.includes(k)) ? prev : [...new Set([...prev, ...nuevos])]
+    )
+  }, [batalla, tutorial])
+
   /** El tutorial no usa el generador de rutas: son dos salas escritas a mano,
    *  con mano y frente fijos, para poder guiar paso a paso. */
   const empezarTutorial = useCallback((indice: number) => {
@@ -158,12 +174,14 @@ export default function App() {
     const rng = new Rng(`tutorial-${indice}`)
     rngRef.current = rng
     runIdRef.current = `tutorial-${indice}-${Date.now()}`
-    setContenido(c); setAtlas(a); setTutorial(indice)
+    setContenido(c); setAtlas(a); setTutorial(indice); setPasosHechos([])
     setLucidez(LUCIDEZ_MAX); setAprendizaje(true)
-    setLentes([]); setSellos([]); setHerramientas(sala.herramientas)
+    setLentes(sala.lente ? [sala.lente] : []); setSellos([]); setHerramientas(sala.herramientas)
     setManoExtra(0); setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([])
     setVictoria(false)
-    const ctxT: ContextoBatalla = { contenido: c, rng, lentes: combinarLentes([]) }
+    const ctxT: ContextoBatalla = {
+      contenido: c, rng, lentes: combinarLentes(sala.lente ? [sala.lente] : [])
+    }
     setBatalla(iniciarBatalla(ctxT, sala.conceptIds, {
       herramientas: sala.herramientas, relaciones: sala.relaciones,
       casos: [], tesis: [], intuiciones: [], fusionados: [], terrenos: [], sellos: [],
@@ -173,6 +191,17 @@ export default function App() {
     }, 'facil', 0, 6))
     setFase('batalla')
   }, [])
+
+  useEffect(() => {
+    if (tutorial === null || !batalla) return
+    const sala = SALAS_TUTORIAL[tutorial]
+    if (!sala) return
+    const cumplidos = sala.pasos.filter((x) => x.hecho(batalla)).map((x) => x.clave)
+    if (!cumplidos.length) return
+    setPasosHechos((prev) =>
+      cumplidos.every((c) => prev.includes(c)) ? prev : [...new Set([...prev, ...cumplidos])]
+    )
+  }, [batalla, tutorial])
 
   const avanzar = useCallback(() => {
     if (!ruta) return
@@ -346,7 +375,7 @@ export default function App() {
     if (tutorial !== null && (batalla.fase === 'ganado' || vivos(batalla).length === 0)) {
       const siguiente = tutorial + 1
       if (SALAS_TUTORIAL[siguiente]) { empezarTutorial(siguiente); return }
-      setFase('inicio'); return
+      setFase('tutorial-fin'); return
     }
     if (tutorial !== null && batalla.fase === 'perdido') { setFase('inicio'); return }
     if (batalla.fase === 'perdido') {
@@ -479,7 +508,7 @@ export default function App() {
             if (tutorial === null) return null
             const sala = SALAS_TUTORIAL[tutorial]
             if (!sala) return null
-            const i = sala.pasos.findIndex((x) => !x.hecho(batalla))
+            const i = sala.pasos.findIndex((x) => !pasosHechos.includes(x.clave))
             const idx = i < 0 ? sala.pasos.length - 1 : i
             const paso = sala.pasos[idx]
             return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length }
@@ -535,6 +564,77 @@ export default function App() {
 
       {fase === 'atlas' && (
         <AtlasView atlas={atlas} contenido={contenido} onVolver={() => setFase(faseAnterior)} />
+      )}
+
+      {fase === 'tutorial-fin' && (
+        <div className="envoltura pila" style={{ maxWidth: 660 }}>
+          <span className="eyebrow">Tutorial completado</span>
+          <h2 className="display">Ya sabes lo que hace falta</h2>
+          <p className="serif-lectura silencio">
+            Poner piezas, decir algo verdadero sobre ellas y encadenar varias cosas en el
+            mismo diagrama. Eso es todo el juego. Lo demás —las lentes, los sellos, los
+            vínculos que se descubren derribando enemigos— va llegando solo.
+          </p>
+          <p className="serif-lectura">
+            Ahora hazlo con un texto de verdad. Sube tu propio PDF procesado y el mismo
+            carril se llenará con los conceptos de tu materia: los enemigos serán las
+            confusiones de ese texto, y el Atlas que construyas será tuyo.
+          </p>
+          <div className="fila">
+            <button className="btn primario grande" onClick={() => {
+              const prev = previoRef.current
+              setTutorial(null)
+              if (prev) {
+                setContenido(prev.contenido); setAtlas(prev.atlas)
+                setGuardada(leerExpedicion(prev.contenido.fuente))
+                setFase('inicio')
+              } else {
+                setContenido(null); setFase('cargar')
+              }
+            }}>
+              {previoRef.current ? 'Volver a mi texto' : 'Cargar mi texto'}
+            </button>
+            <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
+              Repetir el tutorial
+            </button>
+          </div>
+        </div>
+      )}
+
+      {fase === 'tutorial-fin' && (
+        <div className="envoltura pila" style={{ maxWidth: 640 }}>
+          <span className="eyebrow">Tutorial completado</span>
+          <h2 className="display">Ya sabes cómo se pelea</h2>
+          <p className="serif-lectura silencio">
+            Poner las piezas, decir algo verdadero sobre ellas y afirmarlo todo junto. Eso
+            es el juego entero. Lo demás —las lentes, los sellos, las doce herramientas—
+            solo cambia cuánto rinde cada cosa que digas.
+          </p>
+          <p className="serif-lectura">
+            Ahora hazlo con lo que de verdad tienes que estudiar. Sal del tutorial, carga
+            tu texto y verás que los enemigos son los mismos: la diferencia es que el mapa
+            que dejes en pie será el tuyo.
+          </p>
+          <div className="fila">
+            <button
+              className="btn primario grande"
+              onClick={() => {
+                const prev = previoRef.current
+                setTutorial(null)
+                if (prev) {
+                  setContenido(prev.contenido); setAtlas(prev.atlas)
+                  setGuardada(leerExpedicion(prev.contenido.fuente))
+                  setFase('inicio')
+                } else {
+                  setContenido(null); setFase('cargar')
+                }
+              }}
+            >{previoRef.current ? 'Volver a mi texto' : 'Cargar mi texto'}</button>
+            <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
+              Repetir el tutorial
+            </button>
+          </div>
+        </div>
       )}
 
       {fase === 'fin' && (

@@ -290,18 +290,32 @@ texto que estuvieras usando: al salir se recupera tal cual, con su Atlas y su ex
 a medias si la había. Mientras está activo no se pueden lanzar expediciones generadas
 sobre el contenido del tutorial: hay un solo camino, que son las dos salas guionizadas.
 
-Son **dos combates prefabricados** con mano fija, frente fijo y una guía que avanza sola
-cuando haces lo que toca:
+Son **tres combates prefabricados** con mano fija, frente fijo y una guía que avanza
+sola cuando haces lo que toca:
 
 | Sala | Enseña | Frente |
 |---|---|---|
 | **Poner y emparejar** | arrastrar piezas, usar la Identidad, afirmar | dos Copistas |
-| **Relacionar y desconfiar** | encadenar dos flechas, detectar una falsificación, recoger mejora | Copista, Errata y Apócrifo |
+| **Relacionar y desconfiar** | encadenar dos flechas y detectar una falsificación | Copista, Errata y Apócrifo |
+| **El golpe grande** | qué hace una pasiva y cómo se encienden los combos | un Dogma, que no cede ante una sola frase |
+
+La tercera regala la **Lente del arquitecto** y reparte justo las fichas que permiten
+encadenar, emparejar y encerrar en el mismo diagrama: la idea es que el jugador vea el
+número dispararse una vez, para que entienda qué persigue el juego. Al terminar hay un
+cierre que le invita a hacerlo con su propio texto.
+
+### Pistas visuales
+
+Cada paso declara **qué se ilumina y qué se bloquea**. El resto de la pantalla se
+oscurece al 34 %, la zona que toca queda a plena luz, y lo que hay que tocar late con un
+contorno de latón y una flecha que apunta. Las fichas que no corresponden al paso no se
+pueden arrastrar ni seleccionar, y las herramientas que no tocan quedan deshabilitadas.
 
 La guía vive en un panel fijo abajo a la izquierda, con los pasos marcados. Cada paso
 tiene una condición real sobre el estado de la partida —«hay dos piezas en el tablero»,
 «has trazado una identidad», «quemaste la apócrifa»— así que avanza cuando de verdad lo
-hiciste, no por tiempo.
+hiciste, no por tiempo. Y **es monótona**: una vez cumplido, un paso no vuelve atrás
+aunque afirmar limpie el tablero y su condición deje de cumplirse.
 
 Todo es determinista: la mano, el frente y la falsificación son siempre los mismos. La
 apócrifa de la segunda sala es la confusión clásica —un murciélago con la descripción de
