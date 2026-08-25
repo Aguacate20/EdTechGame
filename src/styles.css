@@ -1136,3 +1136,25 @@ label.campo > span { display: block; margin-bottom: 5px; }
 @media (prefers-reduced-motion: reduce) {
   .senala, .renglon.senala::after, .herr-v.senala::after { animation: none; }
 }
+
+/* la guía se aparta cuando lo que hay que mirar está justo debajo de ella */
+.guia.apartada { left: auto; right: 262px; bottom: 96px; }
+
+/* el foco se nota más: lo iluminado sube de brillo, no solo el resto baja */
+.batalla.con-foco .destacada {
+  filter: brightness(1.12);
+  box-shadow: 0 0 0 1px rgba(201,162,39,.35), 0 0 34px rgba(201,162,39,.18);
+  border-radius: var(--r);
+}
+.batalla.con-foco .zona-herramientas.destacada,
+.batalla.con-foco .zona-mano.destacada { padding: 4px; }
+
+/* las pastillas de pasiva también laten cuando son el objetivo */
+.pastilla.senala {
+  outline: 2px solid var(--laton); outline-offset: 2px;
+  animation: latido 1.5s ease-in-out infinite;
+}
+.pastilla.senala::after {
+  content: '◀'; margin-left: 6px; color: var(--laton);
+  display: inline-block; animation: apuntar 1.1s ease-in-out infinite;
+}

@@ -1,7 +1,7 @@
-# Subir v5.7 al repositorio
+# Subir v5.7.1 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.7/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.7.1/patch50/edtech-game`
 
 v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
 `boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
@@ -9,7 +9,7 @@ v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `thr
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.7/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.7.1/patch50/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -25,17 +25,14 @@ find src scripts public docs -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.7: tutorial con foco visual, tercera sala y cierre
+git commit -m "v5.7.1: arreglos del tutorial y renombrado del modo
 
-- los pasos de la guia son monotonos: afirmar limpia el tablero y la condicion del
-  primer paso volvia a ser falsa, asi que la guia se reiniciaba sola. Corregido
-- pistas visuales tipicas de tutorial: se oscurece el resto de la pantalla, la zona
-  que toca queda iluminada, lo que hay que tocar late con flecha que apunta, y lo
-  demas no se puede arrastrar ni pulsar
-- tercera sala con la Lente del arquitecto regalada y una mano preparada para que
-  el combo salga grande, contra un Dogma que exige cadenas
-- pantalla de cierre que invita a jugar con el texto propio
-- textos de los pasos reescritos para que no se repitan entre salas"
+- el cierre del tutorial estaba duplicado en el render: queda uno solo
+- la guia se aparta a la derecha cuando el foco esta en la columna izquierda,
+  que era justo lo que tapaba
+- el foco ahora sube el brillo de lo iluminado en vez de solo bajar el resto,
+  y las pastillas de pasiva laten y apuntan como el resto de objetivos
+- Con andamio pasa a llamarse Modo aprendizaje"
 
 git push origin main
 ```

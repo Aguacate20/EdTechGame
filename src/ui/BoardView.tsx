@@ -269,7 +269,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       )}
 
       {guia && (
-        <aside className="guia">
+        <aside className={`guia${
+          guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' ? ' apartada' : ''
+        }`}>
           <span className="eyebrow">
             Tutorial · paso {guia.indice + 1} de {guia.total}
           </span>

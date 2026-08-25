@@ -91,7 +91,7 @@ export function HomeView({
           <div>
             <span className="eyebrow">Expedición a medias</span>
             <h2 className="h2" style={{ margin: '2px 0 2px' }}>
-              Acto {guardada.actoIdx + 1}{guardada.aprendizaje ? ' · con andamio' : ''}
+              Acto {guardada.actoIdx + 1}{guardada.aprendizaje ? ' · aprendizaje' : ''}
             </h2>
             <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>
               La dejaste {haceCuanto(guardada.guardadaEn)} con {guardada.lucidez} de lucidez.
@@ -133,7 +133,7 @@ export function HomeView({
           <button
             className="btn grande" onClick={() => onExpedicion(true)}
             data-ayuda={'MODO APRENDIZAJE\nLos conceptos que no has tocado llegan enteros, las falsificaciones vienen señaladas al principio, cada sala se abre con la idea que engloba a las demás y la expedición no se pierde por quedarte sin lucidez.\n\nLa evidencia cuenta, pero queda marcada como obtenida con apoyo: para «lo dominas» hace falta al menos una vez sin andamio.'}
-          >Con andamio</button>
+          >Modo aprendizaje</button>
           </>)}
         </div>
       </div>

@@ -27,7 +27,7 @@ import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 
 type Fase =
   | 'cargar' | 'inicio' | 'mapa' | 'batalla'
-  | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin' | 'tutorial-fin'
+  | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin'
 
 const LUCIDEZ_MAX = 80
 
@@ -594,42 +594,6 @@ export default function App() {
             }}>
               {previoRef.current ? 'Volver a mi texto' : 'Cargar mi texto'}
             </button>
-            <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
-              Repetir el tutorial
-            </button>
-          </div>
-        </div>
-      )}
-
-      {fase === 'tutorial-fin' && (
-        <div className="envoltura pila" style={{ maxWidth: 640 }}>
-          <span className="eyebrow">Tutorial completado</span>
-          <h2 className="display">Ya sabes cómo se pelea</h2>
-          <p className="serif-lectura silencio">
-            Poner las piezas, decir algo verdadero sobre ellas y afirmarlo todo junto. Eso
-            es el juego entero. Lo demás —las lentes, los sellos, las doce herramientas—
-            solo cambia cuánto rinde cada cosa que digas.
-          </p>
-          <p className="serif-lectura">
-            Ahora hazlo con lo que de verdad tienes que estudiar. Sal del tutorial, carga
-            tu texto y verás que los enemigos son los mismos: la diferencia es que el mapa
-            que dejes en pie será el tuyo.
-          </p>
-          <div className="fila">
-            <button
-              className="btn primario grande"
-              onClick={() => {
-                const prev = previoRef.current
-                setTutorial(null)
-                if (prev) {
-                  setContenido(prev.contenido); setAtlas(prev.atlas)
-                  setGuardada(leerExpedicion(prev.contenido.fuente))
-                  setFase('inicio')
-                } else {
-                  setContenido(null); setFase('cargar')
-                }
-              }}
-            >{previoRef.current ? 'Volver a mi texto' : 'Cargar mi texto'}</button>
             <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
               Repetir el tutorial
             </button>
