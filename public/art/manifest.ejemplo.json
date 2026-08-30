@@ -1,0 +1,31 @@
+{
+  "_leeme": "Renombra este archivo a manifest.json y ajusta rutas/frames a tu pack. Frames CUADRADOS en una sola fila. Los gestos que falten caen a 'quieto'. 'volteado': true espeja packs que miran a la derecha.",
+  "enemigos/copista": {
+    "quieto": { "src": "sprites/goblin/Idle.png",     "frames": 4, "fps": 8 },
+    "golpea": { "src": "sprites/goblin/Attack.png",   "frames": 8, "fps": 12 },
+    "herido": { "src": "sprites/goblin/Take Hit.png", "frames": 4, "fps": 10 },
+    "cae":    { "src": "sprites/goblin/Death.png",    "frames": 4, "fps": 8, "loop": false },
+    "volteado": true
+  },
+  "enemigos/errata": {
+    "quieto": { "src": "sprites/flying_eye/Flight.png",   "frames": 8, "fps": 12 },
+    "golpea": { "src": "sprites/flying_eye/Attack.png",   "frames": 8, "fps": 12 },
+    "herido": { "src": "sprites/flying_eye/Take Hit.png", "frames": 4, "fps": 10 },
+    "cae":    { "src": "sprites/flying_eye/Death.png",    "frames": 4, "fps": 8, "loop": false },
+    "volteado": true
+  },
+  "enemigos/dogma": {
+    "quieto": { "src": "sprites/mushroom/Idle.png",     "frames": 4, "fps": 6 },
+    "golpea": { "src": "sprites/mushroom/Attack.png",   "frames": 8, "fps": 12 },
+    "herido": { "src": "sprites/mushroom/Take Hit.png", "frames": 4, "fps": 10 },
+    "cae":    { "src": "sprites/mushroom/Death.png",    "frames": 4, "fps": 8, "loop": false },
+    "volteado": true
+  },
+  "enemigos/tratado": {
+    "quieto": { "src": "sprites/wizard/Idle.png",     "frames": 8, "fps": 8 },
+    "golpea": { "src": "sprites/wizard/Attack1.png",  "frames": 8, "fps": 12 },
+    "herido": { "src": "sprites/wizard/Take hit.png", "frames": 3, "fps": 8 },
+    "cae":    { "src": "sprites/wizard/Death.png",    "frames": 7, "fps": 8, "loop": false },
+    "volteado": true
+  }
+}

@@ -1327,3 +1327,36 @@ label.campo > span { display: block; margin-bottom: 5px; }
   letter-spacing: .02em;
 }
 .vida-num i { font-style: normal; opacity: .45; font-size: 9px; }
+
+/* v5.15 · el archivo vestido: grabado sobre tinta */
+.retrato img {
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.5)) drop-shadow(0 0 6px rgba(237,231,218,.06));
+}
+.retrato[data-gesto='herido'] img { filter: drop-shadow(0 0 7px rgba(168,68,60,.55)) brightness(1.15); }
+.retrato[data-gesto='critico'] img { filter: drop-shadow(0 0 10px rgba(201,162,39,.65)) brightness(1.3); }
+.retrato[data-gesto='cae'] img { filter: grayscale(1) brightness(.6); }
+.retrato[data-gesto='retrocede'] img { opacity: .55; }
+/* el Eco es un calco translúcido de tu propia intuición */
+img[src$='enemigos/eco.svg'] { opacity: .68; }
+
+/* ================= v5.16 · sprites de la comunidad y escenarios ================= */
+
+@keyframes barridoSprite { to { transform: translateX(var(--fin, -100%)) } }
+.retrato-sprite { overflow: hidden; display: inline-flex; }
+.retrato-sprite img {
+  image-rendering: pixelated;
+  filter: none; /* los sprites traen su propia luz: sin sombra de grabado */
+}
+.retrato-sprite[data-gesto='retrocede'] img { opacity: .55; }
+.retrato-sprite[data-gesto='cae'] img { filter: grayscale(.7) brightness(.7); }
+
+.fondo-acto { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.fondo-acto img {
+  width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated;
+  opacity: .2; filter: saturate(.75);
+}
+.fondo-acto::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(19,26,36,.55), rgba(19,26,36,.86) 62%, var(--tinta) 96%);
+}
+.app > *:not(.fondo-acto) { position: relative; z-index: 1; }

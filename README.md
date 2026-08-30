@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.14
+# El Archivo Infinito — v5.16
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -403,6 +403,28 @@ multiplicar ≥3× el mejor golpe del lector informado, y regalarle ~nada al aza
   carril entero de una. El Eco lo corta (retrocede y absorbe), y un tanque cuyo
   blindaje tu diagrama no vence frena la cadena — que es su oficio. Lo que
   sobra cuando ya no queda a quién golpear sigue volviendo como lucidez.
+
+## El archivo vestido (v5.15)
+
+Primeras ilustraciones reales en las ranuras de `public/art/`: 12 enemigos y
+el jugador, tomadas de **game-icons.net** (Lorc y Delapouite, CC BY 3.0),
+limpiadas a la paleta del juego. Cada icono ES la patología de lectura, no un
+monstruo: la pluma que copia, la mancha que se cuela, el grito que alcanza,
+la máscara doble de la atribución falsa, el templo que solo cede de lado.
+Los estados (`herido`, `critico`, `cae`, `retrocede`) tiñen por CSS, y el Eco
+va translúcido porque es tu propio calco. Crédito visible en el inicio, mapa
+de origen en `public/art/CREDITS.md`. Reemplazables uno a uno cuando llegue
+arte propio o Rive: el contrato de ranuras no cambió.
+
+## Sprites de la comunidad y escenarios (v5.16)
+
+Las ranuras de arte ahora aceptan **tiras de frames animadas** declaradas en
+`public/art/manifest.json` (packs de itch.io / OpenGameArt caen directo, con
+los siete gestos mapeados a idle/attack/hit/death), y cada acto acepta un
+**escenario** en `public/art/fondos/actoN.png`, atenuado tras un velo para que
+la mesa siga legible. Combo recomendado y verificado en `public/art/LEEME.md`:
+LuizMelo (CC0, animado) + ansimuz Gothicvania (libre con crédito). Sin
+manifest ni fondos, todo sigue exactamente igual.
 
 ## Pendientes
 

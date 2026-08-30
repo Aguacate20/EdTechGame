@@ -312,6 +312,9 @@ export function HomeView({
         </button>
         <button className="btn fantasma" onClick={onCambiarTexto}>Cambiar de texto</button>
       </div>
+      <p className="silencio" style={{ fontSize: 11.5, margin: '4px 0 0' }}>
+        Iconos de Lorc y Delapouite — game-icons.net (CC BY 3.0)
+      </p>
     </div>
   )
 }

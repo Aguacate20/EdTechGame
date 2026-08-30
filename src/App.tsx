@@ -27,6 +27,7 @@ import { BattleMap } from './ui/BattleMap'
 import { VistazoView } from './ui/VistazoView'
 import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
+import { FondoActo } from './ui/assets'
 import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 import {
   encargoCumplido, juzgarReflexion, lucidezEncargo, primaEncargo, proponerEncargos, type Encargo
@@ -700,6 +701,7 @@ export default function App() {
 
   return (
     <div className="app">
+      {['mapa', 'vistazo', 'batalla', 'resumen'].includes(fase) && <FondoActo n={actoIdx + 1} />}
       <header className="barra">
         <span className="marca">El Archivo Infinito</span>
         <span className="eyebrow">

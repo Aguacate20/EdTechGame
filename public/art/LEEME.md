@@ -63,3 +63,35 @@ quieto · avanza · golpea · herido · critico · cae · retrocede
 
 Hoy se animan por CSS sobre la silueta. Cuando llegue Rive, esos siete estados son los
 de la máquina y el cambio es reemplazar `Retrato` sin tocar el resto.
+
+
+## Sprites animados de la comunidad (v5.16)
+
+Los packs de itch.io / OpenGameArt que traen la animación como tiras de frames
+caen en las MISMAS ranuras vía `manifest.json` (hay un `manifest.ejemplo.json`
+listo para renombrar). Si un id tiene ficha en el manifest se anima; si no,
+usa su SVG; si tampoco, el marcador. Los siete gestos mapean a los clips del
+pack (idle→quieto, attack→golpea, take hit→herido, death→cae) y los que
+falten caen a `quieto`.
+
+### Combo recomendado (verificado, gratis)
+
+| Qué | Pack | Licencia |
+|---|---|---|
+| Enemigos animados | **LuizMelo — Monsters Creatures Fantasy** (luizmelo.itch.io/monsters-creatures-fantasy) | CC0, crédito opcional |
+| Jefe animado | **LuizMelo — Evil Wizard 2** (luizmelo.itch.io/evil-wizard-2) | CC0 |
+| Escenarios parallax | **ansimuz — Gothicvania Town / Cemetery / Legacy Collection** (ansimuz.itch.io) | libre uso personal y comercial, crédito apreciado |
+
+Instalación: descomprimir en `public/art/sprites/<criatura>/…png`, renombrar
+`manifest.ejemplo.json` → `manifest.json` y ajustar rutas y nº de frames
+(mirar el ancho del PNG ÷ alto = frames). Escenarios: aplanar las capas del
+parallax a un PNG y soltarlo como `public/art/fondos/acto1.png` (2, 3…).
+
+### La decisión estética, dicha al derecho
+
+El pixel-art de estos packs y el grabado de los SVG actuales son DOS lenguajes:
+mezclados en la misma pantalla se pelean. El manifest permite probar ambos y
+elegir; si el pixel-art gana, conviene cubrir los 12 enemigos con sprites y
+dejar los SVG solo de respaldo. Si gana el grabado, los fondos pueden salir de
+láminas de dominio público (oldbookillustrations.com, British Library en
+Flickr Commons) en vez de parallax pixel.
