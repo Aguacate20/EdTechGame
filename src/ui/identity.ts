@@ -46,18 +46,28 @@ const TEXTURA: Record<string, Cedula['textura']> = {
   integrar: 'manchado'
 }
 
-const BANDA: Record<Pieza['clase'], string> = {
-  etiqueta: '#5a6b7d',
-  definicion: '#8a7fa8',
-  concepto: '#4e8c7a',
-  apocrifa: '#7d6b5a',
-  caso: '#7a6fb0',
-  tesis: '#b07f4a',
-  criterio: '#a08a4a',
-  marco: '#4a7fb0',
-  intuicion: '#b9ad92',
-  contexto: '#6f8f7d',
-  subdimension: '#9aa17d'
+/** Un color por CLASE de pieza: es el lenguaje con el que se lee la mano.
+ *  Regla de hierro: la apócrifa imita a la carta de concepto — si tuviera un
+ *  color propio, se cazarían falsificaciones por la banda y la mecánica de
+ *  discriminar moriría. */
+export const BANDA: Record<Pieza['clase'], string> = {
+  etiqueta: '#6f87a6',      // Nombre: azul acero
+  definicion: '#9b7fc4',    // Descripción suelta: violeta
+  concepto: '#4e8c7a',      // Concepto completo: verdigrís
+  apocrifa: '#4e8c7a',      // ¡idéntica al concepto, a propósito!
+  caso: '#2f8fa3',          // Caso: cian
+  tesis: '#b07f4a',         // Tesis: ámbar
+  criterio: '#d0b054',      // Criterio: latón claro
+  marco: '#4a7fb0',         // Marco: azul
+  intuicion: '#c06a92',     // Intuición: rosa — que se note lo que traes tú
+  contexto: '#6f8f7d',      // Terreno: verde apagado
+  subdimension: '#9aa17d'   // Subdimensión: oliva
+}
+
+export const NOMBRE_CLASE: Record<Pieza['clase'], string> = {
+  etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Concepto',
+  apocrifa: 'Concepto', caso: 'Caso', tesis: 'Tesis', criterio: 'Criterio',
+  marco: 'Marco', intuicion: 'Intuición', contexto: 'Terreno', subdimension: 'Subdimensión'
 }
 
 export function cedulaDe(c: Contenido, p: Pieza): Cedula {

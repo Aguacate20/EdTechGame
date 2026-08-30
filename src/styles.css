@@ -1372,3 +1372,20 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 }
 .chip-ajuste.malo { color: #e5a49e; border-color: #6d3430; background: rgba(109,52,48,.12); }
 .trazo-chip .asentado { color: #85c4b1; font-size: 10.5px; letter-spacing: .03em; }
+
+/* v5.19 · lenguaje de clases, leyenda, patrón y bloqueos */
+.naipe .borde { width: 6px !important; }
+.renglon { border-left-width: 5px !important; }
+.leyenda-clases { display: flex; flex-wrap: wrap; gap: 6px 10px; padding: 6px 2px 2px; }
+.leyenda-item {
+  display: inline-flex; align-items: center; gap: 5px; cursor: help;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--niebla);
+}
+.leyenda-item i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.btn-desnudo { background: none; border: none; cursor: pointer; padding: 0; text-decoration: underline dotted; }
+.chip-patron {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; cursor: help;
+  color: var(--niebla); border: 1px dashed var(--tinta-borde); border-radius: 99px; padding: 3px 10px;
+}
+.bloqueos { border-left: 3px solid var(--oxido); padding: 4px 8px; display: grid; gap: 3px; }

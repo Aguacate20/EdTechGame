@@ -27,6 +27,30 @@ const DISTANCIAS: Distancia[] = ['cercana', 'media', 'lejana']
 
 /* ------------------------------------------------------------------ */
 
+const clavePar = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`)
+
+function leerCoocurrencias(b: any): Set<string> {
+  const crudo = b?.cooccurrences ?? b?.graph?.cooccurrences ?? b?.graph?.co_ocurrencias ?? []
+  const out = new Set<string>()
+  for (const x of Array.isArray(crudo) ? crudo : []) {
+    const a = x?.a ?? x?.from ?? x?.concept_a ?? x?.pair?.[0] ?? x?.concept_ids?.[0]
+    const c2 = x?.b ?? x?.to ?? x?.concept_b ?? x?.pair?.[1] ?? x?.concept_ids?.[1]
+    if (typeof a === 'string' && typeof c2 === 'string') out.add(clavePar(a, c2))
+  }
+  return out
+}
+
+function leerPuentes(b: any): Record<string, string> {
+  const crudo = b?.latent_links ?? b?.puentes ?? b?.graph?.latent_links ?? b?.content?.latent_links ?? []
+  const out: Record<string, string> = {}
+  for (const x of Array.isArray(crudo) ? crudo : []) {
+    const a = x?.from ?? x?.a ?? x?.concept_ids?.[0], c2 = x?.to ?? x?.b ?? x?.concept_ids?.[1]
+    const j = x?.justificacion ?? x?.justification ?? x?.reason ?? ''
+    if (typeof a === 'string' && typeof c2 === 'string' && j) out[clavePar(a, c2)] = j
+  }
+  return out
+}
+
 export function adaptarBundle(raw: unknown): Contenido {
   const b = any_(raw) ?? {}
   const diag: Diagnostico[] = []
@@ -450,6 +474,8 @@ export function adaptarBundle(raw: unknown): Contenido {
   )
 
   return {
+    coocurrencias: leerCoocurrencias(b),
+    puentes: leerPuentes(b),
     fuente: str(b.source_filename, 'fuente sin nombre'),
     bundleVersion: str(b.bundle_version, '—'),
     schema: str(b.compiled_from_schema, '—'),

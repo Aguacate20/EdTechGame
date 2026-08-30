@@ -62,6 +62,8 @@ export interface ResultadoTurno {
   cartasPerdidas: number
   /** resultado del sello de confianza, si el jugador selló este diagrama */
   sello: { acertado: boolean; nota: string } | null
+  /** cómo golpeó el diagrama: puntual, onda (Cierre) o barrido (Constelación) */
+  patron: 'puntual' | 'onda' | 'barrido'
   /** lo que el golpe sobró tras derribar: se convierte en lucidez */
   sobredano: number
   /** conceptos marcados en la reflexión anterior que aquí se sostuvieron */
@@ -679,19 +681,24 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   }
 
   if (diag.dano > 0) {
-    // El golpe recorre el carril de cerca a lejos. Dentro del alcance, cada
-    // objetivo recibe su parte (con la caída del 0.62); y lo que SOBRA al
-    // derribar se ARRASTRA al siguiente, blindaje mediante, hasta agotarse.
-    // Un supergolpe puede limpiar el carril entero; un tanque cuyo blindaje
-    // tu diagrama no vence corta la cadena, que es exactamente su oficio.
+    // El patrón del golpe lo decide la FORMA del diagrama:
+    //  · puntual (por defecto): un solo objetivo, daño completo; lo que sobra
+    //    al derribarlo DESBORDA al siguiente, blindaje mediante, en cadena.
+    //  · onda (combo Cierre): los primeros `alcance` reciben el daño completo.
+    //  · barrido (combo Constelación): TODO el carril recibe el daño completo.
+    // Los combos difíciles compran área; el resto del juego compra número.
     const objetivos = vivos(e).sort((a, b) => a.posicion - b.posicion)
-    let cascada = 1
+    const aciertosN = diag.veredictos.filter((v) => esAcierto(v.estado)).length
+    const barrido = diag.combos.some((x) => x.id === 'constelacion')
+    // onda: el Cierre la compra, y también la ANDANADA (3+ sostenidas a la vez)
+    const onda = !barrido && (diag.combos.some((x) => x.id === 'cierre') || aciertosN >= 3)
+    const directos = barrido ? objetivos.length : onda ? Math.min(diag.alcance, objetivos.length) : 1
     let arrastre = 0
     for (let i = 0; i < objetivos.length; i++) {
       const en = objetivos[i]
-      const base = i < diag.alcance ? diag.dano * cascada : 0
+      const base = i < directos ? diag.dano : 0
       const entrante = base + arrastre
-      if (entrante <= 0) { if (i >= diag.alcance) break; cascada *= 0.62; continue }
+      if (entrante <= 0) { if (i >= directos) break; continue }
       arrastre = 0
       const { factor, motivo } = factorBlindaje(en, formaDiag)
       const dano = Math.max(factor < 1 ? 1 : 2, Math.round(entrante * factor))
@@ -718,7 +725,6 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
         if (en.hp === 0 && dano > hpAntes) arrastre = dano - hpAntes
       }
       danoTotal += dano
-      if (i < diag.alcance) cascada *= 0.62
     }
     // lo que sobra cuando ya no queda a quién golpear vuelve como claridad
     sobredano = arrastre
@@ -759,7 +765,11 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     descubiertos,
     impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
     intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0,
-    sello, sobredano, cuentasSaldadas,
+    sello,
+    patron: diag.combos.some((x) => x.id === 'constelacion') ? 'barrido'
+      : (diag.combos.some((x) => x.id === 'cierre') ||
+         diag.veredictos.filter((v) => esAcierto(v.estado)).length >= 3) ? 'onda' : 'puntual',
+    sobredano, cuentasSaldadas,
     // se congela ANTES de limpiar: el feedback ocurre sobre el propio dibujo
     foto: {
       tablero: e.tablero.map((t) => ({ ...t })),

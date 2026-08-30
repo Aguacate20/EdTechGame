@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.18
+# El Archivo Infinito — v5.19
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -458,6 +458,36 @@ manifest ni fondos, todo sigue exactamente igual.
   (55 %) — el autor los enlaza al definir aunque no diga el tipo. Es el caso
   «attachment theory extiende X» donde X aparece dentro de la propia
   definición: evidencia textual, no regalo.
+
+## Creatividad con evidencia, clases legibles y golpe puntual (v5.19)
+
+**Flexibilidad y creatividad (con el extractor v3.7):**
+- **Gemelos bilingües**: si el texto afirma el vínculo del mismo concepto bajo
+  otro nombre (títulos/sinónimos cruzados), es «compatible»: la traducción no
+  cuesta puntos.
+- **Puentes latentes** (`graph.latent_links` del extractor v3.7): vínculos que
+  el texto insinúa sin enunciar, pre-juzgados con justificación anclada → el
+  jugador que los propone recibe «convive» y la justificación como feedback.
+- **Co-ocurrencias** (`graph.cooccurrences`, v3.5): pares que el autor trata
+  juntos una y otra vez → «convive».
+- **Secuencia acepta `extiende`** como paso (extender presupone lo anterior).
+- **Campo creativo**: una agrupación que cruza zonas pero está conectada por
+  dentro ya no cae en silencio: es «plausible» y queda como propuesta tuya.
+- Las descripciones sueltas dicen su dueño en el veredicto.
+
+**Cédulas:** color de clase más ancho y separado, el rótulo lo lleva puesto, y
+la mano tiene leyenda («colores») con el uso de cada clase al tacto. La banda
+de la apócrifa ahora es IDÉNTICA a la del concepto: se cazaban falsificaciones
+por color.
+
+**Combate:** el golpe vuelve a ser **puntual** (un objetivo, daño completo) y
+lo que sobra al derribar **desborda** al siguiente. El área se compra:
+**onda** (Cierre o andanada de 3+ sostenidas) golpea a los primeros `alcance`
+con daño completo; **barrido** (Constelación) golpea a TODO el carril. El
+patrón del turno se muestra con su chip, y los **bloqueos** (Dogma, Ortodoxia,
+fases del Tratado) se listan con su motivo: si el daño aplicado no es el de la
+cuenta, la pantalla dice exactamente por qué — no era bug, era blindaje
+invisible, y lo invisible era el bug.
 
 ## Pendientes
 

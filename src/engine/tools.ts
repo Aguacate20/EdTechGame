@@ -463,9 +463,15 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
     estado,
     fichas: Math.round(fichasBase * peso.f),
     mult: peso.m < 0 ? peso.m : multBase * peso.m,
-    nota: porContenido
-      ? `Fuiste por la descripción y no por el título, y ahí acertaste: ${h.nota}`
-      : h.nota,
+    nota: (() => {
+      const sueltas = ps.filter((p) => p.clase === 'definicion' && p.conceptId)
+      const duenos = sueltas.length
+        ? sueltas.map((p) => `La descripción suelta pertenece a «${titulo(c, p.conceptId)}».`).join(' ') + ' '
+        : ''
+      return porContenido
+        ? `Fuiste por la descripción y no por el título, y ahí acertaste: ${h.nota}`
+        : duenos + h.nota
+    })(),
     reserva,
     inferencia: estado === 'derivado',
     // una propuesta solo se guarda si los conceptos están cerca en el grafo:
@@ -590,9 +596,22 @@ function validarCampo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadores
       ]
     }
   }
+  // agrupación TUYA: cruza zonas, pero está conectada por dentro en el grafo.
+  // Eso es lectura transversal, no ruido: paga poco y queda como propuesta.
+  const ids = conceptos.map((p) => p.conceptId!)
+  const conectado = ids.length >= 2 && ids.every((a) =>
+    ids.some((b) => b !== a && c.aristas.some((x) =>
+      (x.from === a && x.to === b) || (x.from === b && x.to === a))))
+  if (conectado) {
+    return {
+      ...v, estado: 'plausible', fichas: 4 * ids.length, mult: 0.3,
+      nota: `Agrupación tuya: cruza ${clusters.size} zonas del texto, pero cada pieza está enlazada con otra del grupo. El autor no dibuja esa zona; tú sí.`,
+      conceptIds: ids
+    }
+  }
   return {
     ...v, estado: 'silencio',
-    nota: `Esos conceptos viven en ${clusters.size} zonas distintas del texto.`
+    nota: `Esos conceptos viven en ${clusters.size} zonas distintas del texto y no se enlazan entre sí.`
   }
 }
 
@@ -657,7 +676,7 @@ function validarSecuencia(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
   const aristas: Diagnostico['aristas'] = []
   let ok = 0
   for (let i = 0; i + 1 < ids.length; i++) {
-    const paso = c.aristas.find((x) => x.from === ids[i] && x.to === ids[i + 1] && (x.tipo === 'causa' || x.tipo === 'requiere'))
+    const paso = c.aristas.find((x) => x.from === ids[i] && x.to === ids[i + 1] && (x.tipo === 'causa' || x.tipo === 'requiere' || x.tipo === 'extiende'))
     if (paso) { ok++; aristas.push({ from: ids[i], to: ids[i + 1], tipo: paso.tipo }) }
   }
   if (ok === ids.length - 1) {

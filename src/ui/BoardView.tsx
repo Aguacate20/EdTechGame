@@ -15,7 +15,7 @@ import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
 import { LaneView } from './LaneView'
 import { GLOSA_RELACION as GLOSA } from './glosas'
 import { Chip } from './components'
-import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
+import { BANDA, NOMBRE_CLASE, cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
 import { useCascada } from './cascade'
 import { despertarAudio, sfx } from './sfx'
 import { consejoDeForma, encargoCumplido, previsualizarForma, type Encargo } from '../engine/srl'
@@ -112,6 +112,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [seleccion, setSeleccion] = useState<string | null>(null)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
+  const [leyenda, setLeyenda] = useState(false)
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
   const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
   const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
@@ -570,7 +571,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
                 {marcada && <span className="orden">{orden + 1}</span>}
-                <span className="tt">{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
+                <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 42)}</span>
                 <i className="borde" style={{ background: cd.banda }} />
                 <i className={`grano grano-${cd.textura}`} />
@@ -695,7 +696,29 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               {casc.xmultsRevelados.map((x) => (
                 <span key={x.nombre} className="aparece chip-mayor">✦ {x.nombre} ×{x.factor}</span>
               ))}
+              {casc.terminada && (
+                <span className="chip-patron" data-ayuda={
+                  e.ultima.patron === 'barrido'
+                    ? 'Constelación: cuatro sostenidas sin error. El carril entero recibe el golpe completo.'
+                    : e.ultima.patron === 'onda'
+                      ? 'Onda: la compra el Cierre o una andanada de tres o más sostenidas. Los primeros del carril reciben el golpe completo.'
+                      : 'Golpe puntual: un objetivo. Lo que sobra al derribarlo desborda al siguiente.'
+                }>
+                  {e.ultima.patron === 'barrido' ? '☄ barrido' : e.ultima.patron === 'onda' ? '≋ onda' : '→ puntual'}
+                </span>
+              )}
             </div>
+            {casc.terminada && (() => {
+              const bloqueos = e.ultima!.impactos.filter((i) => i.motivo && !i.motivo.startsWith('El golpe desborda'))
+              if (!bloqueos.length) return null
+              return (
+                <div className="bloqueos">
+                  {bloqueos.map((b, i) => (
+                    <p key={i} className="nota" style={{ margin: 0 }}>⛨ <strong>{b.nombre}</strong> — {b.motivo} (recibió {b.dano})</p>
+                  ))}
+                </div>
+              )
+            })()}
             {trazoAbierto && (() => {
               const ver = veredictos.find((v) => v.trazo.uid === trazoAbierto)
               if (!ver) return null
@@ -727,8 +750,30 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       <aside className={`zona-mano${zona('mano') || zona('pozo')}`}>
         <div className="fila" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="eyebrow">Mano</span>
-          <span className="dato silencio">mazo {e.mazo.length}</span>
+          <span className="fila" style={{ gap: 8 }}>
+            <button className="btn-desnudo dato silencio" onClick={() => setLeyenda((x) => !x)}
+              data-ayuda="Qué significa cada color de carta">{leyenda ? 'cerrar' : 'colores'}</button>
+            <span className="dato silencio">mazo {e.mazo.length}</span>
+          </span>
         </div>
+        {leyenda && (
+          <div className="leyenda-clases">
+            {([['etiqueta', 'empareja con su Descripción (Identidad =) o úsalo como nodo'],
+              ['definicion', 'suelta: su dueño existe — emparéjala o úsala como nodo'],
+              ['concepto', 'completo: nodo pleno para cualquier herramienta'],
+              ['caso', 'ánclalo (⌖) a los conceptos que operan en él, o enlaza ejemplificando'],
+              ['tesis', 'pésala (⚖) con sus criterios, apóyala o contrástala'],
+              ['criterio', 'va a la balanza de su tesis'],
+              ['marco', 'circunda (◯) los conceptos que le pertenecen'],
+              ['intuicion', 'contrástala con el concepto que ocupaba su lugar'],
+              ['contexto', 'terreno de una intuición ya reubicada: comodín de campo'],
+              ['subdimension', 'descompón (⊟) su concepto madre']] as const).map(([cl, uso]) => (
+              <span key={cl} className="leyenda-item" data-ayuda={uso}>
+                <i style={{ background: BANDA[cl] }} />{NOMBRE_CLASE[cl]}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="lista-mano">
           {enMano.map((p) => {
             const cd = cedulaDe(contenido, p)
@@ -753,7 +798,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 }}
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
-                <span className="tt">{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
+                <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
                 {cd.canto && <span className="marca">umbral</span>}
               </div>

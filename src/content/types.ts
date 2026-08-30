@@ -159,6 +159,10 @@ export interface Diagnostico {
 }
 
 export interface Contenido {
+  /** pares que el texto hace aparecer juntos repetidamente (clave «a|b» ordenada) */
+  coocurrencias: Set<string>
+  /** puentes latentes del extractor: vínculos implícitos con su justificación textual */
+  puentes: Record<string, string>
   fuente: string
   bundleVersion: string
   schema: string

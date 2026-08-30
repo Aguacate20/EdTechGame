@@ -95,6 +95,22 @@ export function derivacion(c: Contenido, from: string, to: string, tipo: string)
  *  que afirmar la relación, pero está muy por encima de la casualidad: aquí es
  *  donde antes se perdían las conexiones legítimas que el grafo no recoge. */
 /** ¿La definición de `a` menciona el título (o un sinónimo) de `b`? */
+/** Gemelos: dos conceptos que son el mismo con distinto nombre (bilingües o
+ *  variantes que la canonicalización no fundió). Uno es gemelo del otro si su
+ *  título coincide o aparece entre los sinónimos del otro. */
+export function gemelosDe(c: Contenido, id: string): string[] {
+  const k = c.conceptos[id]
+  if (!k) return []
+  const mios = new Set([k.titulo, ...(k.sinonimos ?? [])].map((x) => x.toLowerCase()))
+  return c.ordenConceptos.filter((otro) => {
+    if (otro === id) return false
+    const o = c.conceptos[otro]
+    if (!o) return false
+    const suyos = [o.titulo, ...(o.sinonimos ?? [])].map((x) => x.toLowerCase())
+    return suyos.some((n) => n.length >= 5 && mios.has(n))
+  })
+}
+
 export function definicionNombra(c: Contenido, a: string, b: string): string | null {
   const ka = c.conceptos[a], kb = c.conceptos[b]
   if (!ka || !kb) return null
@@ -258,6 +274,31 @@ export function juzgarVinculo(
       nota: `El texto los relaciona, pero desde el otro lado: «${T(to)} ${inversa[0].tipo} ${T(from)}».`
     }
   }
+  // gemelos: si el texto lo afirma del mismo concepto bajo OTRO nombre,
+  // el vínculo se sostiene — la traducción no puede costar puntos
+  for (const [f2, t2] of [
+    ...gemelosDe(c, from).map((g) => [g, to] as const),
+    ...gemelosDe(c, to).map((g) => [from, g] as const)
+  ]) {
+    const ex = c.aristas.find((x) => x.from === f2 && x.to === t2 && x.tipo === tipo)
+    const sim = SIMETRICOS.has(tipo) && c.aristas.find((x) => x.from === t2 && x.to === f2 && x.tipo === tipo)
+    const du = DUALES[tipo] && c.aristas.find((x) => x.from === t2 && x.to === f2 && x.tipo === DUALES[tipo])
+    const hit = ex || sim || du
+    if (hit) {
+      return {
+        estado: 'compatible', tipoReal: hit.tipo, camino: null,
+        nota: `El texto lo afirma de «${T(f2)} → ${T(t2)}»: el mismo concepto con otro nombre. ${hit.descripcion}`
+      }
+    }
+    const fam = c.aristas.find((x) => x.from === f2 && x.to === t2 && mismaFamilia(x.tipo, tipo))
+    if (fam) {
+      return {
+        estado: 'aproximada', tipoReal: fam.tipo, camino: null,
+        nota: `Bajo su otro nombre, el texto lo dice como «${fam.tipo}». ${fam.descripcion}`
+      }
+    }
+  }
+
   // el texto los trata juntos aunque no enuncie el vínculo
   const juntos = convivencia(c, from, to)
   if (juntos) {
@@ -268,6 +309,22 @@ export function juzgarVinculo(
   const nombra = definicionNombra(c, from, to) ?? definicionNombra(c, to, from)
   if (nombra) {
     return { estado: 'convive', tipoReal: null, camino: null, nota: nombra }
+  }
+  // puente latente: el extractor ya juzgó que el texto los deja implícitamente
+  // conectados, con su justificación. La creatividad que ES verdadera, paga.
+  const puente = c.puentes[from < to ? `${from}|${to}` : `${to}|${from}`]
+  if (puente) {
+    return {
+      estado: 'convive', tipoReal: null, camino: null,
+      nota: `El texto los deja conectados sin decirlo: ${puente}`
+    }
+  }
+  // co-ocurrencia medida: el autor los hace aparecer juntos una y otra vez
+  if (c.coocurrencias.has(from < to ? `${from}|${to}` : `${to}|${from}`)) {
+    return {
+      estado: 'convive', tipoReal: null, camino: null,
+      nota: 'El autor los hace aparecer juntos una y otra vez a lo largo del texto, aunque nunca enuncie el vínculo.'
+    }
   }
   // cerca en el grafo: plausible, sin castigo
   const cerca = proximidad(c, from, to)
