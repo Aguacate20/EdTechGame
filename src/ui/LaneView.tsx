@@ -157,6 +157,7 @@ export function LaneView({
                     />
                     <span className="nom">{e.nombre}</span>
                     <div className="vida"><span style={{ width: `${(e.hp / e.hpMax) * 100}%` }} /></div>
+                    <span className="vida-num">{e.hp}<i>/{e.hpMax}</i></span>
                     <span className="rasgo">
                       {t.alcance >= LARGO_CARRIL ? 'alcance total'
                         : t.velocidad === 0 ? 'no avanza'

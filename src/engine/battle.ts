@@ -626,30 +626,49 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   }
 
   if (diag.dano > 0) {
-    const objetivos = vivos(e).sort((a, b) => a.posicion - b.posicion).slice(0, diag.alcance)
+    // El golpe recorre el carril de cerca a lejos. Dentro del alcance, cada
+    // objetivo recibe su parte (con la caída del 0.62); y lo que SOBRA al
+    // derribar se ARRASTRA al siguiente, blindaje mediante, hasta agotarse.
+    // Un supergolpe puede limpiar el carril entero; un tanque cuyo blindaje
+    // tu diagrama no vence corta la cadena, que es exactamente su oficio.
+    const objetivos = vivos(e).sort((a, b) => a.posicion - b.posicion)
     let cascada = 1
-    for (const en of objetivos) {
+    let arrastre = 0
+    for (let i = 0; i < objetivos.length; i++) {
+      const en = objetivos[i]
+      const base = i < diag.alcance ? diag.dano * cascada : 0
+      const entrante = base + arrastre
+      if (entrante <= 0) { if (i >= diag.alcance) break; cascada *= 0.62; continue }
+      arrastre = 0
       const { factor, motivo } = factorBlindaje(en, formaDiag)
-      const dano = Math.max(factor < 1 ? 1 : 2, Math.round(diag.dano * cascada * factor))
+      const dano = Math.max(factor < 1 ? 1 : 2, Math.round(entrante * factor))
       const rasgo = tipoPorId(en.tipoId).rasgo
 
       if (rasgo === 'retrocede' && !en.retrocedioYa && dano >= en.hp) {
+        // el Eco no cae: retrocede y ABSORBE el golpe, así que la cadena muere ahí
         en.retrocedioYa = true
         en.hp = Math.max(1, Math.round(en.hpMax * 0.45))
         en.posicion = Math.min(8, en.posicion + 3)
         en.gesto = 'retrocede'
         impactos.push({ uid: en.uid, nombre: en.nombre, dano, motivo: 'Retrocede en vez de caer.', derribado: false })
       } else {
-        if (dano > en.hp) sobredano += dano - en.hp
+        const hpAntes = en.hp
         en.hp = Math.max(0, en.hp - dano)
         en.tocadoEsteTurno = true
         en.gesto = en.hp === 0 ? 'cae' : diag.mult >= 4 ? 'critico' : 'herido'
         if (rasgo === 'fases' && !motivo) en.fase += 1
-        impactos.push({ uid: en.uid, nombre: en.nombre, dano, motivo, derribado: en.hp === 0 })
+        impactos.push({
+          uid: en.uid, nombre: en.nombre, dano,
+          motivo: motivo ?? (base === 0 ? 'El golpe desborda desde el anterior.' : null),
+          derribado: en.hp === 0
+        })
+        if (en.hp === 0 && dano > hpAntes) arrastre = dano - hpAntes
       }
       danoTotal += dano
-      cascada *= 0.62
+      if (i < diag.alcance) cascada *= 0.62
     }
+    // lo que sobra cuando ya no queda a quién golpear vuelve como claridad
+    sobredano = arrastre
     for (const en of [...e.enemigos]) {
       if (en.hp === 0 && tipoPorId(en.tipoId).rasgo === 'divide' && !en.uid.includes('cria')) {
         for (let i = 0; i < 2; i++) {

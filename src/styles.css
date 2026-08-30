@@ -1320,3 +1320,10 @@ label.campo > span { display: block; margin-bottom: 5px; }
   background: rgba(232,179,75,.1);
   animation: estampar .35s ease-out;
 }
+
+/* v5.14 · la vida en número */
+.vida-num {
+  font-family: var(--mono); font-size: 10.5px; line-height: 1; color: var(--niebla);
+  letter-spacing: .02em;
+}
+.vida-num i { font-style: normal; opacity: .45; font-size: 9px; }

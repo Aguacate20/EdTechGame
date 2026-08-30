@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.13
+# El Archivo Infinito — v5.14
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -393,6 +393,16 @@ Nada de esto toca la corrección: multiplicar el daño jamás cambia qué es
 verdad. `npm run smoke` lo vigila con un criterio nuevo: la build mayor debe
 multiplicar ≥3× el mejor golpe del lector informado, y regalarle ~nada al azar
 (medido: 12.189 → 82.279 · azar 61).
+
+## El carril legible y el desborde (v5.14)
+
+- **La vida en número.** Cada enemigo muestra `hp/hpMax` bajo su barra: el
+  frente deja de ser una intuición y pasa a ser aritmética que se puede planear.
+- **El golpe desborda.** Lo que sobra al derribar se arrastra al siguiente
+  enemigo, blindaje mediante, hasta agotarse: un supergolpe puede limpiar el
+  carril entero de una. El Eco lo corta (retrocede y absorbe), y un tanque cuyo
+  blindaje tu diagrama no vence frena la cadena — que es su oficio. Lo que
+  sobra cuando ya no queda a quién golpear sigue volviendo como lucidez.
 
 ## Pendientes
 
