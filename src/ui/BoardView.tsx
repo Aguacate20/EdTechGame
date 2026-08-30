@@ -162,6 +162,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const objetivo = vivos(e).sort((a, b) => a.posicion - b.posicion)[0]
   const h = herramienta ? HERRAMIENTAS[herramienta] : null
   const puedeCerrar = !!h && pendientes.length >= h.aridad[0] && (!h.parametro || !!param)
+  /** el vínculo ya vive en el Atlas: certeza a la vista ANTES de afirmar */
+  const esAsentado = (t: { tool: string; param: string | null; piezas: string[] }): boolean => {
+    if (t.tool !== 'flecha' || !t.param) return false
+    const ids = t.piezas
+      .map((u) => [...e.mano, ...e.descarte].find((p) => p.uid === u))
+      .filter((p) => p && p.clase !== 'apocrifa')
+      .map((p) => p!.conceptId)
+    if (ids.length < 2 || !ids[0] || !ids[1]) return false
+    return e.asentadas.includes(`${ids[0]}|${ids[1]}|${t.param}`) ||
+      (t.param === 'contrasta' && e.asentadas.includes(`${ids[1]}|${ids[0]}|${t.param}`))
+  }
   const piezaSel = enMano.find((p) => p.uid === seleccion) ?? null
   // anticipación sin trampa: forma del diagrama, nunca su verdad
   const forma = useMemo(
@@ -671,6 +682,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               {e.ultima.diag.combos.slice(0, casc.combosRevelados).map((c, i) => (
                 <span key={i} className="aparece"><Chip tono="laton">{c.nombre} +{c.mult.toFixed(1)}×</Chip></span>
               ))}
+              {e.ultima.diag.ajustes.slice(0, casc.ajustesRevelados).map((a, i) => (
+                <span key={`aj${i}`}
+                  className={`aparece chip-ajuste${(a.fichas ?? 0) < 0 || (a.factor ?? 1) < 1 ? ' malo' : ''}`}
+                  data-ayuda={a.nota}>
+                  {a.nombre}
+                  {a.fichas ? ` ${a.fichas > 0 ? '+' : ''}${a.fichas}` : ''}
+                  {a.mult ? ` +${a.mult.toFixed(1)}×` : ''}
+                  {a.factor ? ` ×${a.factor.toFixed(1)}` : ''}
+                </span>
+              ))}
               {casc.xmultsRevelados.map((x) => (
                 <span key={x.nombre} className="aparece chip-mayor">✦ {x.nombre} ×{x.factor}</span>
               ))}
@@ -866,8 +887,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           {e.trazos.map((t) => (
             <button key={t.uid} className="trazo-chip"
               onClick={() => { sfx.deshacer(); on.cambio((st) => borrarTrazo(st, t.uid)) }}
-              data-ayuda="Toca para deshacer este trazo y recuperar su herramienta">
-              {HERRAMIENTAS[t.tool].glifo}{t.param ? ` ${t.param.split('::').pop()}` : ''} ✕
+              data-ayuda={esAsentado(t)
+                ? 'ASENTADO: tu Atlas ya sostuvo este vínculo. Paga fichas seguras (una vez por combate).\n\nToca para deshacer el trazo.'
+                : 'Toca para deshacer este trazo y recuperar su herramienta'}>
+              {HERRAMIENTAS[t.tool].glifo}{t.param ? ` ${t.param.split('::').pop()}` : ''}
+              {esAsentado(t) && <span className="asentado"> ✓ asentado</span>} ✕
             </button>
           ))}
         </div>

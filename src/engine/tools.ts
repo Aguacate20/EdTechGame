@@ -279,8 +279,23 @@ const NOMBRE_COMBO: Record<ComboId, string> = {
   mestizaje: 'Mestizaje'
 }
 
+/** Un ajuste de recompensa aplicado DESPUÉS de la cuenta base (condición de
+ *  sala, racha, sello fallido, cuentas saldadas…). Se muestran uno a uno en
+ *  la cascada: ningún número puede cambiar sin decir por qué. */
+export interface Ajuste {
+  nombre: string
+  nota: string
+  /** delta de fichas (puede ser negativo) */
+  fichas?: number
+  /** delta aditivo al filo */
+  mult?: number
+  /** factor multiplicativo sobre el daño final (0.4 Cadena, 0.6 sello fallido) */
+  factor?: number
+}
+
 export interface Diagnostico {
   veredictos: Veredicto[]
+  ajustes: Ajuste[]
   combos: Combo[]
   fichas: number
   mult: number
@@ -1080,7 +1095,7 @@ export function evaluarDiagrama(
   const dims = [...new Set(sostenidos.map((v) => v.dimension))]
 
   return {
-    veredictos, combos, fichas, mult, xmult, xmultsActivos, dano,
+    veredictos, combos, ajustes: [], fichas, mult, xmult, xmultsActivos, dano,
     alcance: Math.min(4, 1 + Math.floor(sostenidos.length / 1.5) + lentes.alcanceExtra),
     sostenidos: sostenidos.length,
     aproximados: aproximados.length,

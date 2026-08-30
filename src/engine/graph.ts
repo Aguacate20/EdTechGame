@@ -94,6 +94,19 @@ export function derivacion(c: Contenido, from: string, to: string, tipo: string)
  *  evidencia real de que el autor los pone en la misma escena. No es lo mismo
  *  que afirmar la relación, pero está muy por encima de la casualidad: aquí es
  *  donde antes se perdían las conexiones legítimas que el grafo no recoge. */
+/** ¿La definición de `a` menciona el título (o un sinónimo) de `b`? */
+export function definicionNombra(c: Contenido, a: string, b: string): string | null {
+  const ka = c.conceptos[a], kb = c.conceptos[b]
+  if (!ka || !kb) return null
+  const texto = `${ka.definicion} ${ka.definicionCorta ?? ''}`.toLowerCase()
+  const nombres = [kb.titulo, ...(kb.sinonimos ?? [])]
+    .filter((n) => n && n.length >= 5)
+  const hallado = nombres.find((n) => texto.includes(n.toLowerCase()))
+  return hallado
+    ? `La definición de «${ka.titulo}» nombra a «${kb.titulo}»: el autor los enlaza al definir, aunque no diga de qué tipo es el vínculo.`
+    : null
+}
+
 export function convivencia(c: Contenido, a: string, b: string): string | null {
   const caso = c.casos.find((k) => k.conceptIds.includes(a) && k.conceptIds.includes(b))
   if (caso) return `El texto los pone a operar juntos en el mismo caso: ${caso.descripcion.slice(0, 120)}…`
@@ -249,6 +262,12 @@ export function juzgarVinculo(
   const juntos = convivencia(c, from, to)
   if (juntos) {
     return { estado: 'convive', tipoReal: null, camino: null, nota: juntos }
+  }
+  // la definición de uno NOMBRA al otro: el autor los enlaza al definir,
+  // aunque no enuncie el tipo. Eso es evidencia textual, no una corazonada.
+  const nombra = definicionNombra(c, from, to) ?? definicionNombra(c, to, from)
+  if (nombra) {
+    return { estado: 'convive', tipoReal: null, camino: null, nota: nombra }
   }
   // cerca en el grafo: plausible, sin castigo
   const cerca = proximidad(c, from, to)

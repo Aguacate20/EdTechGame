@@ -152,6 +152,9 @@ export interface EstadoBatalla {
   condicion: string | null
   /** hazaña Catedral: una Constelación con el diagrama sellado */
   selladoConstelacion: boolean
+  /** aristas que el Atlas ya sostuvo: re-afirmarlas paga seguro */
+  asentadas: string[]
+  aristasBonificadas: string[]
 }
 
 /* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
@@ -222,6 +225,8 @@ export interface Bolsa {
   apocrifasDelta?: number
   /** condición de la sala: modula la recompensa, nunca la corrección */
   condicion?: string | null
+  /** claves from|to|tipo de las aristas ya sostenidas en el Atlas */
+  asentadas?: string[]
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -308,7 +313,8 @@ export function iniciarBatalla(
     encargo: null, encargosOfrecidos: [], sellado: false, sellosHechos: 0, sellosAcertados: 0,
     combosVistos: [], conceptosSostenidos: [], erroresTotales: 0, invertidosTotales: 0,
     fallosPorConcepto: {}, marcados: bolsa.marcados ?? [],
-    racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false
+    racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
+    asentadas: bolsa.asentadas ?? [], aristasBonificadas: []
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
@@ -570,7 +576,26 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   const cuentasSaldadas = e.marcados.filter((id) =>
     diag.veredictos.some((v) => esAcierto(v.estado) && v.conceptIds.includes(id)))
   if (cuentasSaldadas.length) {
-    diag.fichas += PRIMA_MARCADO * cuentasSaldadas.length
+    const f = PRIMA_MARCADO * cuentasSaldadas.length
+    diag.fichas += f
+    diag.ajustes.push({ nombre: 'Cuenta saldada', fichas: f,
+      nota: 'Sostuviste lo que marcaste como difícil: la cuenta pendiente paga.' })
+    diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
+  }
+  // vínculos ASENTADOS: re-afirmar lo que tu Atlas ya sostuvo es terreno firme.
+  // Paga fichas seguras (una vez por arista y combate): la isla de certeza
+  // en medio de la apuesta.
+  const asentadosAhora = diag.veredictos
+    .filter((v) => esAcierto(v.estado))
+    .flatMap((v) => v.aristas)
+    .map((ar) => `${ar.from}|${ar.to}|${ar.tipo}`)
+    .filter((k) => e.asentadas.includes(k) && !e.aristasBonificadas.includes(k))
+  if (asentadosAhora.length) {
+    e.aristasBonificadas = [...e.aristasBonificadas, ...asentadosAhora]
+    const f = 6 * asentadosAhora.length
+    diag.fichas += f
+    diag.ajustes.push({ nombre: `Asentado ×${asentadosAhora.length}`, fichas: f,
+      nota: 'Vínculos que tu Atlas ya sostuvo: lo aprendido paga seguro.' })
     diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
   }
   // condición MONOCULTIVO: las identidades no hieren (pero siguen fusionando)
@@ -580,12 +605,16 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       .reduce((n, v) => n + v.fichas, 0)
     if (fichasIdent > 0) {
       diag.fichas = Math.max(0, diag.fichas - fichasIdent)
+      diag.ajustes.push({ nombre: 'Monocultivo', fichas: -fichasIdent,
+        nota: 'La condición de la sala: las identidades no hieren aquí. Siguen fusionando.' })
       diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
     }
   }
   // racha: turnos seguidos sosteniendo algo. Solo error/inversión la rompen.
   if (e.racha > 0 && diag.dano > 0) {
     diag.mult += 0.1 * e.racha
+    diag.ajustes.push({ nombre: `Racha ×${e.racha}`, mult: 0.1 * e.racha,
+      nota: 'Turnos seguidos sosteniendo algo. Solo un error o una inversión la rompen.' })
     diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
   }
   // condición MARCO RIVAL: cada contraste sostenido suma medio punto de mult
@@ -594,6 +623,8 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       .filter((v) => esAcierto(v.estado) && v.trazo.param === 'contrasta').length
     if (contrastes > 0) {
       diag.mult += 0.5 * contrastes
+      diag.ajustes.push({ nombre: 'Marco rival', mult: 0.5 * contrastes,
+        nota: 'La condición de la sala premia la oposición: cada contraste sostenido suma.' })
       diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
     }
   }
@@ -607,18 +638,26 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       diag.xmult *= SELLO_X
       diag.xmultsActivos.push({ nombre: 'Sellado', factor: SELLO_X })
       if (diag.combos.some((x) => x.id === 'constelacion')) e.selladoConstelacion = true
-    } else diag.mult = diag.mult * SELLO_FALLA
+    } else {
+      diag.mult = diag.mult * SELLO_FALLA
+      diag.ajustes.push({ nombre: 'Sello fallido', factor: SELLO_FALLA,
+        nota: sello.nota })
+    }
     diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult * diag.xmult))
   }
   // con el andamio puesto, el número no se dispara: el modo aprendizaje
   // conserva las lentes pero acota la capa multiplicativa a ×2
   if (e.apoyo && diag.xmult > 2) {
+    diag.ajustes.push({ nombre: 'Andamio', factor: 2 / diag.xmult,
+      nota: 'Con el andamio puesto, la capa × se acota a ×2: el número no compite con la atención.' })
     diag.xmult = 2
     diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult * diag.xmult))
   }
   // condición CADENA: la frase suelta rinde el 40 %
   if (e.condicion === 'cadena' && e.trazos.length === 1 && diag.dano > 0) {
     diag.dano = Math.round(diag.dano * 0.4)
+    diag.ajustes.push({ nombre: 'Cadena', factor: 0.4,
+      nota: 'La condición de la sala: una afirmación suelta rinde el 40 %. Encadena dos o más.' })
     diag.cierre = 'Cadena: aquí una afirmación suelta no abre camino. Encadena dos o más.'
   }
   const impactos: ResultadoTurno['impactos'] = []

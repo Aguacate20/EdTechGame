@@ -1363,3 +1363,12 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 
 /* v5.17 · el verbo sobre la flecha y el consejo de forma */
 .consejo-forma { font-style: normal; color: var(--laton); opacity: .92; }
+
+/* v5.18 · ajustes legibles y vínculos asentados */
+.chip-ajuste {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em;
+  color: #85c4b1; border: 1px solid #3f7566; border-radius: 99px; padding: 3px 10px;
+  background: rgba(78,140,122,.1); cursor: help; animation: estampar .35s ease-out;
+}
+.chip-ajuste.malo { color: #e5a49e; border-color: #6d3430; background: rgba(109,52,48,.12); }
+.trazo-chip .asentado { color: #85c4b1; font-size: 10.5px; letter-spacing: .03em; }

@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.17
+# El Archivo Infinito — v5.18
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -441,6 +441,23 @@ manifest ni fondos, todo sigue exactamente igual.
   sello multiplica ×1.5»). Estructura, nunca verdad.
 - La curva de vida enemiga baja de ×1.35 a ×1.30 por acto, y el bot del smoke
   ahora usa Cambiar al atascarse, como la regla 5 manda.
+
+## La cuenta legible y la isla de certeza (v5.18)
+
+- **Ningún número cambia sin decir por qué.** Todo lo que modifica el daño
+  después de la cuenta base (Monocultivo, Cadena, sello fallido, racha, marco
+  rival, cuentas saldadas, el tope del andamio) ahora es un **paso propio de
+  la cascada**, con nombre, delta y nota al tacto. El «9 × 1.6 = 0» sin
+  explicación era la condición Monocultivo restando en silencio: se acabó.
+- **Vínculos asentados.** Re-afirmar una arista que tu Atlas ya sostuvo paga
+  fichas seguras (+6, una vez por arista y combate) y el trazo lo anuncia
+  ANTES de afirmar: «✓ asentado». Lo aprendido es tu mano conocida de póker:
+  certeza en medio de la apuesta, sin poder farmearla.
+- **Más flexibilidad con evidencia:** si la definición de un concepto NOMBRA
+  al otro (o a un sinónimo), el vínculo ya no cae en silencio: es «convive»
+  (55 %) — el autor los enlaza al definir aunque no diga el tipo. Es el caso
+  «attachment theory extiende X» donde X aparece dentro de la propia
+  definición: evidencia textual, no regalo.
 
 ## Pendientes
 

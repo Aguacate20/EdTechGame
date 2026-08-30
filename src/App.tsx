@@ -316,6 +316,7 @@ export default function App() {
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       marcados, archivados,
+      asentadas: atlas ? Object.keys(atlas.aristas) : [],
       quemasDelta: portadaPorId(portadaId).quemasDelta,
       apocrifasDelta: portadaPorId(portadaId).apocrifasDelta,
       condicion: nodo.condicion
@@ -553,7 +554,8 @@ export default function App() {
         tesis: [...new Set([...(nodo?.tesis ?? []), ...tesis])],
         intuiciones, fusionados, terrenos: progreso.terrenos, sellos,
         apoyo: true, sinTocar: [],
-        sinEvidencia: (nodo?.conceptIds ?? []).filter((id) => !atlas?.conceptos[id])
+        sinEvidencia: (nodo?.conceptIds ?? []).filter((id) => !atlas?.conceptos[id]),
+        asentadas: atlas ? Object.keys(atlas.aristas) : []
       }
       const siguiente = avanzarOleada(e, ctx, bolsa)
       if (siguiente) { setBatalla(e); return }
