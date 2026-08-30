@@ -234,3 +234,39 @@ export function previsualizarForma(trazos: Trazo[], piezas: Pieza[]): Forma {
     alcancePotencial: Math.min(4, 1 + Math.floor((trazos.length - incompletos) / 1.5))
   }
 }
+
+
+/** Un consejo ESTRUCTURAL de una línea: qué le falta a este diagrama para
+ *  rendir más. Nunca dice qué es verdad; dice qué forma paga mejor. */
+export function consejoDeForma(trazos: Trazo[], piezas: Pieza[], sellado: boolean): string | null {
+  if (!trazos.length) return null
+  const porUid = new Map(piezas.map((p) => [p.uid, p]))
+  const flechas = trazos.filter((t) => t.tool === 'flecha')
+  const campos = trazos.filter((t) => t.tool === 'campo')
+  const ident = new Set(trazos.filter((t) => t.tool === 'identidad').flatMap((t) => t.piezas))
+  const enlaz = new Set(flechas.flatMap((t) => t.piezas))
+
+  for (const campo of campos) {
+    const dentro = new Set(campo.piezas)
+    const dentroN = flechas.filter((t) => t.piezas.every((u) => dentro.has(u))).length
+    if (dentroN < dentro.size - 1) {
+      return 'Teje el campo por dentro con flechas: un campo enlazado es un Cierre (+1.8 al filo).'
+    }
+  }
+  if (ident.size && enlaz.size && ![...ident].some((u) => enlaz.has(u))) {
+    return 'Identifica y enlaza la MISMA pieza: eso enciende Doble registro.'
+  }
+  const clases = new Set([...new Set(trazos.flatMap((t) => t.piezas))]
+    .map((u) => porUid.get(u)?.clase).filter(Boolean)
+    .map((c) => (c === 'apocrifa' ? 'concepto' : c)))
+  if (trazos.length >= 2 && clases.size === 2) {
+    return 'Cruza una clase de pieza más (un caso, una tesis, un marco): eso es Mestizaje.'
+  }
+  if (trazos.length === 3) {
+    return 'Un cuarto trazo, si todo se sostiene y sin errores, enciende Constelación (+2).'
+  }
+  if (trazos.length >= 3 && !sellado) {
+    return '¿Seguro de todo el tablero? El sello lo multiplica ×1.5.'
+  }
+  return null
+}

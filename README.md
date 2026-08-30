@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.16
+# El Archivo Infinito — v5.17
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -425,6 +425,22 @@ los siete gestos mapeados a idle/attack/hit/death), y cada acto acepta un
 la mesa siga legible. Combo recomendado y verificado en `public/art/LEEME.md`:
 LuizMelo (CC0, animado) + ansimuz Gothicvania (libre con crédito). Sin
 manifest ni fondos, todo sigue exactamente igual.
+
+## Arreglos de mesa (v5.17)
+
+- **La mano ya no se congela.** Al reciclar el descarte se baraja (con semilla
+  propia, sin mover el RNG de la run): en salas chicas volvían las mismas
+  cartas en el mismo orden y parecía un bug — lo era.
+- **El verbo viaja sobre la flecha.** «extiende», «contrasta»… se dibuja
+  centrado sobre la línea entre las dos cartas, con halo de tinta para leerse
+  sobre lo que sea; el veredicto (✓, ≈, ↺) baja bajo la línea al resolver.
+- **Las doradas se explican al tacto**: el tooltip dice qué son y qué valen.
+- **Consejo de forma**: junto a la previsualización, una línea dice qué le
+  falta al diagrama para rendir más («teje el campo por dentro: Cierre»,
+  «identifica y enlaza la MISMA pieza: Doble registro», «¿seguro de todo? el
+  sello multiplica ×1.5»). Estructura, nunca verdad.
+- La curva de vida enemiga baja de ×1.35 a ×1.30 por acto, y el bot del smoke
+  ahora usa Cambiar al atascarse, como la regla 5 manda.
 
 ## Pendientes
 

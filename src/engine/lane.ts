@@ -142,7 +142,7 @@ const PRESUPUESTO: Record<Dificultad, number> = { facil: 3, media: 6, dura: 9, j
 /** Estimación del aguante del frente para anunciarla en el mapa, sin gastar
  *  el RNG de la sala: presupuesto × vida media del roster disponible. */
 export function estimarFrente(dificultad: Dificultad, acto: number): number {
-  const escala = Math.pow(1.35, acto)
+  const escala = Math.pow(1.3, acto)
   if (dificultad === 'jefe') {
     const jefe = ROSTER.find((t) => t.id === 'tratado')
     return Math.round((jefe?.vidaBase ?? 120) * escala * 1.6)
@@ -156,7 +156,7 @@ export function estimarFrente(dificultad: Dificultad, acto: number): number {
 export function generarOleada(dificultad: Dificultad, acto: number, rng: Rng): Enemigo[] {
   // la demanda ahora COMPONE: si el motor del jugador multiplica, el frente
   // también, o el número grande sería decorativo
-  const escala = Math.pow(1.35, acto)
+  const escala = Math.pow(1.3, acto)
   if (dificultad === 'jefe') {
     const guardia = ROSTER.filter((t) => t.rango === 'comun' && t.desdeActo <= acto)
     return [

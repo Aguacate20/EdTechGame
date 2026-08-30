@@ -1360,3 +1360,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   background: linear-gradient(180deg, rgba(19,26,36,.55), rgba(19,26,36,.86) 62%, var(--tinta) 96%);
 }
 .app > *:not(.fondo-acto) { position: relative; z-index: 1; }
+
+/* v5.17 · el verbo sobre la flecha y el consejo de forma */
+.consejo-forma { font-style: normal; color: var(--laton); opacity: .92; }

@@ -339,12 +339,26 @@ export function robar(e: EstadoBatalla, n: number): void {
   for (let i = 0; i < n; i++) {
     if (!e.mazo.length) {
       if (!e.descarte.length) return
-      e.mazo = e.descarte
+      // reciclar SIN barajar devolvía las mismas cartas en el mismo orden:
+      // en salas chicas la mano parecía congelada. Se baraja con una semilla
+      // propia (turno + tamaño) para no mover el RNG de la expedición.
+      e.mazo = barajarDeterminista(e.descarte, e.turno * 7919 + e.descarte.length)
       e.descarte = []
     }
     const p = e.mazo.shift()
     if (p) e.mano.push(p)
   }
+}
+
+function barajarDeterminista<T>(xs: T[], semilla: number): T[] {
+  const out = [...xs]
+  let z = (semilla >>> 0) || 1
+  for (let i = out.length - 1; i > 0; i--) {
+    z ^= z << 13; z ^= z >>> 17; z ^= z << 5; z >>>= 0
+    const j = z % (i + 1)
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
 }
 
 export const vivos = (e: EstadoBatalla): Enemigo[] => e.enemigos.filter((x) => x.hp > 0)

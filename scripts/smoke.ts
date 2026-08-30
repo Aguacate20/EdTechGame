@@ -269,7 +269,17 @@ function jugarRun(semilla: string, estrategia: Estrategia, lentesIds: string[] =
               if (ev?.acertado) rep.quemasBuenas++; else if (ev) rep.quemasMalas++
             }
           }
-          if (n === 0 && e.trazos.length === 0) { lucidez -= 4; rep.turnos++; siguienteTurno(e); continue }
+          if (n === 0 && e.trazos.length === 0) {
+            // regla 5 del juego: si nada encaja, cambiar es barato y siempre
+            // disponible. El bot la usa como lo haría una persona.
+            if (e.cambiosRestantes > 0 && e.mano.length) {
+              cambiar(e, rng.pick(e.mano).uid)
+              const n2 = estrategia === 'azar'
+                ? jugarAzar(e, rng)
+                : jugarInformado(e, contenido, rng, estrategia === 'aproximado')
+              if (n2 > 0) { /* encontró jugada tras cambiar */ } else { lucidez -= 4; rep.turnos++; siguienteTurno(e); continue }
+            } else { lucidez -= 4; rep.turnos++; siguienteTurno(e); continue }
+          }
           for (const t of e.trazos) rep.herramientasUsadas.add(t.tool)
           rep.trazos += e.trazos.length
           // sello de confianza: el informado y el azar sellan siempre; el sello

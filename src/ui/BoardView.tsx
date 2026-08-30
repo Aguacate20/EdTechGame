@@ -18,7 +18,7 @@ import { Chip } from './components'
 import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
 import { useCascada } from './cascade'
 import { despertarAudio, sfx } from './sfx'
-import { encargoCumplido, previsualizarForma, type Encargo } from '../engine/srl'
+import { consejoDeForma, encargoCumplido, previsualizarForma, type Encargo } from '../engine/srl'
 import { condicionPorId } from '../engine/hazanas'
 
 export interface AccionesBatalla {
@@ -91,6 +91,8 @@ function conectorDe(id: string, i: number, param: string | null): string {
 
 const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t)
 
+const AYUDA_DORADA =
+  '\n\n\u2726 DORADA \u2014 la fusionaste emparejando nombre y descripci\u00f3n. Entra completa, vale m\u00e1s fichas y ocupa un solo hueco de la mano.'
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}`
 
@@ -478,11 +480,19 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                       </g>
                     )
                   })}
+                  {t.tool === 'flecha' && t.param && (
+                    <text x={`${(pts[0].x + pts[pts.length - 1].x) / 2}%`}
+                      y={`${(pts[0].y + pts[pts.length - 1].y) / 2}%`}
+                      dy={-7} fill={color} fontSize="11.5" textAnchor="middle"
+                      style={{ fontFamily: 'var(--mono)', paintOrder: 'stroke', stroke: 'var(--tinta)', strokeWidth: 4 }}>
+                      {VERBO_RELACION[t.param] ?? t.param}
+                    </text>
+                  )}
                   {resuelto && ver && (
                     <text x={`${(pts[0].x + pts[pts.length - 1].x) / 2}%`}
-                      y={`${(pts[0].y + pts[pts.length - 1].y) / 2 - 3}%`}
-                      fill={color} fontSize="11" textAnchor="middle"
-                      style={{ fontFamily: 'var(--mono)' }}>
+                      y={`${(pts[0].y + pts[pts.length - 1].y) / 2}%`}
+                      dy={14} fill={color} fontSize="11" textAnchor="middle"
+                      style={{ fontFamily: 'var(--mono)', paintOrder: 'stroke', stroke: 'var(--tinta)', strokeWidth: 4 }}>
                       {ver.estado === 'sostenido' ? '✓' : ver.estado === 'equivalente' ? '✓ ='
                       : ver.estado === 'compatible' ? '✓ también'
                         : ver.estado === 'derivado' ? '✓ se sigue' : ver.estado === 'aproximado' ? '≈'
@@ -529,11 +539,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             const inservible = (!!h && !pendientes.includes(p.uid) &&
               !aceptaEnRanura(h.id, pendientes.length, p)) || !piezaLibre(p.uid)
             const cd = cedulaDe(contenido, p)
+            const dorada = p.clase === 'concepto' && !!p.conceptId && e.fusionados.includes(p.conceptId)
             return (
               <div
                 key={p.uid}
                 className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
-                  `${p.clase === 'concepto' && p.conceptId && e.fusionados.includes(p.conceptId) ? ' dorada' : ''}` +
+                  `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}` +
                   `${inservible ? ' inservible' : ''}`}
@@ -545,7 +556,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDoubleClick={() => pedirDevolver(p.uid)}
                 onMouseEnter={() => herramienta && !inservible && setPrevisualizada(p.uid)}
                 onMouseLeave={() => setPrevisualizada((x) => (x === p.uid ? null : x))}
-                data-ayuda={ayudaDe(p)}
+                data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
                 {marcada && <span className="orden">{orden + 1}</span>}
                 <span className="tt">{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
@@ -700,11 +711,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         <div className="lista-mano">
           {enMano.map((p) => {
             const cd = cedulaDe(contenido, p)
+            const dorada = p.clase === 'concepto' && !!p.conceptId && e.fusionados.includes(p.conceptId)
             return (
               <div
                 key={p.uid}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
-                  `${p.clase === 'concepto' && p.conceptId && e.fusionados.includes(p.conceptId) ? ' dorada' : ''}` +
+                  `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${foco?.piezas ? (piezaLibre(p.uid) ? ' senala' : ' bloqueada') : ''}`}
                 style={{ borderLeftColor: cd.banda, background: cd.tono }}
@@ -718,7 +730,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   if (!piezaLibre(p.uid)) return
                   setSeleccion(seleccion === p.uid ? null : p.uid); despertarAudio()
                 }}
-                data-ayuda={ayudaDe(p)}
+                data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
                 <span className="tt">{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
@@ -777,6 +789,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 {forma.combosPosibles.length > 0 && (
                   <> · podría encender <strong>{forma.combosPosibles.join(', ')}</strong></>
                 )}
+                {(() => {
+                  const c = consejoDeForma(e.trazos, [...e.mano, ...e.descarte], e.sellado)
+                  return c ? <em className="consejo-forma"> — {c}</em> : null
+                })()}
               </span>
             )}
             {e.encargo && (
