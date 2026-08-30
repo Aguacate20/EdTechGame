@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs'
 import { adaptarBundle } from '../src/content/adapter'
 import {
-  afirmar, cambiar, iniciarBatalla, quemar, siguienteTurno, trazar, turnoDelCarril, vivos,
+  afirmar, cambiar, iniciarBatalla, quemar, sellar, siguienteTurno, trazar, turnoDelCarril, vivos,
   soltar, type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from '../src/engine/battle'
 import { combinarLentes } from '../src/engine/powers'
@@ -37,6 +37,8 @@ interface Rep {
   sostenidos: number; trazos: number; herramientasUsadas: Set<string>
   quemasBuenas: number; quemasMalas: number; fusiones: number; combos: Set<string>
   estados: Record<string, number>; hallazgos: number; mejorGolpe: number; terrenos: number; descubiertos: number
+  sellos: number
+  sellosOk: number
 }
 
 /** Un jugador que lee: busca en su mano las piezas que sí sostienen algo.
@@ -224,7 +226,8 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
   const rep: Rep = {
     gano: false, turnos: 0, oleadas: 0, lucidez, sostenidos: 0, trazos: 0,
     herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0,
-    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0, descubiertos: 2
+    combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0, descubiertos: 2,
+    sellos: 0, sellosOk: 0
   }
   const herramientas: HerramientaId[] = [
     ...BASE, 'jerarquia', 'ancla', 'eje', 'secuencia', 'balanza',
@@ -269,7 +272,11 @@ function jugarRun(semilla: string, estrategia: Estrategia): Rep {
           if (n === 0 && e.trazos.length === 0) { lucidez -= 4; rep.turnos++; siguienteTurno(e); continue }
           for (const t of e.trazos) rep.herramientasUsadas.add(t.tool)
           rep.trazos += e.trazos.length
+          // sello de confianza: el informado y el azar sellan siempre; el sello
+          // tiene que premiar al primero y castigar al segundo
+          if (estrategia !== 'aproximado') sellar(e, true)
           const r = afirmar(e, ctx)
+          if (r.sello) { rep.sellos++; if (r.sello.acertado) rep.sellosOk++ }
           turnoDelCarril(e, ctx, r)
           lucidez -= r.danoRecibido
           rep.sostenidos += r.diag.sostenidos
@@ -376,6 +383,9 @@ const solape = solapes.length ? solapes.reduce((a, b) => a + b, 0) / solapes.len
 const ok9 = solapes.length > 0 && solape < 0.5
 const descMedia = inf.reduce((n, r) => n + r.descubiertos, 0) / Math.max(1, inf.length)
 const ok10 = descMedia > 2 && descMedia <= Object.keys(contenido.frecuenciaRelacion).length
+const selloI = inf.reduce((n, r) => n + r.sellosOk, 0) / Math.max(1, inf.reduce((n, r) => n + r.sellos, 0))
+const selloZ = res.azar.reduce((n, r) => n + r.sellosOk, 0) / Math.max(1, res.azar.reduce((n, r) => n + r.sellos, 0))
+const ok11 = selloI > 0.8 && selloZ < 0.2
 const ok7 = creditoAprox / totalAprox > 0.7 && res.aproximado.filter((r) => r.gano).length >= 3
 console.log(` ${ok1 ? 'PASA' : 'FALLA'}  quien lee despeja el carril`)
 console.log(` ${ok2 ? 'PASA' : 'FALLA'}  trazar al azar nunca gana`)
@@ -387,4 +397,5 @@ console.log(` ${ok7 ? 'PASA' : 'FALLA'}  quien razona bien y se equivoca de etiq
 console.log(` ${ok8 ? 'PASA' : 'FALLA'}  el mapa de cierre acumula aciertos (${hallMedia.toFixed(0)} vínculos y grupos por run)`)
 console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios distintos (${(100 * solape).toFixed(0)}% en ${solapes.length} columnas)`)
 console.log(` ${ok10 ? 'PASA' : 'FALLA'}  los vínculos se descubren derribando enemigos (${descMedia.toFixed(1)} conocidos al final)`)
-if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10)) process.exit(1)
+console.log(` ${ok11 ? 'PASA' : 'FALLA'}  el sello de confianza distingue al calibrado del que adivina (${(100 * selloI).toFixed(0)}% vs ${(100 * selloZ).toFixed(0)}%)`)
+if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10 && ok11)) process.exit(1)

@@ -1208,3 +1208,44 @@ label.campo > span { display: block; margin-bottom: 5px; }
   content: '✦'; position: absolute; top: 6px; right: 8px;
   color: #8a6a25; font-size: 13px;
 }
+
+/* ================= v5.11 · autorregulación sin pausa ================= */
+
+.encargos {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 14px; margin: 0 0 6px;
+  border: 1px dashed #6b5a1c; border-radius: 10px;
+  background: rgba(201,162,39,.05);
+  animation: entrar .35s ease-out;
+}
+.encargos-fila { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch; }
+.encargo {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+  min-width: 170px; max-width: 240px; padding: 9px 12px; text-align: left;
+  border: 1px solid #4a4230; border-radius: 8px; background: rgba(255,255,255,.03);
+  color: inherit; cursor: pointer; font: inherit;
+  transition: transform .12s ease, border-color .12s ease;
+}
+.encargo:hover { transform: translateY(-2px); border-color: var(--laton); }
+.encargo.n2 { border-color: #6b5a1c; }
+.encargo.n3 { border-color: #8a6a1a; background: rgba(201,162,39,.08); }
+.encargo-nivel { font-family: var(--mono); font-size: 10px; color: var(--laton); letter-spacing: .15em; }
+.encargo-titulo { font-weight: 600; font-size: 13.5px; line-height: 1.25; }
+
+.sello-confianza {
+  border: 1px solid #4a4230; font-family: var(--mono); font-size: 12px; letter-spacing: .04em;
+}
+.sello-confianza.activo {
+  border-color: var(--laton); color: var(--laton); background: rgba(201,162,39,.14);
+  box-shadow: 0 0 0 2px rgba(201,162,39,.18);
+  animation: latir 1.6s ease-in-out infinite;
+}
+.forma-previa { font-size: 12px; }
+.forma-previa strong { color: #85c4b1; font-weight: 600; }
+
+.reflexion { display: flex; flex-direction: column; gap: 8px; }
+.reflexion-fila { display: flex; gap: 8px; flex-wrap: wrap; }
+.reflexion .btn.marcar { border-color: #6b5a1c; }
+.reflexion .btn.marcar.activo { border-color: var(--laton); color: var(--laton); background: rgba(201,162,39,.12); }
+.sello-cierre { font-family: var(--mono); font-size: 12px; }
+.btn.chico { font-size: 12px; padding: 4px 10px; }

@@ -1,4 +1,4 @@
-# El Archivo Infinito — v4.1
+# El Archivo Infinito — v5.11
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -317,10 +317,27 @@ seguir produciéndolos.
 
 ---
 
+## Autorregulación sin pausa (v5.11)
+
+El ciclo de Zimmerman entra como tres decisiones con consecuencia, nunca como
+una pantalla de preguntas:
+
+| Fase | Mecánica | Decisión | Consecuencia | Señal |
+|---|---|---|---|---|
+| Planeación | **Encargo** | al entrar, viendo mano y frente, eliges qué te propones (3 niveles) o nada | cumplirlo cura lucidez y sube la probabilidad de veta en el botín; no cumplirlo no castiga | `srl_planeacion`: nivel elegido, si apuntaba a un concepto débil, latencia de la elección, resultado |
+| Acción | **Sello de confianza** | antes de afirmar, declaras que todo el tablero se sostiene | si es así, +1.0 al multiplicador; si un trazo falla, el daño rinde el 60 % | `calibracion`: la apuesta explícita G1, limpia y por turno |
+| Autorreflexión | **Marca** | al cerrar la sala señalas qué concepto te costó (o nada) | vuelve en la próxima sala aunque no toque, y sostenerlo paga fichas y cura | `srl_reflexion`: atribución contrastada con los fallos reales de la sala |
+
+Además, al lado de *Afirmar* se muestra la **forma** del diagrama (piezas, alcance
+y combos que *podría* encender si todo se sostiene). Anticipación sin trampa: se
+enseña la estructura, nunca la verdad.
+
+`npm run smoke` añade un criterio: el sello tiene que premiar al que sabe y
+castigar al que adivina (informado 100 % vs azar 8 %).
+
 ## Pendientes
 
-- Sello de confianza sobre el diagrama completo (calibración explícita, G1/G2).
-- Reserva de una pieza entre turnos (señal de planeación).
+- Reserva de una pieza entre turnos (segunda señal de planeación).
 - Familia H (colaborar) requiere un segundo estudiante.
 - `docs/PEGLIN.md` describe la Mesa de Tiradas, que sigue sin implementar y que ahora
   encaja mejor: las clavijas serían las piezas del tablero.### El modo Aprendizaje

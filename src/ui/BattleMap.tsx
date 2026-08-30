@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { Contenido } from '../content/types'
 import type { Hallazgos } from '../engine/battle'
 import { tipoPorId } from '../engine/lane'
 import { estiloRelacion } from './identity'
 import { nivelDe, type Atlas } from '../engine/atlas'
+import type { Encargo } from '../engine/srl'
 
 /* ==========================================================================
    El mapa del combate.
@@ -99,7 +100,8 @@ function renglones(t: string, max = 15): string[] {
 }
 
 export function BattleMap({
-  contenido, hallazgos, atlas, mejorGolpe, enemigos, latencias, descubiertos, onSeguir
+  contenido, hallazgos, atlas, mejorGolpe, enemigos, latencias, descubiertos, onSeguir,
+  srl
 }: {
   contenido: Contenido
   hallazgos: Hallazgos
@@ -108,8 +110,20 @@ export function BattleMap({
   enemigos: { tipoId: string; nombre: string; hpMax: number }[]
   latencias: { ms: number; conIntuicion: boolean; trazos: number }[]
   descubiertos: string[]
-  onSeguir: () => void
+  /** cierre del ciclo: encargo, sellos y la marca de reflexión */
+  srl: {
+    encargo: Encargo | null
+    cumplido: boolean
+    sellosHechos: number
+    sellosAcertados: number
+    /** conceptos de la sala entre los que marcar el que costó */
+    candidatos: string[]
+  }
+  /** al seguir se entrega lo marcado (null = «nada me costó») */
+  onSeguir: (marcado: string | null) => void
 }) {
+  /** undefined = aún no eligió; null = «nada me costó» */
+  const [marcado, setMarcado] = useState<string | null | undefined>(undefined)
   const { vinculos, grupos, reconocidos } = hallazgos
   const ids = useMemo(() => [...new Set([
     ...vinculos.flatMap((v) => [v.from, v.to]),
@@ -308,8 +322,47 @@ export function BattleMap({
             {[...new Set(enemigos.map((x) => tipoPorId(x.tipoId).nombre))].join(', ')}
           </p>
 
-          <button className="btn primario" onClick={onSeguir} style={{ marginTop: 'auto' }}>
-            Recoger el hallazgo
+          <div className="separador" />
+          {(srl.encargo || srl.sellosHechos > 0) && (
+            <div className="pila" style={{ gap: 4 }}>
+              {srl.encargo && (
+                <p className={`nota ${srl.cumplido ? 'ok' : 'silencio'}`} style={{ margin: 0 }}>
+                  {srl.cumplido ? '✓ Encargo cumplido: ' : 'Encargo pendiente: '}
+                  <strong>{srl.encargo.titulo}</strong>
+                  {srl.cumplido ? '. Cumplir lo que te propusiste cura.' : '. No castiga; solo no cura.'}
+                </p>
+              )}
+              {srl.sellosHechos > 0 && (
+                <p className="sello-cierre silencio" style={{ margin: 0 }}>
+                  Sellaste {srl.sellosHechos} diagrama(s) y {srl.sellosAcertados} se sostuvieron enteros.
+                  {srl.sellosAcertados === srl.sellosHechos
+                    ? ' Sabes lo que sabes.'
+                    : srl.sellosAcertados === 0 ? ' Sella cuando tengas la certeza: la duda también es información.' : ''}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="reflexion">
+            <span className="eyebrow">¿Qué te costó más? Lo que marques vuelve en la próxima sala con prima</span>
+            <div className="reflexion-fila">
+              {srl.candidatos.map((id) => (
+                <button key={id}
+                  className={`btn chico marcar${marcado === id ? ' activo' : ''}`}
+                  onClick={() => setMarcado(marcado === id ? undefined : id)}>
+                  {contenido.conceptos[id]?.titulo ?? id}
+                </button>
+              ))}
+              <button className={`btn chico fantasma marcar${marcado === null ? ' activo' : ''}`}
+                onClick={() => setMarcado(marcado === null ? undefined : null)}>
+                Nada en particular
+              </button>
+            </div>
+          </div>
+
+          <button className="btn primario" disabled={marcado === undefined}
+            onClick={() => onSeguir(marcado ?? null)} style={{ marginTop: 'auto' }}>
+            {marcado === undefined ? 'Marca algo para seguir' : 'Recoger el hallazgo'}
           </button>
         </div>
       </div>

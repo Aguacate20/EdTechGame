@@ -4,6 +4,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -27,12 +28,22 @@ import { VistazoView } from './ui/VistazoView'
 import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
 import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
+import {
+  encargoCumplido, juzgarReflexion, lucidezEncargo, primaEncargo, proponerEncargos, type Encargo
+} from './engine/srl'
 
 type Fase =
   | 'cargar' | 'inicio' | 'mapa' | 'batalla'
   | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin'
 
 const LUCIDEZ_MAX = 80
+
+/** Lo que el encargo necesita saber de la sala, sacado del estado de batalla. */
+const cuentaDe = (b: EstadoBatalla) => ({
+  vinculosSostenidos: b.hallazgos.vinculos.length, combosVistos: b.combosVistos,
+  conceptosSostenidos: b.conceptosSostenidos, quemasAcertadas: b.quemasAcertadas,
+  errores: b.erroresTotales, invertidos: b.invertidosTotales
+})
 
 export default function App() {
   const [contenido, setContenido] = useState<Contenido | null>(null)
@@ -70,6 +81,8 @@ export default function App() {
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
   const [veta, setVeta] = useState(false)
+  /** conceptos marcados como difíciles al cerrar la sala anterior: vuelven con prima */
+  const [marcados, setMarcados] = useState<string[]>([])
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -257,18 +270,22 @@ export default function App() {
       // una herramienta más
       apoyo: aprendizaje,
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
-      sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id])
+      sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
+      marcados
     }
     // el carril escala con las expediciones ya hechas: vuelves más fuerte, pero
     // también encuentras enemigos más duros
     const actoEfectivo = actoIdx + Math.min(3, Math.floor(progreso.expediciones / 2))
-    setBatalla(iniciarBatalla(
+    const e = iniciarBatalla(
       ctx, nodo.conceptIds, bolsa, nodo.dificultad, actoEfectivo,
       acto.manoSugerida + manoExtra
-    ))
+    )
+    // planeación: se elige viendo la mano y el frente, no en una pantalla aparte
+    if (atlas) e.encargosOfrecidos = proponerEncargos(contenido, nodo.conceptIds, atlas, e.mano, e.herramientas)
+    setBatalla(e)
     setFase('batalla')
   }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados,
-      manoExtra, aprendizaje, atlas, herramientas, sellos])
+      manoExtra, aprendizaje, atlas, herramientas, sellos, marcados])
 
   /* ------------------------------- acciones -------------------------------- */
 
@@ -311,6 +328,38 @@ export default function App() {
     return e
   })
 
+  const sellar = (v: boolean) => setBatalla((prev) => {
+    if (!prev) return prev
+    const e = { ...prev }
+    sellarDiagrama(e, v)
+    return e
+  })
+
+  const elegirEncargo = (en: Encargo | null) => {
+    setBatalla((prev) => {
+      if (!prev) return prev
+      const e = { ...prev }
+      elegirEncargoBatalla(e, en)
+      return e
+    })
+    registrar({
+      ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+      arquetipo: 'encargo', condicion: null, mecanica: 'srl_planeacion',
+      itemId: en ? `encargo:${en.tipo}:n${en.nivel}` : 'encargo:ninguno',
+      conceptIds: en?.tipo === 'concepto' ? [en.objetivo] : [],
+      operacion: 'planear', improvisado: false, seleccion: [],
+      correcto: true, apuesta: en ? String(en.nivel) : '0', calibrado: true,
+      latenciaMs: batalla ? Date.now() - batalla.inicioTurno : 0,
+      ayuda: en?.sobreDebil ?? false, repertorioTocado: null
+    })
+    if (en && atlas) {
+      const a = { ...atlas, srl: { ...atlas.srl,
+        encargosElegidos: atlas.srl.encargosElegidos + 1,
+        nivelAcumulado: atlas.srl.nivelAcumulado + en.nivel } }
+      setAtlas(a); guardarAtlas(a)
+    }
+  }
+
   const afirmar = () => {
     if (!batalla || !ctx || !contenido || !atlas) return
     const e = { ...batalla }
@@ -319,6 +368,8 @@ export default function App() {
 
     let nueva = lucidez - r.danoRecibido
     if (r.diag.repertoriosReubicados.length) nueva += 6
+    // saldar una cuenta pendiente (concepto que marcaste) también cura
+    if (r.cuentasSaldadas.length) nueva += 3 * r.cuentasSaldadas.length
     nueva = Math.min(LUCIDEZ_MAX, nueva)
     // el suelo de lucidez solo mientras el andamio está puesto: en la última
     // oleada ya se juega sin red
@@ -383,6 +434,24 @@ export default function App() {
     }
     a.apuestasTotales += r.diag.veredictos.length
     a.apuestasCalibradas += r.diag.sostenidos
+    if (r.sello) {
+      a.srl = { ...a.srl, sellosHechos: a.srl.sellosHechos + 1,
+        sellosAcertados: a.srl.sellosAcertados + (r.sello.acertado ? 1 : 0) }
+      // calibración explícita (G1): la señal más limpia del juego
+      registrar({
+        ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+        arquetipo: 'sello', condicion: e.dificultad, mecanica: 'calibracion',
+        itemId: `sello:${r.diag.veredictos.length}`, conceptIds: r.diag.conceptIds,
+        operacion: 'sellar', improvisado: false, seleccion: [],
+        correcto: r.sello.acertado, apuesta: 'seguro', calibrado: r.sello.acertado,
+        latenciaMs: e.latencias[e.latencias.length - 1]?.ms ?? 0,
+        ayuda: false, repertorioTocado: null
+      })
+    }
+    if (r.cuentasSaldadas.length) {
+      // la marca de reflexión se saldó: quítala de la lista
+      setMarcados((m) => m.filter((id) => !r.cuentasSaldadas.includes(id)))
+    }
     setAtlas(a); guardarAtlas(a)
 
     for (const v of r.diag.veredictos) {
@@ -435,14 +504,32 @@ export default function App() {
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
       // la calidad del mejor diagrama inclina la suerte, sin garantizarla
-      const calidad = Math.min(1, batalla.mejorGolpe.dano / 420)
+      const cumplido = batalla.encargo ? encargoCumplido(batalla.encargo, cuentaDe(batalla)) : false
+      // el encargo cumplido inclina el botín y cura: lo que te propusiste, logrado
+      const calidad = Math.min(1, batalla.mejorGolpe.dano / 420 + primaEncargo(batalla.encargo, cumplido))
       const r = ofrecerRecompensas(contenido, {
         lentes, sellos, herramientas, relaciones: progreso.relaciones
       }, rngRef.current, dura, calidad)
       setRecompensas(r.opciones); setVeta(r.veta)
+      const cura = lucidezEncargo(batalla.encargo, cumplido)
+      if (cura) setLucidez((l) => Math.min(LUCIDEZ_MAX, l + cura))
       if (atlas) {
-        const a = { ...atlas, mejoresDiagramas: [...(atlas.mejoresDiagramas ?? []), batalla.mejorGolpe.dano] }
+        const a = {
+          ...atlas, mejoresDiagramas: [...(atlas.mejoresDiagramas ?? []), batalla.mejorGolpe.dano],
+          srl: { ...atlas.srl, encargosCumplidos: atlas.srl.encargosCumplidos + (cumplido ? 1 : 0) }
+        }
         setAtlas(a); guardarAtlas(a)
+      }
+      if (batalla.encargo) {
+        registrar({
+          ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+          arquetipo: 'encargo', condicion: batalla.dificultad, mecanica: 'srl_planeacion',
+          itemId: `encargo:${batalla.encargo.tipo}:n${batalla.encargo.nivel}:resultado`,
+          conceptIds: batalla.encargo.tipo === 'concepto' ? [batalla.encargo.objetivo] : [],
+          operacion: 'cumplir', improvisado: false, seleccion: [],
+          correcto: cumplido, apuesta: String(batalla.encargo.nivel), calibrado: cumplido,
+          latenciaMs: 0, ayuda: batalla.encargo.sobreDebil, repertorioTocado: null
+        })
       }
       setFase('resumen'); return
     }
@@ -585,7 +672,7 @@ export default function App() {
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
-            cambio, afirmar, continuar, quemar, cambiar, sello,
+            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo,
             huir: () => {
               guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
               setGuardada(leerExpedicion(contenido.fuente))
@@ -600,7 +687,32 @@ export default function App() {
           contenido={contenido} hallazgos={batalla.hallazgos} atlas={atlas}
           mejorGolpe={batalla.mejorGolpe} enemigos={batalla.enemigos}
           latencias={batalla.latencias} descubiertos={batalla.relacionesNuevas}
-          onSeguir={() => setFase('recompensa')}
+          srl={{
+            encargo: batalla.encargo,
+            cumplido: batalla.encargo ? encargoCumplido(batalla.encargo, cuentaDe(batalla)) : false,
+            sellosHechos: batalla.sellosHechos, sellosAcertados: batalla.sellosAcertados,
+            candidatos: batalla.conceptIdsCasilla.filter((id) => contenido.conceptos[id]).slice(0, 6)
+          }}
+          onSeguir={(marcado) => {
+            // autorreflexión: una atribución con consecuencia, contrastada con la evidencia
+            const ref = juzgarReflexion(marcado, batalla.fallosPorConcepto)
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'reflexion', condicion: batalla.dificultad, mecanica: 'srl_reflexion',
+              itemId: marcado ? `marca:${marcado}` : 'marca:ninguno',
+              conceptIds: [marcado, ref.masFallado].filter((x): x is string => !!x),
+              operacion: 'atribuir', improvisado: false, seleccion: ref.masFallado ? [ref.masFallado] : [],
+              correcto: ref.acertada, apuesta: marcado ?? 'nada', calibrado: ref.acertada,
+              latenciaMs: 0, ayuda: false, repertorioTocado: null
+            })
+            if (marcado) setMarcados((m) => [...new Set([...m, marcado])].slice(-3))
+            if (atlas) {
+              const a = { ...atlas, srl: { ...atlas.srl, reflexiones: atlas.srl.reflexiones + 1,
+                reflexionesAcertadas: atlas.srl.reflexionesAcertadas + (ref.acertada ? 1 : 0) } }
+              setAtlas(a); guardarAtlas(a)
+            }
+            setFase('recompensa')
+          }}
         />
       )}
 

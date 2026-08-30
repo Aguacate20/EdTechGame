@@ -15,6 +15,7 @@ import { SELLOS, type SelloId } from './powers'
 import { piezaContexto } from './pieces'
 import { armarDisparo, type Disparo } from './weapons'
 import { componerOleadas, oleadaDePuerta, type NivelApoyo, type Oleada } from './aprendizaje'
+import { juzgarSello, PRIMA_MARCADO, SELLO_ACIERTA, SELLO_FALLA, type Encargo } from './srl'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -59,6 +60,10 @@ export interface ResultadoTurno {
   intuicionesNuevas: string[]
   apocrifasNuevas: number
   cartasPerdidas: number
+  /** resultado del sello de confianza, si el jugador selló este diagrama */
+  sello: { acertado: boolean; nota: string } | null
+  /** conceptos marcados en la reflexión anterior que aquí se sostuvieron */
+  cuentasSaldadas: string[]
 }
 
 export interface PiezaEnTablero { uid: string; x: number; y: number }
@@ -123,6 +128,23 @@ export interface EstadoBatalla {
   /** terrenos ganados: intuiciones que se conservan en vez de borrarse */
   terrenosGanados: string[]
   mejorGolpe: { dano: number; fichas: number; mult: number; trazos: number }
+  // — autorregulación —
+  /** el encargo elegido al entrar; null si no eligió (también es una señal) */
+  encargo: Encargo | null
+  /** encargos ofrecidos, para poder mostrarlos hasta que se elija o se trace */
+  encargosOfrecidos: Encargo[]
+  /** el jugador selló el diagrama de este turno */
+  sellado: boolean
+  sellosHechos: number
+  sellosAcertados: number
+  combosVistos: string[]
+  conceptosSostenidos: string[]
+  erroresTotales: number
+  invertidosTotales: number
+  /** fallos por concepto en esta sala: contra esto se juzga la reflexión */
+  fallosPorConcepto: Record<string, number>
+  /** conceptos marcados en la sala anterior: vuelven con prima */
+  marcados: string[]
 }
 
 /* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
@@ -184,6 +206,8 @@ export interface Bolsa {
   sinTocar: string[]
   /** conceptos de la sala sin evidencia: deciden si hace falta la oleada del nudo */
   sinEvidencia?: string[]
+  /** conceptos que el estudiante marcó como difíciles al cerrar la sala anterior */
+  marcados?: string[]
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -210,6 +234,13 @@ export function montarMazo(
   }
   for (let i = 0; i < APOCRIFAS[dificultad]; i++) {
     const p = piezaApocrifa(c, rng.pick(conceptIds), rng)
+    if (p) piezas.push(p)
+  }
+  // lo que marcaste como difícil vuelve aunque la casilla no lo traiga: es la
+  // práctica espaciada elegida por el propio estudiante
+  for (const id of bolsa.marcados ?? []) {
+    if (conceptIds.includes(id)) continue
+    const p = piezaConcepto(c, id)
     if (p) piezas.push(p)
   }
   for (const id of bolsa.casos) { const p = piezaCaso(c, id); if (p) piezas.push(p) }
@@ -257,7 +288,10 @@ export function iniciarBatalla(
     quemasAcertadas: 0, inferenciasTotales: 0,
     hallazgos: { vinculos: [], grupos: [], reconocidos: [] },
     relacionesNuevas: [],
-    inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 }
+    inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 },
+    encargo: null, encargosOfrecidos: [], sellado: false, sellosHechos: 0, sellosAcertados: 0,
+    combosVistos: [], conceptosSostenidos: [], erroresTotales: 0, invertidosTotales: 0,
+    fallosPorConcepto: {}, marcados: bolsa.marcados ?? []
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
@@ -427,6 +461,19 @@ export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
 
 /* ============================== los sellos ================================ */
 
+/** Declarar que todo lo que hay en el tablero se sostiene. Se puede quitar. */
+export function sellar(e: EstadoBatalla, v: boolean): void {
+  if (e.fase !== 'jugando') return
+  e.sellado = v
+}
+
+/** Elegir encargo (o ninguno). Solo antes del primer trazo de la sala. */
+export function elegirEncargo(e: EstadoBatalla, en: Encargo | null): void {
+  if (e.turno !== 1 || e.trazos.length > 0) return
+  e.encargo = en
+  e.encargosOfrecidos = []
+}
+
 export function usarSello(e: EstadoBatalla, id: SelloId): string | null {
   if (!e.sellos.includes(id) || e.sellosUsados.includes(id)) return null
   e.sellosUsados.push(id)
@@ -487,6 +534,22 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       diag.dano = Math.round(diag.fichas * diag.mult)
       diag.cierre = 'Esto no engancha con lo de antes: en aprendizaje lo nuevo tiene que apoyarse en lo ya visto.'
     }
+  }
+  // cuenta pendiente: sostener algo sobre lo que marcaste como difícil paga fichas
+  const cuentasSaldadas = e.marcados.filter((id) =>
+    diag.veredictos.some((v) => esAcierto(v.estado) && v.conceptIds.includes(id)))
+  if (cuentasSaldadas.length) {
+    diag.fichas += PRIMA_MARCADO * cuentasSaldadas.length
+    diag.dano = Math.round(diag.fichas * diag.mult)
+  }
+  // sello de confianza: no toca la corrección, solo la recompensa
+  let sello: ResultadoTurno['sello'] = null
+  if (e.sellado) {
+    sello = juzgarSello(diag)
+    e.sellosHechos += 1
+    if (sello.acertado) { e.sellosAcertados += 1; diag.mult += SELLO_ACIERTA }
+    else diag.mult = diag.mult * SELLO_FALLA
+    diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult))
   }
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
@@ -566,6 +629,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     descubiertos,
     impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
     intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0,
+    sello, cuentasSaldadas,
     // se congela ANTES de limpiar: el feedback ocurre sobre el propio dibujo
     foto: {
       tablero: e.tablero.map((t) => ({ ...t })),
@@ -576,6 +640,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     }
   }
 
+  const nTrazos = e.trazos.length
   // limpiar el tablero: lo usado va al descarte, lo reubicado sale de la run
   for (const t of e.tablero) {
     const p = e.mano.find((x) => x.uid === t.uid)
@@ -605,13 +670,26 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     (p) => p.clase === 'intuicion' && p.conceptId && conceptosEnJuego.has(p.conceptId)
   )
   e.latencias.push({
-    ms: Date.now() - e.inicioTurno, conIntuicion, trazos: e.trazos.length
+    ms: Date.now() - e.inicioTurno, conIntuicion, trazos: nTrazos
   })
 
   // memoria del combate: los aciertos se acumulan turno a turno, de modo que
   // «A extiende B» del turno 1 y «B ejemplifica C» del turno 3 acaban siendo
   // una sola cadena en el mapa de cierre
   registrarHallazgos(e, diag)
+  // cuenta para el encargo y para la reflexión de cierre
+  e.sellado = false
+  e.combosVistos = [...new Set([...e.combosVistos, ...diag.combos.map((x) => x.id)])]
+  e.conceptosSostenidos = [...new Set([
+    ...e.conceptosSostenidos,
+    ...diag.veredictos.filter((v) => esAcierto(v.estado)).flatMap((v) => v.conceptIds)
+  ])]
+  e.erroresTotales += diag.errores
+  e.invertidosTotales += diag.invertidos
+  for (const v of diag.veredictos) {
+    if (esAcierto(v.estado) || v.estado === 'silencio') continue
+    for (const id of v.conceptIds) e.fallosPorConcepto[id] = (e.fallosPorConcepto[id] ?? 0) + 1
+  }
   if (diag.dano > e.mejorGolpe.dano) {
     e.mejorGolpe = {
       dano: diag.dano, fichas: diag.fichas, mult: diag.mult, trazos: e.trazos.length

@@ -18,6 +18,7 @@ import { Chip } from './components'
 import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
 import { useCascada } from './cascade'
 import { despertarAudio, sfx } from './sfx'
+import { encargoCumplido, previsualizarForma, type Encargo } from '../engine/srl'
 
 export interface AccionesBatalla {
   cambio: (mut: (e: EstadoBatalla) => void) => void
@@ -27,6 +28,10 @@ export interface AccionesBatalla {
   cambiar: (uid: string) => void
   sello: (id: SelloId) => void
   huir: () => void
+  /** sello de confianza sobre el diagrama de este turno */
+  sellar: (v: boolean) => void
+  /** encargo de la sala: solo antes del primer trazo */
+  elegirEncargo: (en: Encargo | null) => void
 }
 
 const COLOR_ESTADO: Record<string, string> = {
@@ -155,6 +160,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const h = herramienta ? HERRAMIENTAS[herramienta] : null
   const puedeCerrar = !!h && pendientes.length >= h.aridad[0] && (!h.parametro || !!param)
   const piezaSel = enMano.find((p) => p.uid === seleccion) ?? null
+  // anticipación sin trampa: forma del diagrama, nunca su verdad
+  const forma = useMemo(
+    () => previsualizarForma(e.trazos, [...e.mano, ...e.descarte]),
+    [e.trazos, e.mano, e.descarte]
+  )
+  const encargoPendiente = !resuelto && e.turno === 1 && e.trazos.length === 0 &&
+    !e.encargo && e.encargosOfrecidos.length > 0
+  const cumplido = e.encargo ? encargoCumplido(e.encargo, {
+    vinculosSostenidos: e.hallazgos.vinculos.length, combosVistos: e.combosVistos,
+    conceptosSostenidos: e.conceptosSostenidos, quemasAcertadas: e.quemasAcertadas,
+    errores: e.erroresTotales, invertidos: e.invertidosTotales
+  }) : false
 
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   const foco = guia?.foco
@@ -687,6 +704,30 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
       </aside>
 
+      {/* ============================ encargo ============================= */}
+      {encargoPendiente && (
+        <div className="encargos">
+          <span className="eyebrow">¿Qué te propones en esta sala?</span>
+          <div className="encargos-fila">
+            {e.encargosOfrecidos.map((en) => (
+              <button key={en.id} className={`encargo n${en.nivel}`}
+                onClick={() => { on.elegirEncargo(en); sfx.trazar() }}
+                data-ayuda={en.detalle}>
+                <span className="encargo-nivel">{'◆'.repeat(en.nivel)}</span>
+                <span className="encargo-titulo">{en.titulo}</span>
+                <span className="dato">+{[0, 4, 8, 14][en.nivel]} lucidez · botín mejor</span>
+              </button>
+            ))}
+            <button className="btn fantasma" onClick={() => on.elegirEncargo(null)}>
+              Sin encargo
+            </button>
+          </div>
+          <span className="silencio" style={{ fontSize: 12 }}>
+            Mira tu mano y el frente antes de elegir. Un encargo exigente que se cumple cura más; uno que no, no castiga.
+          </span>
+        </div>
+      )}
+
       {/* ============================ acciones ============================ */}
       <footer className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
         {!resuelto ? (
@@ -697,6 +738,27 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             >
               Afirmar el diagrama {e.trazos.length > 0 && <span className="dato">· {e.trazos.length} trazos</span>}
             </button>
+            <button
+              className={`btn sello-confianza${e.sellado ? ' activo' : ''}`}
+              aria-pressed={e.sellado} disabled={e.trazos.length === 0}
+              onClick={() => { on.sellar(!e.sellado); despertarAudio() }}
+              data-ayuda={'SELLAR\nDeclaras que TODO lo que hay en el tablero se sostiene. Si es así, el diagrama rinde el doble de multiplicador; si un solo trazo falla, rinde el 60 %. No cambia lo que es verdad: cambia lo que ganas por saber que lo sabes.'}
+            >
+              {e.sellado ? '⬢ Sellado' : '⬡ Sellar'}
+            </button>
+            {e.trazos.length > 0 && (
+              <span className="forma-previa dato silencio">
+                {forma.piezas} piezas · alcance {forma.alcancePotencial}
+                {forma.combosPosibles.length > 0 && (
+                  <> · podría encender <strong>{forma.combosPosibles.join(', ')}</strong></>
+                )}
+              </span>
+            )}
+            {e.encargo && (
+              <span className={`encargo-marca${cumplido ? ' cumplido' : ''}`} data-ayuda={e.encargo.detalle}>
+                {cumplido ? '✓ ' : ''}{e.encargo.titulo}
+              </span>
+            )}
             <button
               className={`btn peligro${zona('pozo') ? ' senala' : ''}`}
               disabled={!piezaSel || e.quemasRestantes <= 0}

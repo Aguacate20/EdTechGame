@@ -61,6 +61,17 @@ export interface Atlas {
   mejoresDiagramas: number[]
   apuestasTotales: number
   apuestasCalibradas: number
+  /** autorregulación: lo que se declaró y lo que resultó, por fase del ciclo */
+  srl: {
+    encargosElegidos: number
+    encargosCumplidos: number
+    /** suma de niveles elegidos: divide por elegidos para ver la ambición media */
+    nivelAcumulado: number
+    sellosHechos: number
+    sellosAcertados: number
+    reflexiones: number
+    reflexionesAcertadas: number
+  }
 }
 
 export const PROGRESO_INICIAL: Progreso = {
@@ -82,7 +93,11 @@ export function atlasVacio(fuente: string): Atlas {
   return {
     fuente, progreso: { ...PROGRESO_INICIAL }, propuestas: {}, aristas: {}, conceptos: {},
     repertoriosEstabilizados: [], runs: 0, victorias: 0, mejoresDiagramas: [],
-    apuestasTotales: 0, apuestasCalibradas: 0
+    apuestasTotales: 0, apuestasCalibradas: 0,
+    srl: {
+      encargosElegidos: 0, encargosCumplidos: 0, nivelAcumulado: 0,
+      sellosHechos: 0, sellosAcertados: 0, reflexiones: 0, reflexionesAcertadas: 0
+    }
   }
 }
 
@@ -96,7 +111,8 @@ export function cargarAtlas(fuente: string): Atlas {
     return {
       ...base, ...a,
       progreso: { ...base.progreso, ...(a.progreso ?? {}) },
-      propuestas: a.propuestas ?? {}
+      propuestas: a.propuestas ?? {},
+      srl: { ...base.srl, ...(a.srl ?? {}) }
     }
   } catch {
     return atlasVacio(fuente)
