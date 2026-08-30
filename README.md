@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.19
+# El Archivo Infinito — v5.20
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -488,6 +488,14 @@ patrón del turno se muestra con su chip, y los **bloqueos** (Dogma, Ortodoxia,
 fases del Tratado) se listan con su motivo: si el daño aplicado no es el de la
 cuenta, la pantalla dice exactamente por qué — no era bug, era blindaje
 invisible, y lo invisible era el bug.
+
+## Animación rica desde packs de la comunidad (v5.20)
+
+El manifest acepta frames no cuadrados, listas de clips por gesto (ataques
+variados al azar), `golpea_<arma>` para que el protagonista ataque distinto
+según el arma del diagrama (espada, arco, hechizo…) y `proyectiles/<arma>`
+para sustituir los proyectiles CSS por sprites (flechas, rayos). Selección de
+packs con licencias comprobadas y mapa enemigo→pack en `public/art/LEEME.md`.
 
 ## Pendientes
 

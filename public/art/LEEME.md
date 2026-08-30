@@ -95,3 +95,34 @@ elegir; si el pixel-art gana, conviene cubrir los 12 enemigos con sprites y
 dejar los SVG solo de respaldo. Si gana el grabado, los fondos pueden salir de
 láminas de dominio público (oldbookillustrations.com, British Library en
 Flickr Commons) en vez de parallax pixel.
+
+
+## Packs completos con animación rica (v5.20) — licencias comprobadas
+
+El manifest ahora acepta frames no cuadrados, LISTAS de clips por gesto (un
+ataque al azar cada vez), `golpea_<arma>` para que el protagonista ataque
+distinto según el arma del diagrama, y `proyectiles/<arma>` para sustituir el
+proyectil CSS por un sprite (flechas, rayos…).
+
+| Rol | Pack | Trae | Licencia |
+|---|---|---|---|
+| **Protagonista** | rvros — *Animated Pixel Adventurer* (rvros.itch.io/animated-pixel-hero) | 39 animaciones: idle, run, 3 ataques a espada, desenvainar, **arco**, hechizo, herido, muerte | uso personal y comercial, crédito apreciado; no redistribuir como asset |
+| Protagonista (alt.) | MonoPixelArt — *2D Free Animated Character Pack* | 26 animaciones, con/sin espada, con/sin VFX de golpe | libre comercial; sin modificar ni redistribuir |
+| **Enemigos oscuros** | MonoPixelArt — *Dark Fantasy Enemies* (murciélago, guerrero fantasma, criatura) | idle, hurt, die, run/fly, **attack1/attack2**, spawn; frames 100×64 | versión gratis: libre comercial; sin modificar ni redistribuir |
+| Enemigos | LuizMelo — *Monsters Creatures Fantasy* + *Evil Wizard 2* | idle, run, ataques, hit, death | **CC0** |
+| Enemigos (más) | MonoPixelArt — *Forest Monsters*, *Skeletons*, *Golems* | animados, versión gratis por pack | libre comercial (ver cada pack) |
+| Jefes | Clembod — *Bringer of Death (Free)*; Kronovi — *Mecha-Stone Golem (Free)* | jefes grandes con ataques | ver página (gratis) |
+| Escenarios | ansimuz — *Gothicvania Town / Cemetery / Legacy Collection* | parallax por capas, gótico | libre comercial, crédito apreciado |
+
+**Coherencia:** todo lo anterior es pixel-art 16–32 px de fantasía oscura y
+convive bien. NO mezclar con los SVG de grabado en la misma pantalla: si vas
+por pixel, cubre a los 12 enemigos + protagonista con sprites. Los packs con
+"sin modificar" NO permiten recolorear: para variantes usa los que sí (CC0).
+
+**Mapa sugerido enemigo→pack:** Copista→esqueleto (MonoPixelArt Skeletons) ·
+Errata→murciélago · Rumor→guerrero fantasma (ataca de lejos) · Apócrifo→
+criatura maligna (2 colores = «falsificación») · Dogma→golem · Eco→fantasma
+translúcido · Tratado→Bringer of Death.
+
+**Tamaño:** cada pack tiene su escala; ajusta `tamano` visual sin tocar los
+PNG (el manifest mide la tira). Crédito visible en el inicio, como ya se hace.

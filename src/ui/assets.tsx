@@ -18,18 +18,20 @@ import { useEffect, useState, type ReactNode } from 'react'
 
 const BASE = import.meta.env.BASE_URL
 
-export type Familia = 'enemigos' | 'jugador' | 'herramientas'
+export type Familia = 'enemigos' | 'jugador' | 'herramientas' | 'proyectiles'
 
 /** Un solo intento por ruta: si falla, el marcador se queda para siempre. */
 const fallidas = new Set<string>()
 
-export function Retrato({ familia, id, alt, tamano, gesto, respaldo }: {
+export function Retrato({ familia, id, alt, tamano, gesto, variante, respaldo }: {
   familia: Familia
   id: string
   alt: string
   tamano: number
   /** se refleja en un atributo data-* para que el CSS (o Rive) lo lea */
   gesto?: string
+  /** matiz del gesto (p. ej. la forma del arma): permite clips «golpea_rayo» */
+  variante?: string
   respaldo: ReactNode
 }) {
   const ruta = `${BASE}art/${familia}/${id}.svg`
@@ -37,7 +39,7 @@ export function Retrato({ familia, id, alt, tamano, gesto, respaldo }: {
   const manifest = usarManifest()
   const ficha = manifest?.[`${familia}/${id}`]
   if (ficha) {
-    return <SpriteRetrato ficha={ficha} gesto={gesto} tamano={tamano} alt={alt} />
+    return <SpriteRetrato ficha={ficha} gesto={gesto} variante={variante} tamano={tamano} alt={alt} />
   }
 
   if (roto) {
@@ -79,8 +81,9 @@ export function Retrato({ familia, id, alt, tamano, gesto, respaldo }: {
    ========================================================================== */
 
 interface ClipSprite { src: string; frames: number; fps?: number; loop?: boolean }
+type Clips = ClipSprite | ClipSprite[]
 interface FichaSprite {
-  [gesto: string]: ClipSprite | boolean | undefined
+  [gesto: string]: Clips | boolean | undefined
   /** true si el pack mira a la derecha y hay que espejarlo */
   volteado?: boolean
 }
@@ -92,7 +95,7 @@ fetch(`${BASE}art/manifest.json`)
   .catch(() => null)
   .then((m) => { MANIFEST = m; oyentes.forEach((f) => f()) })
 
-function usarManifest(): Record<string, FichaSprite> | null {
+export function usarManifest(): Record<string, FichaSprite> | null {
   const [, fuerza] = useState(0)
   useEffect(() => {
     if (MANIFEST !== undefined) return
@@ -114,12 +117,29 @@ const RESPALDO_GESTO: Record<string, string[]> = {
   retrocede: ['retrocede', 'herido', 'quieto']
 }
 
-function SpriteRetrato({ ficha, gesto = 'quieto', tamano, alt }: {
-  ficha: FichaSprite; gesto?: string; tamano: number; alt: string
+/** Elige el clip de un gesto: primero `gesto_variante` (p. ej. golpea_rayo),
+ *  luego el gesto; si hay varios (lista), uno al azar — así los ataques varían. */
+function elegirClip(ficha: FichaSprite, gesto: string, variante?: string): ClipSprite | null {
+  const claves = [
+    ...(variante ? [`${gesto}_${variante}`] : []),
+    ...(RESPALDO_GESTO[gesto] ?? ['quieto'])
+  ]
+  for (const k of claves) {
+    const v = ficha[k]
+    if (Array.isArray(v) && v.length) return v[Math.floor(Math.random() * v.length)]
+    if (v && typeof v === 'object') return v as ClipSprite
+  }
+  return null
+}
+
+export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt }: {
+  ficha: FichaSprite; gesto?: string; variante?: string; tamano: number; alt: string
 }) {
-  const orden = RESPALDO_GESTO[gesto] ?? ['quieto']
-  const clave = orden.find((g) => typeof ficha[g] === 'object')
-  const clip = clave ? (ficha[clave] as ClipSprite) : null
+  // el clip se elige una vez por cambio de gesto (no en cada render)
+  const [clip, setClip] = useState<ClipSprite | null>(() => elegirClip(ficha, gesto, variante))
+  useEffect(() => { setClip(elegirClip(ficha, gesto, variante)) }, [ficha, gesto, variante])
+  // frames no cuadrados: se mide la tira y el ancho del retrato sigue la proporción
+  const [ratio, setRatio] = useState(1)
   if (!clip) return null
   const fps = clip.fps ?? 8
   const loop = clip.loop !== false
@@ -128,11 +148,15 @@ function SpriteRetrato({ ficha, gesto = 'quieto', tamano, alt }: {
   return (
     <span
       className="retrato retrato-sprite" data-gesto={gesto}
-      style={{ width: tamano, height: tamano, transform: ficha.volteado ? 'scaleX(-1)' : undefined }}
+      style={{ width: Math.round(tamano * ratio), height: tamano, transform: ficha.volteado ? 'scaleX(-1)' : undefined }}
     >
       <img
         key={`${clip.src}:${gesto}`}
         src={`${BASE}art/${clip.src}`} alt={alt} draggable={false}
+        onLoad={(ev) => {
+          const im = ev.currentTarget
+          if (im.naturalWidth && im.naturalHeight) setRatio((im.naturalWidth / clip.frames) / im.naturalHeight)
+        }}
         style={{
           height: '100%', width: `${clip.frames * 100}%`, maxWidth: 'none',
           ['--fin' as string]: fin,
@@ -142,7 +166,6 @@ function SpriteRetrato({ ficha, gesto = 'quieto', tamano, alt }: {
     </span>
   )
 }
-
 
 /* --------------------------- escenario por acto --------------------------- */
 

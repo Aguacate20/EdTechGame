@@ -1,5 +1,5 @@
 import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
-import { Retrato } from './assets'
+import { Retrato, SpriteRetrato, usarManifest } from './assets'
 import type { Disparo } from '../engine/weapons'
 import { sfx } from './sfx'
 import { useEffect, useRef } from 'react'
@@ -64,6 +64,7 @@ export function LaneView({
   /** con qué arma sale el ataque: cada herramienta dispara distinto */
   disparo?: Disparo | null
 }) {
+  const manifest = usarManifest()
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
   const vivosYcaidos = enemigos
   const gestosPrevios = useRef<Record<string, string>>({})
@@ -89,7 +90,7 @@ export function LaneView({
       <div className="carril-jugador">
         <Retrato
           familia="jugador" id="copista" alt="El Copista"
-          tamano={40} gesto={gesto}
+          tamano={40} gesto={gesto} variante={disparo?.arma.forma}
           respaldo={<Copista gesto={gesto} />}
         />
         <div>
@@ -116,8 +117,12 @@ export function LaneView({
                   '--retardo': `${i * 90}ms`,
                   '--tono': disparo.arma.color,
                   '--escala': 0.6 + disparo.magnitud * 1.6
-                } as React.CSSProperties}
-              />
+                } as React.CSSProperties}>
+                {manifest?.[`proyectiles/${disparo.arma.forma}`] && (
+                  <SpriteRetrato ficha={manifest[`proyectiles/${disparo.arma.forma}`]} gesto="quieto"
+                    tamano={Math.round(22 * (0.6 + disparo.magnitud * 1.6))} alt="" />
+                )}
+              </span>
             )
           })}
           {disparo.combinado && (
