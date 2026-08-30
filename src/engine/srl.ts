@@ -143,8 +143,8 @@ export const lucidezEncargo = (en: Encargo | null, cumplido: boolean): number =>
 /** Sellar dice: «todo lo que hay en el tablero se sostiene». Si es verdad, el
  *  diagrama rinde más; si no, rinde menos. No toca la corrección, solo la
  *  recompensa; y es la única apuesta explícita del juego. */
-export const SELLO_ACIERTA = 1.0   // se suma al multiplicador
-export const SELLO_FALLA = 0.6     // factor sobre el daño
+export const SELLO_X = 1.5         // MULTIPLICA el daño entero: vale más cuanto más alto vuelas
+export const SELLO_FALLA = 0.6     // factor sobre el daño si un trazo no se sostiene
 
 export function juzgarSello(diag: Diagnostico): { acertado: boolean; nota: string } {
   const total = diag.veredictos.length

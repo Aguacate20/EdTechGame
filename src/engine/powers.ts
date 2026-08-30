@@ -127,14 +127,52 @@ export const LENTES: Lente[] = [
   { id: 'escriba', nombre: 'Escriba mayor', rareza: 'unica',
     regla: 'Mano más grande, una herramienta extra y tinta en cada combate.',
     costo: 'Cara: te comes el presupuesto de dos lentes especializadas.',
-    mod: { manoExtra: 1, herramientasExtra: ['identidad'] as HerramientaId[], fichasPorSostenido: 4 } }
+    mod: { manoExtra: 1, herramientasExtra: ['identidad'] as HerramientaId[], fichasPorSostenido: 4 } },
+
+  /* ---- las mayores: la capa ×mult. No suman al filo: multiplican TODO. ----
+     Sus condiciones son las conductas cognitivas más caras, así que perseguir
+     el número gigante es perseguir la jugada difícil. No se regalan: son
+     raras o únicas, y las únicas exigen además su hazaña. */
+  { id: 'anclista', nombre: 'El Anclista', rareza: 'rara',
+    regla: '×1.5 al daño ENTERO si el diagrama sostiene un caso anclado.',
+    costo: 'Nada. Pero sin caso en la mesa, no hace nada.',
+    mod: { xmults: [{ id: 'anclista', nombre: 'El Anclista', factor: 1.5, cuando: 'ancla' }] } },
+  { id: 'polifonia', nombre: 'Polifonía', rareza: 'rara',
+    regla: '×1.5 al daño ENTERO si sostienes con tres herramientas distintas o más.',
+    costo: 'Repetir la misma jugada deja de ser el camino.',
+    mod: { xmults: [{ id: 'polifonia', nombre: 'Polifonía', factor: 1.5, cuando: 'variedad' }] } },
+  { id: 'puno_disidente', nombre: 'Puño del disidente', rareza: 'rara',
+    regla: '×1.5 al daño ENTERO con dos contrastes sostenidos y ni un solo apoyo trazado.',
+    costo: 'La oposición tiene que ser pura: un apoyo en el diagrama lo apaga.',
+    mod: { xmults: [{ id: 'puno_disidente', nombre: 'Puño del disidente', factor: 1.5, cuando: 'oposicion' }] } },
+  { id: 'reliquia_traductor', nombre: 'Reliquia del traductor', rareza: 'rara',
+    regla: '×2 al daño ENTERO si el diagrama sostiene una Analogía.',
+    costo: 'La jugada más difícil del juego, o nada.',
+    mod: { xmults: [{ id: 'reliquia_traductor', nombre: 'Reliquia del traductor', factor: 2, cuando: 'analogia' }] } },
+  { id: 'catedral', nombre: 'La Catedral', rareza: 'unica',
+    regla: '×3 al daño ENTERO si enciendes una Constelación: cuatro sostenidas sin un error.',
+    costo: 'Solo se gana con su hazaña. Un error en el diagrama la apaga.',
+    mod: { xmults: [{ id: 'catedral', nombre: 'La Catedral', factor: 3, cuando: 'constelacion' }] } },
+  { id: 'aleph', nombre: 'El Aleph', rareza: 'unica',
+    regla: '×2.5 al daño ENTERO con un Mestizaje de cuatro clases de pieza o más.',
+    costo: 'Solo se gana con su hazaña. Pide jugar con TODO el material a la vez.',
+    mod: { xmults: [{ id: 'aleph', nombre: 'El Aleph', factor: 2.5, cuando: 'mestizaje4' }] } },
+  /* ---- las escaladoras: el motor crece por JUGAR bien, no por lootear ---- */
+  { id: 'cuaderno_hereje', nombre: 'Cuaderno del hereje', rareza: 'rara',
+    regla: '+0.15 al filo, permanente, por cada falsificación quemada en la expedición.',
+    costo: 'Empieza sin hacer nada: hay que alimentarlo discriminando.',
+    mod: {} },
+  { id: 'pluma_que_aprende', nombre: 'La pluma que aprende', rareza: 'rara',
+    regla: '+1 ficha por sostenido por cada inferencia hecha en la expedición (hasta 12).',
+    costo: 'Solo crece deduciendo lo que el texto no dice en voz alta.',
+    mod: {} },
 ]
 
 export const lentePorId = (id: string): Lente => LENTES.find((l) => l.id === id) ?? LENTES[0]
 
 export function combinarLentes(ids: string[]): ModificadoresLente {
   const out: ModificadoresLente = {
-    ...SIN_LENTES, multPorTipo: {}, multPorHerramienta: {}, multPorCombo: {}, herramientasExtra: []
+    ...SIN_LENTES, multPorTipo: {}, multPorHerramienta: {}, multPorCombo: {}, herramientasExtra: [], xmults: []
   }
   for (const id of ids) {
     const l = lentePorId(id)
@@ -164,6 +202,7 @@ export function combinarLentes(ids: string[]): ModificadoresLente {
     out.plausibleCuenta = out.plausibleCuenta || !!m.plausibleCuenta
     out.sinCastigoInvertido = out.sinCastigoInvertido || !!m.sinCastigoInvertido
     out.revelaApocrifas += m.revelaApocrifas ?? 0
+    out.xmults = [...out.xmults, ...(m.xmults ?? [])]
   }
   return out
 }

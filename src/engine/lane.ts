@@ -125,7 +125,7 @@ export function crearEnemigo(tipoId: string, escala: number, posicion: number): 
   const hp = Math.max(8, Math.round(t.vidaBase * escala))
   return {
     uid: `${tipoId}-${n++}`, tipoId, nombre: t.nombre, hp, hpMax: hp, posicion,
-    ataque: Math.max(0, Math.round(t.ataque * (0.85 + escala * 0.3))),
+    ataque: Math.max(0, Math.round(t.ataque * Math.min(1.9, 0.85 + escala * 0.3))),
     edad: 0, retrocedioYa: false, tocadoEsteTurno: false, fase: 0, gesto: 'quieto'
   }
 }
@@ -142,10 +142,10 @@ const PRESUPUESTO: Record<Dificultad, number> = { facil: 3, media: 6, dura: 9, j
 /** Estimación del aguante del frente para anunciarla en el mapa, sin gastar
  *  el RNG de la sala: presupuesto × vida media del roster disponible. */
 export function estimarFrente(dificultad: Dificultad, acto: number): number {
-  const escala = 1 + acto * 0.16
+  const escala = Math.pow(1.35, acto)
   if (dificultad === 'jefe') {
     const jefe = ROSTER.find((t) => t.id === 'tratado')
-    return Math.round((jefe?.vidaBase ?? 120) * escala)
+    return Math.round((jefe?.vidaBase ?? 120) * escala * 1.6)
   }
   const presupuesto = PRESUPUESTO[dificultad] + Math.floor(acto * 1.5)
   const pool = ROSTER.filter((t) => t.rango !== 'jefe' && t.desdeActo <= acto)
@@ -154,11 +154,13 @@ export function estimarFrente(dificultad: Dificultad, acto: number): number {
 }
 
 export function generarOleada(dificultad: Dificultad, acto: number, rng: Rng): Enemigo[] {
-  const escala = 1 + acto * 0.16
+  // la demanda ahora COMPONE: si el motor del jugador multiplica, el frente
+  // también, o el número grande sería decorativo
+  const escala = Math.pow(1.35, acto)
   if (dificultad === 'jefe') {
     const guardia = ROSTER.filter((t) => t.rango === 'comun' && t.desdeActo <= acto)
     return [
-      crearEnemigo('tratado', escala, LARGO_CARRIL),
+      crearEnemigo('tratado', escala * 1.6, LARGO_CARRIL),
       ...(guardia.length ? [crearEnemigo(rng.pick(guardia).id, escala * 0.8, LARGO_CARRIL - 2)] : [])
     ]
   }

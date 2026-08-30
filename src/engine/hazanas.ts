@@ -81,6 +81,21 @@ export const HAZANAS: Hazana[] = [
     cumplida: (_b, a) => Object.keys(a.propuestas).length >= 5,
     progreso: (_b, a) => Math.min(1, Object.keys(a.propuestas).length / 5)
   }
+  ,{
+    id: 'catedral', nombre: 'La bóveda entera',
+    reto: 'Enciende una Constelación con el diagrama sellado: cuatro sostenidas, cero errores, y tu palabra encima.',
+    lenteId: 'catedral',
+    cumplida: (b) => b.selladoConstelacion,
+    progreso: (b) => b?.selladoConstelacion ? 1 : (b?.combosVistos.includes('constelacion') ? 0.5 : 0)
+  },
+  {
+    id: 'aleph', nombre: 'Todo a la vez',
+    reto: 'Haz 2.000 de daño o más con un solo diagrama.',
+    lenteId: 'aleph',
+    cumplida: (b) => b.mejorGolpe.dano >= 2000,
+    progreso: (b, a) => Math.min(1, Math.max(b?.mejorGolpe.dano ?? 0,
+      ...(a.mejoresDiagramas.length ? a.mejoresDiagramas : [0])) / 2000)
+  }
 ]
 
 /** Lentes que nacen bloqueadas: no salen en el botín hasta cumplir la hazaña. */

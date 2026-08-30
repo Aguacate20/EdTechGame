@@ -14,15 +14,19 @@ import { sfx } from './sfx'
 export type PasoCascada =
   | { tipo: 'trazo'; indice: number; uid: string; bueno: boolean; fichas: number; mult: number }
   | { tipo: 'combo'; indice: number; nombre: string; fichas: number; mult: number }
+  | { tipo: 'xmult'; indice: number; nombre: string; factor: number }
   | { tipo: 'total' }
 
 const MS_TRAZO = 260
 const MS_COMBO = 300
+const MS_XMULT = 460
 const MS_ANTES_TOTAL = 420
 
 export interface Cascada {
   fichas: number
   mult: number
+  xmult: number
+  xmultsRevelados: { tipo: 'xmult'; indice: number; nombre: string; factor: number }[]
   total: number | null
   trazosRevelados: Set<string>
   combosRevelados: number
@@ -40,6 +44,10 @@ export function useCascada(diag: Diagnostico | null, activa: boolean): Cascada {
     diag.combos.forEach((c, i) => {
       l.push({ tipo: 'combo', indice: i, nombre: c.nombre, fichas: c.fichas, mult: c.mult })
     })
+    // las mayores se revelan al final, una por una: es el momento del ×
+    diag.xmultsActivos.forEach((x, i) => {
+      l.push({ tipo: 'xmult', indice: i, nombre: x.nombre, factor: x.factor })
+    })
     l.push({ tipo: 'total' })
     return l
   }, [diag])
@@ -55,11 +63,12 @@ export function useCascada(diag: Diagnostico | null, activa: boolean): Cascada {
   useEffect(() => {
     if (!activa || !diag || n >= pasos.length) return
     const paso = pasos[n]
-    const espera = paso.tipo === 'total' ? MS_ANTES_TOTAL : paso.tipo === 'combo' ? MS_COMBO : MS_TRAZO
+    const espera = paso.tipo === 'total' ? MS_ANTES_TOTAL : paso.tipo === 'xmult' ? MS_XMULT : paso.tipo === 'combo' ? MS_COMBO : MS_TRAZO
 
     temporizador.current = window.setTimeout(() => {
       if (paso.tipo === 'trazo') sfx.eslabon(paso.indice, paso.bueno)
       if (paso.tipo === 'combo') sfx.combo(paso.indice)
+      if (paso.tipo === 'xmult') sfx.mayor(paso.indice)
       if (paso.tipo === 'total') {
         sfx.total()
         if (diag.errores > 0) sfx.derrumbe()
@@ -72,13 +81,17 @@ export function useCascada(diag: Diagnostico | null, activa: boolean): Cascada {
   }, [n, pasos, activa, diag])
 
   const vistos = pasos.slice(0, n)
-  const fichas = vistos.reduce((s, p) => s + (p.tipo === 'total' ? 0 : p.fichas), 0)
-  const mult = 1 + vistos.reduce((s, p) => s + (p.tipo === 'total' ? 0 : p.mult), 0)
+  const fichas = vistos.reduce((s, p) => s + (p.tipo === 'total' || p.tipo === 'xmult' ? 0 : p.fichas), 0)
+  const mult = 1 + vistos.reduce((s, p) => s + (p.tipo === 'total' || p.tipo === 'xmult' ? 0 : p.mult), 0)
+  const xmult = vistos.reduce((s, p) => s * (p.tipo === 'xmult' ? p.factor : 1), 1)
   const terminada = n >= pasos.length
 
   return {
     fichas: Math.round(fichas),
     mult: Math.max(0, mult),
+    xmult,
+    xmultsRevelados: vistos.filter((p) => p.tipo === 'xmult') as
+      { tipo: 'xmult'; indice: number; nombre: string; factor: number }[],
     total: terminada && diag ? diag.dano : null,
     trazosRevelados: new Set(vistos.filter((p) => p.tipo === 'trazo').map((p) => (p as { uid: string }).uid)),
     combosRevelados: vistos.filter((p) => p.tipo === 'combo').length,

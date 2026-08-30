@@ -90,6 +90,12 @@ export const sfx = {
     tono(nota(6 + i), 0.22, 0.1, 'triangle')
     tono(nota(6 + i) * 1.5, 0.18, 0.05, 'sine')
   },
+  /** una lente mayor multiplica: acorde ancho, más grave que los combos */
+  mayor: (i: number) => {
+    tono(nota(2 + i) / 2, 0.34, 0.14, 'sawtooth', 20)
+    tono(nota(2 + i), 0.3, 0.1, 'triangle')
+    tono(nota(2 + i) * 1.5, 0.26, 0.06, 'sine')
+  },
   /** el total se estampa */
   total: () => { tono(110, 0.3, 0.13, 'sine', 40); ruido(0.16, 700, 0.7, 0.2, 'lowpass') },
   /** impacto en el carril */

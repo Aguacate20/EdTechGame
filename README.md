@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.12
+# El Archivo Infinito — v5.13
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -361,6 +361,38 @@ reglas que no se negocian:
   Marco rival — y todas modulan la recompensa, nunca la verdad (regla 2).
 - **Perder promete.** La pantalla de fin dice qué te detuvo, muestra la hazaña
   que quedó más cerca y ofrece «Otra expedición» directo al elegir portada.
+
+## La capa ×mult (v5.13)
+
+La fórmula pasa a tres pisos: `fichas × (1 + filo) × Π(×mult)`. Todo lo que
+existía sigue igual; el tercer piso es nuevo y es donde 400 se vuelve 80.000.
+
+- **Seis lentes mayores** cuyas condiciones son las conductas cognitivas más
+  caras: El Anclista (×1.5 con caso anclado), Polifonía (×1.5 con tres
+  herramientas distintas), Puño del disidente (×1.5 con oposición pura),
+  Reliquia del traductor (×2 con Analogía), La Catedral (×3 con Constelación,
+  única, exige su hazaña) y El Aleph (×2.5 con Mestizaje de 4 clases, única,
+  exige su hazaña). La codicia numérica empuja hacia arriba en Bloom.
+- **Dos escaladoras**: Cuaderno del hereje (+0.15 al filo permanente por
+  falsificación quemada en la run) y La pluma que aprende (+1 ficha por
+  sostenido por inferencia de la run). El motor crece por jugar bien.
+- **El sello multiplica**: sellar y sostenerlo todo ya no suma +1: hace ×1.5
+  al daño entero. La apuesta vale más cuanto más alto vuelas.
+- **La demanda compone**: la vida del frente escala ×1.35 por acto y el jefe
+  es un 60 % más gordo, para que el número gigante sea necesario y no adorno.
+  El ataque enemigo NO compone: leer lento no se castiga exponencialmente.
+- **El sobredaño se convierte**: el exceso al derribar vuelve como lucidez
+  (1 por cada 40, tope 8 por turno). El golpe enorme siempre paga algo.
+- **La cascada tiene un cuarto acto**: tras trazos y combos, cada mayor se
+  revela con su nombre, su ×factor y un acorde propio; el total estampa en
+  dorado. El momento del × se oye y se ve.
+- **En modo aprendizaje la capa × se acota a ×2**: con el andamio puesto, el
+  número no compite con la atención.
+
+Nada de esto toca la corrección: multiplicar el daño jamás cambia qué es
+verdad. `npm run smoke` lo vigila con un criterio nuevo: la build mayor debe
+multiplicar ≥3× el mejor golpe del lector informado, y regalarle ~nada al azar
+(medido: 12.189 → 82.279 · azar 61).
 
 ## Pendientes
 

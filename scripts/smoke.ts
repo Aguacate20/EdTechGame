@@ -216,9 +216,9 @@ function jugarAzar(e: EstadoBatalla, rng: Rng): number {
   return trazar(e, tool, sel, param) ? 1 : 0
 }
 
-function jugarRun(semilla: string, estrategia: Estrategia): Rep {
+function jugarRun(semilla: string, estrategia: Estrategia, lentesIds: string[] = []): Rep {
   const rng = new Rng(semilla)
-  const ctx: ContextoBatalla = { contenido, rng, lentes: combinarLentes([]) }
+  const ctx: ContextoBatalla = { contenido, rng, lentes: combinarLentes(lentesIds) }
   const conocidas: string[] = ['apoya', 'contrasta']
   const ruta = generarRuta(contenido, semilla)
   let lucidez = LUCIDEZ_MAX
@@ -383,6 +383,16 @@ const solape = solapes.length ? solapes.reduce((a, b) => a + b, 0) / solapes.len
 const ok9 = solapes.length > 0 && solape < 0.5
 const descMedia = inf.reduce((n, r) => n + r.descubiertos, 0) / Math.max(1, inf.length)
 const ok10 = descMedia > 2 && descMedia <= Object.keys(contenido.frecuenciaRelacion).length
+// la capa ×mult: la misma lectura, con las lentes mayores, tiene que
+// multiplicar el mejor golpe varias veces — y al azar no debe regalarle nada
+const MAYORES = ['anclista', 'polifonia', 'reliquia_traductor', 'catedral']
+const conMayores = semillas.slice(0, 3).map((s) => jugarRun(s, 'informado', MAYORES))
+const sinMayores = res.informado.slice(0, 3)
+const golpeCon = Math.max(...conMayores.map((r) => r.mejorGolpe))
+const golpeSin = Math.max(...sinMayores.map((r) => r.mejorGolpe))
+const azarConMayores = semillas.slice(0, 2).map((s) => jugarRun(s, 'azar', MAYORES))
+const golpeAzarX = Math.max(...azarConMayores.map((r) => r.mejorGolpe))
+const ok12 = golpeCon >= golpeSin * 3 && golpeAzarX < golpeSin
 const selloI = inf.reduce((n, r) => n + r.sellosOk, 0) / Math.max(1, inf.reduce((n, r) => n + r.sellos, 0))
 const selloZ = res.azar.reduce((n, r) => n + r.sellosOk, 0) / Math.max(1, res.azar.reduce((n, r) => n + r.sellos, 0))
 const ok11 = selloI > 0.8 && selloZ < 0.2
@@ -398,4 +408,5 @@ console.log(` ${ok8 ? 'PASA' : 'FALLA'}  el mapa de cierre acumula aciertos (${h
 console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios distintos (${(100 * solape).toFixed(0)}% en ${solapes.length} columnas)`)
 console.log(` ${ok10 ? 'PASA' : 'FALLA'}  los vínculos se descubren derribando enemigos (${descMedia.toFixed(1)} conocidos al final)`)
 console.log(` ${ok11 ? 'PASA' : 'FALLA'}  el sello de confianza distingue al calibrado del que adivina (${(100 * selloI).toFixed(0)}% vs ${(100 * selloZ).toFixed(0)}%)`)
-if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10 && ok11)) process.exit(1)
+console.log(` ${ok12 ? 'PASA' : 'FALLA'}  las lentes mayores multiplican y no se regalan (mejor golpe ${golpeSin} → ${golpeCon}; azar con mayores ${golpeAzarX})`)
+if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10 && ok11 && ok12)) process.exit(1)

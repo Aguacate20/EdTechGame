@@ -633,7 +633,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <span className="por">×</span>
               <span className="etiqueta-cuenta">filo</span>
               <span className="mult" key={`m${casc.mult.toFixed(1)}`}>{casc.mult.toFixed(1)}</span>
-              {casc.total !== null && (<><span className="por">=</span><span className="total">{casc.total}</span></>)}
+              {casc.xmult > 1 && (
+                <>
+                  <span className="por">×</span>
+                  <span className="xmult" key={`x${casc.xmult.toFixed(1)}`}>×{casc.xmult.toFixed(1)}</span>
+                </>
+              )}
+              {casc.total !== null && (
+                <><span className="por">=</span>
+                <span className={`total${casc.xmult > 1 ? ' mayor' : ''}`}>{casc.total}</span></>
+              )}
             </div>
             <div className="fila" style={{ gap: 5, flexWrap: 'wrap' }}>
               {trazosVisibles.filter((t) => casc.trazosRevelados.has(t.uid)).map((t) => {
@@ -650,6 +659,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               })}
               {e.ultima.diag.combos.slice(0, casc.combosRevelados).map((c, i) => (
                 <span key={i} className="aparece"><Chip tono="laton">{c.nombre} +{c.mult.toFixed(1)}×</Chip></span>
+              ))}
+              {casc.xmultsRevelados.map((x) => (
+                <span key={x.nombre} className="aparece chip-mayor">✦ {x.nombre} ×{x.factor}</span>
               ))}
             </div>
             {trazoAbierto && (() => {

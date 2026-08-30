@@ -231,14 +231,27 @@ export interface ModificadoresLente {
   sinCastigoInvertido: boolean
   // — información —
   revelaApocrifas: number
+  // — la capa multiplicativa: lentes mayores —
+  /** Cada entrada multiplica el daño ENTERO si su condición se cumple en el
+   *  diagrama. Las condiciones son las conductas cognitivas más caras: la
+   *  codicia numérica empuja hacia arriba, no hacia repetir lo fácil. */
+  xmults: { id: string; nombre: string; factor: number; cuando: CondicionXmult }[]
 }
+
+export type CondicionXmult =
+  | 'ancla'          // un caso anclado sostenido
+  | 'analogia'       // una analogía sostenida
+  | 'variedad'       // tres o más herramientas distintas, todas sostenidas
+  | 'oposicion'      // dos contrastes sostenidos y ningún apoyo trazado
+  | 'constelacion'   // el combo Constelación encendido
+  | 'mestizaje4'     // Mestizaje con cuatro clases de pieza o más
 
 export const SIN_LENTES: ModificadoresLente = {
   multPorTipo: {}, multPorHerramienta: {}, multPorCombo: {},
   fichasPorSostenido: 0, multPorUmbral: 0, multGlobal: 0, alcanceExtra: 0,
   manoExtra: 0, herramientasExtra: [], quemasExtra: 0, cambiosExtra: 0,
   robarPorAcierto: 0, fichasPorInferencia: 0, multPorAproximado: 0, plausibleCuenta: false,
-  sinCastigoInvertido: false, revelaApocrifas: 0
+  sinCastigoInvertido: false, revelaApocrifas: 0, xmults: []
 }
 
 export type ComboId =
@@ -271,6 +284,9 @@ export interface Diagnostico {
   combos: Combo[]
   fichas: number
   mult: number
+  /** producto de las lentes mayores activas; 1 si ninguna */
+  xmult: number
+  xmultsActivos: { nombre: string; factor: number }[]
   dano: number
   alcance: number
   sostenidos: number
@@ -1029,11 +1045,42 @@ export function evaluarDiagrama(
   if (reservas.length) mult = Math.max(0.4, mult * (1 - 0.15 * reservas.length))
   mult = Math.max(0, mult + lentes.multGlobal)
 
-  const dano = Math.max(0, Math.round(fichas * mult))
+  // ── el tercer piso: fichas × (1 + mult) × Π(×mult) ──
+  // Cada lente mayor exige una conducta, y su factor MULTIPLICA todo.
+  // Aquí es donde 400 se vuelve 8.000: no se regala, se compone.
+  const clasesN = (() => {
+    const cs = new Set(
+      sostenidos.flatMap((v) => v.trazo.piezas).map((u) => porUid.get(u)?.clase)
+        .filter((x): x is NonNullable<typeof x> => !!x)
+        .map((cl) => (cl === 'apocrifa' ? 'concepto' : cl)))
+    return cs.size
+  })()
+  const toolsSostenidas = new Set(sostenidos.map((v) => v.trazo.tool))
+  const cumpleX = (c: CondicionXmult): boolean => {
+    switch (c) {
+      case 'ancla': return sostenidos.some((v) => v.trazo.tool === 'ancla')
+      case 'analogia': return sostenidos.some((v) => v.trazo.tool === 'analogia')
+      case 'variedad': return toolsSostenidas.size >= 3
+      case 'oposicion':
+        return sostenidos.filter((v) => v.trazo.param === 'contrasta').length >= 2 &&
+          !trazos.some((t) => t.param === 'apoya')
+      case 'constelacion': return combos.some((x) => x.id === 'constelacion')
+      case 'mestizaje4': return combos.some((x) => x.id === 'mestizaje') && clasesN >= 4
+    }
+  }
+  let xmult = 1
+  const xmultsActivos: { nombre: string; factor: number }[] = []
+  for (const x of lentes.xmults) {
+    if (!cumpleX(x.cuando)) continue
+    xmult *= x.factor
+    xmultsActivos.push({ nombre: x.nombre, factor: x.factor })
+  }
+
+  const dano = Math.max(0, Math.round(fichas * mult * xmult))
   const dims = [...new Set(sostenidos.map((v) => v.dimension))]
 
   return {
-    veredictos, combos, fichas, mult, dano,
+    veredictos, combos, fichas, mult, xmult, xmultsActivos, dano,
     alcance: Math.min(4, 1 + Math.floor(sostenidos.length / 1.5) + lentes.alcanceExtra),
     sostenidos: sostenidos.length,
     aproximados: aproximados.length,

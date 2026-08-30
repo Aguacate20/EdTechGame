@@ -34,6 +34,8 @@ export interface ExpedicionGuardada {
   portadaId?: string
   marcados?: string[]
   archivados?: string[]
+  quemasRun?: number
+  inferenciasRun?: number
   guardadaEn: number
 }
 

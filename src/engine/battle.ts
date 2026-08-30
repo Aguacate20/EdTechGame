@@ -15,7 +15,7 @@ import { SELLOS, type SelloId } from './powers'
 import { piezaContexto } from './pieces'
 import { armarDisparo, type Disparo } from './weapons'
 import { componerOleadas, oleadaDePuerta, type NivelApoyo, type Oleada } from './aprendizaje'
-import { juzgarSello, PRIMA_MARCADO, SELLO_ACIERTA, SELLO_FALLA, type Encargo } from './srl'
+import { juzgarSello, PRIMA_MARCADO, SELLO_FALLA, SELLO_X, type Encargo } from './srl'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -62,6 +62,8 @@ export interface ResultadoTurno {
   cartasPerdidas: number
   /** resultado del sello de confianza, si el jugador selló este diagrama */
   sello: { acertado: boolean; nota: string } | null
+  /** lo que el golpe sobró tras derribar: se convierte en lucidez */
+  sobredano: number
   /** conceptos marcados en la reflexión anterior que aquí se sostuvieron */
   cuentasSaldadas: string[]
 }
@@ -148,6 +150,8 @@ export interface EstadoBatalla {
   /** turnos seguidos con al menos un acierto; solo error/inversión la rompen */
   racha: number
   condicion: string | null
+  /** hazaña Catedral: una Constelación con el diagrama sellado */
+  selladoConstelacion: boolean
 }
 
 /* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
@@ -304,7 +308,7 @@ export function iniciarBatalla(
     encargo: null, encargosOfrecidos: [], sellado: false, sellosHechos: 0, sellosAcertados: 0,
     combosVistos: [], conceptosSostenidos: [], erroresTotales: 0, invertidosTotales: 0,
     fallosPorConcepto: {}, marcados: bolsa.marcados ?? [],
-    racha: 0, condicion: bolsa.condicion ?? null
+    racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
@@ -544,7 +548,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     const tocaPrevios = diag.conceptIds.some((id) => e.previos.includes(id))
     if (!tocaPrevios) {
       diag.mult = Math.max(0.4, diag.mult * 0.5)
-      diag.dano = Math.round(diag.fichas * diag.mult)
+      diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
       diag.cierre = 'Esto no engancha con lo de antes: en aprendizaje lo nuevo tiene que apoyarse en lo ya visto.'
     }
   }
@@ -553,7 +557,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     diag.veredictos.some((v) => esAcierto(v.estado) && v.conceptIds.includes(id)))
   if (cuentasSaldadas.length) {
     diag.fichas += PRIMA_MARCADO * cuentasSaldadas.length
-    diag.dano = Math.round(diag.fichas * diag.mult)
+    diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
   }
   // condición MONOCULTIVO: las identidades no hieren (pero siguen fusionando)
   if (e.condicion === 'monocultivo') {
@@ -562,13 +566,13 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       .reduce((n, v) => n + v.fichas, 0)
     if (fichasIdent > 0) {
       diag.fichas = Math.max(0, diag.fichas - fichasIdent)
-      diag.dano = Math.round(diag.fichas * diag.mult)
+      diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
     }
   }
   // racha: turnos seguidos sosteniendo algo. Solo error/inversión la rompen.
   if (e.racha > 0 && diag.dano > 0) {
     diag.mult += 0.1 * e.racha
-    diag.dano = Math.round(diag.fichas * diag.mult)
+    diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
   }
   // condición MARCO RIVAL: cada contraste sostenido suma medio punto de mult
   if (e.condicion === 'marco_rival') {
@@ -576,7 +580,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       .filter((v) => esAcierto(v.estado) && v.trazo.param === 'contrasta').length
     if (contrastes > 0) {
       diag.mult += 0.5 * contrastes
-      diag.dano = Math.round(diag.fichas * diag.mult)
+      diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
     }
   }
   // sello de confianza: no toca la corrección, solo la recompensa
@@ -584,9 +588,19 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   if (e.sellado) {
     sello = juzgarSello(diag)
     e.sellosHechos += 1
-    if (sello.acertado) { e.sellosAcertados += 1; diag.mult += SELLO_ACIERTA }
-    else diag.mult = diag.mult * SELLO_FALLA
-    diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult))
+    if (sello.acertado) {
+      e.sellosAcertados += 1
+      diag.xmult *= SELLO_X
+      diag.xmultsActivos.push({ nombre: 'Sellado', factor: SELLO_X })
+      if (diag.combos.some((x) => x.id === 'constelacion')) e.selladoConstelacion = true
+    } else diag.mult = diag.mult * SELLO_FALLA
+    diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult * diag.xmult))
+  }
+  // con el andamio puesto, el número no se dispara: el modo aprendizaje
+  // conserva las lentes pero acota la capa multiplicativa a ×2
+  if (e.apoyo && diag.xmult > 2) {
+    diag.xmult = 2
+    diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult * diag.xmult))
   }
   // condición CADENA: la frase suelta rinde el 40 %
   if (e.condicion === 'cadena' && e.trazos.length === 1 && diag.dano > 0) {
@@ -595,6 +609,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   }
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
+  let sobredano = 0
 
   for (const en of e.enemigos) { en.gesto = 'quieto'; en.tocadoEsteTurno = false }
 
@@ -625,6 +640,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
         en.gesto = 'retrocede'
         impactos.push({ uid: en.uid, nombre: en.nombre, dano, motivo: 'Retrocede en vez de caer.', derribado: false })
       } else {
+        if (dano > en.hp) sobredano += dano - en.hp
         en.hp = Math.max(0, en.hp - dano)
         en.tocadoEsteTurno = true
         en.gesto = en.hp === 0 ? 'cae' : diag.mult >= 4 ? 'critico' : 'herido'
@@ -671,7 +687,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     descubiertos,
     impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
     intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0,
-    sello, cuentasSaldadas,
+    sello, sobredano, cuentasSaldadas,
     // se congela ANTES de limpiar: el feedback ocurre sobre el propio dibujo
     foto: {
       tablero: e.tablero.map((t) => ({ ...t })),

@@ -92,6 +92,9 @@ export default function App() {
   const [pendApoyo, setPendApoyo] = useState(false)
   /** hazañas recién cumplidas, para anunciarlas en el cierre de sala */
   const [hazanasNuevas, setHazanasNuevas] = useState<Hazana[]>([])
+  /** alimento de las lentes escaladoras: crecen por jugar bien, no por lootear */
+  const [quemasRun, setQuemasRun] = useState(0)
+  const [inferenciasRun, setInferenciasRun] = useState(0)
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -101,7 +104,13 @@ export default function App() {
   const nodoRef = useRef<Nodo | null>(null)
 
   const progreso = atlas?.progreso
-  const mods = useMemo(() => combinarLentes(lentes), [lentes])
+  const mods = useMemo(() => {
+    const m = combinarLentes(lentes)
+    // escaladoras: el estado de la run entra a la pasiva
+    if (lentes.includes('cuaderno_hereje')) m.multGlobal += 0.15 * quemasRun
+    if (lentes.includes('pluma_que_aprende')) m.fichasPorSostenido += Math.min(12, inferenciasRun)
+    return m
+  }, [lentes, quemasRun, inferenciasRun])
   const ctx: ContextoBatalla | null = useMemo(
     () => (contenido ? { contenido, rng: rngRef.current, lentes: mods } : null),
     [contenido, mods]
@@ -141,6 +150,7 @@ export default function App() {
     setVisitados([]); setNodoActual(null); setLucidez(LUCIDEZ_MAX)
     setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([])
     setMarcados([]); setArchivados([]); setHazanasNuevas([])
+    setQuemasRun(0); setInferenciasRun(0)
     // el equipo NO se hereda: cada expedición se arma de nuevo, y la portada
     // decide con qué ojos se entra
     setLentes([...portada.lentesIniciales]); setSellos([])
@@ -174,10 +184,11 @@ export default function App() {
       actoIdx: acto, alcanzables: alc, visitados: vis, nodoActual: nodo,
       lucidez, aprendizaje, lentes, sellos, herramientas, manoExtra,
       casos, tesis, fusionados, intuiciones,
-      portadaId, marcados, archivados, guardadaEn: Date.now()
+      portadaId, marcados, archivados, quemasRun, inferenciasRun, guardadaEn: Date.now()
     })
   }, [contenido, ruta, semilla, lucidez, aprendizaje, lentes, sellos, herramientas,
-      manoExtra, casos, tesis, fusionados, intuiciones, portadaId, marcados, archivados])
+      manoExtra, casos, tesis, fusionados, intuiciones, portadaId, marcados, archivados,
+      quemasRun, inferenciasRun])
 
   const retomar = useCallback(() => {
     if (!contenido || !guardada) return
@@ -196,6 +207,7 @@ export default function App() {
     setFusionados(guardada.fusionados); setIntuiciones(guardada.intuiciones)
     setPortadaId(guardada.portadaId ?? 'clasica')
     setMarcados(guardada.marcados ?? []); setArchivados(guardada.archivados ?? [])
+    setQuemasRun(guardada.quemasRun ?? 0); setInferenciasRun(guardada.inferenciasRun ?? 0)
     setBatalla(null); setVictoria(false)
     setFase('mapa')
   }, [contenido, guardada])
@@ -343,7 +355,10 @@ export default function App() {
     const e = { ...prev }
     const ev = quemarPieza(e, ctx, uid)
     registrarPozo(ev)
-    if (ev) ev.acertado ? sfx.fusion() : sfx.derrumbe()
+    if (ev) {
+      ev.acertado ? sfx.fusion() : sfx.derrumbe()
+      if (ev.accion === 'quemar' && ev.acertado) setQuemasRun((n) => n + 1)
+    }
     return e
   })
 
@@ -400,8 +415,18 @@ export default function App() {
     const r = afirmarDiagrama(e, ctx)
     turnoDelCarril(e, ctx, r)
 
+    const inf = r.diag.veredictos.filter((v) => v.inferencia).length
+    if (inf) setInferenciasRun((n) => n + inf)
     let nueva = lucidez - r.danoRecibido
     if (r.diag.repertoriosReubicados.length) nueva += 6
+    // el golpe que sobra no se desperdicia: el exceso vuelve como claridad
+    if (r.sobredano > 0) {
+      const cura = Math.min(8, Math.floor(r.sobredano / 40))
+      if (cura > 0) {
+        nueva += cura
+        r.parteEnemiga.push({ texto: `El golpe sobró por ${r.sobredano}: +${cura} de lucidez.`, dano: 0 })
+      }
+    }
     // saldar una cuenta pendiente (concepto que marcaste) también cura
     if (r.cuentasSaldadas.length) nueva += 3 * r.cuentasSaldadas.length
     nueva = Math.min(LUCIDEZ_MAX, nueva)
