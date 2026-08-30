@@ -8,6 +8,8 @@ import { GLOSA_RELACION } from '../ui/glosas'
 import { descargarEdicion } from '../engine/export'
 import { haceCuanto } from '../engine/savegame'
 import { Panel } from './components'
+import { HAZANAS } from '../engine/hazanas'
+import { lentePorId } from '../engine/powers'
 
 /* ==========================================================================
    El Atlas como pantalla de inicio.
@@ -279,6 +281,26 @@ export function HomeView({
           </div>
         </Panel>
       )}
+
+      <Panel titulo="Vitrina">
+        <p className="silencio" style={{ margin: '0 0 8px', fontSize: 13 }}>
+          Ocho lentes no caen del botín: se ganan haciendo. Cada hazaña es una jugada concreta.
+        </p>
+        <div className="vitrina">
+          {HAZANAS.map((h) => {
+            const hecha = atlas.hazanas.includes(h.id)
+            return (
+              <div key={h.id} className={`hazana${hecha ? ' hecha' : ''}`} title={h.reto}>
+                <span className="hazana-glifo">{hecha ? '★' : '☆'}</span>
+                <span className="hazana-cuerpo">
+                  <strong>{hecha ? lentePorId(h.lenteId).nombre : h.nombre}</strong>
+                  <span className="dato silencio"> {hecha ? '· desbloqueada' : `· ${h.reto}`}</span>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      </Panel>
 
       <div className="fila">
         <button

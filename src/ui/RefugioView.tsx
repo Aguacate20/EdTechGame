@@ -96,7 +96,7 @@ function construir(atlas: Atlas, c: Contenido, semilla: string): Pregunta | null
 }
 
 export function RefugioView({
-  atlas, contenido, semilla, lucidez, lucidezMax, onSeguir
+  atlas, contenido, semilla, lucidez, lucidezMax, onSeguir, archivados, onArchivar
 }: {
   atlas: Atlas
   contenido: Contenido
@@ -104,6 +104,10 @@ export function RefugioView({
   lucidez: number
   lucidezMax: number
   onSeguir: (lucidezGanada: number, acierto: boolean | null) => void
+  /** conceptos dominados que ya salieron de la mesa en esta run */
+  archivados: string[]
+  /** retirar del resto de la run un concepto dominado: la mano se adelgaza */
+  onArchivar: (id: string) => void
 }) {
   const pregunta = useMemo(() => construir(atlas, contenido, semilla), [atlas, contenido, semilla])
   const [elegida, setElegida] = useState<string | null>(null)
@@ -113,6 +117,11 @@ export function RefugioView({
   const ganada = !pregunta ? 24 : acerto ? 32 : 18
 
   const cuestan = contenido.ordenConceptos.filter((id) => estadoDe(atlas.conceptos[id]) === 'cuesta')
+  const [yaArchivado, setYaArchivado] = useState(false)
+  // solo sale de la mesa lo que ya está consolidado, y sale PORQUE lo está
+  const archivables = contenido.ordenConceptos.filter((id) =>
+    !archivados.includes(id) &&
+    (estadoDe(atlas.conceptos[id]) === 'dominado' || nivelDe(atlas.conceptos[id]) >= 3))
 
   return (
     <div className="envoltura pila" style={{ maxWidth: 760 }}>
@@ -169,7 +178,25 @@ export function RefugioView({
       )}
 
       <div className="fila">
-        <button
+        {archivables.length > 0 && (
+        <div className="panel">
+          <span className="eyebrow">Archivar un concepto dominado</span>
+          <p className="silencio" style={{ margin: '4px 0 8px', fontSize: 13.5 }}>
+            Lo que ya dominas puede salir de la mesa por el resto de la expedición:
+            la mano se adelgaza y lo demás llega más seguido. Uno por refugio.
+          </p>
+          <div className="fila" style={{ flexWrap: 'wrap', gap: 8 }}>
+            {archivables.slice(0, 6).map((id) => (
+              <button key={id} className="btn chico" disabled={yaArchivado}
+                onClick={() => { onArchivar(id); setYaArchivado(true) }}>
+                {yaArchivado ? '✓ ' : '⌸ '}{contenido.conceptos[id]?.titulo ?? id}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button
           className="btn primario grande"
           onClick={() => onSeguir(ganada, pregunta ? acerto : null)}
           disabled={!!pregunta && !resuelta}

@@ -5,6 +5,7 @@ import { tipoPorId } from '../engine/lane'
 import { estiloRelacion } from './identity'
 import { nivelDe, type Atlas } from '../engine/atlas'
 import type { Encargo } from '../engine/srl'
+import { lentePorId } from '../engine/powers'
 
 /* ==========================================================================
    El mapa del combate.
@@ -101,7 +102,7 @@ function renglones(t: string, max = 15): string[] {
 
 export function BattleMap({
   contenido, hallazgos, atlas, mejorGolpe, enemigos, latencias, descubiertos, onSeguir,
-  srl
+  srl, hazanas = []
 }: {
   contenido: Contenido
   hallazgos: Hallazgos
@@ -121,6 +122,8 @@ export function BattleMap({
   }
   /** al seguir se entrega lo marcado (null = «nada me costó») */
   onSeguir: (marcado: string | null) => void
+  /** hazañas cumplidas en esta sala: cada una desbloquea una lente */
+  hazanas?: { nombre: string; lente: string }[]
 }) {
   /** undefined = aún no eligió; null = «nada me costó» */
   const [marcado, setMarcado] = useState<string | null | undefined>(undefined)
@@ -323,6 +326,12 @@ export function BattleMap({
           </p>
 
           <div className="separador" />
+          {hazanas.map((h) => (
+            <p key={h.nombre} className="nota ok hazana-nueva" style={{ margin: 0 }}>
+              ★ Hazaña: <strong>{h.nombre}</strong> — desbloqueaste{' '}
+              <strong>{lentePorId(h.lente).nombre}</strong>. Desde ahora puede caer en el botín.
+            </p>
+          ))}
           {(srl.encargo || srl.sellosHechos > 0) && (
             <div className="pila" style={{ gap: 4 }}>
               {srl.encargo && (

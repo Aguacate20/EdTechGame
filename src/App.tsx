@@ -21,7 +21,7 @@ import {
 import { contenidoTutorial, SALAS_TUTORIAL } from './content/tutorial'
 import { BundleLoader } from './ui/BundleLoader'
 import { BoardView } from './ui/BoardView'
-import { AtlasView, EndView, MapView, RewardView } from './ui/Screens'
+import { AtlasView, EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
 import { BattleMap } from './ui/BattleMap'
 import { VistazoView } from './ui/VistazoView'
@@ -31,9 +31,11 @@ import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 import {
   encargoCumplido, juzgarReflexion, lucidezEncargo, primaEncargo, proponerEncargos, type Encargo
 } from './engine/srl'
+import { portadaPorId, type Portada } from './engine/portadas'
+import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
 type Fase =
-  | 'cargar' | 'inicio' | 'mapa' | 'batalla'
+  | 'cargar' | 'inicio' | 'portada' | 'mapa' | 'batalla'
   | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin'
 
 const LUCIDEZ_MAX = 80
@@ -83,6 +85,13 @@ export default function App() {
   const [veta, setVeta] = useState(false)
   /** conceptos marcados como difíciles al cerrar la sala anterior: vuelven con prima */
   const [marcados, setMarcados] = useState<string[]>([])
+  /** conceptos dominados retirados en el refugio: la mano se adelgaza */
+  const [archivados, setArchivados] = useState<string[]>([])
+  const [portadaId, setPortadaId] = useState('clasica')
+  /** modo pedido antes de elegir portada */
+  const [pendApoyo, setPendApoyo] = useState(false)
+  /** hazañas recién cumplidas, para anunciarlas en el cierre de sala */
+  const [hazanasNuevas, setHazanasNuevas] = useState<Hazana[]>([])
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -111,6 +120,14 @@ export default function App() {
 
   const empezarExpedicion = useCallback((conApoyo: boolean) => {
     if (!contenido || !atlas) return
+    setPendApoyo(conApoyo)
+    setFase('portada')
+  }, [contenido, atlas])
+
+  const lanzarExpedicion = useCallback((portada: Portada) => {
+    if (!contenido || !atlas) return
+    const conApoyo = pendApoyo
+    setPortadaId(portada.id)
     setAprendizaje(conApoyo)
     const sem = semillaLegible()
     setSemilla(sem)
@@ -122,10 +139,13 @@ export default function App() {
 
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
     setVisitados([]); setNodoActual(null); setLucidez(LUCIDEZ_MAX)
-    setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([]); setManoExtra(0)
-    // el equipo NO se hereda: cada expedición se arma de nuevo
-    setLentes([]); setSellos([])
-    setHerramientas(EQUIPO_INICIAL.herramientas as HerramientaId[])
+    setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([])
+    setMarcados([]); setArchivados([]); setHazanasNuevas([])
+    // el equipo NO se hereda: cada expedición se arma de nuevo, y la portada
+    // decide con qué ojos se entra
+    setLentes([...portada.lentesIniciales]); setSellos([])
+    setHerramientas([...EQUIPO_INICIAL.herramientas, ...portada.herramientasExtra] as HerramientaId[])
+    setManoExtra(portada.manoDelta)
     setBatalla(null); setVictoria(false)
     borrarExpedicion(); setGuardada(null)
     const a = {
@@ -133,8 +153,16 @@ export default function App() {
       progreso: { ...atlas.progreso, expediciones: atlas.progreso.expediciones + 1 }
     }
     setAtlas(a); guardarAtlas(a)
+    registrar({
+      ts: Date.now(), runId: runIdRef.current, nodoId: '—',
+      arquetipo: 'portada', condicion: conApoyo ? 'aprendizaje' : null,
+      mecanica: 'srl_planeacion', itemId: `portada:${portada.id}`, conceptIds: [],
+      operacion: 'elegir_portada', improvisado: false, seleccion: [],
+      correcto: true, apuesta: portada.id, calibrado: true,
+      latenciaMs: 0, ayuda: false, repertorioTocado: null
+    })
     setFase('mapa')
-  }, [contenido, atlas])
+  }, [contenido, atlas, pendApoyo])
 
   /* -------------------------------- avanzar -------------------------------- */
 
@@ -145,10 +173,11 @@ export default function App() {
       fuente: contenido.fuente, semilla, runId: runIdRef.current,
       actoIdx: acto, alcanzables: alc, visitados: vis, nodoActual: nodo,
       lucidez, aprendizaje, lentes, sellos, herramientas, manoExtra,
-      casos, tesis, fusionados, intuiciones, guardadaEn: Date.now()
+      casos, tesis, fusionados, intuiciones,
+      portadaId, marcados, archivados, guardadaEn: Date.now()
     })
   }, [contenido, ruta, semilla, lucidez, aprendizaje, lentes, sellos, herramientas,
-      manoExtra, casos, tesis, fusionados, intuiciones])
+      manoExtra, casos, tesis, fusionados, intuiciones, portadaId, marcados, archivados])
 
   const retomar = useCallback(() => {
     if (!contenido || !guardada) return
@@ -165,6 +194,8 @@ export default function App() {
     setHerramientas(guardada.herramientas); setManoExtra(guardada.manoExtra)
     setCasos(guardada.casos); setTesis(guardada.tesis)
     setFusionados(guardada.fusionados); setIntuiciones(guardada.intuiciones)
+    setPortadaId(guardada.portadaId ?? 'clasica')
+    setMarcados(guardada.marcados ?? []); setArchivados(guardada.archivados ?? [])
     setBatalla(null); setVictoria(false)
     setFase('mapa')
   }, [contenido, guardada])
@@ -271,7 +302,10 @@ export default function App() {
       apoyo: aprendizaje,
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
-      marcados
+      marcados, archivados,
+      quemasDelta: portadaPorId(portadaId).quemasDelta,
+      apocrifasDelta: portadaPorId(portadaId).apocrifasDelta,
+      condicion: nodo.condicion
     }
     // el carril escala con las expediciones ya hechas: vuelves más fuerte, pero
     // también encuentras enemigos más duros
@@ -285,7 +319,7 @@ export default function App() {
     setBatalla(e)
     setFase('batalla')
   }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados,
-      manoExtra, aprendizaje, atlas, herramientas, sellos, marcados])
+      manoExtra, aprendizaje, atlas, herramientas, sellos, marcados, archivados, portadaId])
 
   /* ------------------------------- acciones -------------------------------- */
 
@@ -509,15 +543,30 @@ export default function App() {
       const calidad = Math.min(1, batalla.mejorGolpe.dano / 420 + primaEncargo(batalla.encargo, cumplido))
       const r = ofrecerRecompensas(contenido, {
         lentes, sellos, herramientas, relaciones: progreso.relaciones
-      }, rngRef.current, dura, calidad)
+      }, rngRef.current, dura, calidad, atlas ? lentesVetadas(atlas) : [])
       setRecompensas(r.opciones); setVeta(r.veta)
       const cura = lucidezEncargo(batalla.encargo, cumplido)
       if (cura) setLucidez((l) => Math.min(LUCIDEZ_MAX, l + cura))
       if (atlas) {
-        const a = {
+        let a = {
           ...atlas, mejoresDiagramas: [...(atlas.mejoresDiagramas ?? []), batalla.mejorGolpe.dano],
           srl: { ...atlas.srl, encargosCumplidos: atlas.srl.encargosCumplidos + (cumplido ? 1 : 0) }
         }
+        // hazañas: la colección se gana con conducta, no con botín
+        const nuevas = evaluarHazanas(batalla, a)
+        if (nuevas.length) {
+          a = { ...a, hazanas: [...a.hazanas, ...nuevas.map((h) => h.id)] }
+          for (const h of nuevas) {
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'hazana', condicion: batalla.dificultad, mecanica: 'produccion',
+              itemId: `hazana:${h.id}`, conceptIds: [], operacion: 'desbloquear',
+              improvisado: false, seleccion: [], correcto: true, apuesta: h.id,
+              calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+            })
+          }
+        }
+        setHazanasNuevas(nuevas)
         setAtlas(a); guardarAtlas(a)
       }
       if (batalla.encargo) {
@@ -606,6 +655,17 @@ export default function App() {
       </div>
     )
   }
+  if (fase === 'portada') {
+    return (
+      <div className="app">
+        <PortadaView
+          aprendizaje={pendApoyo}
+          onElegir={lanzarExpedicion}
+          onVolver={() => setFase('inicio')}
+        />
+      </div>
+    )
+  }
   if (!ruta && tutorial === null) {
     return <div className="app"><BundleLoader onListo={alCargar} /></div>
   }
@@ -687,6 +747,7 @@ export default function App() {
           contenido={contenido} hallazgos={batalla.hallazgos} atlas={atlas}
           mejorGolpe={batalla.mejorGolpe} enemigos={batalla.enemigos}
           latencias={batalla.latencias} descubiertos={batalla.relacionesNuevas}
+          hazanas={hazanasNuevas.map((h) => ({ nombre: h.nombre, lente: h.lenteId }))}
           srl={{
             encargo: batalla.encargo,
             cumplido: batalla.encargo ? encargoCumplido(batalla.encargo, cuentaDe(batalla)) : false,
@@ -727,6 +788,17 @@ export default function App() {
         <RefugioView
           atlas={atlas} contenido={contenido} semilla={nodoRef.current?.id ?? 'r'}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX}
+          archivados={archivados}
+          onArchivar={(id) => {
+            setArchivados((x) => [...new Set([...x, id])])
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'refugio', condicion: null, mecanica: 'srl_accion',
+              itemId: `archivar:${id}`, conceptIds: [id], operacion: 'archivar',
+              improvisado: false, seleccion: [], correcto: true, apuesta: '—',
+              calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+            })
+          }}
           onSeguir={(gana, acierto) => {
             setLucidez((l) => Math.min(LUCIDEZ_MAX, l + gana))
             if (acierto !== null) {
@@ -784,8 +856,9 @@ export default function App() {
 
       {fase === 'fin' && (
         <EndView
-          victoria={victoria} atlas={atlas} contenido={contenido}
+          victoria={victoria} atlas={atlas} contenido={contenido} batalla={batalla}
           onReiniciar={() => setFase('inicio')}
+          onOtra={() => { setPendApoyo(aprendizaje); setFase('portada') }}
           onAtlas={() => { setFaseAnterior('fin'); setFase('atlas') }}
         />
       )}

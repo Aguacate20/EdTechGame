@@ -139,6 +139,20 @@ const PRESUPUESTO: Record<Dificultad, number> = { facil: 3, media: 6, dura: 9, j
 /** Presupuesto de amenaza: se van comprando enemigos hasta gastarlo.
  *  Así una casilla fácil del acto 1 son dos Copistas, y una dura del acto 3
  *  puede ser Dogma + Errata + Rumor. */
+/** Estimación del aguante del frente para anunciarla en el mapa, sin gastar
+ *  el RNG de la sala: presupuesto × vida media del roster disponible. */
+export function estimarFrente(dificultad: Dificultad, acto: number): number {
+  const escala = 1 + acto * 0.16
+  if (dificultad === 'jefe') {
+    const jefe = ROSTER.find((t) => t.id === 'tratado')
+    return Math.round((jefe?.vidaBase ?? 120) * escala)
+  }
+  const presupuesto = PRESUPUESTO[dificultad] + Math.floor(acto * 1.5)
+  const pool = ROSTER.filter((t) => t.rango !== 'jefe' && t.desdeActo <= acto)
+  const vidaPorCosto = pool.reduce((n, t) => n + t.vidaBase / t.costo, 0) / Math.max(1, pool.length)
+  return Math.round(presupuesto * vidaPorCosto * escala / 10) * 10
+}
+
 export function generarOleada(dificultad: Dificultad, acto: number, rng: Rng): Enemigo[] {
   const escala = 1 + acto * 0.16
   if (dificultad === 'jefe') {

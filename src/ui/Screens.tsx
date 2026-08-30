@@ -1,5 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { Contenido } from '../content/types'
+import { estimarFrente } from '../engine/lane'
+import { PORTADAS, type Portada } from '../engine/portadas'
+import { condicionPorId, hazanaMasCercana } from '../engine/hazanas'
+import type { EstadoBatalla } from '../engine/battle'
+import { vivos } from '../engine/battle'
+import { tipoPorId } from '../engine/lane'
 import { lentePorId, selloPorId } from '../engine/powers'
 import { HERRAMIENTAS, type HerramientaId } from '../engine/tools'
 import type { SelloId } from '../engine/powers'
@@ -107,7 +113,17 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
                     {n.dominios.length > 0 && (
                       <span className="dominios-nodo">se usa en {n.dominios.join(' · ')}</span>
                     )}
-                    {n.minutos > 0 && <span className="dato silencio">≈ {n.minutos} min</span>}
+                    {n.minutos > 0 && (
+                      <span className="dato silencio">
+                        ≈ {n.minutos} min{(n.tipo === 'oleada' || n.tipo === 'jefe') &&
+                          <> · frente ~{estimarFrente(n.dificultad, acto.index)}</>}
+                      </span>
+                    )}
+                    {n.condicion && condicionPorId(n.condicion) && (
+                      <span className="condicion-sala chica" title={condicionPorId(n.condicion)!.glosa}>
+                        ⚑ {condicionPorId(n.condicion)!.nombre}
+                      </span>
+                    )}
                     {n.casos.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae caso</Chip></span>}
                     {n.tesis.length > 0 && <span style={{ marginTop: 4 }}><Chip tono="laton">trae tesis</Chip></span>}
                   </button>
@@ -420,10 +436,18 @@ export function AtlasView({ atlas, contenido, onVolver }: {
 
 /* --------------------------------- final ---------------------------------- */
 
-export function EndView({ victoria, atlas, contenido, onReiniciar, onAtlas }: {
+export function EndView({ victoria, atlas, contenido, batalla, onReiniciar, onOtra, onAtlas }: {
   victoria: boolean; atlas: Atlas; contenido: Contenido
-  onReiniciar: () => void; onAtlas: () => void
+  /** la última batalla, para poder decir qué te mató y cómo herirlo */
+  batalla: EstadoBatalla | null
+  onReiniciar: () => void
+  /** relanzar directo al elegir portada: la promesa concreta de la próxima run */
+  onOtra: () => void
+  onAtlas: () => void
 }) {
+  const frente = batalla && !victoria ? vivos(batalla) : []
+  const verdugo = frente.sort((a, b) => b.hpMax - a.hpMax)[0] ?? null
+  const cercana = hazanaMasCercana(batalla, atlas)
   const cob = coberturaAtlas(atlas, contenido)
   const selladas = unidadesSelladas(atlas, contenido)
   const completo = edicionCriticaDisponible(atlas, contenido)
@@ -441,6 +465,24 @@ export function EndView({ victoria, atlas, contenido, onReiniciar, onAtlas }: {
       <p className="dato">
         Atlas {cob.pct}% · {cob.aristas} vínculos · {selladas.length}/{contenido.unidades.length} unidades selladas
       </p>
+      {!victoria && verdugo && (
+        <div className="panel">
+          <span className="eyebrow">Lo que te detuvo</span>
+          <p style={{ margin: '6px 0 0' }}>
+            <strong>{verdugo.nombre}</strong>
+            {frente.length > 1 && <> y {frente.length - 1} más</>} quedaron en pie.
+          </p>
+          <p className="silencio" style={{ margin: '4px 0 0', fontSize: 13.5 }}>
+            {tipoPorId(verdugo.tipoId).glosa}
+          </p>
+        </div>
+      )}
+      {cercana && cercana.p > 0 && !atlas.hazanas.includes(cercana.h.id) && (
+        <p className="nota" style={{ margin: 0 }}>
+          Te quedaste cerca de una hazaña: <strong>{cercana.h.nombre}</strong> ({Math.round(cercana.p * 100)}%).
+          {' '}{cercana.h.reto} Desbloquea <strong>{lentePorId(cercana.h.lenteId).nombre}</strong>.
+        </p>
+      )}
       {completo && (
         <div className="panel">
           <span className="eyebrow">Bonus</span>
@@ -454,9 +496,42 @@ export function EndView({ victoria, atlas, contenido, onReiniciar, onAtlas }: {
         </div>
       )}
       <div className="fila">
-        <button className="btn primario" onClick={onReiniciar}>Nueva expedición</button>
+        <button className="btn primario grande" onClick={onOtra}>Otra expedición</button>
+        <button className="btn fantasma" onClick={onReiniciar}>Al inicio</button>
         <button className="btn fantasma" onClick={onAtlas}>Ver el Atlas</button>
       </div>
+    </div>
+  )
+}
+
+
+/* -------------------------------- portadas -------------------------------- */
+
+export function PortadaView({ aprendizaje, onElegir, onVolver }: {
+  aprendizaje: boolean
+  onElegir: (p: Portada) => void
+  onVolver: () => void
+}) {
+  return (
+    <div className="envoltura pila" style={{ maxWidth: 860 }}>
+      <div>
+        <span className="eyebrow">{aprendizaje ? 'Expedición · aprendizaje' : 'Expedición'}</span>
+        <h2 className="display" style={{ fontSize: 28 }}>¿Con qué ojos entras al texto?</h2>
+        <p className="silencio" style={{ margin: 0, fontSize: 14 }}>
+          La portada es un plan de lectura: cambia con qué arrancas y qué rinde más,
+          nunca qué es verdad. Cada una hace del mismo texto otra partida.
+        </p>
+      </div>
+      <div className="portadas">
+        {PORTADAS.map((p) => (
+          <button key={p.id} className="portada" onClick={() => onElegir(p)}>
+            <span className="eyebrow">{p.nombre}</span>
+            <span className="serif-lectura" style={{ fontSize: 14 }}>{p.glosa}</span>
+            <span className="dato silencio">{p.trato}</span>
+          </button>
+        ))}
+      </div>
+      <button className="btn fantasma" onClick={onVolver}>Volver</button>
     </div>
   )
 }

@@ -31,6 +31,9 @@ export interface ExpedicionGuardada {
   tesis: string[]
   fusionados: string[]
   intuiciones: string[]
+  portadaId?: string
+  marcados?: string[]
+  archivados?: string[]
   guardadaEn: number
 }
 

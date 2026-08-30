@@ -19,6 +19,7 @@ import { cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
 import { useCascada } from './cascade'
 import { despertarAudio, sfx } from './sfx'
 import { encargoCumplido, previsualizarForma, type Encargo } from '../engine/srl'
+import { condicionPorId } from '../engine/hazanas'
 
 export interface AccionesBatalla {
   cambio: (mut: (e: EstadoBatalla) => void) => void
@@ -314,6 +315,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       )}
       {/* ============================ carril ============================ */}
       <div className="zona-carril">
+        <div className="parte-frente">
+          <span className="dato silencio">
+            El frente aguanta <strong>{vivos(e).reduce((n, x) => n + x.hp, 0)}</strong>
+          </span>
+          {condicionPorId(e.condicion) && (
+            <span className="condicion-sala" data-ayuda={condicionPorId(e.condicion)!.glosa}>
+              ⚑ {condicionPorId(e.condicion)!.nombre}
+            </span>
+          )}
+        </div>
         <LaneView
           enemigos={e.enemigos} lucidez={lucidez} lucidezMax={lucidezMax}
           alcance={resuelto ? 0 : previa.alcance}
@@ -522,6 +533,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
+                  `${p.clase === 'concepto' && p.conceptId && e.fusionados.includes(p.conceptId) ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}` +
                   `${inservible ? ' inservible' : ''}`}
@@ -680,6 +692,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
+                  `${p.clase === 'concepto' && p.conceptId && e.fusionados.includes(p.conceptId) ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${foco?.piezas ? (piezaLibre(p.uid) ? ' senala' : ' bloqueada') : ''}`}
                 style={{ borderLeftColor: cd.banda, background: cd.tono }}
@@ -757,6 +770,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             {e.encargo && (
               <span className={`encargo-marca${cumplido ? ' cumplido' : ''}`} data-ayuda={e.encargo.detalle}>
                 {cumplido ? '✓ ' : ''}{e.encargo.titulo}
+              </span>
+            )}
+            {e.racha >= 2 && (
+              <span className="racha" data-ayuda={'RACHA\nTurnos seguidos sosteniendo algo. Cada uno suma +0.1 al multiplicador. Solo un error o una inversión la rompen: el silencio no.'}>
+                ⚡ racha ×{e.racha}
               </span>
             )}
             <button

@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.11
+# El Archivo Infinito — v5.12
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -334,6 +334,33 @@ enseña la estructura, nunca la verdad.
 
 `npm run smoke` añade un criterio: el sello tiene que premiar al que sabe y
 castigar al que adivina (informado 100 % vs azar 8 %).
+
+## Los cinco bucles del enganche (v5.12)
+
+Lo que un roguelike tipo Balatro tiene y ahora esto también, sin tocar las
+reglas que no se negocian:
+
+- **La exigencia visible.** Cada nodo del mapa anuncia cuánto aguanta su frente
+  («frente ~340») y sobre el carril se ve el aguante restante. La build se mide
+  contra un número, no contra una intuición.
+- **Portadas.** Antes de la expedición se elige con qué ojos se entra: la
+  Clásica, el Disidente, el Cartógrafo o el Escéptico. Cada una modula recursos
+  y recompensa — nunca la corrección — y es un plan de lectura distinto del
+  mismo texto. La elección queda como señal.
+- **Hazañas y Vitrina.** Ocho lentes nacen bloqueadas y cada una se desbloquea
+  con una conducta cognitiva concreta (sostener una Analogía, tres quemas
+  limpias, tres inferencias, sellar tres veces sin fallar…). El grind de
+  colección y la señal de aprendizaje son la misma cosa.
+- **El mazo que mejora y se ve.** Las cartas fusionadas quedan doradas, con
+  brillo. Y en el refugio se puede **archivar** un concepto dominado: sale de
+  la mesa el resto de la run, la mano se adelgaza — solo sale lo consolidado,
+  y sale porque lo está.
+- **Racha y condiciones de sala.** Turnos seguidos sosteniendo algo suman +0.1
+  al multiplicador (solo error o inversión la rompen: el silencio no, regla 3).
+  Las salas duras anuncian su regla como un boss blind — Cadena, Monocultivo,
+  Marco rival — y todas modulan la recompensa, nunca la verdad (regla 2).
+- **Perder promete.** La pantalla de fin dice qué te detuvo, muestra la hazaña
+  que quedó más cerca y ofrece «Otra expedición» directo al elegir portada.
 
 ## Pendientes
 

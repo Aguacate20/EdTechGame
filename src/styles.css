@@ -1249,3 +1249,50 @@ label.campo > span { display: block; margin-bottom: 5px; }
 .reflexion .btn.marcar.activo { border-color: var(--laton); color: var(--laton); background: rgba(201,162,39,.12); }
 .sello-cierre { font-family: var(--mono); font-size: 12px; }
 .btn.chico { font-size: 12px; padding: 4px 10px; }
+
+/* ================= v5.12 · portadas, hazañas, racha y condiciones ================= */
+
+.portadas { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.portada {
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left;
+  padding: 14px; border: 1px solid var(--tinta-borde); border-radius: 10px;
+  background: rgba(255,255,255,.02); color: inherit; font: inherit; cursor: pointer;
+  transition: transform .14s ease, border-color .14s ease;
+}
+.portada:hover { transform: translateY(-3px); border-color: var(--laton); }
+
+.parte-frente {
+  display: flex; gap: 10px; align-items: center; padding: 2px 8px 6px;
+}
+.condicion-sala {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .05em;
+  border: 1px solid #6d3430; color: #e5a49e; background: rgba(109,52,48,.14);
+  border-radius: 99px; padding: 2px 10px; cursor: help;
+}
+.condicion-sala.chica { font-size: 10px; padding: 1px 8px; margin-top: 4px; align-self: flex-start; }
+
+.racha {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em;
+  color: var(--laton); border: 1px dashed #6b5a1c; border-radius: 99px; padding: 3px 10px;
+  cursor: help; animation: latir 1.8s ease-in-out infinite;
+}
+
+/* cartas doradas: el mazo mejora porque aprendiste, y se ve */
+.naipe.dorada, .renglon.dorada {
+  border-color: #c9a227 !important;
+  box-shadow: 0 0 0 1px rgba(201,162,39,.35), 0 2px 10px rgba(201,162,39,.12);
+  position: relative;
+}
+.naipe.dorada::before, .renglon.dorada::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,230,150,.14) 46%, transparent 60%);
+  background-size: 240% 100%;
+  animation: brilloDorado 3.4s ease-in-out infinite;
+}
+@keyframes brilloDorado { 0%{background-position: 120% 0} 100%{background-position: -120% 0} }
+
+.vitrina { display: flex; flex-direction: column; gap: 5px; }
+.hazana { display: flex; gap: 8px; align-items: baseline; font-size: 13px; opacity: .78; }
+.hazana.hecha { opacity: 1; }
+.hazana-glifo { color: var(--laton); }
+.hazana-nueva { animation: entrar .5s ease-out; }

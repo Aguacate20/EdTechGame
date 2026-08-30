@@ -25,6 +25,8 @@ export interface Nodo {
   casos: string[]
   tesis: string[]
   salidas: string[]
+  /** condición anunciada de la sala; solo en duras y jefe */
+  condicion: string | null
 }
 
 export interface Acto {
@@ -281,7 +283,14 @@ export function generarRuta(contenido: Contenido, semilla: string, corto = false
               ? rng.sample(contenido.tesis.filter((t) =>
                   t.conceptIds.some((x) => conceptIds.includes(x))).map((t) => t.id), 1)
               : [],
-          salidas: []
+          salidas: [],
+          // el «boss blind»: la sala dura anuncia su regla; la ligera no la necesita.
+          // Se elige por hash del id y no con el RNG, para no mover la semilla
+          // de todo lo demás: la misma semilla debe dar la misma expedición.
+          condicion: dificultad === 'dura'
+            ? ['cadena', 'monocultivo', 'marco_rival'][
+                [...`a${ai}c${col}f${f}`].reduce((n, ch) => n + ch.charCodeAt(0), 0) % 3]
+            : dificultad === 'jefe' ? 'cadena' : null
         })
       }
       columnas.push(fila)
@@ -343,12 +352,13 @@ export type Recompensa =
 export function ofrecerRecompensas(
   contenido: Contenido, cartera: {
     lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[]
-  }, rng: Rng, dura: boolean, calidad = 0
+  }, rng: Rng, dura: boolean, calidad = 0, vetadas: string[] = []
 ): { opciones: Recompensa[]; veta: boolean } {
   const salida: Recompensa[] = []
 
+  // las vetadas son las lentes con hazaña pendiente: se ganan, no caen del botín
   const libres = LENTES.filter((l) => !cartera.lentes.includes(l.id) &&
-    (dura || l.rareza === 'comun'))
+    !vetadas.includes(l.id) && (dura || l.rareza === 'comun'))
   if (libres.length) salida.push({ tipo: 'lente', id: rng.pick(libres).id })
 
   const sellosLibres = (Object.keys(SELLOS) as SelloId[]).filter((s) => !cartera.sellos.includes(s))
@@ -373,7 +383,7 @@ export function ofrecerRecompensas(
 
   // la veta: una cuarta opción rara, más probable cuanto mejor lo hiciste
   const probabilidad = Math.min(0.55, 0.12 + calidad * 0.4 + (dura ? 0.1 : 0))
-  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id))
+  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id))
   const veta = raras.length > 0 && rng.next() < probabilidad
   if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
 

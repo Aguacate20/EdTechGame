@@ -145,6 +145,9 @@ export interface EstadoBatalla {
   fallosPorConcepto: Record<string, number>
   /** conceptos marcados en la sala anterior: vuelven con prima */
   marcados: string[]
+  /** turnos seguidos con al menos un acierto; solo error/inversión la rompen */
+  racha: number
+  condicion: string | null
 }
 
 /* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
@@ -208,6 +211,13 @@ export interface Bolsa {
   sinEvidencia?: string[]
   /** conceptos que el estudiante marcó como difíciles al cerrar la sala anterior */
   marcados?: string[]
+  /** conceptos dominados retirados en el refugio: adelgazan la mano */
+  archivados?: string[]
+  /** tratos de la portada elegida */
+  quemasDelta?: number
+  apocrifasDelta?: number
+  /** condición de la sala: modula la recompensa, nunca la corrección */
+  condicion?: string | null
 }
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
@@ -218,6 +228,8 @@ export function montarMazo(
   const piezas: Pieza[] = []
 
   for (const id of conceptIds) {
+    // lo archivado en el refugio no vuelve: se dominó y salió de la mesa
+    if (bolsa.archivados?.includes(id) && !bolsa.marcados?.includes(id)) continue
     // con andamio, lo que nunca has visto llega entero: primero se aprende qué
     // es, y solo después se pone a prueba si lo reconoces por su descripción
     const enteroPorApoyo = bolsa.apoyo && bolsa.sinTocar.includes(id)
@@ -232,7 +244,7 @@ export function montarMazo(
       if (d) piezas.push(d)
     }
   }
-  for (let i = 0; i < APOCRIFAS[dificultad]; i++) {
+  for (let i = 0; i < Math.max(0, APOCRIFAS[dificultad] + (bolsa.apocrifasDelta ?? 0)); i++) {
     const p = piezaApocrifa(c, rng.pick(conceptIds), rng)
     if (p) piezas.push(p)
   }
@@ -278,7 +290,7 @@ export function iniciarBatalla(
     mano: [], descarte: [], tablero: [], trazos: [],
     herramientas: [...bolsa.herramientas, ...m.herramientasExtra], usadas: [],
     relacionesDisponibles: bolsa.relaciones,
-    quemasRestantes: (dificultad === 'facil' ? 2 : 3) + m.quemasExtra,
+    quemasRestantes: Math.max(1, (dificultad === 'facil' ? 2 : 3) + m.quemasExtra + (bolsa.quemasDelta ?? 0)),
     cambiosRestantes: 3 + m.cambiosExtra,
     turno: 1, fase: 'jugando', ultima: null,
     manoBase: manoBase + m.manoExtra,
@@ -291,7 +303,8 @@ export function iniciarBatalla(
     inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 },
     encargo: null, encargosOfrecidos: [], sellado: false, sellosHechos: 0, sellosAcertados: 0,
     combosVistos: [], conceptosSostenidos: [], erroresTotales: 0, invertidosTotales: 0,
-    fallosPorConcepto: {}, marcados: bolsa.marcados ?? []
+    fallosPorConcepto: {}, marcados: bolsa.marcados ?? [],
+    racha: 0, condicion: bolsa.condicion ?? null
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
@@ -542,6 +555,30 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     diag.fichas += PRIMA_MARCADO * cuentasSaldadas.length
     diag.dano = Math.round(diag.fichas * diag.mult)
   }
+  // condición MONOCULTIVO: las identidades no hieren (pero siguen fusionando)
+  if (e.condicion === 'monocultivo') {
+    const fichasIdent = diag.veredictos
+      .filter((v) => v.trazo.tool === 'identidad')
+      .reduce((n, v) => n + v.fichas, 0)
+    if (fichasIdent > 0) {
+      diag.fichas = Math.max(0, diag.fichas - fichasIdent)
+      diag.dano = Math.round(diag.fichas * diag.mult)
+    }
+  }
+  // racha: turnos seguidos sosteniendo algo. Solo error/inversión la rompen.
+  if (e.racha > 0 && diag.dano > 0) {
+    diag.mult += 0.1 * e.racha
+    diag.dano = Math.round(diag.fichas * diag.mult)
+  }
+  // condición MARCO RIVAL: cada contraste sostenido suma medio punto de mult
+  if (e.condicion === 'marco_rival') {
+    const contrastes = diag.veredictos
+      .filter((v) => esAcierto(v.estado) && v.trazo.param === 'contrasta').length
+    if (contrastes > 0) {
+      diag.mult += 0.5 * contrastes
+      diag.dano = Math.round(diag.fichas * diag.mult)
+    }
+  }
   // sello de confianza: no toca la corrección, solo la recompensa
   let sello: ResultadoTurno['sello'] = null
   if (e.sellado) {
@@ -550,6 +587,11 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     if (sello.acertado) { e.sellosAcertados += 1; diag.mult += SELLO_ACIERTA }
     else diag.mult = diag.mult * SELLO_FALLA
     diag.dano = Math.max(0, Math.round(diag.fichas * diag.mult))
+  }
+  // condición CADENA: la frase suelta rinde el 40 %
+  if (e.condicion === 'cadena' && e.trazos.length === 1 && diag.dano > 0) {
+    diag.dano = Math.round(diag.dano * 0.4)
+    diag.cierre = 'Cadena: aquí una afirmación suelta no abre camino. Encadena dos o más.'
   }
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
@@ -686,6 +728,9 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   ])]
   e.erroresTotales += diag.errores
   e.invertidosTotales += diag.invertidos
+  // la racha respeta la regla 3: el silencio no castiga, así que no la rompe
+  if (diag.errores > 0 || diag.invertidos > 0) e.racha = 0
+  else if (diag.sostenidos > 0) e.racha += 1
   for (const v of diag.veredictos) {
     if (esAcierto(v.estado) || v.estado === 'silencio') continue
     for (const id of v.conceptIds) e.fallosPorConcepto[id] = (e.fallosPorConcepto[id] ?? 0) + 1
