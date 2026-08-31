@@ -53,7 +53,7 @@ function Copista({ gesto }: { gesto?: string }) {
 const CUERPO_A_CUERPO = new Set(['maza', 'gancho', 'tenaza', 'barrido'])
 
 export function LaneView({
-  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor
+  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor, aniquilacion
 }: {
   enemigos: Enemigo[]
   lucidez: number
@@ -68,6 +68,8 @@ export function LaneView({
   disparo?: Disparo | null
   /** golpe con ×mult, onda o barrido: el carril lo acusa con sacudida y destello */
   golpeMayor?: boolean
+  /** el golpe borró la sala: página en blanco */
+  aniquilacion?: boolean
 }) {
   const manifest = usarManifest()
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
@@ -94,8 +96,15 @@ export function LaneView({
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
 
   return (
-    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}`}>
-      {golpeMayor && disparoListo && <div className="destello" aria-hidden />}
+    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}${aniquilacion ? ' borron-activo' : ''}`}>
+      {golpeMayor && disparoListo && !aniquilacion && <div className="destello" aria-hidden />}
+      {aniquilacion && (
+        <div className="borron" aria-hidden>
+          <span className="borron-onda" />
+          <span className="borron-sello">PÁGINA EN BLANCO</span>
+          <span className="borron-nota">la sala, borrada de un trazo</span>
+        </div>
+      )}
       <div className="carril-jugador">
         <div>
           <span className="eyebrow">El Copista</span>

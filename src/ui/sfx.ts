@@ -111,7 +111,15 @@ export const sfx = {
   /** nombre y descripción se fusionan */
   fusion: () => { tono(nota(4), 0.14, 0.09); setTimeout(() => tono(nota(7), 0.2, 0.1), 90) },
   /** avanzar de casilla en el mapa */
-  paso: () => ruido(0.09, 900, 1.4, 0.14)
+  paso: () => ruido(0.09, 900, 1.4, 0.14),
+  /** la página en blanco: el golpe que borra la sala entera */
+  borron: () => {
+    tono(52, 0.6, 0.24, 'sawtooth', -18)
+    tono(104, 0.5, 0.14, 'triangle', -30)
+    ruido(0.45, 380, 0.6, 0.3, 'lowpass')
+    setTimeout(() => { tono(nota(7), 0.5, 0.12, 'sine'); tono(nota(9), 0.6, 0.1, 'sine') }, 420)
+    setTimeout(() => tono(nota(12), 0.8, 0.11, 'sine'), 560)
+  }
 }
 
 /** WebAudio exige un gesto del usuario antes de sonar. */

@@ -152,6 +152,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** máquina de gestos del héroe: ataca al resolver, acusa el golpe recibido,
    *  y vuelve al reposo — sin bucles raros */
   const [gestoHeroe, setGestoHeroe] = useState('quieto')
+  /** el golpe borró la sala entera: 2+ derribados y nadie en pie */
+  const aniquilacion = !!(resuelto && casc.terminada && e.ultima &&
+    e.ultima.impactos.filter((i) => i.derribado).length >= 2 &&
+    e.enemigos.every((en) => en.hp <= 0))
+  const borronSonado = useRef(-1)
+  useEffect(() => {
+    if (aniquilacion && borronSonado.current !== e.turno) {
+      borronSonado.current = e.turno
+      sfx.borron()
+    }
+  }, [aniquilacion, e.turno])
   useEffect(() => {
     if (!(resuelto && casc.terminada && e.ultima)) { setGestoHeroe('quieto'); return }
     const r = e.ultima
@@ -360,6 +371,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           enemigos={e.enemigos} lucidez={lucidez} lucidezMax={lucidezMax}
           alcance={resuelto ? 0 : previa.alcance}
           gesto={gestoHeroe}
+          aniquilacion={aniquilacion}
           golpeMayor={resuelto && casc.terminada && !!e.ultima &&
             (e.ultima.diag.xmult > 1 || e.ultima.patron !== 'puntual' || e.ultima.danoTotal >= 400)}
           ultimosImpactos={resuelto && casc.terminada && e.ultima ? e.ultima.impactos : []}
