@@ -1,9 +1,47 @@
 {
   "jugador/copista": {
-    "golpea_lluvia": {
-      "src": "sprites/adventurer/tiras/adventurer-bow.png",
-      "frames": 9,
-      "fps": 12
-    }
+    "quieto": {
+      "src": "sprites/adventurer/tiras/adventurer-idle-2.png",
+      "frames": 4,
+      "fps": 6
+    },
+    "avanza": {
+      "src": "sprites/adventurer/tiras/adventurer-run.png",
+      "frames": 6,
+      "fps": 10
+    },
+    "herido": {
+      "src": "sprites/adventurer/tiras/adventurer-hurt.png",
+      "frames": 3,
+      "fps": 8
+    },
+    "cae": {
+      "src": "sprites/adventurer/tiras/adventurer-die.png",
+      "frames": 7,
+      "fps": 8,
+      "loop": false
+    },
+    "golpea_rayo": {
+      "src": "sprites/adventurer/tiras/adventurer-cast.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea": [
+      {
+        "src": "sprites/adventurer/tiras/adventurer-attack1.png",
+        "frames": 5,
+        "fps": 12
+      },
+      {
+        "src": "sprites/adventurer/tiras/adventurer-attack2.png",
+        "frames": 6,
+        "fps": 12
+      },
+      {
+        "src": "sprites/adventurer/tiras/adventurer-attack3.png",
+        "frames": 6,
+        "fps": 12
+      }
+    ]
   }
 }

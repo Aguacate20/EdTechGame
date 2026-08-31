@@ -5,11 +5,12 @@ from PIL import Image
 RAIZ = Path('public/art/sprites')
 patron = re.compile(r'^(.*?)[-_](\d+)\.png$', re.I)
 
-# 1. pegar cada grupo nombre-NN.png en una tira horizontal
 conteos = {}
 for carpeta in sorted(p for p in RAIZ.iterdir() if p.is_dir()):
     grupos = {}
-    for f in carpeta.glob('*.png'):
+    for f in carpeta.rglob('*.png'):            # ← recursivo
+        if 'tiras' in f.parts:
+            continue
         m = patron.match(f.name)
         if m:
             grupos.setdefault(m.group(1).lower(), []).append((int(m.group(2)), f))
@@ -28,7 +29,6 @@ for carpeta in sorted(p for p in RAIZ.iterdir() if p.is_dir()):
         conteos[ruta] = len(frames)
         print(f'{ruta}  ({len(frames)} frames)')
 
-# 2. manifest del protagonista (rvros adventurer)
 def clip(base, fps=10, loop=True):
     ruta = f'sprites/adventurer/tiras/adventurer-{base}.png'
     if ruta not in conteos:
@@ -55,5 +55,6 @@ mf = Path('public/art/manifest.json')
 datos = json.loads(mf.read_text(encoding='utf-8')) if mf.exists() else {}
 datos['jugador/copista'] = ficha
 mf.write_text(json.dumps(datos, ensure_ascii=False, indent=2), encoding='utf-8')
-print('\nmanifest.json actualizado: jugador/copista con', list(ficha.keys()))
-print('Tiras sin mapear (enemigos futuros): las de otras carpetas quedan listas para cuando me pases el listado.')
+print('\njugador/copista →', list(ficha.keys()))
+if 'quieto' not in ficha:
+    print('OJO: sigue sin idle — el zip no trae esos frames; pégame el listado de tiras de arriba')
