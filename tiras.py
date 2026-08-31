@@ -1,4 +1,4 @@
-"""tiras.py v3 — prepara packs de la comunidad para El Archivo Infinito.
+"""tiras.py v4 — prepara packs de la comunidad para El Archivo Infinito.
 1) Pega frames sueltos (nombre-00.png…) en tiras horizontales.
 2) Detecta hojas YA montadas probando anchos de frame conocidos
    (alto, 90, 100, 45, 48): cubre LuizMelo (cuadrados) y MonoPixelArt (90×64).
@@ -30,7 +30,57 @@ def frames_de_hoja(w: int, h: int) -> int:
     return 0
 
 
+# packs CC0 cuyas hojas traen a la criatura nadando en aire transparente:
+# se recortan al armar la tira (LuizMelo lo permite; MonoPixelArt no se toca)
+RECORTAR = ('monsters', 'wizard')
+
+
+def recortar_pack(carpeta: Path):
+    """Por criatura (subcarpeta o carpeta): caja común de todos sus clips,
+    recorte de cada frame a esa caja (ancla abajo intacta) y tira nueva."""
+    grupos: dict[Path, list[Path]] = {}
+    for f in carpeta.rglob('*.png'):
+        if 'tiras' in f.parts:
+            continue
+        with Image.open(f) as im:
+            if frames_de_hoja(*im.size):
+                grupos.setdefault(f.parent, []).append(f)
+    for sub, hojas in grupos.items():
+        # 1. caja común de la criatura en TODOS sus frames
+        caja = None
+        rebanadas: dict[Path, list] = {}
+        for f in hojas:
+            im = Image.open(f).convert('RGBA')
+            n = frames_de_hoja(*im.size)
+            fw = im.width // n
+            frames = [im.crop((i * fw, 0, (i + 1) * fw, im.height)) for i in range(n)]
+            rebanadas[f] = frames
+            for fr in frames:
+                b = fr.getbbox()
+                if not b:
+                    continue
+                caja = b if caja is None else (
+                    min(caja[0], b[0]), min(caja[1], b[1]),
+                    max(caja[2], b[2]), max(caja[3], b[3]))
+        if caja is None:
+            continue
+        for f, frames_ in rebanadas.items():
+            rec = [fr.crop(caja) for fr in frames_]
+            w, h = rec[0].size
+            hoja = Image.new('RGBA', (w * len(rec), h), (0, 0, 0, 0))
+            for i, fr in enumerate(rec):
+                hoja.paste(fr, (i * w, 0))
+            slug = f"{sub.name}-{f.stem}".lower().replace(' ', '-')
+            destino = carpeta / 'tiras' / f'{slug}.png'
+            destino.parent.mkdir(exist_ok=True)
+            hoja.save(destino)
+            registrar(f'sprites/{carpeta.name}/tiras/{slug}.png', len(rec))
+
+
 for carpeta in sorted(p for p in RAIZ.iterdir() if p.is_dir()):
+    if carpeta.name in RECORTAR:
+        recortar_pack(carpeta)
+        continue
     grupos: dict[str, list] = {}
     for f in carpeta.rglob('*.png'):
         if 'tiras' in f.parts:
@@ -133,10 +183,10 @@ for enemigo, claves in CASTING:
         ficha['volteado'] = True
         # escala visual: compensa el aire transparente típico de cada pack
         r0 = next(iter(candidatas))
-        if '/monsters/' in r0: ficha['escala'] = 1.5
-        elif '/wizard/' in r0: ficha['escala'] = 1.9
-        elif '/golems/' in r0: ficha['escala'] = 1.35
-        elif 'bat-' in r0.lower(): ficha['escala'] = 1.2
+        if '/monsters/' in r0: ficha['escala'] = 1.7
+        elif '/wizard/' in r0: ficha['escala'] = 2.2
+        elif '/golems/' in r0: ficha['escala'] = 1.8   # el tanque SE VE tanque
+        elif 'bat-' in r0.lower(): ficha['escala'] = 1.3
         datos[f'enemigos/{enemigo}'] = ficha
         usados.add(enemigo)
 

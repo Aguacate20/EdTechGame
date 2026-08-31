@@ -99,6 +99,15 @@ export function LaneView({
     return i >= 0 && i < revelados
   }
   const todoRevelado = revelados >= ultimosImpactos.length
+  /** los enemigos responden DESPUÉS del golpe del héroe: sus animaciones de
+   *  avance y ataque esperan a que el último impacto aterrice */
+  const [faseEnemiga, setFaseEnemiga] = useState(false)
+  useEffect(() => {
+    if (!disparoListo) { setFaseEnemiga(false); return }
+    if (!todoRevelado) { setFaseEnemiga(false); return }
+    const t = setTimeout(() => setFaseEnemiga(true), 260)
+    return () => clearTimeout(t)
+  }, [disparoListo, todoRevelado])
   const embisteUid = disparoListo && disparo && esMelee && gesto === 'afirma'
     ? disparo.objetivos[0] ?? null : null
   const vivosYcaidos = enemigos
@@ -215,7 +224,9 @@ export function LaneView({
                 return (
                   <div
                     key={e.uid}
-                    className={`bicho bicho-${disparoListo === false || (impactoReal && !impacto) ? 'quieto' : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
+                    className={`bicho bicho-${disparoListo === false || (impactoReal && !impacto) ? 'quieto'
+                      : !faseEnemiga && (e.gesto === 'golpea' || e.gesto === 'avanza') ? 'quieto'
+                      : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
                     title={`${e.nombre} — ${t.glosa}`}
                   >
                     {impacto && (
@@ -226,7 +237,9 @@ export function LaneView({
                     )}
                     <Retrato
                       familia="enemigos" id={e.tipoId} alt={e.nombre}
-                      tamano={34} gesto={disparoListo === false || (impactoReal && !impacto) ? 'quieto' : e.gesto}
+                      tamano={34} gesto={disparoListo === false || (impactoReal && !impacto) ? 'quieto'
+                        : !faseEnemiga && (e.gesto === 'golpea' || e.gesto === 'avanza') ? 'quieto'
+                        : e.gesto}
                       respaldo={<Silueta tipoId={e.tipoId} />}
                     />
                     <span className="nom">{e.nombre}</span>

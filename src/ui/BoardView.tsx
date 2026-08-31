@@ -193,11 +193,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     const r = e.ultima
     setGestoHeroe(r.danoTotal > 0 ? 'afirma' : r.danoRecibido > 0 ? 'herido' : 'quieto')
     const ts: ReturnType<typeof setTimeout>[] = []
+    // el compás: golpe del héroe → impactos en cadena → respuesta enemiga
+    const finImpactos = 420 + 150 * r.impactos.length + 260
     if (r.danoTotal > 0 && r.danoRecibido > 0) {
-      ts.push(setTimeout(() => setGestoHeroe('herido'), 950))
-      ts.push(setTimeout(() => setGestoHeroe('quieto'), 1650))
+      ts.push(setTimeout(() => setGestoHeroe('herido'), finImpactos))
+      ts.push(setTimeout(() => setGestoHeroe('quieto'), finImpactos + 700))
     } else if (r.danoTotal > 0 || r.danoRecibido > 0) {
-      ts.push(setTimeout(() => setGestoHeroe('quieto'), 1100))
+      ts.push(setTimeout(() => setGestoHeroe('quieto'), Math.max(1100, finImpactos)))
     }
     return () => ts.forEach(clearTimeout)
   }, [resuelto, casc.terminada, e.ultima])
