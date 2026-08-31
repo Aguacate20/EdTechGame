@@ -39,7 +39,7 @@ function Silueta({ tipoId }: { tipoId: string }) {
   }
 }
 
-function Copista({ gesto }: { gesto: 'quieto' | 'afirma' | 'herido' }) {
+function Copista({ gesto }: { gesto?: string }) {
   return (
     <svg className={`copista copista-${gesto}`} viewBox="0 0 40 44" width={40} height={44} aria-hidden>
       <path d="M20 6l6 16-6 5-6-5z" fill="currentColor" />
@@ -50,19 +50,21 @@ function Copista({ gesto }: { gesto: 'quieto' | 'afirma' | 'herido' }) {
 }
 
 export function LaneView({
-  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo
+  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor
 }: {
   enemigos: Enemigo[]
   lucidez: number
   lucidezMax: number
   /** cuántos enemigos alcanzaría la afirmación que estás montando */
   alcance: number
-  gesto: 'quieto' | 'afirma' | 'herido'
+  gesto?: string
   ultimosImpactos: { uid: string; dano: number }[]
   /** el disparo solo se ve cuando la cuenta ha terminado */
   disparoListo?: boolean
   /** con qué arma sale el ataque: cada herramienta dispara distinto */
   disparo?: Disparo | null
+  /** golpe con ×mult, onda o barrido: el carril lo acusa con sacudida y destello */
+  golpeMayor?: boolean
 }) {
   const manifest = usarManifest()
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
@@ -86,7 +88,8 @@ export function LaneView({
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
 
   return (
-    <div className="carril">
+    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}`}>
+      {golpeMayor && disparoListo && <div className="destello" aria-hidden />}
       <div className="carril-jugador">
         <Retrato
           familia="jugador" id="copista" alt="El Copista"

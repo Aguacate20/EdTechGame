@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, useEffect } from 'react'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -113,6 +113,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
   const [leyenda, setLeyenda] = useState(false)
+
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
   const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
   const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
@@ -148,6 +149,22 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const resuelto = e.fase !== 'jugando'
   const foto = resuelto ? e.ultima?.foto : null
   const casc = useCascada(resuelto && e.ultima ? e.ultima.diag : null, resuelto)
+  /** máquina de gestos del héroe: ataca al resolver, acusa el golpe recibido,
+   *  y vuelve al reposo — sin bucles raros */
+  const [gestoHeroe, setGestoHeroe] = useState('quieto')
+  useEffect(() => {
+    if (!(resuelto && casc.terminada && e.ultima)) { setGestoHeroe('quieto'); return }
+    const r = e.ultima
+    setGestoHeroe(r.danoTotal > 0 ? 'afirma' : r.danoRecibido > 0 ? 'herido' : 'quieto')
+    const ts: ReturnType<typeof setTimeout>[] = []
+    if (r.danoTotal > 0 && r.danoRecibido > 0) {
+      ts.push(setTimeout(() => setGestoHeroe('herido'), 950))
+      ts.push(setTimeout(() => setGestoHeroe('quieto'), 1650))
+    } else if (r.danoTotal > 0 || r.danoRecibido > 0) {
+      ts.push(setTimeout(() => setGestoHeroe('quieto'), 1100))
+    }
+    return () => ts.forEach(clearTimeout)
+  }, [resuelto, casc.terminada, e.ultima])
 
   const enMano = e.mano.filter((p) => !e.tablero.some((t) => t.uid === p.uid))
   const enTablero = foto
@@ -342,8 +359,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         <LaneView
           enemigos={e.enemigos} lucidez={lucidez} lucidezMax={lucidezMax}
           alcance={resuelto ? 0 : previa.alcance}
-          gesto={resuelto && casc.terminada
-            ? (e.ultima && e.ultima.danoTotal > 0 ? 'afirma' : 'herido') : 'quieto'}
+          gesto={gestoHeroe}
+          golpeMayor={resuelto && casc.terminada && !!e.ultima &&
+            (e.ultima.diag.xmult > 1 || e.ultima.patron !== 'puntual' || e.ultima.danoTotal >= 400)}
           ultimosImpactos={resuelto && casc.terminada && e.ultima ? e.ultima.impactos : []}
           disparoListo={resuelto && casc.terminada}
           disparo={resuelto && casc.terminada && e.ultima ? e.ultima.disparo : null}

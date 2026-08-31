@@ -1400,3 +1400,20 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .carril-jugador .retrato-sprite img {
   filter: drop-shadow(0 0 6px rgba(237,231,218,.22)) drop-shadow(0 1px 0 rgba(0,0,0,.6));
 }
+
+/* v5.23 · el carril acusa el golpe mayor */
+.carril.sacudida { animation: sacudir .45s cubic-bezier(.3,.1,.2,1); }
+@keyframes sacudir {
+  0% { transform: translate(0); }
+  18% { transform: translate(-5px, 2px); }
+  36% { transform: translate(4px, -2px); }
+  54% { transform: translate(-3px, 1px); }
+  72% { transform: translate(2px, -1px); }
+  100% { transform: translate(0); }
+}
+.carril .destello {
+  position: absolute; inset: -6px; pointer-events: none; z-index: 5;
+  background: radial-gradient(ellipse at 30% 55%, rgba(255,217,122,.28), transparent 62%);
+  animation: destellar .6s ease-out forwards;
+}
+@keyframes destellar { from { opacity: 1; } to { opacity: 0; } }

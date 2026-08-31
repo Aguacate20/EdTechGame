@@ -122,9 +122,11 @@ const RESPALDO_GESTO: Record<string, string[]> = {
 /** Elige el clip de un gesto: primero `gesto_variante` (p. ej. golpea_rayo),
  *  luego el gesto; si hay varios (lista), uno al azar — así los ataques varían. */
 function elegirClip(ficha: FichaSprite, gesto: string, variante?: string): ClipSprite | null {
+  // el tablero habla en «afirma» (herencia del SVG); los packs hablan en «golpea»
+  const g = gesto === 'afirma' ? 'golpea' : gesto
   const claves = [
-    ...(variante ? [`${gesto}_${variante}`] : []),
-    ...(RESPALDO_GESTO[gesto] ?? ['quieto'])
+    ...(variante ? [`${g}_${variante}`] : []),
+    ...(RESPALDO_GESTO[g] ?? ['quieto'])
   ]
   for (const k of claves) {
     const v = ficha[k]
@@ -148,7 +150,10 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt, 
   const [ratio, setRatio] = useState(1)
   if (!clip) return null
   const fps = clip.fps ?? 8
-  const loop = clip.loop !== false
+  // un ataque o un golpe recibido se ejecuta UNA vez y congela su último
+  // frame hasta que el gesto cambie; solo idle/avance repiten en bucle
+  const transitorio = ['afirma', 'golpea', 'herido', 'critico', 'cae', 'retrocede'].includes(gesto)
+  const loop = clip.loop !== false && !transitorio
   const pasos = loop ? clip.frames : Math.max(1, clip.frames - 1)
   const fin = loop ? '-100%' : `-${((100 * (clip.frames - 1)) / clip.frames).toFixed(3)}%`
   return (
