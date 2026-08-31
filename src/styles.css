@@ -1482,8 +1482,10 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   color: var(--grafito); opacity: 0;
   animation: estamparSello 1.4s ease-out .34s forwards;
 }
-/* los caídos se disuelven en tinta hacia arriba */
-.carril.borron-activo .bicho { animation: disolverse 1.1s ease-in .25s forwards; }
+/* los caídos se disuelven en tinta hacia arriba — SOLO los caídos: los vivos
+   (supervivientes, crías, la oleada siguiente) quedaban invisibles al terminar
+   la animación en opacidad 0, y parecían fantasmas que "volvían" */
+.carril.borron-activo .bicho-cae { animation: disolverse 1.1s ease-in .25s forwards; }
 @keyframes disolverse {
   0% { filter: none; opacity: 1; transform: translateY(0); }
   100% { filter: blur(3px) grayscale(1); opacity: 0; transform: translateY(-14px); }
