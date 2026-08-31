@@ -21,6 +21,11 @@
       "fps": 8,
       "loop": false
     },
+    "golpea_lluvia": {
+      "src": "sprites/adventurer/tiras/adventurer-bow.png",
+      "frames": 9,
+      "fps": 12
+    },
     "golpea_rayo": {
       "src": "sprites/adventurer/tiras/adventurer-cast.png",
       "frames": 4,
