@@ -42,6 +42,31 @@
         "frames": 6,
         "fps": 12
       }
-    ]
+    ],
+    "golpea_sello": {
+      "src": "sprites/adventurer/tiras/adventurer-air-attack1.png",
+      "frames": 4,
+      "fps": 14
+    },
+    "golpea_barrido": {
+      "src": "sprites/adventurer/tiras/adventurer-slide.png",
+      "frames": 2,
+      "fps": 14
+    },
+    "golpea_onda": {
+      "src": "sprites/adventurer/tiras/adventurer-cast.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea_perdigon": {
+      "src": "sprites/adventurer/tiras/adventurer-attack1.png",
+      "frames": 5,
+      "fps": 16
+    },
+    "golpea_tenaza": {
+      "src": "sprites/adventurer/tiras/adventurer-attack3.png",
+      "frames": 6,
+      "fps": 13
+    }
   }
 }
