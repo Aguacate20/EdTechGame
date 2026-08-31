@@ -688,6 +688,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   const impactos: ResultadoTurno['impactos'] = []
   let danoTotal = 0
   let sobredano = 0
+  const notasDivide: string[] = []
 
   for (const en of e.enemigos) { en.gesto = 'quieto'; en.tocadoEsteTurno = false }
 
@@ -760,6 +761,10 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
           cria.nombre = 'Entrada suelta'
           e.enemigos.push(cria)
         }
+        // que el parte lo CUENTE: las crías nacen tras el golpe, así que el
+        // desborde no pudo alcanzarlas — no es un fallo de la cadena, es el
+        // oficio de la Bibliografía: exigir un segundo compás
+        notasDivide.push(`${en.nombre} se divide al caer: 2 Entradas sueltas. Nacen tras el golpe — el desborde no las alcanza.`)
       }
     }
   }
@@ -787,7 +792,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       impactos.map((i) => i.uid)
     ),
     descubiertos,
-    impactos, danoTotal, parteEnemiga: [], danoRecibido: 0,
+    impactos, danoTotal, parteEnemiga: notasDivide.map((t) => ({ texto: t, dano: 0 })), danoRecibido: 0,
     intuicionesNuevas: [], apocrifasNuevas: 0, cartasPerdidas: 0,
     sello,
     patron: diag.combos.some((x) => x.id === 'constelacion') ? 'barrido'
