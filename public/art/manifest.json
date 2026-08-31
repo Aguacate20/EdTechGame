@@ -1,0 +1,9 @@
+{
+  "jugador/copista": {
+    "golpea_lluvia": {
+      "src": "sprites/adventurer/tiras/adventurer-bow.png",
+      "frames": 9,
+      "fps": 12
+    }
+  }
+}
