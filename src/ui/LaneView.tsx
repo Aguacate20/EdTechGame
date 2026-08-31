@@ -49,6 +49,9 @@ function Copista({ gesto }: { gesto?: string }) {
   )
 }
 
+/** armas que golpean en persona: el héroe embiste hasta el objetivo */
+const CUERPO_A_CUERPO = new Set(['maza', 'gancho', 'tenaza', 'barrido'])
+
 export function LaneView({
   enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor
 }: {
@@ -68,6 +71,9 @@ export function LaneView({
 }) {
   const manifest = usarManifest()
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
+  const esMelee = !!(disparo && CUERPO_A_CUERPO.has(disparo.arma.forma))
+  const embisteUid = disparoListo && disparo && esMelee && gesto === 'afirma'
+    ? disparo.objetivos[0] ?? null : null
   const vivosYcaidos = enemigos
   const gestosPrevios = useRef<Record<string, string>>({})
 
@@ -91,19 +97,21 @@ export function LaneView({
     <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}`}>
       {golpeMayor && disparoListo && <div className="destello" aria-hidden />}
       <div className="carril-jugador">
-        <Retrato
-          familia="jugador" id="copista" alt="El Copista"
-          tamano={56} gesto={gesto} variante={disparo?.arma.forma}
-          respaldo={<Copista gesto={gesto} />}
-        />
         <div>
           <span className="eyebrow">El Copista</span>
           <div className="vida ancha"><span style={{ width: `${(lucidez / lucidezMax) * 100}%` }} /></div>
           <span className="dato silencio">{lucidez}/{lucidezMax}</span>
         </div>
+        <span className={`heroe-casa${embisteUid ? ' fuera' : ''}`}>
+          <Retrato
+            familia="jugador" id="copista" alt="El Copista"
+            tamano={56} gesto={gesto} variante={disparo?.arma.forma}
+            respaldo={<Copista gesto={gesto} />}
+          />
+        </span>
       </div>
 
-      {disparoListo && disparo && disparo.objetivos.length > 0 && (
+      {disparoListo && disparo && !esMelee && disparo.objetivos.length > 0 && (
         <div className={`salva salva-${disparo.arma.forma}`} aria-hidden>
           {Array.from({ length: disparo.arma.proyectiles }, (_, i) => {
             const objetivo = vivosYcaidos.find((e) => e.uid === disparo.objetivos[
@@ -142,6 +150,15 @@ export function LaneView({
           return (
             <div className="casilla" key={casilla} role="listitem">
               <span className="numero">{casilla}</span>
+              {embisteUid && aqui.some((e) => e.uid === embisteUid) && (
+                <span className="heroe-embiste" aria-hidden>
+                  <Retrato
+                    familia="jugador" id="copista" alt=""
+                    tamano={48} gesto="afirma" variante={disparo?.arma.forma}
+                    respaldo={<Copista gesto="afirma" />}
+                  />
+                </span>
+              )}
               {aqui.map((e) => {
                 const t = tipoPorId(e.tipoId)
                 const impacto = ultimosImpactos.find((x) => x.uid === e.uid)

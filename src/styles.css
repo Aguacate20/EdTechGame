@@ -1417,3 +1417,17 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   animation: destellar .6s ease-out forwards;
 }
 @keyframes destellar { from { opacity: 1; } to { opacity: 0; } }
+
+/* v5.24 · barra a la izquierda, héroe al frente, embestida cuerpo a cuerpo */
+.heroe-casa { display: inline-flex; transition: opacity .16s ease-out; }
+.heroe-casa.fuera { opacity: .12; }
+.casilla { position: relative; }
+.heroe-embiste {
+  position: absolute; left: -46px; bottom: 4px; z-index: 7; pointer-events: none;
+  animation: embestir .26s cubic-bezier(.2, 1.35, .4, 1);
+  filter: drop-shadow(0 0 8px rgba(237,231,218,.25));
+}
+@keyframes embestir {
+  from { transform: translateX(-34px) scale(.88); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
