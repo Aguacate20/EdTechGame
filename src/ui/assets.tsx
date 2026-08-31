@@ -95,7 +95,28 @@ const oyentes = new Set<() => void>()
 fetch(`${BASE}art/manifest.json`)
   .then((r) => (r.ok ? r.json() : null))
   .catch(() => null)
-  .then((m) => { MANIFEST = m; oyentes.forEach((f) => f()) })
+  .then((m) => { MANIFEST = m; oyentes.forEach((f) => f()); precargar(m) })
+
+/** proporciones ya medidas (frameW/frameH) por tira: al remontar un clip no
+ *  hay salto de ancho mientras carga */
+const RATIOS = new Map<string, number>()
+
+/** precargar todas las tiras del manifest: el cambio de gesto remontaba el
+ *  <img> y el hueco de red pintaba un frame vacío — el parpadeo */
+function precargar(m: Record<string, FichaSprite> | null) {
+  if (!m) return
+  for (const ficha of Object.values(m)) {
+    if (!ficha || typeof ficha !== 'object') continue
+    for (const v of Object.values(ficha)) {
+      const clips = Array.isArray(v) ? v : (v && typeof v === 'object' ? [v as ClipSprite] : [])
+      for (const clip of clips) {
+        if (!clip.src) continue
+        const im = new Image()
+        im.src = `${BASE}art/${clip.src}`
+      }
+    }
+  }
+}
 
 export function usarManifest(): Record<string, FichaSprite> | null {
   const [, fuerza] = useState(0)
@@ -146,8 +167,10 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt, 
   // el clip se elige una vez por cambio de gesto (no en cada render)
   const [clip, setClip] = useState<ClipSprite | null>(() => elegirClip(ficha, gesto, variante))
   useEffect(() => { setClip(elegirClip(ficha, gesto, variante)) }, [ficha, gesto, variante])
-  // frames no cuadrados: se mide la tira y el ancho del retrato sigue la proporción
-  const [ratio, setRatio] = useState(1)
+  // frames no cuadrados: se mide la tira y el ancho del retrato sigue la
+  // proporción; el caché evita el salto de ancho al cambiar de clip
+  const [ratio, setRatio] = useState(() => (clip ? RATIOS.get(clip.src) ?? 1 : 1))
+  useEffect(() => { if (clip) setRatio(RATIOS.get(clip.src) ?? 1) }, [clip?.src])
   if (!clip) return null
   const fps = clip.fps ?? 8
   // un ataque o un golpe recibido se ejecuta UNA vez y congela su último
@@ -166,7 +189,11 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt, 
         src={`${BASE}art/${clip.src}`} alt={alt} draggable={false}
         onLoad={(ev) => {
           const im = ev.currentTarget
-          if (im.naturalWidth && im.naturalHeight) setRatio((im.naturalWidth / clip.frames) / im.naturalHeight)
+          if (im.naturalWidth && im.naturalHeight) {
+            const r = (im.naturalWidth / clip.frames) / im.naturalHeight
+            RATIOS.set(clip.src, r)
+            setRatio(r)
+          }
         }}
         onError={() => { fallidas.add(`${BASE}art/${clip.src}`); alFallar?.() }}
         style={{

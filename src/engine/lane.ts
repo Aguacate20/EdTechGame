@@ -114,6 +114,8 @@ export interface Enemigo {
   /** turnos vividos, para los rasgos con cadencia */
   edad: number
   retrocedioYa: boolean
+  /** el rasgo divide ya se ejerció: la división es una sola vez */
+  dividioYa?: boolean
   tocadoEsteTurno: boolean
   fase: number
   gesto: 'quieto' | 'avanza' | 'golpea' | 'herido' | 'critico' | 'cae' | 'retrocede'

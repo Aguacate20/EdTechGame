@@ -92,17 +92,36 @@ export function tierDe(c: Contenido, p: Pieza, mirada: MiradaMano): Tier {
   return 'resto'
 }
 
-export function pesosDelReparto(acto: number, secos: number): Record<Tier, number> {
+export function pesosDelReparto(acto: number, secos: number, condicion?: string | null): Record<Tier, number> {
   const w: Record<Tier, number> = {
     ancla: 3, puente: 3, repaso: 2.2, especial: 1.4, reto: 1, resto: 2
   }
   // el andamio se retira: los actos tardíos piden material no dominado
   if (acto >= 1) { w.reto += 1; w.especial += 0.6; w.ancla = Math.max(1.2, w.ancla - 0.8) }
   if (acto >= 2) { w.reto += 1; w.puente = Math.max(1.4, w.puente - 0.8) }
+  // la condición de la sala reordena qué es "componible" AQUÍ:
+  // en Monocultivo las identidades no hieren — servirlas como piso sería
+  // servir cartas muertas. La mesa se inclina hacia lo que la sala pide.
+  if (condicion === 'monocultivo') {
+    w.ancla = 0.6
+    w.puente += 1.6
+    w.especial += 0.8
+    w.repaso += 0.4
+  }
+  if (condicion === 'cadena') {
+    // aquí una afirmación suelta rinde 40 %: conviene material encadenable
+    w.puente += 1.2
+    w.especial += 0.4
+  }
+  if (condicion === 'marco_rival') {
+    // la sala premia contrastes: marcos y vecinos del grafo al frente
+    w.especial += 1.2
+    w.puente += 0.8
+  }
   // piedad: la sequía inclina la mesa hacia lo componible, nunca la vuelca
   const alivio = Math.min(3, secos)
-  w.ancla += alivio * 1.2
-  w.puente += alivio * 0.8
+  if (condicion === 'monocultivo') { w.puente += alivio * 1.4 }
+  else { w.ancla += alivio * 1.2; w.puente += alivio * 0.8 }
   return w
 }
 
@@ -111,7 +130,7 @@ export function pesosDelReparto(acto: number, secos: number): Record<Tier, numbe
 export function robarRepartido(
   mazo: Pieza[], mano: Pieza[], c: Contenido, rng: Rng,
   acto: number, secos: number, marcados: string[], asentadas: string[],
-  vetadas: string[]
+  vetadas: string[], condicion?: string | null
 ): Pieza | null {
   if (!mazo.length) return null
   const mirada = mirarMano(mano, marcados, asentadas)
@@ -123,7 +142,7 @@ export function robarRepartido(
     lista.push(p)
     porTier.set(t, lista)
   }
-  const pesos = pesosDelReparto(acto, secos)
+  const pesos = pesosDelReparto(acto, secos, condicion)
   const disponibles = [...porTier.keys()]
   if (!disponibles.length) return mazo.shift() ?? null
   let total = 0
@@ -167,14 +186,15 @@ export function manoJugable(mano: Pieza[], c: Contenido): boolean {
 /** Repara una apertura muda: cambia cartas del final de la mano por la
  *  primera del mazo que componga con lo que hay. Máximo 3 intentos. */
 export function repararApertura(
-  mano: Pieza[], mazo: Pieza[], descarte: Pieza[], c: Contenido, rng: Rng
+  mano: Pieza[], mazo: Pieza[], descarte: Pieza[], c: Contenido, rng: Rng,
+  condicion?: string | null
 ): void {
   for (let intento = 0; intento < 3 && !manoJugable(mano, c); intento++) {
     const mirada = mirarMano(mano, [], [])
-    const idx = mazo.findIndex((p) => {
-      const t = tierDe(c, p, mirada)
-      return t === 'ancla' || t === 'puente' || t === 'especial'
-    })
+    // en Monocultivo la pareja de identidad no es un piso: se busca puente
+    const orden: Tier[] = condicion === 'monocultivo'
+      ? ['puente', 'especial', 'ancla'] : ['ancla', 'puente', 'especial']
+    const idx = mazo.findIndex((p) => orden.includes(tierDe(c, p, mirada)))
     if (idx < 0) return
     const entra = mazo.splice(idx, 1)[0]
     const fuera = mano.splice(Math.floor(rng.next() * mano.length), 1)[0]

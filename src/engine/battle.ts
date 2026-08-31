@@ -343,7 +343,7 @@ export function iniciarBatalla(
   }
   robar(e, e.manoBase)
   // el piso del Repartidor: ninguna apertura muda
-  repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng)
+  repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng, e.condicion)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
   const aRevelar = m.revelaApocrifas + (bolsa.apoyo && acto <= 1 ? 9 : 0)
   if (aRevelar > 0) {
@@ -497,7 +497,7 @@ export function cambiar(e: EstadoBatalla, uid: string, ctx?: ContextoBatalla): E
   if (ctx) {
     const carta = robarRepartido(
       e.mazo, e.mano, ctx.contenido, ctx.rng,
-      e.acto, e.secos + 1, e.marcados, e.asentadas, e.vetadasReparto)
+      e.acto, e.secos + 1, e.marcados, e.asentadas, e.vetadasReparto, e.condicion)
     if (carta) e.mano.push(carta)
     else robar(e, 1)
   } else robar(e, 1)
@@ -754,7 +754,10 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     // lo que sobra cuando ya no queda a quién golpear vuelve como claridad
     sobredano = arrastre
     for (const en of [...e.enemigos]) {
-      if (en.hp === 0 && tipoPorId(en.tipoId).rasgo === 'divide' && !en.uid.includes('cria')) {
+      if (en.hp === 0 && tipoPorId(en.tipoId).rasgo === 'divide' && !en.uid.includes('cria') && !en.dividioYa) {
+        // sin esta bandera, la misma Bibliografía muerta volvía a dividirse
+        // en CADA afirmación: crías infinitas. Una madre, un parto.
+        en.dividioYa = true
         for (let i = 0; i < 2; i++) {
           const cria = crearEnemigo('copista', 0.65 + e.acto * 0.1, Math.min(8, en.posicion + 1 + i))
           cria.uid = `${cria.uid}-cria`
@@ -1094,7 +1097,7 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
       }
       const carta = robarRepartido(
         e.mazo, e.mano, ctx.contenido, ctx.rng,
-        e.acto, e.secos, e.marcados, e.asentadas, e.vetadasReparto)
+        e.acto, e.secos, e.marcados, e.asentadas, e.vetadasReparto, e.condicion)
       if (carta) e.mano.push(carta)
       else break
     }
@@ -1102,7 +1105,7 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
     if (e.vetadasReparto.length > 4) e.vetadasReparto = e.vetadasReparto.slice(-4)
     // y si aun así la mano quedó muda, el piso actúa
     if (!manoJugable(e.mano, ctx.contenido)) {
-      repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng)
+      repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng, e.condicion)
     }
   } else {
     robar(e, faltan)

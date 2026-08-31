@@ -753,12 +753,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               )}
             </div>
             {casc.terminada && (() => {
+              const desbordes = e.ultima!.impactos.filter((i) => i.motivo?.startsWith('El golpe desborda'))
               const bloqueos = e.ultima!.impactos.filter((i) => i.motivo && !i.motivo.startsWith('El golpe desborda'))
-              if (!bloqueos.length) return null
+              if (!bloqueos.length && !desbordes.length) return null
               return (
                 <div className="bloqueos">
                   {bloqueos.map((b, i) => (
-                    <p key={i} className="nota" style={{ margin: 0 }}>⛨ <strong>{b.nombre}</strong> — {b.motivo} (recibió {b.dano})</p>
+                    <p key={`b${i}`} className="nota" style={{ margin: 0 }}>⛨ <strong>{b.nombre}</strong> — {b.motivo} (recibió {b.dano})</p>
+                  ))}
+                  {desbordes.map((b, i) => (
+                    <p key={`d${i}`} className="nota" style={{ margin: 0 }}>↯ <strong>{b.nombre}</strong> — recibe el desborde del anterior: {b.dano}{b.derribado ? ' (cae)' : ''}</p>
                   ))}
                 </div>
               )
