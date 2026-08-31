@@ -85,9 +85,11 @@ export function Retrato({ familia, id, alt, tamano, gesto, variante, respaldo }:
 interface ClipSprite { src: string; frames: number; fps?: number; loop?: boolean }
 type Clips = ClipSprite | ClipSprite[]
 interface FichaSprite {
-  [gesto: string]: Clips | boolean | undefined
+  [gesto: string]: Clips | boolean | number | undefined
   /** true si el pack mira a la derecha y hay que espejarlo */
   volteado?: boolean
+  /** factor de tamaño: compensa el aire transparente del pack (1 = igual) */
+  escala?: number
 }
 
 let MANIFEST: Record<string, FichaSprite> | null | undefined
@@ -159,11 +161,12 @@ function elegirClip(ficha: FichaSprite, gesto: string, variante?: string): ClipS
 
 export const fichaTieneClips = (ficha: FichaSprite): boolean => !!elegirClip(ficha, 'quieto')
 
-export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt, alFallar }: {
+export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano: tamanoBase, alt, alFallar }: {
   ficha: FichaSprite; gesto?: string; variante?: string; tamano: number; alt: string
   /** si la tira no carga (404, ruta rota), avisar para volver al respaldo */
   alFallar?: () => void
 }) {
+  const tamano = Math.round(tamanoBase * (typeof ficha.escala === 'number' ? ficha.escala : 1))
   // el clip se elige una vez por cambio de gesto (no en cada render)
   const [clip, setClip] = useState<ClipSprite | null>(() => elegirClip(ficha, gesto, variante))
   useEffect(() => { setClip(elegirClip(ficha, gesto, variante)) }, [ficha, gesto, variante])

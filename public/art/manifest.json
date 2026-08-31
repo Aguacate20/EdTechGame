@@ -26,6 +26,26 @@
       "frames": 4,
       "fps": 10
     },
+    "golpea_onda": {
+      "src": "sprites/adventurer/tiras/adventurer-cast.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea_barrido": {
+      "src": "sprites/adventurer/tiras/adventurer-slide.png",
+      "frames": 2,
+      "fps": 14
+    },
+    "golpea_sello": {
+      "src": "sprites/adventurer/tiras/adventurer-air-attack1.png",
+      "frames": 4,
+      "fps": 14
+    },
+    "golpea_perdigon": {
+      "src": "sprites/adventurer/tiras/adventurer-attack1.png",
+      "frames": 5,
+      "fps": 16
+    },
     "golpea": [
       {
         "src": "sprites/adventurer/tiras/adventurer-attack1.png",
@@ -43,30 +63,225 @@
         "fps": 12
       }
     ],
-    "golpea_sello": {
-      "src": "sprites/adventurer/tiras/adventurer-air-attack1.png",
+    "volteado": false
+  },
+  "enemigos/copista": {
+    "golpea": {
+      "src": "sprites/monsters/Skeleton/Attack.png",
+      "frames": 8,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "sprites/monsters/Skeleton/Idle.png",
       "frames": 4,
-      "fps": 14
+      "fps": 8
     },
-    "golpea_barrido": {
-      "src": "sprites/adventurer/tiras/adventurer-slide.png",
-      "frames": 2,
-      "fps": 14
-    },
-    "golpea_onda": {
-      "src": "sprites/adventurer/tiras/adventurer-cast.png",
+    "avanza": {
+      "src": "sprites/monsters/Skeleton/Walk.png",
       "frames": 4,
       "fps": 10
     },
-    "golpea_perdigon": {
-      "src": "sprites/adventurer/tiras/adventurer-attack1.png",
-      "frames": 5,
-      "fps": 16
+    "herido": {
+      "src": "sprites/monsters/Skeleton/Take Hit.png",
+      "frames": 4,
+      "fps": 10
     },
-    "golpea_tenaza": {
-      "src": "sprites/adventurer/tiras/adventurer-attack3.png",
-      "frames": 6,
-      "fps": 13
-    }
+    "cae": {
+      "src": "sprites/monsters/Skeleton/Death.png",
+      "frames": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.5
+  },
+  "enemigos/errata": {
+    "golpea": [
+      {
+        "src": "sprites/dark_fantasy/Bat-Attack1.png",
+        "frames": 8,
+        "fps": 12
+      },
+      {
+        "src": "sprites/dark_fantasy/Bat-Attack2.png",
+        "frames": 11,
+        "fps": 12
+      }
+    ],
+    "quieto": {
+      "src": "sprites/dark_fantasy/Bat-IdleFly.png",
+      "frames": 9,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "sprites/dark_fantasy/Bat-Run.png",
+      "frames": 8,
+      "fps": 10
+    },
+    "herido": {
+      "src": "sprites/dark_fantasy/Bat-Hurt.png",
+      "frames": 5,
+      "fps": 10
+    },
+    "cae": {
+      "src": "sprites/dark_fantasy/Bat-Die.png",
+      "frames": 12,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.2
+  },
+  "enemigos/rumor": {
+    "golpea": {
+      "src": "sprites/monsters/Flying eye/Attack.png",
+      "frames": 8,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "sprites/monsters/Flying eye/Attack.png",
+      "frames": 8,
+      "fps": 8
+    },
+    "herido": {
+      "src": "sprites/monsters/Flying eye/Take Hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "sprites/monsters/Flying eye/Death.png",
+      "frames": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.5
+  },
+  "enemigos/notaalpie": {
+    "golpea": {
+      "src": "sprites/monsters/Goblin/Attack.png",
+      "frames": 8,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "sprites/monsters/Goblin/Idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "sprites/monsters/Goblin/Run.png",
+      "frames": 8,
+      "fps": 10
+    },
+    "herido": {
+      "src": "sprites/monsters/Goblin/Take Hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "sprites/monsters/Goblin/Death.png",
+      "frames": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.5
+  },
+  "enemigos/dogma": {
+    "golpea": {
+      "src": "sprites/monsters/Mushroom/Attack.png",
+      "frames": 8,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "sprites/monsters/Mushroom/Idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "sprites/monsters/Mushroom/Run.png",
+      "frames": 8,
+      "fps": 10
+    },
+    "herido": {
+      "src": "sprites/monsters/Mushroom/Take Hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "sprites/monsters/Mushroom/Death.png",
+      "frames": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.5
+  },
+  "enemigos/ortodoxia": {
+    "golpea": {
+      "src": "sprites/golems/Golem_1_attack.png",
+      "frames": 11,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "sprites/golems/Golem_1_idle.png",
+      "frames": 8,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "sprites/golems/Golem_1_walk.png",
+      "frames": 10,
+      "fps": 10
+    },
+    "herido": {
+      "src": "sprites/golems/Golem_1_hurt.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "sprites/golems/Golem_1_die.png",
+      "frames": 13,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.35
+  },
+  "enemigos/tratado": {
+    "golpea": [
+      {
+        "src": "sprites/wizard/Attack1.png",
+        "frames": 8,
+        "fps": 12
+      },
+      {
+        "src": "sprites/wizard/Attack2.png",
+        "frames": 8,
+        "fps": 12
+      }
+    ],
+    "quieto": {
+      "src": "sprites/wizard/Idle.png",
+      "frames": 8,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "sprites/wizard/Run.png",
+      "frames": 8,
+      "fps": 10
+    },
+    "herido": {
+      "src": "sprites/wizard/Take hit.png",
+      "frames": 3,
+      "fps": 10
+    },
+    "cae": {
+      "src": "sprites/wizard/Death.png",
+      "frames": 7,
+      "fps": 10,
+      "loop": false
+    },
+    "volteado": true,
+    "escala": 1.9
   }
 }

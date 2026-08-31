@@ -22,3 +22,17 @@ Mapa de origen:
 - `jugador/copista.svg` ← *lorc/quill* de Lorc
 
 Editados: fondo removido y color adaptado a la paleta del juego.
+
+
+## Sprites animados y fondos (v5.32)
+
+- **rvros** — *Animated Pixel Adventurer* (protagonista). Uso personal y
+  comercial; crédito apreciado; no redistribuir como asset.
+- **LuizMelo** — *Monsters Creatures Fantasy* (Skeleton→Copista, Flying
+  eye→Rumor, Goblin→Nota al pie, Mushroom→Dogma) y *Evil Wizard 2*
+  (→El Tratado). CC0.
+- **MonoPixelArt** — *Dark Fantasy Enemies* (Bat→Errata) y *Golems*
+  (→La Ortodoxia). Versión gratuita: uso comercial permitido; sin modificar
+  ni redistribuir los assets.
+- **ansimuz** — capas de fondos (actos 1–3). Uso personal y comercial;
+  crédito apreciado.
