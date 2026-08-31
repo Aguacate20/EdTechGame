@@ -1389,3 +1389,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   color: var(--niebla); border: 1px dashed var(--tinta-borde); border-radius: 99px; padding: 3px 10px;
 }
 .bloqueos { border-left: 3px solid var(--oxido); padding: 4px 8px; display: grid; gap: 3px; }
+
+/* v5.21 · el sprite del jugador se lee sobre la tinta */
+.carril-jugador .retrato-sprite img {
+  filter: drop-shadow(0 0 6px rgba(237,231,218,.22)) drop-shadow(0 1px 0 rgba(0,0,0,.6));
+}

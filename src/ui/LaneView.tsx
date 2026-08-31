@@ -90,7 +90,7 @@ export function LaneView({
       <div className="carril-jugador">
         <Retrato
           familia="jugador" id="copista" alt="El Copista"
-          tamano={40} gesto={gesto} variante={disparo?.arma.forma}
+          tamano={56} gesto={gesto} variante={disparo?.arma.forma}
           respaldo={<Copista gesto={gesto} />}
         />
         <div>

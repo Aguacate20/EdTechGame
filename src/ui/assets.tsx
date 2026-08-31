@@ -38,8 +38,10 @@ export function Retrato({ familia, id, alt, tamano, gesto, variante, respaldo }:
   const [roto, setRoto] = useState(fallidas.has(ruta))
   const manifest = usarManifest()
   const ficha = manifest?.[`${familia}/${id}`]
-  if (ficha) {
-    return <SpriteRetrato ficha={ficha} gesto={gesto} variante={variante} tamano={tamano} alt={alt} />
+  const [spriteRoto, setSpriteRoto] = useState(false)
+  if (ficha && !spriteRoto && fichaTieneClips(ficha)) {
+    return <SpriteRetrato ficha={ficha} gesto={gesto} variante={variante} tamano={tamano} alt={alt}
+      alFallar={() => setSpriteRoto(true)} />
   }
 
   if (roto) {
@@ -132,8 +134,12 @@ function elegirClip(ficha: FichaSprite, gesto: string, variante?: string): ClipS
   return null
 }
 
-export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt }: {
+export const fichaTieneClips = (ficha: FichaSprite): boolean => !!elegirClip(ficha, 'quieto')
+
+export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt, alFallar }: {
   ficha: FichaSprite; gesto?: string; variante?: string; tamano: number; alt: string
+  /** si la tira no carga (404, ruta rota), avisar para volver al respaldo */
+  alFallar?: () => void
 }) {
   // el clip se elige una vez por cambio de gesto (no en cada render)
   const [clip, setClip] = useState<ClipSprite | null>(() => elegirClip(ficha, gesto, variante))
@@ -157,6 +163,7 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt }
           const im = ev.currentTarget
           if (im.naturalWidth && im.naturalHeight) setRatio((im.naturalWidth / clip.frames) / im.naturalHeight)
         }}
+        onError={() => { fallidas.add(`${BASE}art/${clip.src}`); alFallar?.() }}
         style={{
           height: '100%', width: `${clip.frames * 100}%`, maxWidth: 'none',
           ['--fin' as string]: fin,
