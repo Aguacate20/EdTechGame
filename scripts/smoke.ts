@@ -12,6 +12,7 @@ import {
   afirmar, cambiar, iniciarBatalla, quemar, sellar, siguienteTurno, trazar, turnoDelCarril, vivos,
   soltar, type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from '../src/engine/battle'
+import { manoJugable } from '../src/engine/dealer'
 import { combinarLentes } from '../src/engine/powers'
 import { HERRAMIENTAS, type HerramientaId } from '../src/engine/tools'
 import { DUALES, FAMILIAS } from '../src/engine/graph'
@@ -33,6 +34,7 @@ for (const d of contenido.diagnostico) console.log(`   ${d.estado.padEnd(8)} ${d
 
 type Estrategia = 'informado' | 'aproximado' | 'azar'
 interface Rep {
+  aperturasMudas: number
   gano: boolean; turnos: number; oleadas: number; lucidez: number
   sostenidos: number; trazos: number; herramientasUsadas: Set<string>
   quemasBuenas: number; quemasMalas: number; fusiones: number; combos: Set<string>
@@ -224,6 +226,7 @@ function jugarRun(semilla: string, estrategia: Estrategia, lentesIds: string[] =
   let lucidez = LUCIDEZ_MAX
   const fusionados: string[] = []
   const rep: Rep = {
+    aperturasMudas: 0,
     gano: false, turnos: 0, oleadas: 0, lucidez, sostenidos: 0, trazos: 0,
     herramientasUsadas: new Set(), quemasBuenas: 0, quemasMalas: 0, fusiones: 0,
     combos: new Set(), estados: {}, hallazgos: 0, mejorGolpe: 0, terrenos: 0, descubiertos: 2,
@@ -257,6 +260,7 @@ function jugarRun(semilla: string, estrategia: Estrategia, lentesIds: string[] =
           casos: nodo.casos, tesis: nodo.tesis, intuiciones: [], fusionados
         }
         const e = iniciarBatalla(ctx, nodo.conceptIds, bolsa, nodo.dificultad, acto.index, acto.manoSugerida)
+        if (!manoJugable(e.mano, contenido)) rep.aperturasMudas++
         let guardia = 0
         while (vivos(e).length && lucidez > 0 && guardia++ < 40) {
           const n = estrategia === 'azar'
@@ -273,12 +277,12 @@ function jugarRun(semilla: string, estrategia: Estrategia, lentesIds: string[] =
             // regla 5 del juego: si nada encaja, cambiar es barato y siempre
             // disponible. El bot la usa como lo haría una persona.
             if (e.cambiosRestantes > 0 && e.mano.length) {
-              cambiar(e, rng.pick(e.mano).uid)
+              cambiar(e, rng.pick(e.mano).uid, ctx)
               const n2 = estrategia === 'azar'
                 ? jugarAzar(e, rng)
                 : jugarInformado(e, contenido, rng, estrategia === 'aproximado')
-              if (n2 > 0) { /* encontró jugada tras cambiar */ } else { lucidez -= 4; rep.turnos++; siguienteTurno(e); continue }
-            } else { lucidez -= 4; rep.turnos++; siguienteTurno(e); continue }
+              if (n2 > 0) { /* encontró jugada tras cambiar */ } else { lucidez -= 4; rep.turnos++; siguienteTurno(e, ctx); continue }
+            } else { lucidez -= 4; rep.turnos++; siguienteTurno(e, ctx); continue }
           }
           for (const t of e.trazos) rep.herramientasUsadas.add(t.tool)
           rep.trazos += e.trazos.length
@@ -300,7 +304,7 @@ function jugarRun(semilla: string, estrategia: Estrategia, lentesIds: string[] =
           rep.descubiertos = conocidas.length
           rep.turnos++
           if (!vivos(e).length || lucidez <= 0) break
-          siguienteTurno(e)
+          siguienteTurno(e, ctx)
         }
         rep.hallazgos += e.hallazgos.vinculos.length + e.hallazgos.grupos.length
         rep.terrenos += e.terrenosGanados.length
@@ -403,6 +407,8 @@ const golpeSin = Math.max(...sinMayores.map((r) => r.mejorGolpe))
 const azarConMayores = semillas.slice(0, 2).map((s) => jugarRun(s, 'azar', MAYORES))
 const golpeAzarX = Math.max(...azarConMayores.map((r) => r.mejorGolpe))
 const ok12 = golpeCon >= golpeSin * 3 && golpeAzarX < golpeSin
+const mudasTotal = [...res.informado, ...res.aproximado, ...res.azar].reduce((n, r) => n + r.aperturasMudas, 0)
+const ok13 = mudasTotal === 0
 const selloI = inf.reduce((n, r) => n + r.sellosOk, 0) / Math.max(1, inf.reduce((n, r) => n + r.sellos, 0))
 const selloZ = res.azar.reduce((n, r) => n + r.sellosOk, 0) / Math.max(1, res.azar.reduce((n, r) => n + r.sellos, 0))
 const ok11 = selloI > 0.8 && selloZ < 0.2
@@ -419,4 +425,5 @@ console.log(` ${ok9 ? 'PASA' : 'FALLA'}  los nodos hermanos cubren temarios dist
 console.log(` ${ok10 ? 'PASA' : 'FALLA'}  los vínculos se descubren derribando enemigos (${descMedia.toFixed(1)} conocidos al final)`)
 console.log(` ${ok11 ? 'PASA' : 'FALLA'}  el sello de confianza distingue al calibrado del que adivina (${(100 * selloI).toFixed(0)}% vs ${(100 * selloZ).toFixed(0)}%)`)
 console.log(` ${ok12 ? 'PASA' : 'FALLA'}  las lentes mayores multiplican y no se regalan (mejor golpe ${golpeSin} → ${golpeCon}; azar con mayores ${golpeAzarX})`)
-if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10 && ok11 && ok12)) process.exit(1)
+console.log(` ${ok13 ? 'PASA' : 'FALLA'}  el Repartidor no deja aperturas mudas (${mudasTotal} en todas las runs)`)
+if (!(ok1 && ok2 && ok3 && ok4 && ok5 && ok6 && ok7 && ok8 && ok9 && ok10 && ok11 && ok12 && ok13)) process.exit(1)

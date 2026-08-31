@@ -16,6 +16,7 @@ import { piezaContexto } from './pieces'
 import { armarDisparo, type Disparo } from './weapons'
 import { componerOleadas, oleadaDePuerta, type NivelApoyo, type Oleada } from './aprendizaje'
 import { juzgarSello, PRIMA_MARCADO, SELLO_FALLA, SELLO_X, type Encargo } from './srl'
+import { manoJugable, repararApertura, robarRepartido } from './dealer'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -53,7 +54,9 @@ export interface ResultadoTurno {
   descubiertos: string[]
   /** el diagrama tal como quedó, para poder corregir SOBRE él */
   foto: FotoDiagrama
-  impactos: { uid: string; nombre: string; dano: number; motivo: string | null; derribado: boolean }[]
+  impactos: { uid: string; nombre: string; dano: number; motivo: string | null; derribado: boolean
+    /** estaba con la vida LLENA al recibirlo: materia de leyenda */
+    pleno: boolean }[]
   danoTotal: number
   parteEnemiga: { texto: string; dano: number }[]
   danoRecibido: number
@@ -157,6 +160,10 @@ export interface EstadoBatalla {
   /** aristas que el Atlas ya sostuvo: re-afirmarlas paga seguro */
   asentadas: string[]
   aristasBonificadas: string[]
+  /** turnos seguidos sin un solo acierto: alimenta la piedad del Repartidor */
+  secos: number
+  /** conceptos recién cambiados: el Repartidor no los devuelve enseguida */
+  vetadasReparto: string[]
 }
 
 /* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
@@ -316,7 +323,8 @@ export function iniciarBatalla(
     combosVistos: [], conceptosSostenidos: [], erroresTotales: 0, invertidosTotales: 0,
     fallosPorConcepto: {}, marcados: bolsa.marcados ?? [],
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
-    asentadas: bolsa.asentadas ?? [], aristasBonificadas: []
+    asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
+    secos: 0, vetadasReparto: []
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
@@ -334,6 +342,8 @@ export function iniciarBatalla(
     }
   }
   robar(e, e.manoBase)
+  // el piso del Repartidor: ninguna apertura muda
+  repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
   const aRevelar = m.revelaApocrifas + (bolsa.apoyo && acto <= 1 ? 9 : 0)
   if (aRevelar > 0) {
@@ -470,7 +480,7 @@ export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): Eve
   return ev
 }
 
-export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
+export function cambiar(e: EstadoBatalla, uid: string, ctx?: ContextoBatalla): EventoPozo | null {
   if (e.cambiosRestantes <= 0) return null
   const p = e.mano.find((x) => x.uid === uid)
   if (!p) return null
@@ -481,7 +491,16 @@ export function cambiar(e: EstadoBatalla, uid: string): EventoPozo | null {
   devolverAMano(e, uid)
   e.descarte.push(p)
   e.cambiosRestantes -= 1
-  robar(e, 1)
+  // cambiar es una señal: ese concepto se veta un par de turnos, y el
+  // reemplazo llega con imán — cambiar tiene que sentirse SIEMPRE útil
+  if (p.conceptId && !e.vetadasReparto.includes(p.conceptId)) e.vetadasReparto.push(p.conceptId)
+  if (ctx) {
+    const carta = robarRepartido(
+      e.mazo, e.mano, ctx.contenido, ctx.rng,
+      e.acto, e.secos + 1, e.marcados, e.asentadas, e.vetadasReparto)
+    if (carta) e.mano.push(carta)
+    else robar(e, 1)
+  } else robar(e, 1)
 
   const ev: EventoPozo = {
     accion: 'cambiar', clase: p.clase, conceptId: p.conceptId, apocrifa, pertenece,
@@ -613,6 +632,10 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     }
   }
   // racha: turnos seguidos sosteniendo algo. Solo error/inversión la rompen.
+  {
+    const aciertosTurno = diag.veredictos.filter((v) => esAcierto(v.estado)).length
+    e.secos = aciertosTurno > 0 ? 0 : e.secos + 1
+  }
   if (e.racha > 0 && diag.dano > 0) {
     diag.mult += 0.1 * e.racha
     diag.ajustes.push({ nombre: `Racha ×${e.racha}`, mult: 0.1 * e.racha,
@@ -710,7 +733,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
         en.hp = Math.max(1, Math.round(en.hpMax * 0.45))
         en.posicion = Math.min(8, en.posicion + 3)
         en.gesto = 'retrocede'
-        impactos.push({ uid: en.uid, nombre: en.nombre, dano, motivo: 'Retrocede en vez de caer.', derribado: false })
+        impactos.push({ uid: en.uid, nombre: en.nombre, dano, motivo: 'Retrocede en vez de caer.', derribado: false, pleno: false })
       } else {
         const hpAntes = en.hp
         en.hp = Math.max(0, en.hp - dano)
@@ -720,7 +743,8 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
         impactos.push({
           uid: en.uid, nombre: en.nombre, dano,
           motivo: motivo ?? (base === 0 ? 'El golpe desborda desde el anterior.' : null),
-          derribado: en.hp === 0
+          derribado: en.hp === 0,
+          pleno: hpAntes === en.hpMax
         })
         if (en.hp === 0 && dano > hpAntes) arrastre = dano - hpAntes
       }
@@ -1049,10 +1073,33 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
   r.danoRecibido = total
 }
 
-export function siguienteTurno(e: EstadoBatalla): void {
+export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
   e.turno += 1
   e.inicioTurno = Date.now()
   e.fase = 'jugando'
   e.ultimoPozo = null
-  robar(e, Math.max(0, e.manoBase - e.mano.length))
+  const faltan = Math.max(0, e.manoBase - e.mano.length)
+  if (ctx) {
+    // el Repartidor: robo ponderado por tiers, con piedad y vetos.
+    // Si el mazo se agota a medio robo, se recicla como siempre.
+    for (let i = 0; i < faltan; i++) {
+      if (!e.mazo.length && e.descarte.length) {
+        e.mazo = barajarDeterminista(e.descarte, e.turno * 7919 + e.descarte.length)
+        e.descarte = []
+      }
+      const carta = robarRepartido(
+        e.mazo, e.mano, ctx.contenido, ctx.rng,
+        e.acto, e.secos, e.marcados, e.asentadas, e.vetadasReparto)
+      if (carta) e.mano.push(carta)
+      else break
+    }
+    // el veto del Cambiar dura poco: dos turnos y el concepto puede volver
+    if (e.vetadasReparto.length > 4) e.vetadasReparto = e.vetadasReparto.slice(-4)
+    // y si aun así la mano quedó muda, el piso actúa
+    if (!manoJugable(e.mano, ctx.contenido)) {
+      repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng)
+    }
+  } else {
+    robar(e, faltan)
+  }
 }

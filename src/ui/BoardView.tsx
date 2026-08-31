@@ -161,10 +161,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** máquina de gestos del héroe: ataca al resolver, acusa el golpe recibido,
    *  y vuelve al reposo — sin bucles raros */
   const [gestoHeroe, setGestoHeroe] = useState('quieto')
-  /** el golpe borró la sala entera: 2+ derribados y nadie en pie */
+  /** la Página en Blanco es materia de leyenda: UN golpe que derriba a 3+
+   *  enemigos que estaban con la vida llena. Limpiar una sala a mordiscos no
+   *  la gasta — por eso sigue sintiéndose enorme cuando pasa. */
   const aniquilacion = !!(resuelto && casc.terminada && e.ultima &&
-    e.ultima.impactos.filter((i) => i.derribado).length >= 2 &&
-    e.enemigos.every((en) => en.hp <= 0))
+    e.ultima.impactos.filter((i) => i.derribado && i.pleno).length >= 3)
   const borronSonado = useRef(-1)
   useEffect(() => {
     if (aniquilacion && borronSonado.current !== e.turno) {

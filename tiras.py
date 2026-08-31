@@ -82,7 +82,8 @@ if heroe:
 CASTING = [
     ('copista', ('skeleton', 'esquelet')), ('errata', ('flying', 'eye', 'bat', 'murcielago')),
     ('rumor', ('ghost', 'fantasma', 'specter')), ('apocrifo', ('creature', 'criatura', 'evil')),
-    ('notaalpie', ('goblin',)), ('dogma', ('mushroom', 'golem', 'hongo')),
+    ('notaalpie', ('goblin',)), ('dogma', ('mushroom', 'hongo')),
+    ('ortodoxia', ('golem',)),
     ('tratado', ('wizard', 'bringer', 'boss', 'reaper')),
 ]
 GESTOS = [

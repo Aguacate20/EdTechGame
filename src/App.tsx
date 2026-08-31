@@ -367,7 +367,7 @@ export default function App() {
   const cambiar = (uid: string) => setBatalla((prev) => {
     if (!prev) return prev
     const e = { ...prev }
-    registrarPozo(cambiarPieza(e, uid))
+    registrarPozo(cambiarPieza(e, uid, ctx ?? undefined))
     sfx.deshacer()
     return e
   })
@@ -611,7 +611,7 @@ export default function App() {
       setFase('resumen'); return
     }
     const e = { ...batalla }
-    siguienteTurno(e)
+    siguienteTurno(e, ctx ?? undefined)
     setBatalla(e)
   }
 

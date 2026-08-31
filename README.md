@@ -508,13 +508,33 @@ packs con licencias comprobadas y mapa enemigo→pack en `public/art/LEEME.md`.
 - **El golpe aterriza antes de la muerte**: los impactos se revelan tras el
   viaje del proyectil (o la embestida) y el desborde recorre la cadena con
   cadencia de 150 ms; vida, gesto y número esperan su golpe. La Página en
-  Blanco (ahora sin texto: la animación habla sola) espera al último caído.
+  Blanco (sin texto: la animación habla sola) espera al último caído y solo se
+  gana con el one-shot legendario: 3+ enemigos con la vida LLENA, de un golpe.
 - **Ranuras de arte completas**: fondos por TIPO de sala
   (`fondos/jefe_acto2.png` → cae a `acto2.png`), iconos de lente
   (`art/lentes/<id>.png`) en botín y refugio, texturas de carta por clase
   (clave `"cartas"` del manifest; la apócrifa usa SIEMPRE la del concepto), y
   `tiras.py` v2: detecta hojas ya montadas (LuizMelo) y hace el casting
   automático de enemigos por palabras clave.
+
+## El Repartidor (v5.28)
+
+El robo de cartas deja de ser azar puro: cada carta del mazo se clasifica en
+tiers respecto de la mano (**ancla** completa una Identidad; **puente** tiene
+arista con algo en mesa; **repaso** trae de vuelta un concepto marcado en la
+reflexión; **reto** es material sin aristas asentadas; **especial** es
+caso/tesis/marco con miembro presente) y el robo elige por ruleta ponderada.
+Los pesos se corren con el acto (el andamio se retira: tarde pesan reto y
+especial) y con la **piedad**: turnos sin acierto inclinan hacia lo
+componible; un acierto la resetea. **Cambiar** veta el concepto un par de
+turnos y el reemplazo llega con imán. **Piso duro**: ninguna apertura muda
+(se repara) y ningún relleno deja la mano sin jugada componible.
+
+Guardas de integridad de señal: el Repartidor cambia EXPOSICIÓN, jamás
+veredictos ni recompensas; es CIEGO a la bandera de apócrifa (la
+discriminación sigue siendo del jugador); y es determinista con el RNG de la
+run. `npm run smoke` lo vigila: criterio 13, cero aperturas mudas, y el azar
+sigue sin ganar nada.
 
 ## Pendientes
 
