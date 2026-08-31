@@ -153,6 +153,9 @@ CASTING = [
     ('ortodoxia', ('golem',)),
     ('apocrifo',  ('creature', 'evil')),
     ('eco',       ('ghost', 'specter')),
+    ('cita',      ('wolf',)),                 # el zarpazo que arranca del contexto
+    ('palimpsesto', ('worm',)),               # el gusano que atraviesa y reescribe
+    ('bibliografia', ('slime', 'mimic')),     # lo que al partirse se multiplica
     ('tratado',   ('wizard', 'bringer', 'boss')),
 ]
 GESTOS = [
@@ -183,10 +186,13 @@ for enemigo, claves in CASTING:
         ficha['volteado'] = True
         # escala visual: compensa el aire transparente típico de cada pack
         r0 = next(iter(candidatas))
-        if '/monsters/' in r0: ficha['escala'] = 1.7
+        if 'flying' in r0.lower(): ficha['escala'] = 2.1   # el ojo se LEE como ojo
+        elif '/monsters/' in r0: ficha['escala'] = 1.7
         elif '/wizard/' in r0: ficha['escala'] = 2.2
         elif '/golems/' in r0: ficha['escala'] = 1.8   # el tanque SE VE tanque
-        elif 'bat-' in r0.lower(): ficha['escala'] = 1.3
+        elif 'bat-' in r0.lower():
+            ficha['escala'] = 1.3
+            ficha['volteado'] = False   # el pack ya mira a la izquierda: espejarlo lo volteaba
         datos[f'enemigos/{enemigo}'] = ficha
         usados.add(enemigo)
 

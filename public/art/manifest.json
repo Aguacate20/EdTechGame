@@ -134,7 +134,7 @@
       "fps": 10,
       "loop": false
     },
-    "volteado": true,
+    "volteado": false,
     "escala": 1.3
   },
   "enemigos/rumor": {

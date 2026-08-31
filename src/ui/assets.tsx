@@ -227,17 +227,25 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano: taman
  *  Suelta `refugio_acto1.png`, `jefe_acto2.png`, `dura_acto1.png`… y cada
  *  clase de sala gana su propio escenario; sin archivo, cae al del acto. */
 export function FondoImagen({ n, sala, clase }: { n: number; sala?: string | null; clase: string }) {
+  // la lista NO se filtra por fallidas: filtrarla encogía el arreglo mientras
+  // el índice ya había avanzado, apuntaba al vacío y el fondo desaparecía
+  // hasta la run siguiente. Lista estable; el índice salta las fallidas.
   const candidatas = [
     ...(sala ? [`${BASE}art/fondos/${sala}_acto${n}.png`] : []),
     `${BASE}art/fondos/acto${n}.png`
-  ].filter((r) => !fallidas.has(r))
-  const [i, setI] = useState(0)
-  useEffect(() => { setI(0) }, [n, sala])
+  ]
+  const primeraViva = (desde: number) => {
+    let j = desde
+    while (j < candidatas.length && fallidas.has(candidatas[j])) j++
+    return j
+  }
+  const [i, setI] = useState(() => primeraViva(0))
+  useEffect(() => { setI(primeraViva(0)) }, [n, sala])  // eslint-disable-line react-hooks/exhaustive-deps
   if (i >= candidatas.length) return null
   const ruta = candidatas[i]
   return (
     <div className={clase} aria-hidden>
-      <img src={ruta} alt="" onError={() => { fallidas.add(ruta); setI((x) => x + 1) }} />
+      <img src={ruta} alt="" onError={() => { fallidas.add(ruta); setI(primeraViva(i + 1)) }} />
     </div>
   )
 }
