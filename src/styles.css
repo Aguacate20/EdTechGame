@@ -1490,3 +1490,69 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   0% { filter: none; opacity: 1; transform: translateY(0); }
   100% { filter: blur(3px) grayscale(1); opacity: 0; transform: translateY(-14px); }
 }
+
+/* ============ v5.33 · escenario del carril y la escalera titánica ============ */
+
+.carril { position: relative; overflow: hidden; }
+.fondo-carril { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.fondo-carril img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center bottom;
+  image-rendering: pixelated; opacity: .48; filter: saturate(.85);
+}
+.fondo-carril::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(19,26,36,.5), rgba(19,26,36,.18) 45%, rgba(19,26,36,.62));
+}
+.carril > *:not(.fondo-carril) { position: relative; z-index: 1; }
+
+/* la escalera: cada orden de magnitud golpea más duro */
+.carril.titan-t2 { animation: sacudirFuerte .5s cubic-bezier(.3,.1,.2,1); }
+.carril.titan-t3 { animation: sacudirTitan .65s cubic-bezier(.3,.1,.2,1); }
+.carril.titan-t4 { animation: sacudirTitan .9s cubic-bezier(.3,.1,.2,1); }
+@keyframes sacudirTitan {
+  0% { transform: translate(0) scale(1); }
+  8% { transform: translate(-12px, 6px) scale(1.012); filter: brightness(1.7); }
+  20% { transform: translate(11px, -6px) scale(1.01); }
+  34% { transform: translate(-9px, 4px); }
+  50% { transform: translate(7px, -3px); }
+  68% { transform: translate(-4px, 2px); }
+  84% { transform: translate(2px, -1px); }
+  100% { transform: translate(0) scale(1); filter: none; }
+}
+.titan { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.titan-anillo {
+  position: absolute; left: 16%; top: 55%; width: 26px; height: 26px;
+  border: 3px solid var(--laton); border-radius: 50%;
+  transform: translate(-50%, -50%); opacity: 0;
+  animation: ondaExpansiva .9s ease-out forwards;
+}
+.titan-anillo.t2 { animation-delay: .12s; border-color: var(--papel); }
+.titan-anillo.t3 { animation-delay: .24s; border-width: 5px; border-color: #ffd97a; }
+.carril.titan-t3 .cuenta .total, .carril.titan-t4 .cuenta .total { text-shadow: 0 0 26px rgba(255,217,122,.8); }
+
+/* apoteosis: titánico + página en blanco a la vez */
+.carril.apoteosis { animation: sacudirTitan 1s cubic-bezier(.3,.1,.2,1); }
+.carril.apoteosis .borron::before { animation-duration: 2.1s; }
+.carril.apoteosis .borron-onda {
+  animation: ondaExpansiva 1.3s ease-out .05s forwards,
+             ondaExpansiva 1.3s ease-out .5s forwards;
+}
+.mota {
+  position: absolute; bottom: 8%; width: 5px; height: 5px; border-radius: 50%;
+  background: var(--tinta); opacity: 0;
+  animation: subirMota 1.5s ease-out forwards;
+}
+.mota:nth-child(2) { left: 12%; animation-delay: .30s; }
+.mota:nth-child(3) { left: 22%; animation-delay: .42s; width: 3px; height: 3px; }
+.mota:nth-child(4) { left: 33%; animation-delay: .36s; }
+.mota:nth-child(5) { left: 44%; animation-delay: .50s; width: 7px; height: 7px; }
+.mota:nth-child(6) { left: 55%; animation-delay: .33s; }
+.mota:nth-child(7) { left: 64%; animation-delay: .46s; width: 3px; height: 3px; }
+.mota:nth-child(8) { left: 74%; animation-delay: .38s; }
+.mota:nth-child(9) { left: 84%; animation-delay: .52s; width: 6px; height: 6px; }
+.mota:nth-child(10) { left: 92%; animation-delay: .44s; }
+@keyframes subirMota {
+  0% { opacity: 0; transform: translateY(0) scale(.6); }
+  18% { opacity: .9; }
+  100% { opacity: 0; transform: translateY(-130px) scale(1.15); }
+}

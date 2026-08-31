@@ -190,12 +190,20 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano: taman
       <img
         key={`${clip.src}:${gesto}`}
         src={`${BASE}art/${clip.src}`} alt={alt} draggable={false}
+        data-frames={clip.frames}
+        data-src={clip.src}
         onLoad={(ev) => {
+          // la proporción se calcula con los datos del PROPIO <img>: usar el
+          // closure mezclaba tira y nº de frames de clips distintos en
+          // transiciones rápidas, cacheaba una proporción disparatada y el
+          // retrato mostraba varios frames desfilando (la «pasarela»)
           const im = ev.currentTarget
-          if (im.naturalWidth && im.naturalHeight) {
-            const r = (im.naturalWidth / clip.frames) / im.naturalHeight
-            RATIOS.set(clip.src, r)
-            setRatio(r)
+          const fr = Number(im.dataset.frames) || 1
+          const src = im.dataset.src ?? ''
+          if (im.naturalWidth && im.naturalHeight && src) {
+            const r = (im.naturalWidth / fr) / im.naturalHeight
+            RATIOS.set(src, r)
+            if (clip.src === src) setRatio(r)
           }
         }}
         onError={() => { fallidas.add(`${BASE}art/${clip.src}`); alFallar?.() }}
@@ -218,6 +226,22 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano: taman
  *  `fondos/<sala>_acto<n>.png` → `fondos/acto<n>.png` → nada.
  *  Suelta `refugio_acto1.png`, `jefe_acto2.png`, `dura_acto1.png`… y cada
  *  clase de sala gana su propio escenario; sin archivo, cae al del acto. */
+export function FondoImagen({ n, sala, clase }: { n: number; sala?: string | null; clase: string }) {
+  const candidatas = [
+    ...(sala ? [`${BASE}art/fondos/${sala}_acto${n}.png`] : []),
+    `${BASE}art/fondos/acto${n}.png`
+  ].filter((r) => !fallidas.has(r))
+  const [i, setI] = useState(0)
+  useEffect(() => { setI(0) }, [n, sala])
+  if (i >= candidatas.length) return null
+  const ruta = candidatas[i]
+  return (
+    <div className={clase} aria-hidden>
+      <img src={ruta} alt="" onError={() => { fallidas.add(ruta); setI((x) => x + 1) }} />
+    </div>
+  )
+}
+
 export function FondoActo({ n, sala }: { n: number; sala?: string | null }) {
   const candidatas = [
     ...(sala ? [`${BASE}art/fondos/${sala}_acto${n}.png`] : []),

@@ -752,6 +752,7 @@ export default function App() {
 
       {fase === 'batalla' && batalla && (
         <BoardView
+          fondo={{ n: actoIdx + 1, sala: nodoRef.current?.dificultad ?? null }}
           guia={(() => {
             if (tutorial === null) return null
             const sala = SALAS_TUTORIAL[tutorial]

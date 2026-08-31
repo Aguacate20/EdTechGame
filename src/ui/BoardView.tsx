@@ -97,7 +97,8 @@ const AYUDA_DORADA =
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}`
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia }: {
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo,
+  }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
   /** paso del tutorial que toca ahora, si estamos en él */
@@ -105,6 +106,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     titulo: string; texto: string; indice: number; total: number
     foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[] }
   } | null
+  fondo?: { n: number; sala?: string | null }
 }) {
   const lienzo = useRef<HTMLDivElement>(null)
   const [herramienta, setHerramienta] = useState<HerramientaId | null>(null)
@@ -167,6 +169,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const aniquilacion = !!(resuelto && casc.terminada && e.ultima &&
     e.ultima.impactos.filter((i) => i.derribado && i.pleno).length >= 3)
   const borronSonado = useRef(-1)
+  const titanSonado = useRef(-1)
+  useEffect(() => {
+    if (!(resuelto && casc.terminada && e.ultima) || aniquilacion) return
+    const d = e.ultima.danoTotal
+    const tier = d >= 100000 ? 4 : d >= 10000 ? 3 : d >= 1000 ? 2 : 0
+    if (tier >= 2 && titanSonado.current !== e.turno) {
+      titanSonado.current = e.turno
+      sfx.titan(tier)
+    }
+  }, [resuelto, casc.terminada, e.ultima, e.turno, aniquilacion])
   useEffect(() => {
     if (aniquilacion && borronSonado.current !== e.turno) {
       borronSonado.current = e.turno
@@ -385,6 +397,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           alcance={resuelto ? 0 : previa.alcance}
           gesto={gestoHeroe}
           aniquilacion={aniquilacion}
+          fondo={fondo}
+          golpeTier={(() => {
+            if (!(resuelto && casc.terminada && e.ultima)) return 0
+            const d = e.ultima.danoTotal
+            if (d >= 100000) return 4
+            if (d >= 10000) return 3
+            if (d >= 1000) return 2
+            return (e.ultima.diag.xmult > 1 || e.ultima.patron !== 'puntual' || d >= 400) ? 1 : 0
+          })()}
           golpeMayor={resuelto && casc.terminada && !!e.ultima &&
             (e.ultima.diag.xmult > 1 || e.ultima.patron !== 'puntual' || e.ultima.danoTotal >= 400)}
           ultimosImpactos={resuelto && casc.terminada && e.ultima ? e.ultima.impactos : []}

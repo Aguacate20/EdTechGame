@@ -112,6 +112,18 @@ export const sfx = {
   fusion: () => { tono(nota(4), 0.14, 0.09); setTimeout(() => tono(nota(7), 0.2, 0.1), 90) },
   /** avanzar de casilla en el mapa */
   paso: () => ruido(0.09, 900, 1.4, 0.14),
+  /** el golpe titánico: crece con el orden de magnitud del daño */
+  titan: (tier: number) => {
+    tono(48, 0.55, 0.22, 'sawtooth', -14)
+    tono(96, 0.45, 0.12, 'triangle', -22)
+    ruido(0.3, 500, 0.7, 0.24, 'lowpass')
+    if (tier >= 3) {
+      setTimeout(() => { tono(nota(4), 0.4, 0.12, 'square'); tono(nota(8), 0.5, 0.1, 'sine') }, 180)
+    }
+    if (tier >= 4) {
+      setTimeout(() => { tono(nota(11), 0.7, 0.12, 'sine'); tono(nota(14), 0.8, 0.09, 'sine'); tono(36, 0.9, 0.18, 'sawtooth', -10) }, 340)
+    }
+  },
   /** la página en blanco: el golpe que borra la sala entera */
   borron: () => {
     tono(52, 0.6, 0.24, 'sawtooth', -18)

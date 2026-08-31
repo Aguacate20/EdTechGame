@@ -1,5 +1,5 @@
 import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
-import { Retrato, SpriteRetrato, usarManifest } from './assets'
+import { FondoImagen, Retrato, SpriteRetrato, usarManifest } from './assets'
 import type { Disparo } from '../engine/weapons'
 import { sfx } from './sfx'
 import { useEffect, useRef, useState } from 'react'
@@ -53,7 +53,7 @@ function Copista({ gesto }: { gesto?: string }) {
 const CUERPO_A_CUERPO = new Set(['maza', 'gancho', 'tenaza', 'barrido'])
 
 export function LaneView({
-  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor, aniquilacion
+  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor, aniquilacion, fondo, golpeTier = 0
 }: {
   enemigos: Enemigo[]
   lucidez: number
@@ -70,6 +70,10 @@ export function LaneView({
   golpeMayor?: boolean
   /** el golpe borró la sala: página en blanco */
   aniquilacion?: boolean
+  /** escenario del carril: acto y tipo de sala */
+  fondo?: { n: number; sala?: string | null }
+  /** magnitud del golpe: 0 nada · 1 mayor · 2 ≥1k · 3 ≥10k · 4 ≥100k */
+  golpeTier?: number
 }) {
   const manifest = usarManifest()
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
@@ -117,11 +121,23 @@ export function LaneView({
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
 
   return (
-    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}${aniquilacion && todoRevelado ? ' borron-activo' : ''}`}>
+    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}` +
+      `${golpeTier >= 2 && disparoListo ? ` titan-t${Math.min(4, golpeTier)}` : ''}` +
+      `${aniquilacion && todoRevelado ? ' borron-activo' : ''}` +
+      `${aniquilacion && todoRevelado && golpeTier >= 3 ? ' apoteosis' : ''}`}>
+      {fondo && <FondoImagen n={fondo.n} sala={fondo.sala} clase="fondo-carril" />}
       {golpeMayor && disparoListo && !aniquilacion && <div className="destello" aria-hidden />}
+      {golpeTier >= 2 && disparoListo && !aniquilacion && (
+        <div className="titan" aria-hidden>
+          <span className="titan-anillo" />
+          {golpeTier >= 3 && <span className="titan-anillo t2" />}
+          {golpeTier >= 4 && <span className="titan-anillo t3" />}
+        </div>
+      )}
       {aniquilacion && todoRevelado && (
         <div className="borron" aria-hidden>
           <span className="borron-onda" />
+          {golpeTier >= 3 && [...Array(10)].map((_, i) => <i key={i} className="mota" />)}
         </div>
       )}
       <div className="carril-jugador">
@@ -174,7 +190,9 @@ export function LaneView({
 
       <div className="carril-pista" role="list">
         {Array.from({ length: LARGO_CARRIL }, (_, i) => i + 1).map((casilla) => {
-          const aqui = vivos.filter((e) => e.posicion === casilla)
+          const aqui = enemigos
+            .filter((e) => e.hp > 0 || ultimosImpactos.some((i) => i.uid === e.uid))
+            .filter((e) => e.posicion === casilla)
           return (
             <div className="casilla" key={casilla} role="listitem">
               <span className="numero">{casilla}</span>
