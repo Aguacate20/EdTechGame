@@ -1,3 +1,4 @@
+import { IconoLente } from './assets'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { Contenido } from '../content/types'
 import { estimarFrente } from '../engine/lane'
@@ -151,11 +152,11 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
   /** apareció una cuarta opción rara: se anuncia, para que se note cuando pasa */
   veta?: boolean
 }) {
-  const describir = (r: Recompensa): { tt: string; nom: string; cuerpo: string; pie?: string } => {
+  const describir = (r: Recompensa): { tt: string; nom: string; cuerpo: string; pie?: string; icono?: string } => {
     switch (r.tipo) {
       case 'lente': {
         const l = lentePorId(r.id)
-        return { tt: `Lente · ${l.rareza}`, nom: l.nombre, cuerpo: l.regla, pie: l.costo }
+        return { tt: `Lente · ${l.rareza}`, nom: l.nombre, cuerpo: l.regla, pie: l.costo, icono: r.id }
       }
       case 'sello': {
         const x = selloPorId(r.id)
@@ -216,7 +217,7 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
               onClick={() => onElegir(r)} style={{ minHeight: 160 }}
             >
               <span className="tt">{d.tt}</span>
-              <span className="nom">{d.nom}</span>
+              <span className="nom">{d.icono && <IconoLente id={d.icono} tamano={26} />}{d.nom}</span>
               <span className="cuerpo">{d.cuerpo}</span>
               {d.pie && <span className="cuerpo" style={{ fontStyle: 'italic', opacity: .8 }}>{d.pie}</span>}
             </button>
@@ -281,7 +282,7 @@ export function CampfireView({
             return (
               <button className="celda" key={id} onClick={() => onSoltarLente(id)}
                 style={{ textAlign: 'left', cursor: 'pointer', color: 'inherit', background: 'transparent' }}>
-                <strong>{l.nombre}</strong>
+                <strong><IconoLente id={id} tamano={22} /> {l.nombre}</strong>
                 <p className="silencio" style={{ fontSize: 13, margin: '4px 0 0' }}>{l.regla}</p>
                 <p className="silencio" style={{ fontSize: 12, margin: '4px 0 0', fontStyle: 'italic' }}>{l.costo}</p>
                 <p className="dato" style={{ margin: '6px 0 0' }}>toca para soltarla</p>

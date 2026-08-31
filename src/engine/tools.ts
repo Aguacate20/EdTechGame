@@ -1,6 +1,6 @@
 import type { Contenido } from '../content/types'
 import type { Pieza, Rol } from './pieces'
-import { admisibleComoPropuesta, juzgarVinculo } from './graph'
+import { admisibleComoPropuesta, gemelosDe, juzgarVinculo } from './graph'
 
 /* ==========================================================================
    Las herramientas cognitivas. Cada una es una forma de AFIRMAR algo sobre
@@ -378,25 +378,84 @@ function reservaDe(ps: Pieza[]): string | null {
     : null
 }
 
+/** ¿`cid` (o un gemelo suyo) figura entre estos ids? */
+function pertenece(c: Contenido, ids: string[], cid: string | null): boolean {
+  if (!cid) return false
+  if (ids.includes(cid)) return true
+  return gemelosDe(c, cid).some((g) => ids.includes(g))
+}
+
+const T_MEMBRESIA = new Set(['ejemplifica', 'apoya', 'extiende', 'generaliza', 'requiere'])
+
+function juzgarMixto(
+  c: Contenido, a: Pieza, b: Pieza, tipo: string,
+  lentes: ModificadoresLente, v: Veredicto
+): Veredicto {
+  const esp = ['caso', 'tesis', 'marco'].includes(a.clase) ? a : b
+  const otro = esp === a ? b : a
+  const nombre = esp.clase === 'marco' ? `el marco «${esp.titulo}»`
+    : esp.clase === 'tesis' ? 'la tesis' : `el caso (${esp.titulo})`
+
+  // los dos extremos son especiales: convivencia por conceptos compartidos
+  if (['caso', 'tesis', 'marco'].includes(otro.clase)) {
+    const comunes = esp.conceptIds.filter((x) => otro.conceptIds.includes(x))
+    return comunes.length
+      ? { ...v, estado: 'convive', fichas: 5, mult: 0.4, conceptIds: comunes,
+          nota: `Comparten ${comunes.length} concepto${comunes.length > 1 ? 's' : ''}: el texto los hace trabajar sobre el mismo material.` }
+      : { ...v, estado: 'silencio', nota: 'No comparten conceptos en el texto.' }
+  }
+
+  const cid = otro.clase === 'apocrifa' ? null : otro.conceptId
+  const miembro = pertenece(c, esp.conceptIds, cid)
+  const rival = pertenece(c, esp.conceptIdsRivales, cid)
+  const base = esp.clase === 'tesis' ? 14 : 12
+
+  if (miembro) {
+    if (T_MEMBRESIA.has(tipo)) {
+      return { ...v, estado: 'sostenido', fichas: base + lentes.fichasPorSostenido, mult: 1.2,
+        conceptIds: cid ? [cid] : [],
+        nota: esp.cierre || `«${otro.titulo}» es uno de los conceptos que ${nombre} reclama como suyos.` }
+    }
+    if (tipo === 'contrasta') {
+      return { ...v, estado: 'aproximado', fichas: Math.round(base / 2), mult: 0.5,
+        conceptIds: cid ? [cid] : [],
+        nota: `Lo contrastas con ${nombre}… que lo reclama entre los suyos. Al derecho, esto es pertenencia, no oposición.` }
+    }
+    return { ...v, estado: 'compatible', fichas: Math.round(base * 0.9), mult: 1,
+      conceptIds: cid ? [cid] : [],
+      nota: `El vínculo existe — ${nombre} lo reclama — aunque el tipo exacto sea otro.` }
+  }
+  if (rival && tipo === 'contrasta') {
+    return { ...v, estado: 'sostenido', fichas: base + 2 + lentes.fichasPorSostenido, mult: 1.4,
+      conceptIds: cid ? [cid] : [],
+      nota: `Pertenece al marco rival: la oposición que trazas es la del propio texto.` }
+  }
+  // feedback con dirección: decir quién SÍ lo reclama
+  const duenos = cid ? [
+    ...c.marcos.filter((m) => pertenece(c, m.conceptIds, cid)).map((m) => `el marco «${m.etiqueta}»`),
+    ...c.tesis.filter((t) => pertenece(c, t.conceptIds, cid)).map(() => 'una tesis')
+  ].slice(0, 2) : []
+  return {
+    ...v, estado: 'silencio',
+    nota: duenos.length
+      ? `El texto no pone «${otro.titulo}» dentro de ${nombre}; sí lo reclama${duenos.length > 1 ? 'n' : ''} ${duenos.join(' y ')}.`
+      : `El texto no enlaza «${otro.titulo}» con ${nombre}.`
+  }
+}
+
 function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'relacion')
   const [a, b] = ps
   const tipo = t.param ?? 'apoya'
   if (!a || !b || !t.param) return { ...v, nota: 'Falta el tipo de vínculo.' }
 
-  // el caso conecta ejemplificando; la tesis, apoyándose o contrastando
-  if (a.clase === 'caso') {
-    const ok = tipo === 'ejemplifica' && !!b.conceptId && a.conceptIds.includes(b.conceptId)
-    return ok
-      ? { ...v, estado: 'sostenido', fichas: 12 + lentes.fichasPorSostenido, mult: 1.2, nota: a.cierre, conceptIds: [b.conceptId!] }
-      : { ...v, estado: 'plausible', fichas: 3, nota: 'Un caso se enlaza ejemplificando un concepto que sí opera en él.' }
-  }
-  if (a.clase === 'tesis') {
-    const apoya = tipo === 'apoya' && !!b.conceptId && a.conceptIds.includes(b.conceptId)
-    const contra = tipo === 'contrasta' && !!b.conceptId && a.conceptIdsRivales.includes(b.conceptId)
-    return apoya || contra
-      ? { ...v, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.3, nota: a.cierre || 'La tesis queda situada.', conceptIds: [b.conceptId!] }
-      : { ...v, estado: 'plausible', fichas: 3, nota: 'Una tesis se apoya en los conceptos que la sostienen o contrasta con los del marco rival.' }
+  // ── juez mixto: caso, tesis y marco se enlazan con conceptos en CUALQUIER
+  // dirección. La evidencia es de grafo bipartito: la membresía (concept_ids)
+  // que el extractor ya declara. «Los Juegos del Hambre ejemplifica el marco
+  // del empoderamiento» es juzgable porque el marco reclama sus conceptos. ──
+  const ESPECIALES = new Set(['caso', 'tesis', 'marco'])
+  if (ESPECIALES.has(a.clase) || ESPECIALES.has(b.clase)) {
+    return juzgarMixto(c, a, b, tipo, lentes, v)
   }
   if (a.clase === 'contexto') {
     // ya la reubicaste una vez: repetirlo vale, pero mucho menos

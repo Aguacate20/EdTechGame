@@ -13,6 +13,7 @@ import { tipoPorId } from '../engine/lane'
 import { oleadaActual } from '../engine/battle'
 import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
 import { LaneView } from './LaneView'
+import { usarManifest } from './assets'
 import { GLOSA_RELACION as GLOSA } from './glosas'
 import { Chip } from './components'
 import { BANDA, NOMBRE_CLASE, cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
@@ -113,6 +114,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [arrastrando, setArrastrando] = useState<string | null>(null)
   const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
   const [leyenda, setLeyenda] = useState(false)
+  const manifiesto = usarManifest()
+  /** textura opcional del cuerpo de la carta ("cartas" en manifest.json);
+   *  la apócrifa usa SIEMPRE la del concepto: el camuflaje no se negocia */
+  const texturaDe = (clase: string): string | undefined => {
+    const cartas = (manifiesto as Record<string, unknown> | null)?.cartas as Record<string, string> | undefined
+    const src = cartas?.[clase === 'apocrifa' ? 'concepto' : clase]
+    return src ? `url(${import.meta.env.BASE_URL}art/${src}) center/cover` : undefined
+  }
 
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
   const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
@@ -160,7 +169,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   useEffect(() => {
     if (aniquilacion && borronSonado.current !== e.turno) {
       borronSonado.current = e.turno
-      sfx.borron()
+      const golpes = e.ultima?.impactos.length ?? 1
+      const espera = 340 + 150 * golpes
+      const t = setTimeout(() => sfx.borron(), espera)
+      return () => clearTimeout(t)
     }
   }, [aniquilacion, e.turno])
   useEffect(() => {
@@ -590,7 +602,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}` +
                   `${inservible ? ' inservible' : ''}`}
-                style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd) }}
+                style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd),
+                  ...(texturaDe(p.clase) ? { background: `${texturaDe(p.clase)}, ${cd.tono}` } : {}) }}
                 draggable={!resuelto}
                 onDragStart={() => setArrastrando(p.uid)}
                 onDragEnd={() => setArrastrando(null)}
@@ -815,7 +828,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${foco?.piezas ? (piezaLibre(p.uid) ? ' senala' : ' bloqueada') : ''}`}
-                style={{ borderLeftColor: cd.banda, background: cd.tono }}
+                style={{ borderLeftColor: cd.banda,
+                  background: texturaDe(p.clase) ? `${texturaDe(p.clase)}, ${cd.tono}` : cd.tono }}
                 draggable={!resuelto && piezaLibre(p.uid)}
                 onDragStart={(ev) => {
                   if (!piezaLibre(p.uid)) { ev.preventDefault(); return }

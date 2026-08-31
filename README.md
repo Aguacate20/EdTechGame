@@ -497,6 +497,25 @@ según el arma del diagrama (espada, arco, hechizo…) y `proyectiles/<arma>`
 para sustituir los proyectiles CSS por sprites (flechas, rayos). Selección de
 packs con licencias comprobadas y mapa enemigo→pack en `public/art/LEEME.md`.
 
+## Juez mixto, impacto con cadencia y ranuras de arte totales (v5.26)
+
+- **Juez mixto de grafo bipartito**: las flechas hacia/desde casos, tesis y
+  marcos se juzgan en cualquier dirección con la membresía (`concept_ids`) que
+  el extractor ya declara. «Los Juegos del Hambre ejemplifica el marco X» es
+  sostenido si el marco reclama ese concepto; contrastar con el marco RIVAL
+  es sostenido con prima; contrastar con el propio marco enseña («al derecho,
+  esto es pertenencia»); y el silencio ahora dice quién SÍ lo reclama.
+- **El golpe aterriza antes de la muerte**: los impactos se revelan tras el
+  viaje del proyectil (o la embestida) y el desborde recorre la cadena con
+  cadencia de 150 ms; vida, gesto y número esperan su golpe. La Página en
+  Blanco (ahora sin texto: la animación habla sola) espera al último caído.
+- **Ranuras de arte completas**: fondos por TIPO de sala
+  (`fondos/jefe_acto2.png` → cae a `acto2.png`), iconos de lente
+  (`art/lentes/<id>.png`) en botín y refugio, texturas de carta por clase
+  (clave `"cartas"` del manifest; la apócrifa usa SIEMPRE la del concepto), y
+  `tiras.py` v2: detecta hojas ya montadas (LuizMelo) y hace el casting
+  automático de enemigos por palabras clave.
+
 ## Pendientes
 
 - Reserva de una pieza entre turnos (segunda señal de planeación).

@@ -2,7 +2,7 @@ import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
 import { Retrato, SpriteRetrato, usarManifest } from './assets'
 import type { Disparo } from '../engine/weapons'
 import { sfx } from './sfx'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /* El carril: el jugador a la izquierda, los enemigos entrando por la derecha.
    Cada afirmación es un turno; cada turno se acercan. */
@@ -74,6 +74,27 @@ export function LaneView({
   const manifest = usarManifest()
   const vivos = enemigos.filter((e) => e.hp > 0).sort((a, b) => a.posicion - b.posicion)
   const esMelee = !!(disparo && CUERPO_A_CUERPO.has(disparo.arma.forma))
+  /** los impactos se revelan uno a uno: primero llega el golpe (viaje del
+   *  proyectil o embestida), luego cae el primero, y el desborde recorre la
+   *  cadena con cadencia — nadie muere antes de recibir su golpe */
+  const [revelados, setRevelados] = useState(0)
+  useEffect(() => {
+    if (!disparoListo || !ultimosImpactos.length) { setRevelados(0); return }
+    setRevelados(0)
+    const ts: ReturnType<typeof setTimeout>[] = []
+    const base = esMelee ? 340 : Math.min(900, disparo?.arma.duracion ?? 600)
+    const paso = (i: number) => {
+      setRevelados(i)
+      if (i < ultimosImpactos.length) ts.push(setTimeout(() => paso(i + 1), 150))
+    }
+    ts.push(setTimeout(() => paso(1), base))
+    return () => ts.forEach(clearTimeout)
+  }, [disparoListo, ultimosImpactos, esMelee, disparo])
+  const golpeado = (uid: string): boolean => {
+    const i = ultimosImpactos.findIndex((x) => x.uid === uid)
+    return i >= 0 && i < revelados
+  }
+  const todoRevelado = revelados >= ultimosImpactos.length
   const embisteUid = disparoListo && disparo && esMelee && gesto === 'afirma'
     ? disparo.objetivos[0] ?? null : null
   const vivosYcaidos = enemigos
@@ -96,13 +117,11 @@ export function LaneView({
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
 
   return (
-    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}${aniquilacion ? ' borron-activo' : ''}`}>
+    <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}${aniquilacion && todoRevelado ? ' borron-activo' : ''}`}>
       {golpeMayor && disparoListo && !aniquilacion && <div className="destello" aria-hidden />}
-      {aniquilacion && (
+      {aniquilacion && todoRevelado && (
         <div className="borron" aria-hidden>
           <span className="borron-onda" />
-          <span className="borron-sello">PÁGINA EN BLANCO</span>
-          <span className="borron-nota">la sala, borrada de un trazo</span>
         </div>
       )}
       <div className="carril-jugador">
@@ -170,12 +189,15 @@ export function LaneView({
               )}
               {aqui.map((e) => {
                 const t = tipoPorId(e.tipoId)
-                const impacto = ultimosImpactos.find((x) => x.uid === e.uid)
+                const impactoReal = ultimosImpactos.find((x) => x.uid === e.uid)
+                const impacto = impactoReal && golpeado(e.uid) ? impactoReal : undefined
+                const hpVisible = impactoReal && !impacto
+                  ? Math.min(e.hpMax, e.hp + impactoReal.dano) : e.hp
                 const fase = faseJefe(e)
                 return (
                   <div
                     key={e.uid}
-                    className={`bicho bicho-${disparoListo === false ? 'quieto' : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
+                    className={`bicho bicho-${disparoListo === false || (impactoReal && !impacto) ? 'quieto' : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
                     title={`${e.nombre} — ${t.glosa}`}
                   >
                     {impacto && (
@@ -186,12 +208,12 @@ export function LaneView({
                     )}
                     <Retrato
                       familia="enemigos" id={e.tipoId} alt={e.nombre}
-                      tamano={34} gesto={e.gesto}
+                      tamano={34} gesto={disparoListo === false || (impactoReal && !impacto) ? 'quieto' : e.gesto}
                       respaldo={<Silueta tipoId={e.tipoId} />}
                     />
                     <span className="nom">{e.nombre}</span>
-                    <div className="vida"><span style={{ width: `${(e.hp / e.hpMax) * 100}%` }} /></div>
-                    <span className="vida-num">{e.hp}<i>/{e.hpMax}</i></span>
+                    <div className="vida"><span style={{ width: `${(hpVisible / e.hpMax) * 100}%` }} /></div>
+                    <span className="vida-num">{hpVisible}<i>/{e.hpMax}</i></span>
                     <span className="rasgo">
                       {t.alcance >= LARGO_CARRIL ? 'alcance total'
                         : t.velocidad === 0 ? 'no avanza'

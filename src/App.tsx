@@ -703,7 +703,10 @@ export default function App() {
 
   return (
     <div className="app">
-      {['mapa', 'vistazo', 'batalla', 'resumen'].includes(fase) && <FondoActo n={actoIdx + 1} />}
+      {['mapa', 'vistazo', 'batalla', 'resumen'].includes(fase) && (
+        <FondoActo n={actoIdx + 1}
+          sala={['batalla', 'vistazo', 'resumen'].includes(fase) ? (nodoRef.current?.dificultad ?? null) : null} />
+      )}
       <header className="barra">
         <span className="marca">El Archivo Infinito</span>
         <span className="eyebrow">

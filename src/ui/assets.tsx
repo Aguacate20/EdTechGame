@@ -184,13 +184,37 @@ export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano, alt, 
 /** Suelta `public/art/fondos/acto1.png` (y 2, 3…) y el acto gana escenario.
  *  Se pinta atenuado detrás de todo, con un velo para que la mesa siga
  *  siendo legible. Si el archivo no existe, no pasa nada. */
-export function FondoActo({ n }: { n: number }) {
-  const ruta = `${BASE}art/fondos/acto${n}.png`
-  const [roto, setRoto] = useState(fallidas.has(ruta))
-  if (roto) return null
+/** Escenario del acto, con matiz por tipo de sala. Prueba en orden:
+ *  `fondos/<sala>_acto<n>.png` → `fondos/acto<n>.png` → nada.
+ *  Suelta `refugio_acto1.png`, `jefe_acto2.png`, `dura_acto1.png`… y cada
+ *  clase de sala gana su propio escenario; sin archivo, cae al del acto. */
+export function FondoActo({ n, sala }: { n: number; sala?: string | null }) {
+  const candidatas = [
+    ...(sala ? [`${BASE}art/fondos/${sala}_acto${n}.png`] : []),
+    `${BASE}art/fondos/acto${n}.png`
+  ].filter((r) => !fallidas.has(r))
+  const [i, setI] = useState(0)
+  useEffect(() => { setI(0) }, [n, sala])
+  if (i >= candidatas.length) return null
+  const ruta = candidatas[i]
   return (
     <div className="fondo-acto" aria-hidden>
-      <img src={ruta} alt="" onError={() => { fallidas.add(ruta); setRoto(true) }} />
+      <img src={ruta} alt="" onError={() => { fallidas.add(ruta); setI((x) => x + 1) }} />
     </div>
+  )
+}
+
+/** Icono opcional de una lente: `art/lentes/<id>.png` (o .svg). Sin archivo,
+ *  no ocupa espacio. Para que las pasivas tengan cara de reliquia. */
+export function IconoLente({ id, tamano = 30 }: { id: string; tamano?: number }) {
+  const png = `${BASE}art/lentes/${id}.png`
+  const svg = `${BASE}art/lentes/${id}.svg`
+  const candidatas = [png, svg].filter((r) => !fallidas.has(r))
+  const [i, setI] = useState(0)
+  if (i >= candidatas.length) return null
+  const ruta = candidatas[i]
+  return (
+    <img className="icono-lente" src={ruta} alt="" width={tamano} height={tamano}
+      onError={() => { fallidas.add(ruta); setI((x) => x + 1) }} />
   )
 }
