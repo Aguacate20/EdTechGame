@@ -1342,7 +1342,13 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 /* ================= v5.16 · sprites de la comunidad y escenarios ================= */
 
 @keyframes barridoSprite { to { transform: translateX(var(--fin, -100%)) } }
-.retrato-sprite { overflow: hidden; display: inline-flex; }
+.retrato-sprite {
+  overflow: hidden;
+  /* la tira se ancla al INICIO: centrarla (como los SVG) deja la ventana
+     mirando la juntura entre dos frames — el sprite partido y parpadeante */
+  display: inline-block;
+  vertical-align: middle;
+}
 .retrato-sprite img {
   image-rendering: pixelated;
   filter: none; /* los sprites traen su propia luz: sin sombra de grabado */
