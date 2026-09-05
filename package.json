@@ -1,7 +1,7 @@
 {
   "name": "edtech-game",
   "private": true,
-  "version": "5.36.0",
+  "version": "5.37.0",
   "type": "module",
   "description": "El Archivo Infinito — roguelike de diagramas: tablero libre, herramientas cognitivas y carril de enemigos, sobre el bundle del extractor",
   "scripts": {
@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "smoke": "esbuild scripts/smoke.ts --bundle --platform=node --format=esm --outfile=.smoke.mjs --log-level=warning && node .smoke.mjs",
+    "creativo": "esbuild scripts/creativo.ts --bundle --platform=node --format=esm --outfile=.creativo.mjs --log-level=warning && node .creativo.mjs",
     "demo:bundle": "python scripts/gen_demo_bundle.py"
   },
   "dependencies": {

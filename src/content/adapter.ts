@@ -422,7 +422,9 @@ export function adaptarBundle(raw: unknown): Contenido {
       argumentosApoyo: strArr(t?.supporting_arguments),
       contraargumentos: strArr(t?.counterarguments),
       criteriosDefensa: strArr(t?.criterios_defensa_valida),
-      criteriosRefutacion: strArr(t?.criterios_refutacion_valida)
+      criteriosRefutacion: strArr(t?.criterios_refutacion_valida),
+      criteriosConceptos: arr(t?.criterios_conceptos).map((x) => strArr(x).filter((id) => conceptos[id])),
+      contraargumentosConceptos: arr(t?.contraargumentos_conceptos).map((x) => strArr(x).filter((id) => conceptos[id]))
     }))
     .filter((t) => t.enunciado && t.criteriosRefutacion.length > 0)
   nota(

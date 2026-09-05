@@ -1,6 +1,6 @@
 import type { Contenido } from '../content/types'
 import type { Pieza, Rol } from './pieces'
-import { admisibleComoPropuesta, gemelosDe, juzgarVinculo, type OpcionesJuicio } from './graph'
+import { admisibleComoPropuesta, distanciaPropuesta, gemelosDe, juzgarVinculo, type OpcionesJuicio } from './graph'
 
 /* ==========================================================================
    Las herramientas cognitivas. Cada una es una forma de AFIRMAR algo sobre
@@ -408,6 +408,11 @@ const PESO: Record<Estado, { f: number; m: number }> = {
 }
 /** `aproximado` con el tipo de OTRA familia: otra afirmación, no otro matiz. */
 const PESO_APROXIMADO_LEJANO = { f: 0.3, m: 0.2 }
+/** propuesta pagada por distancia (ver `distanciaPropuesta`): la que cruza
+ *  zonas con apoyo vale más que la casi obvia. Nunca alcanza a una flecha firme. */
+const PESO_PROPUESTA: { f: number; m: number }[] = [
+  { f: 0.35, m: 0.2 }, { f: 0.42, m: 0.28 }, { f: 0.5, m: 0.35 }
+]
 
 const titulo = (c: Contenido, id: string | null) => (id && c.conceptos[id]?.titulo) || '—'
 
@@ -430,10 +435,100 @@ function pertenece(c: Contenido, ids: string[], cid: string | null): boolean {
 
 const T_MEMBRESIA = new Set(['ejemplifica', 'apoya', 'extiende', 'generaliza', 'requiere'])
 
+const T_TENSION = new Set(['contrasta', 'matiza'])
+
+/** Un criterio de refutación o una objeción pertenecen a una tesis; y una
+ *  tesis pertenece a un marco y reclama conceptos. Eso basta para juzgar la
+ *  flecha sin que el extractor diga nada más:
+ *   - contra el marco de su tesis → tensión desde dentro (sostenido)
+ *   - a favor del marco RIVAL → la objeción es la voz del rival (sostenido)
+ *   - contra un concepto que la tesis reclama → lo pone a prueba (sostenido)
+ *   - con un caso o una tesis ajena que comparten conceptos → convive
+ *  Para la Balanza la objeción sigue siendo señuelo (no es criterio de
+ *  refutación); para la Flecha lo que se pregunta es otra cosa: ¿ves la
+ *  tensión? Hasta v5.36 estas jugadas valían cero por construcción. */
+function juzgarCriterio(
+  c: Contenido, k: Pieza, otro: Pieza, tipo: string,
+  lentes: ModificadoresLente, v: Veredicto
+): Veredicto {
+  const t = c.tesis.find((x) => x.id === k.tesisId)
+  if (!t) return { ...v, nota: 'Ese criterio no pertenece a ninguna tesis del texto.' }
+  const que = k.sentido === 'refuta' ? 'El criterio' : 'La objeción'
+  const marcoTesis = t.marcoId ? c.marcos.find((m) => m.id === t.marcoId) ?? null : null
+  const conceptosDe = (p: Pieza): string[] => p.conceptId ? [p.conceptId] : (p.conceptIds ?? [])
+  // lo que el criterio invoca, si el extractor lo dijo; si no, la tesis entera
+  const propios = k.conceptIds?.length ? k.conceptIds : t.conceptIds
+  const comunes = propios.filter((x) => conceptosDe(otro).includes(x))
+  const convive = (con: string): Veredicto => ({
+    ...v, estado: 'convive', fichas: 5, mult: 0.4, conceptIds: comunes,
+    nota: `${que} y ${con} trabajan sobre ${comunes.length > 1 ? 'los mismos conceptos' : 'el mismo concepto'} (${comunes.map((x) => titulo(c, x)).join(', ')}).`
+  })
+
+  if (otro.clase === 'marco') {
+    const esSuyo = marcoTesis?.id === otro.refId
+    const esRival = !!marcoTesis && marcoTesis.rivales.includes(otro.refId ?? '')
+    if (esSuyo && T_TENSION.has(tipo)) {
+      return { ...v, estado: 'sostenido', fichas: 12 + lentes.fichasPorSostenido, mult: 1.2, conceptIds: t.conceptIds,
+        nota: `${que} tensiona el marco desde dentro: pone a prueba una tesis que el marco «${otro.titulo}» sostiene. Es la lectura crítica que el texto mismo abre.` }
+    }
+    if (esSuyo) {
+      return { ...v, estado: 'aproximado', fichas: 6, mult: 0.5, conceptIds: t.conceptIds,
+        nota: `${que} sí toca el marco «${otro.titulo}» — pero como tensión, no como ${tipo}.` }
+    }
+    if (esRival && !T_TENSION.has(tipo)) {
+      return { ...v, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.4, conceptIds: t.conceptIds,
+        nota: `${que} es la voz del marco rival: lo que el marco «${otro.titulo}» diría contra la tesis.` }
+    }
+    if (esRival) {
+      return { ...v, estado: 'aproximado', fichas: 6, mult: 0.5, conceptIds: t.conceptIds,
+        nota: `${que} nace del marco «${otro.titulo}»: no se opone a él, habla por él.` }
+    }
+    return comunes.length ? convive(`el marco «${otro.titulo}»`)
+      : { ...v, nota: `El mapa del texto no conecta esa ${k.sentido === 'refuta' ? 'refutación' : 'objeción'} con el marco «${otro.titulo}».` }
+  }
+  if (otro.clase === 'tesis') {
+    if (otro.refId === t.id && T_TENSION.has(tipo)) {
+      return { ...v, estado: 'sostenido', fichas: 12 + lentes.fichasPorSostenido, mult: 1.2, conceptIds: t.conceptIds,
+        nota: `${que} es exactamente lo que esa tesis tiene que responder.` }
+    }
+    if (otro.refId === t.id) {
+      return { ...v, estado: 'aproximado', fichas: 6, mult: 0.5, conceptIds: t.conceptIds,
+        nota: `${que} pertenece a esa tesis, pero para tensionarla, no para ${tipo === 'apoya' ? 'apoyarla' : tipo}.` }
+    }
+    return comunes.length ? convive('esa tesis') : { ...v, nota: 'El mapa del texto no conecta ese criterio con esa tesis.' }
+  }
+  if (otro.clase === 'caso') {
+    return comunes.length ? convive(`el caso (${otro.titulo})`)
+      : { ...v, nota: `El mapa del texto no conecta ese criterio con el caso (${otro.titulo}).` }
+  }
+  const cid = otro.clase === 'apocrifa' ? null : (otro.conceptId ?? null)
+  if (!cid) return { ...v, nota: 'El mapa del texto no tiene con qué juzgar ese par.' }
+  if (pertenece(c, propios, cid)) {
+    if (T_TENSION.has(tipo)) {
+      return { ...v, estado: 'sostenido', fichas: 14 + lentes.fichasPorSostenido, mult: 1.2, conceptIds: [cid],
+        nota: `${que} pone a prueba «${otro.titulo}», uno de los conceptos que ${k.conceptIds?.length ? 'invoca' : 'la tesis reclama'}.` }
+    }
+    return { ...v, estado: 'compatible', fichas: 11, mult: 1, conceptIds: [cid],
+      nota: `${que} y «${otro.titulo}» están enlazados por la tesis, aunque el tipo exacto sea tensión.` }
+  }
+  const vecino = c.aristas.some((x) => (propios.includes(x.from) && x.to === cid) || (propios.includes(x.to) && x.from === cid))
+  if (vecino) {
+    return { ...v, estado: 'convive', fichas: 5, mult: 0.4, conceptIds: [cid],
+      nota: `«${otro.titulo}» no está en la tesis, pero cuelga de lo que la tesis reclama.` }
+  }
+  return { ...v, nota: `El mapa del texto no conecta ese criterio con «${otro.titulo}».` }
+}
+
 function juzgarMixto(
   c: Contenido, a: Pieza, b: Pieza, tipo: string,
   lentes: ModificadoresLente, v: Veredicto
 ): Veredicto {
+  if (a.clase === 'criterio' || b.clase === 'criterio') {
+    const k = a.clase === 'criterio' ? a : b
+    const otro = k === a ? b : a
+    if (otro.clase === 'criterio') return { ...v, nota: 'Dos criterios no se enlazan entre sí: cada uno se mide contra su tesis.' }
+    return juzgarCriterio(c, k, otro, tipo, lentes, v)
+  }
   const esp = ['caso', 'tesis', 'marco'].includes(a.clase) ? a : b
   const otro = esp === a ? b : a
   const nombre = esp.clase === 'marco' ? `el marco «${esp.titulo}»`
@@ -482,7 +577,7 @@ function juzgarMixto(
     ...v, estado: 'silencio',
     nota: duenos.length
       ? `El texto no pone «${otro.titulo}» dentro de ${nombre}; sí lo reclama${duenos.length > 1 ? 'n' : ''} ${duenos.join(' y ')}.`
-      : `El texto no enlaza «${otro.titulo}» con ${nombre}.`
+      : `El mapa del texto no registra un vínculo entre «${otro.titulo}» y ${nombre}.`
   }
 }
 
@@ -498,7 +593,7 @@ function validarFlecha(
   // dirección. La evidencia es de grafo bipartito: la membresía (concept_ids)
   // que el extractor ya declara. «Los Juegos del Hambre ejemplifica el marco
   // del empoderamiento» es juzgable porque el marco reclama sus conceptos. ──
-  const ESPECIALES = new Set(['caso', 'tesis', 'marco'])
+  const ESPECIALES = new Set(['caso', 'tesis', 'marco', 'criterio'])
   if (ESPECIALES.has(a.clase) || ESPECIALES.has(b.clase)) {
     return juzgarMixto(c, a, b, tipo, lentes, v)
   }
@@ -524,7 +619,7 @@ function validarFlecha(
 
   const ra = resolver(a)
   const rb = resolver(b)
-  if (!ra.id || !rb.id) return { ...v, nota: 'Esa pieza no es un nodo del texto.' }
+  if (!ra.id || !rb.id) return { ...v, nota: 'El mapa del texto no tiene con qué juzgar ese par: una de las piezas no es un nodo.' }
 
   let h = juzgarVinculo(c, ra.id, rb.id, tipo, opciones)
   let desde = ra.id
@@ -562,7 +657,9 @@ function validarFlecha(
   const estado: Estado = h.estado === 'plausible' && motivoPropuesta
     ? 'propuesta' : (MAPA[h.estado] ?? 'silencio')
   const imp = (a.importancia + b.importancia) / 2
-  const peso = estado === 'aproximado' && h.lejana ? PESO_APROXIMADO_LEJANO : PESO[estado]
+  const peso = estado === 'aproximado' && h.lejana ? PESO_APROXIMADO_LEJANO
+    : estado === 'propuesta' ? PESO_PROPUESTA[distanciaPropuesta(c, ra.id, rb.id)]
+    : PESO[estado]
   const fichasBase = 8 + Math.round(12 * imp) + lentes.fichasPorSostenido
   const multBase = rarezaRelacion(c, h.tipoReal ?? tipo) + (lentes.multPorTipo[tipo] ?? 0)
   const reserva = ra.reserva ?? rb.reserva

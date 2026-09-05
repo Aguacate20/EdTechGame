@@ -1,7 +1,7 @@
-# Subir v5.36 al repositorio
+# Subir v5.37 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.36/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.37/edtech-game`
 
 Este parche toca `src/`, `scripts/`, `public/bundles/demo.json`, `README.md`,
 `SUBIR.md` y `package.json`. **No toca `public/art/`** (tus sprites, fondos y
@@ -9,7 +9,7 @@ manifest): por eso el `rm` de abajo NO incluye `public`.
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.36/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.37/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
@@ -20,7 +20,7 @@ rm -rf src scripts docs
 # 3. copiar por encima (public/bundles/demo.json se sobreescribe; public/art queda intacto)
 cp -r "$SRC/." .
 
-# 4. comprobar: debe decir 43
+# 4. comprobar: debe decir 44
 find src scripts docs public/bundles -type f | wc -l
 
 # 5. commit
@@ -53,7 +53,7 @@ Se aplica sobre `EdTechProject` y se sincroniza con el Space como siempre:
 
 ```bash
 cd /c/Proyectos/EdTechProject
-SRC="/c/Users/sebas/Downloads/edtech_v5.36/edtech-project"
+SRC="/c/Users/sebas/Downloads/edtech_v5.37/edtech-project"
 ls "$SRC/backend/pipeline/compiler.py" || echo "RUTA MAL: no sigas"
 cp -r "$SRC/." .
 git add -A

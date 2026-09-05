@@ -150,10 +150,27 @@ export function mismaPagina(c: Contenido, a: string, b: string): number[] {
 /** ¿Están cerca en el grafo aunque no haya vínculo directo?
  *  Vecino común o mismo cluster: afirmar algo entre ellos es plausible,
  *  no absurdo, y no debe castigarse. */
+/** Un concepto «eje» es el que toca la mitad o más de las aristas del texto
+ *  (típico cuando el documento estudia UNA obra o UN caso: todo cuelga de él).
+ *  Colgar los dos del eje no es cercanía, es trivialidad: en un grafo en
+ *  estrella cualquier par tendría vecino común y la capa propia sería un
+ *  basurero. Los ejes no cuentan como vecino común. */
+export function conceptosEje(c: Contenido): Set<string> {
+  const grado = new Map<string, number>()
+  for (const x of c.aristas) {
+    grado.set(x.from, (grado.get(x.from) ?? 0) + 1)
+    grado.set(x.to, (grado.get(x.to) ?? 0) + 1)
+  }
+  const n = Math.max(1, c.aristas.length)
+  return new Set([...grado.entries()].filter(([, g]) => g >= 4 && g >= n * 0.5).map(([id]) => id))
+}
+
 export function proximidad(c: Contenido, a: string, b: string): 'vecino_comun' | 'mismo_cluster' | null {
   const todas = [...c.aristas, ...(c.insinuadas ?? [])]
+  const ejes = conceptosEje(c)
   const vec = (id: string) => new Set(
     todas.filter((x) => x.from === id || x.to === id).map((x) => (x.from === id ? x.to : x.from))
+      .filter((x) => !ejes.has(x))
   )
   const va = vec(a), vb = vec(b)
   for (const x of va) if (vb.has(x)) return 'vecino_comun'
@@ -198,11 +215,24 @@ export function admisibleComoPropuesta(c: Contenido, a: string, b: string): stri
   const cerca = proximidad(c, a, b)
   if (cerca === 'vecino_comun') return 'ambos cuelgan de un mismo concepto'
   if (cerca === 'mismo_cluster') return 'están en la misma zona del texto'
-  // compartir página NO basta para guardarla: en un texto denso casi todo
-  // comparte página, y la capa propia acabaría siendo un listado sin sentido.
-  // Sigue puntuando en combate, pero no se anota.
   return null
 }
+
+/** Cuánto terreno cubre una propuesta: creatividad = distancia × apoyo.
+ *  0 = misma zona y además un vecino común (casi obvio)
+ *  1 = misma zona, sin vecino común
+ *  2 = zonas distintas unidas por un vecino común (la lectura que cruza)
+ *  Se usa para pagar la propuesta: cuanto más lejos con apoyo, más vale. */
+export function distanciaPropuesta(c: Contenido, a: string, b: string): 0 | 1 | 2 {
+  const ca = c.conceptos[a]?.clusterId, cb = c.conceptos[b]?.clusterId
+  const mismaZona = !!ca && ca === cb
+  const cerca = proximidad(c, a, b)
+  if (mismaZona && cerca === 'vecino_comun') return 0
+  if (mismaZona) return 1
+  return 2
+}
+
+
 
 export function juzgarVinculo(
   c: Contenido, from: string, to: string, tipo: string, opciones: OpcionesJuicio = {}
@@ -397,5 +427,7 @@ export function juzgarVinculo(
       nota: `Esto lo pones tú: el autor los expone juntos en la página ${paginas.join(', ')} pero no da el paso. Queda anotado en tu lectura.`
     }
   }
-  return { estado: 'muda', tipoReal: null, camino: null, nota: 'El texto no afirma nada entre esos dos.' }
+  // «mudo» significa que el MAPA no tiene con qué juzgarlo, no que el texto
+  // calle: el grafo es la lectura del extractor, y puede quedarse corto.
+  return { estado: 'muda', tipoReal: null, camino: null, nota: 'El mapa del texto no registra ningún vínculo entre esos dos.' }
 }

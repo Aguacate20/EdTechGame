@@ -178,14 +178,20 @@ export function piezaTesis(c: Contenido, id: string): Pieza | null {
 export function piezasCriterio(c: Contenido, tesisId: string, rng: Rng): Pieza[] {
   const t = c.tesis.find((x) => x.id === tesisId)
   if (!t) return []
+  // los conceptos que cada criterio invoca (bundle ≥ 1.2.0); si no vienen, la
+  // pieza no los lleva y el juez cae a los conceptos de la tesis entera
+  const conceptosDe = (lista: string[][], texto: string, fuente: string[]) =>
+    lista[fuente.indexOf(texto)] ?? []
   const validos = rng.sample(t.criteriosRefutacion, 2).map((texto) => ({
     ...base(), clase: 'criterio' as ClasePieza, roles: ['nodo', 'criterio'] as Rol[],
     titulo: 'Criterio', cuerpo: texto, refId: t.id, tesisId: t.id,
+    conceptIds: conceptosDe(t.criteriosConceptos, texto, t.criteriosRefutacion),
     sentido: 'refuta' as const, cierre: ''
   }))
   const falsos = rng.sample(t.contraargumentos, 1).map((texto) => ({
     ...base(), clase: 'criterio' as ClasePieza, roles: ['nodo', 'criterio'] as Rol[],
     titulo: 'Objeción', cuerpo: texto, refId: t.id, tesisId: t.id,
+    conceptIds: conceptosDe(t.contraargumentosConceptos, texto, t.contraargumentos),
     sentido: null,
     explicacion: 'Suena razonable, pero no dice qué observación obligaría a revisar la tesis: no es un criterio de refutación.'
   }))

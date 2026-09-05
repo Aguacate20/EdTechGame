@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.36
+# El Archivo Infinito — v5.37
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -612,6 +612,36 @@ en 1.2 turnos por oleada. **El frente está calibrado contra un lector perfecto.
 Palancas: vida del frente en actos 0–1, o falsificaciones señaladas en el acto 0 como en
 aprendizaje. Es decisión de diseño, no de parche.
 
+## La flecha crítica (v5.37)
+
+Medido sobre un bundle real («Los Juegos del Hambre», 10 conceptos, 6 tesis, 4 marcos)
+con `npm run creativo -- ruta/al/bundle.json`: **144 jugadas de lector crítico valían cero
+por construcción** —cualquier flecha que tocara un criterio de refutación o una objeción—
+porque esas piezas no llevaban conceptos y el juez mixto no tenía con qué mirar. La nota
+decía «el texto no enlaza…», que era falso: el mapa no tenía datos.
+
+- **Los criterios se juzgan por su tesis.** Un criterio o una objeción pertenece a una
+  tesis; la tesis pertenece a un marco y reclama conceptos. Con eso basta: contra el marco
+  de su tesis → *tensión desde dentro* (sostenido); a favor del marco rival → *la voz del
+  rival* (sostenido); contra un concepto que la tesis reclama → *lo pone a prueba*
+  (sostenido); con un caso o tesis ajena que comparten conceptos → convive. Para la
+  Balanza la objeción sigue siendo señuelo; para la Flecha la pregunta es otra.
+  Si el bundle trae `criterios_conceptos` / `contraargumentos_conceptos` (extractor v3.8),
+  el juez usa los conceptos que ese criterio invoca; si no, la tesis entera.
+- **Silencio honesto.** «Mudo» significa que el mapa no registra el vínculo, no que el
+  texto calle. Todas las notas de silencio lo dicen así.
+- **El eje no es vecino común.** En un grafo en estrella (el documento estudia una obra y
+  todo cuelga de ella) cualquier par tendría vecino común y la capa propia sería un
+  basurero. Un concepto con la mitad de las aristas no cuenta como apoyo de una propuesta.
+- **Propuesta por distancia.** Misma zona con vecino común 35 %, misma zona 42 %, zonas
+  distintas unidas por un vecino común 50 %. Creatividad = distancia × apoyo. Nunca
+  alcanza a una flecha firme.
+
+Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identidad**;
+objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
+(rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
+creación con apoyo (0.4–0.6×) > silencio.
+
 ## Pendientes
 
 - **Balance del lector parcial** (criterio 14): decidir la palanca y subir el listón.
@@ -620,6 +650,8 @@ aprendizaje. Es decisión de diseño, no de parche.
   aristas ganadas viajando desde el mapa de la sala al cerrar. Hoy el Atlas es rejilla y
   tabla; el único grafo dibujado es el de una sala.
 - `BattleMap` no dibuja todavía `hallazgos.propuestas` (ya se recogen).
+- Puentes latentes entre capas en el extractor (caso↔tesis, tesis↔marco sin conceptos
+  compartidos): hoy quedan en convive/silencio.
 - Mostrar `Concepto.evidencia` (cita literal y página) en carta y veredicto.
 - `POST /students/{id}/atlas`: el Atlas vive en `localStorage`, con una sola clave — jugar
   un segundo texto pisa el Atlas del primero, y el profesor no recibe nada del juego.

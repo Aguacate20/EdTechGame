@@ -8,3 +8,4 @@ bundle.json
 plan.json
 
 .smoke.mjs
+.creativo.mjs

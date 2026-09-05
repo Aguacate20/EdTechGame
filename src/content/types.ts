@@ -93,6 +93,11 @@ export interface Tesis {
   contraargumentos: string[]
   criteriosDefensa: string[]
   criteriosRefutacion: string[]
+  /** bundle ≥ 1.2.0: qué conceptos invoca cada criterio / contraargumento,
+   *  alineados por índice. Vacíos en bundles anteriores: entonces el juez
+   *  usa los conceptos de la tesis entera. */
+  criteriosConceptos: string[][]
+  contraargumentosConceptos: string[][]
 }
 
 export interface Marco {
