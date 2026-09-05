@@ -1,5 +1,5 @@
 {
- "bundle_version": "1.0.0-demo",
+ "bundle_version": "1.1.0-demo",
  "compiled_from_schema": "2.1.0",
  "source_filename": "Bundle de muestra — amplificación resonante (contenido abreviado)",
  "course_id": "demo",
@@ -45,7 +45,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Marco que explica cómo las figuras de apego funcionan como refugio seguro y base segura…",
+   "status": "aprobado"
   },
   "relational_ai": {
    "id": "relational_ai",
@@ -82,7 +84,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Inteligencia artificial que sostiene diálogos persistentes y co-creativos…",
+   "status": "aprobado"
   },
   "apego": {
    "id": "apego",
@@ -119,7 +123,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 5.5,
    "n_opciones": 5,
-   "n_distractores": 6
+   "n_distractores": 6,
+   "evidencia_textual": "Vínculo emocional que el usuario establece con un agente…",
+   "status": "aprobado"
   },
   "vigilancia_epistemica": {
    "id": "vigilancia_epistemica",
@@ -156,7 +162,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Disposición a cuestionar y verificar la información que entrega un agente…",
+   "status": "aprobado"
   },
   "co_creacion": {
    "id": "co_creacion",
@@ -193,7 +201,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 5.5,
    "n_opciones": 5,
-   "n_distractores": 6
+   "n_distractores": 6,
+   "evidencia_textual": "Fase en la que usuario y agente construyen juntos el significado…",
+   "status": "aprobado"
   },
   "refuerzo_linguistico": {
    "id": "refuerzo_linguistico",
@@ -229,7 +239,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Conjunto de estrategias —espejado…",
+   "status": "aprobado"
   },
   "internalizacion": {
    "id": "internalizacion",
@@ -264,7 +276,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 5.5,
    "n_opciones": 5,
-   "n_distractores": 6
+   "n_distractores": 6,
+   "evidencia_textual": "Proceso por el que el agente pasa a ser un objeto interno del usuario…",
+   "status": "aprobado"
   },
   "camaras_eco": {
    "id": "camaras_eco",
@@ -298,7 +312,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Entornos donde la exposición repetida a información afín refuerza creencias y reduce la diversidad de perspectivas…",
+   "status": "aprobado"
   },
   "bucles_resonantes": {
    "id": "bucles_resonantes",
@@ -334,7 +350,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Retroalimentación en la que sesgos ordinarios se intensifican y recombinan en la interacción uno a uno…",
+   "status": "aprobado"
   },
   "interruptores": {
    "id": "interruptores",
@@ -371,7 +389,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Intervenciones de diseño alineadas a fases que cortan la amplificación y preservan la autonomía del usuario…",
+   "status": "aprobado"
   },
   "seguridad_epistemica": {
    "id": "seguridad_epistemica",
@@ -408,7 +428,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Protección de la integridad del conocimiento del usuario frente a la sobre-confianza y la manipulación en la interacción con IA…",
+   "status": "aprobado"
   },
   "presencia_social": {
    "id": "presencia_social",
@@ -443,7 +465,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Sensación de estar con otro en una interacción mediada…",
+   "status": "aprobado"
   },
   "confianza_calibrada": {
    "id": "confianza_calibrada",
@@ -478,7 +502,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Ajuste progresivo de la confianza del usuario a la fiabilidad real del sistema…",
+   "status": "aprobado"
   },
   "espejado": {
    "id": "espejado",
@@ -514,7 +540,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Repetición del contenido y del tono del usuario por parte del agente…",
+   "status": "aprobado"
   },
   "sesgo_confirmacion": {
    "id": "sesgo_confirmacion",
@@ -548,7 +576,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Tendencia a buscar y valorar la información que confirma lo que ya se creía…",
+   "status": "aprobado"
   },
   "objeto_interno": {
    "id": "objeto_interno",
@@ -585,7 +615,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Representación mental de otro significativo que queda incorporada al mundo psíquico y ancla la regulación emocional…",
+   "status": "aprobado"
   },
   "autonomia": {
    "id": "autonomia",
@@ -621,7 +653,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Capacidad del usuario de decidir por sí mismo qué creer…",
+   "status": "aprobado"
   },
   "resistencia_correccion": {
    "id": "resistencia_correccion",
@@ -657,7 +691,9 @@
    "dificultad_declarada": "intermedio",
    "n_efectivo": 4.75,
    "n_opciones": 5,
-   "n_distractores": 5
+   "n_distractores": 5,
+   "evidencia_textual": "Proporción de la creencia que el usuario mantiene después de recibir evidencia contraria…",
+   "status": "aprobado"
   }
  },
  "graph": {
@@ -667,55 +703,91 @@
      "from": "relational_ai",
      "to": "apego",
      "tipo": "causa",
-     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego."
+     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "apego",
      "to": "vigilancia_epistemica",
      "tipo": "causa",
-     "descripcion": "El apego reduce la vigilancia epistémica del usuario."
+     "descripcion": "El apego reduce la vigilancia epistémica del usuario.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "co_creacion",
      "to": "internalizacion",
      "tipo": "causa",
-     "descripcion": "La co-creación conduce a la internalización del agente."
+     "descripcion": "La co-creación conduce a la internalización del agente.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "relational_ai",
      "to": "internalizacion",
      "tipo": "causa",
-     "descripcion": "La IA relacional termina internalizándose como objeto psicológico."
+     "descripcion": "La IA relacional termina internalizándose como objeto psicológico.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "internalizacion",
      "to": "resistencia_correccion",
      "tipo": "causa",
-     "descripcion": "La internalización produce resistencia a la corrección."
+     "descripcion": "La internalización produce resistencia a la corrección.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "relational_ai",
      "to": "presencia_social",
      "tipo": "causa",
-     "descripcion": "La IA relacional produce una fuerte sensación de presencia social."
+     "descripcion": "La IA relacional produce una fuerte sensación de presencia social.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "espejado",
      "to": "co_creacion",
      "tipo": "causa",
-     "descripcion": "El espejado produce la sensación de estar co-creando."
+     "descripcion": "El espejado produce la sensación de estar co-creando.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "sesgo_confirmacion",
      "to": "camaras_eco",
      "tipo": "causa",
-     "descripcion": "El sesgo de confirmación alimenta las cámaras de eco."
+     "descripcion": "El sesgo de confirmación alimenta las cámaras de eco.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "objeto_interno",
      "to": "resistencia_correccion",
      "tipo": "causa",
-     "descripcion": "Un objeto interno consolidado produce resistencia a la corrección."
+     "descripcion": "Un objeto interno consolidado produce resistencia a la corrección.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "espejado",
+     "to": "apego",
+     "tipo": "causa",
+     "descripcion": "El espejado sostenido podría alimentar el apego al agente.",
+     "confianza": 0.4,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "generaliza": [
@@ -723,19 +795,28 @@
      "from": "attachment_theory",
      "to": "apego",
      "tipo": "generaliza",
-     "descripcion": "La teoría del apego abstrae el fenómeno del apego."
+     "descripcion": "La teoría del apego abstrae el fenómeno del apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "bucles_resonantes",
      "to": "sesgo_confirmacion",
      "tipo": "generaliza",
-     "descripcion": "El bucle resonante abstrae y recombina el sesgo de confirmación."
+     "descripcion": "El bucle resonante abstrae y recombina el sesgo de confirmación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "objeto_interno",
      "to": "internalizacion",
      "tipo": "generaliza",
-     "descripcion": "El objeto interno es la forma general de lo que la internalización produce."
+     "descripcion": "El objeto interno es la forma general de lo que la internalización produce.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ],
    "apoya": [
@@ -743,55 +824,91 @@
      "from": "attachment_theory",
      "to": "relational_ai",
      "tipo": "apoya",
-     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente."
+     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "refuerzo_linguistico",
      "to": "co_creacion",
      "tipo": "apoya",
-     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación."
+     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "interruptores",
      "to": "seguridad_epistemica",
      "tipo": "apoya",
-     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica."
+     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "apego",
      "to": "co_creacion",
      "tipo": "apoya",
-     "descripcion": "El apego facilita que aparezca la co-creación parasocial."
+     "descripcion": "El apego facilita que aparezca la co-creación parasocial.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "vigilancia_epistemica",
      "to": "seguridad_epistemica",
      "tipo": "apoya",
-     "descripcion": "La vigilancia individual sostiene la seguridad epistémica."
+     "descripcion": "La vigilancia individual sostiene la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "presencia_social",
      "to": "apego",
      "tipo": "apoya",
-     "descripcion": "La sensación de presencia social prepara el terreno para el apego."
+     "descripcion": "La sensación de presencia social prepara el terreno para el apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "confianza_calibrada",
      "to": "vigilancia_epistemica",
      "tipo": "apoya",
-     "descripcion": "Calibrar la confianza sostiene la vigilancia epistémica."
+     "descripcion": "Calibrar la confianza sostiene la vigilancia epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "interruptores",
      "to": "autonomia",
      "tipo": "apoya",
-     "descripcion": "Los interruptores cognitivos protegen la autonomía."
+     "descripcion": "Los interruptores cognitivos protegen la autonomía.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "autonomia",
      "to": "seguridad_epistemica",
      "tipo": "apoya",
-     "descripcion": "La autonomía individual sostiene la seguridad epistémica."
+     "descripcion": "La autonomía individual sostiene la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "presencia_social",
+     "to": "confianza_calibrada",
+     "tipo": "apoya",
+     "descripcion": "La presencia social parece facilitar que la confianza se calibre con el agente.",
+     "confianza": 0.45,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "contrasta": [
@@ -799,19 +916,46 @@
      "from": "camaras_eco",
      "to": "relational_ai",
      "tipo": "contrasta",
-     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno."
+     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "interruptores",
      "to": "bucles_resonantes",
      "tipo": "contrasta",
-     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación."
+     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "apego",
      "to": "confianza_calibrada",
      "tipo": "contrasta",
-     "descripcion": "El apego descalibra la confianza en vez de ajustarla."
+     "descripcion": "El apego descalibra la confianza en vez de ajustarla.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "camaras_eco",
+     "to": "vigilancia_epistemica",
+     "tipo": "contrasta",
+     "descripcion": "Las cámaras de eco se leen como el escenario donde la vigilancia epistémica deja de operar.",
+     "confianza": 0.5,
+     "anclaje": "inferida",
+     "veces": 1
+    },
+    {
+     "from": "autonomia",
+     "to": "resistencia_correccion",
+     "tipo": "contrasta",
+     "descripcion": "La autonomía epistémica y la resistencia a la corrección se oponen en su efecto sobre el juicio.",
+     "confianza": 0.45,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "requiere": [
@@ -819,13 +963,28 @@
      "from": "bucles_resonantes",
      "to": "internalizacion",
      "tipo": "requiere",
-     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado."
+     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "internalizacion",
      "to": "objeto_interno",
      "tipo": "requiere",
-     "descripcion": "Internalizar exige que se forme un objeto interno."
+     "descripcion": "Internalizar exige que se forme un objeto interno.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "objeto_interno",
+     "to": "apego",
+     "tipo": "requiere",
+     "descripcion": "Un objeto interno presupone un vínculo de apego previo.",
+     "confianza": 0.35,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "ejemplifica": [
@@ -833,13 +992,19 @@
      "from": "espejado",
      "to": "refuerzo_linguistico",
      "tipo": "ejemplifica",
-     "descripcion": "El espejado es un caso concreto de refuerzo lingüístico."
+     "descripcion": "El espejado es un caso concreto de refuerzo lingüístico.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "relational_ai",
      "to": "bucles_resonantes",
      "tipo": "ejemplifica",
-     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa."
+     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ],
    "matiza": [
@@ -847,7 +1012,10 @@
      "from": "bucles_resonantes",
      "to": "camaras_eco",
      "tipo": "matiza",
-     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar."
+     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ]
   },
@@ -857,13 +1025,19 @@
      "from": "attachment_theory",
      "to": "apego",
      "tipo": "generaliza",
-     "descripcion": "La teoría del apego abstrae el fenómeno del apego."
+     "descripcion": "La teoría del apego abstrae el fenómeno del apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "attachment_theory",
      "to": "relational_ai",
      "tipo": "apoya",
-     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente."
+     "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ],
    "relational_ai": [
@@ -871,39 +1045,57 @@
      "from": "relational_ai",
      "to": "apego",
      "tipo": "causa",
-     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego."
+     "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "attachment_theory",
      "to": "relational_ai",
      "tipo": "apoya",
      "descripcion": "La teoría del apego explica por qué la IA relacional resulta convincente.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "relational_ai",
      "to": "internalizacion",
      "tipo": "causa",
-     "descripcion": "La IA relacional termina internalizándose como objeto psicológico."
+     "descripcion": "La IA relacional termina internalizándose como objeto psicológico.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "camaras_eco",
      "to": "relational_ai",
      "tipo": "contrasta",
      "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "relational_ai",
      "to": "presencia_social",
      "tipo": "causa",
-     "descripcion": "La IA relacional produce una fuerte sensación de presencia social."
+     "descripcion": "La IA relacional produce una fuerte sensación de presencia social.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "relational_ai",
      "to": "bucles_resonantes",
      "tipo": "ejemplifica",
-     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa."
+     "descripcion": "La IA relacional es el caso concreto donde el bucle se observa.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ],
    "apego": [
@@ -912,39 +1104,77 @@
      "to": "apego",
      "tipo": "causa",
      "descripcion": "La IA relacional reconfigura la interacción cubriendo necesidades de apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "apego",
      "to": "vigilancia_epistemica",
      "tipo": "causa",
-     "descripcion": "El apego reduce la vigilancia epistémica del usuario."
+     "descripcion": "El apego reduce la vigilancia epistémica del usuario.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "attachment_theory",
      "to": "apego",
      "tipo": "generaliza",
      "descripcion": "La teoría del apego abstrae el fenómeno del apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "apego",
      "to": "co_creacion",
      "tipo": "apoya",
-     "descripcion": "El apego facilita que aparezca la co-creación parasocial."
+     "descripcion": "El apego facilita que aparezca la co-creación parasocial.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "presencia_social",
      "to": "apego",
      "tipo": "apoya",
      "descripcion": "La sensación de presencia social prepara el terreno para el apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "apego",
      "to": "confianza_calibrada",
      "tipo": "contrasta",
-     "descripcion": "El apego descalibra la confianza en vez de ajustarla."
+     "descripcion": "El apego descalibra la confianza en vez de ajustarla.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "espejado",
+     "to": "apego",
+     "tipo": "causa",
+     "descripcion": "El espejado sostenido podría alimentar el apego al agente.",
+     "confianza": 0.4,
+     "anclaje": "inferida",
+     "veces": 1,
+     "invertida": true
+    },
+    {
+     "from": "objeto_interno",
+     "to": "apego",
+     "tipo": "requiere",
+     "descripcion": "Un objeto interno presupone un vínculo de apego previo.",
+     "confianza": 0.35,
+     "anclaje": "inferida",
+     "veces": 1,
+     "invertida": true
     }
    ],
    "vigilancia_epistemica": [
@@ -953,19 +1183,38 @@
      "to": "vigilancia_epistemica",
      "tipo": "causa",
      "descripcion": "El apego reduce la vigilancia epistémica del usuario.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "vigilancia_epistemica",
      "to": "seguridad_epistemica",
      "tipo": "apoya",
-     "descripcion": "La vigilancia individual sostiene la seguridad epistémica."
+     "descripcion": "La vigilancia individual sostiene la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "confianza_calibrada",
      "to": "vigilancia_epistemica",
      "tipo": "apoya",
      "descripcion": "Calibrar la confianza sostiene la vigilancia epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
+     "invertida": true
+    },
+    {
+     "from": "camaras_eco",
+     "to": "vigilancia_epistemica",
+     "tipo": "contrasta",
+     "descripcion": "Las cámaras de eco se leen como el escenario donde la vigilancia epistémica deja de operar.",
+     "confianza": 0.5,
+     "anclaje": "inferida",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -975,19 +1224,28 @@
      "to": "co_creacion",
      "tipo": "apoya",
      "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "co_creacion",
      "to": "internalizacion",
      "tipo": "causa",
-     "descripcion": "La co-creación conduce a la internalización del agente."
+     "descripcion": "La co-creación conduce a la internalización del agente.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "apego",
      "to": "co_creacion",
      "tipo": "apoya",
      "descripcion": "El apego facilita que aparezca la co-creación parasocial.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -995,6 +1253,9 @@
      "to": "co_creacion",
      "tipo": "causa",
      "descripcion": "El espejado produce la sensación de estar co-creando.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -1003,13 +1264,19 @@
      "from": "refuerzo_linguistico",
      "to": "co_creacion",
      "tipo": "apoya",
-     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación."
+     "descripcion": "El refuerzo lingüístico sostiene la fase de co-creación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "espejado",
      "to": "refuerzo_linguistico",
      "tipo": "ejemplifica",
      "descripcion": "El espejado es un caso concreto de refuerzo lingüístico.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -1019,6 +1286,9 @@
      "to": "internalizacion",
      "tipo": "causa",
      "descripcion": "La co-creación conduce a la internalización del agente.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -1026,6 +1296,9 @@
      "to": "internalizacion",
      "tipo": "causa",
      "descripcion": "La IA relacional termina internalizándose como objeto psicológico.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -1033,26 +1306,38 @@
      "to": "internalizacion",
      "tipo": "requiere",
      "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "internalizacion",
      "to": "resistencia_correccion",
      "tipo": "causa",
-     "descripcion": "La internalización produce resistencia a la corrección."
+     "descripcion": "La internalización produce resistencia a la corrección.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "objeto_interno",
      "to": "internalizacion",
      "tipo": "generaliza",
      "descripcion": "El objeto interno es la forma general de lo que la internalización produce.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "internalizacion",
      "to": "objeto_interno",
      "tipo": "requiere",
-     "descripcion": "Internalizar exige que se forme un objeto interno."
+     "descripcion": "Internalizar exige que se forme un objeto interno.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ],
    "camaras_eco": [
@@ -1060,13 +1345,19 @@
      "from": "camaras_eco",
      "to": "relational_ai",
      "tipo": "contrasta",
-     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno."
+     "descripcion": "Las cámaras de eco operan en red; la IA relacional, uno a uno.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "sesgo_confirmacion",
      "to": "camaras_eco",
      "tipo": "causa",
      "descripcion": "El sesgo de confirmación alimenta las cámaras de eco.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -1074,7 +1365,19 @@
      "to": "camaras_eco",
      "tipo": "matiza",
      "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
+    },
+    {
+     "from": "camaras_eco",
+     "to": "vigilancia_epistemica",
+     "tipo": "contrasta",
+     "descripcion": "Las cámaras de eco se leen como el escenario donde la vigilancia epistémica deja de operar.",
+     "confianza": 0.5,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "bucles_resonantes": [
@@ -1082,32 +1385,47 @@
      "from": "bucles_resonantes",
      "to": "internalizacion",
      "tipo": "requiere",
-     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado."
+     "descripcion": "El bucle resonante necesita que la interpretación se haya internalizado.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "interruptores",
      "to": "bucles_resonantes",
      "tipo": "contrasta",
      "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "bucles_resonantes",
      "to": "sesgo_confirmacion",
      "tipo": "generaliza",
-     "descripcion": "El bucle resonante abstrae y recombina el sesgo de confirmación."
+     "descripcion": "El bucle resonante abstrae y recombina el sesgo de confirmación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "bucles_resonantes",
      "to": "camaras_eco",
      "tipo": "matiza",
-     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar."
+     "descripcion": "El bucle resonante precisa lo que las cámaras de eco dejan sin explicar.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "relational_ai",
      "to": "bucles_resonantes",
      "tipo": "ejemplifica",
      "descripcion": "La IA relacional es el caso concreto donde el bucle se observa.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -1116,19 +1434,28 @@
      "from": "interruptores",
      "to": "bucles_resonantes",
      "tipo": "contrasta",
-     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación."
+     "descripcion": "Los interruptores cognitivos cortan los bucles de amplificación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "interruptores",
      "to": "seguridad_epistemica",
      "tipo": "apoya",
-     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica."
+     "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "interruptores",
      "to": "autonomia",
      "tipo": "apoya",
-     "descripcion": "Los interruptores cognitivos protegen la autonomía."
+     "descripcion": "Los interruptores cognitivos protegen la autonomía.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     }
    ],
    "seguridad_epistemica": [
@@ -1137,6 +1464,9 @@
      "to": "seguridad_epistemica",
      "tipo": "apoya",
      "descripcion": "Los interruptores preservan la autonomía y la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -1144,6 +1474,9 @@
      "to": "seguridad_epistemica",
      "tipo": "apoya",
      "descripcion": "La vigilancia individual sostiene la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -1151,6 +1484,9 @@
      "to": "seguridad_epistemica",
      "tipo": "apoya",
      "descripcion": "La autonomía individual sostiene la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -1159,14 +1495,29 @@
      "from": "presencia_social",
      "to": "apego",
      "tipo": "apoya",
-     "descripcion": "La sensación de presencia social prepara el terreno para el apego."
+     "descripcion": "La sensación de presencia social prepara el terreno para el apego.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "relational_ai",
      "to": "presencia_social",
      "tipo": "causa",
      "descripcion": "La IA relacional produce una fuerte sensación de presencia social.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
+    },
+    {
+     "from": "presencia_social",
+     "to": "confianza_calibrada",
+     "tipo": "apoya",
+     "descripcion": "La presencia social parece facilitar que la confianza se calibre con el agente.",
+     "confianza": 0.45,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "confianza_calibrada": [
@@ -1174,13 +1525,29 @@
      "from": "confianza_calibrada",
      "to": "vigilancia_epistemica",
      "tipo": "apoya",
-     "descripcion": "Calibrar la confianza sostiene la vigilancia epistémica."
+     "descripcion": "Calibrar la confianza sostiene la vigilancia epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "apego",
      "to": "confianza_calibrada",
      "tipo": "contrasta",
      "descripcion": "El apego descalibra la confianza en vez de ajustarla.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
+     "invertida": true
+    },
+    {
+     "from": "presencia_social",
+     "to": "confianza_calibrada",
+     "tipo": "apoya",
+     "descripcion": "La presencia social parece facilitar que la confianza se calibre con el agente.",
+     "confianza": 0.45,
+     "anclaje": "inferida",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -1189,13 +1556,28 @@
      "from": "espejado",
      "to": "refuerzo_linguistico",
      "tipo": "ejemplifica",
-     "descripcion": "El espejado es un caso concreto de refuerzo lingüístico."
+     "descripcion": "El espejado es un caso concreto de refuerzo lingüístico.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "espejado",
      "to": "co_creacion",
      "tipo": "causa",
-     "descripcion": "El espejado produce la sensación de estar co-creando."
+     "descripcion": "El espejado produce la sensación de estar co-creando.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "espejado",
+     "to": "apego",
+     "tipo": "causa",
+     "descripcion": "El espejado sostenido podría alimentar el apego al agente.",
+     "confianza": 0.4,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "sesgo_confirmacion": [
@@ -1203,13 +1585,19 @@
      "from": "sesgo_confirmacion",
      "to": "camaras_eco",
      "tipo": "causa",
-     "descripcion": "El sesgo de confirmación alimenta las cámaras de eco."
+     "descripcion": "El sesgo de confirmación alimenta las cámaras de eco.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "bucles_resonantes",
      "to": "sesgo_confirmacion",
      "tipo": "generaliza",
      "descripcion": "El bucle resonante abstrae y recombina el sesgo de confirmación.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     }
    ],
@@ -1218,20 +1606,38 @@
      "from": "objeto_interno",
      "to": "internalizacion",
      "tipo": "generaliza",
-     "descripcion": "El objeto interno es la forma general de lo que la internalización produce."
+     "descripcion": "El objeto interno es la forma general de lo que la internalización produce.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
     },
     {
      "from": "internalizacion",
      "to": "objeto_interno",
      "tipo": "requiere",
      "descripcion": "Internalizar exige que se forme un objeto interno.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "objeto_interno",
      "to": "resistencia_correccion",
      "tipo": "causa",
-     "descripcion": "Un objeto interno consolidado produce resistencia a la corrección."
+     "descripcion": "Un objeto interno consolidado produce resistencia a la corrección.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "objeto_interno",
+     "to": "apego",
+     "tipo": "requiere",
+     "descripcion": "Un objeto interno presupone un vínculo de apego previo.",
+     "confianza": 0.35,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "autonomia": [
@@ -1240,13 +1646,28 @@
      "to": "autonomia",
      "tipo": "apoya",
      "descripcion": "Los interruptores cognitivos protegen la autonomía.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
      "from": "autonomia",
      "to": "seguridad_epistemica",
      "tipo": "apoya",
-     "descripcion": "La autonomía individual sostiene la seguridad epistémica."
+     "descripcion": "La autonomía individual sostiene la seguridad epistémica.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1
+    },
+    {
+     "from": "autonomia",
+     "to": "resistencia_correccion",
+     "tipo": "contrasta",
+     "descripcion": "La autonomía epistémica y la resistencia a la corrección se oponen en su efecto sobre el juicio.",
+     "confianza": 0.45,
+     "anclaje": "inferida",
+     "veces": 1
     }
    ],
    "resistencia_correccion": [
@@ -1255,6 +1676,9 @@
      "to": "resistencia_correccion",
      "tipo": "causa",
      "descripcion": "La internalización produce resistencia a la corrección.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
      "invertida": true
     },
     {
@@ -1262,6 +1686,19 @@
      "to": "resistencia_correccion",
      "tipo": "causa",
      "descripcion": "Un objeto interno consolidado produce resistencia a la corrección.",
+     "confianza": 0.85,
+     "anclaje": "verificado",
+     "veces": 1,
+     "invertida": true
+    },
+    {
+     "from": "autonomia",
+     "to": "resistencia_correccion",
+     "tipo": "contrasta",
+     "descripcion": "La autonomía epistémica y la resistencia a la corrección se oponen en su efecto sobre el juicio.",
+     "confianza": 0.45,
+     "anclaje": "inferida",
+     "veces": 1,
      "invertida": true
     }
    ]

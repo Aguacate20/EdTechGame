@@ -68,6 +68,8 @@ export function adaptarBundle(raw: unknown): Contenido {
   for (const c of asList(b.concepts)) {
     const id = str(c?.id)
     if (!id) continue
+    // lo que el profesor rechazó en la revisión no entra a la mesa
+    if (str(c?.status) === 'rechazado') continue
     const nDist = num(c?.n_distractores, 0)
     const nOpt = num(c?.n_opciones, 4)
     conceptos[id] = {
@@ -96,7 +98,8 @@ export function adaptarBundle(raw: unknown): Contenido {
         descripcion: str(s?.description, str(s?.descripcion))
       })),
       tensiones: strArr(c?.tensiones),
-      paginas: arr(c?.paginas).filter((x) => typeof x === 'number')
+      paginas: arr(c?.paginas).filter((x) => typeof x === 'number'),
+      evidencia: str(c?.evidencia_textual, str(c?.evidencia))
     }
   }
   const ordenConceptos = strArr(b.study_plan?.orden).filter((id) => conceptos[id])
@@ -117,16 +120,34 @@ export function adaptarBundle(raw: unknown): Contenido {
   )
 
   /* ---- grafo ---- */
+  // El extractor (v3.5+) emite también los vínculos que INFIERE, con
+  // confianza baja. Hasta v5.35 el adaptador los mezclaba con los afirmados y
+  // el juego decía «el texto lo dice» de algo que el propio extractor declaró
+  // que el texto no trata. Ahora se separan: los afirmados son evidencia, los
+  // inferidos son el terreno de la creatividad respaldada.
+  const UMBRAL_AFIRMADA = 0.6
   const aristas: Arista[] = []
+  const insinuadas: Arista[] = []
   const vistas = new Set<string>()
   const empujar = (e: any) => {
     const from = str(e?.from), to = str(e?.to), tipo = str(e?.tipo)
     if (!from || !to || !tipo) return
     if (bool(e?.invertida)) return
+    if (str(e?.status) === 'rechazado') return
     const k = `${from}|${to}|${tipo}`
     if (vistas.has(k)) return
     vistas.add(k)
-    aristas.push({ from, to, tipo, descripcion: str(e?.descripcion) })
+    // bundles anteriores a 1.1.0 no traen confianza: se tratan como afirmadas
+    const confianza = num(e?.confianza, num(e?.confidence_extraction, 0.8))
+    const anclajeRaw = str(e?.anclaje, str(e?.anclaje_textual, 'verificado'))
+    const arista: Arista = {
+      from, to, tipo, descripcion: str(e?.descripcion),
+      confianza,
+      anclaje: anclajeRaw === 'inferida' ? 'inferida' : 'verificado',
+      veces: Math.max(1, num(e?.veces, num(e?.veces_afirmada, 1)))
+    }
+    if (confianza < UMBRAL_AFIRMADA) insinuadas.push(arista)
+    else aristas.push(arista)
   }
   const porTipo = b.graph?.por_tipo
   if (porTipo && typeof porTipo === 'object') {
@@ -142,7 +163,8 @@ export function adaptarBundle(raw: unknown): Contenido {
   nota(
     'grafo',
     aristas.length > 0 ? 'ok' : 'ausente',
-    `${aristas.length} aristas en ${Object.keys(frecuenciaRelacion).length} tipos`
+    `${aristas.length} aristas afirmadas en ${Object.keys(frecuenciaRelacion).length} tipos` +
+      (insinuadas.length ? ` · ${insinuadas.length} insinuadas (el extractor las infiere: no son evidencia, son creatividad respaldada)` : '')
   )
 
   const clusters = clustersRaw.map((c, i) => ({
@@ -336,6 +358,8 @@ export function adaptarBundle(raw: unknown): Contenido {
 
   /* ---- capas de contenido ---- */
   const repertorios: Repertorio[] = asList(b.content?.repertoires)
+    // lo rechazado por el profesor no entra; lo no revisado entra marcado
+    .filter((r) => str(r?.status) !== 'rechazado')
     .map((r) => ({
       id: str(r?.id),
       conceptId: str(r?.concept_id),
@@ -344,13 +368,16 @@ export function adaptarBundle(raw: unknown): Contenido {
       ejemplo: str(r?.example),
       contrasteCientifico: str(r?.contraste_cientifico),
       contextoDondeFunciona: str(r?.contexto_donde_funciona),
-      conceptoConfundido: str(r?.concepto_confundido) || null
+      conceptoConfundido: str(r?.concepto_confundido) || null,
+      revisado: str(r?.status) === 'aprobado' || str(r?.origin) === 'documentado_en_corpus'
     }))
     .filter((r) => r.id && r.ejemplo && r.contrasteCientifico)
+  const sinRevisar = repertorios.filter((r) => !r.revisado).length
   nota(
     'repertorios',
     repertorios.length >= 8 ? 'ok' : repertorios.length ? 'parcial' : 'ausente',
-    `${repertorios.length} intuiciones previas · alimenta a EL ECO`
+    `${repertorios.length} intuiciones previas · alimenta a EL ECO` +
+      (sinRevisar ? ` · ${sinRevisar} sin revisar por el profesor (se muestran marcadas)` : '')
   )
 
   const casos: Caso[] = asList(b.content?.cases).map((c) => ({
@@ -479,7 +506,7 @@ export function adaptarBundle(raw: unknown): Contenido {
     fuente: str(b.source_filename, 'fuente sin nombre'),
     bundleVersion: str(b.bundle_version, '—'),
     schema: str(b.compiled_from_schema, '—'),
-    conceptos, ordenConceptos, aristas, frecuenciaRelacion, unidades, clusters,
+    conceptos, ordenConceptos, aristas, insinuadas, frecuenciaRelacion, unidades, clusters,
     items, repertorios, casos, escenarios, tesis, marcos, ejes,
     distractores, dominios, condicionesDisponibles, diagnostico: diag
   }

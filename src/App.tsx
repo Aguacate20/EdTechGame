@@ -8,7 +8,7 @@ import {
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
-import type { HerramientaId } from './engine/tools'
+import { esAcierto, esCreacion, esFallo, type HerramientaId } from './engine/tools'
 import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
 import { Rng, semillaLegible } from './engine/rng'
 import {
@@ -469,16 +469,23 @@ export default function App() {
         terrenos: [...new Set([...a.progreso.terrenos, ...e.terrenosGanados])]
       }
     }
+    // El Atlas anota EVIDENCIA (lo que el texto sostiene o se sigue de él) y
+    // FALLO (solo inversiones y errores: regla 3). Todo lo demás —matices,
+    // convivencias, propuestas, lo insinuado— no es ni una cosa ni la otra:
+    // hasta v5.35 se contaba como fallo, y explorar bajaba un concepto a
+    // «se te resiste». Eso era contar la creatividad como error.
     for (const v of r.diag.veredictos) {
       if (v.estado === 'silencio') continue
-      const ok = v.estado === 'sostenido' || v.estado === 'equivalente'
+      const ok = esAcierto(v.estado)
+      const mal = esFallo(v.estado)
+      if (!ok && !mal) continue
       for (const cid of v.conceptIds) {
         const prev = a.conceptos[cid] ??
           { aciertos: 0, fallos: 0, mecanicas: [], vecinos: [], conApoyo: 0, ultimaApuestaAcertada: null }
         const otros = v.conceptIds.filter((x) => x !== cid)
         a.conceptos[cid] = {
           aciertos: prev.aciertos + (ok ? 1 : 0),
-          fallos: prev.fallos + (ok ? 0 : 1),
+          fallos: prev.fallos + (mal ? 1 : 0),
           mecanicas: ok ? [...new Set([...prev.mecanicas, v.trazo.tool])] : prev.mecanicas,
           vecinos: ok ? [...new Set([...(prev.vecinos ?? []), ...otros])] : (prev.vecinos ?? []),
           conApoyo: (prev.conApoyo ?? 0) + (ok && e.apoyo ? 1 : 0),
@@ -493,8 +500,11 @@ export default function App() {
     if (r.diag.repertoriosReubicados.length) {
       a.repertoriosEstabilizados = [...new Set([...a.repertoriosEstabilizados, ...r.diag.repertoriosReubicados])]
     }
-    a.apuestasTotales += r.diag.veredictos.length
-    a.apuestasCalibradas += r.diag.sostenidos
+    // calibración: cuántas afirmaciones se sostuvieron. Las creaciones
+    // (insinuado, propuesta) no son apuestas de lectura y no entran al cociente.
+    const apuestas = r.diag.veredictos.filter((v) => !esCreacion(v.estado))
+    a.apuestasTotales += apuestas.length
+    a.apuestasCalibradas += apuestas.filter((v) => esAcierto(v.estado)).length
     if (r.sello) {
       a.srl = { ...a.srl, sellosHechos: a.srl.sellosHechos + 1,
         sellosAcertados: a.srl.sellosAcertados + (r.sello.acertado ? 1 : 0) }

@@ -1,6 +1,6 @@
 import type { Contenido } from '../content/types'
 import type { Pieza, Rol } from './pieces'
-import { admisibleComoPropuesta, gemelosDe, juzgarVinculo } from './graph'
+import { admisibleComoPropuesta, gemelosDe, juzgarVinculo, type OpcionesJuicio } from './graph'
 
 /* ==========================================================================
    Las herramientas cognitivas. Cada una es una forma de AFIRMAR algo sobre
@@ -176,16 +176,37 @@ export type Estado =
   | 'equivalente'  // forma dual o simétrica: la misma afirmación dicha al revés
   | 'compatible'   // el texto lo dice de otro modo, pero lo tuyo también es cierto
   | 'derivado'     // no lo dice, pero se sigue de dos vínculos que sí están
+  | 'insinuado'    // no lo dice, pero lo deja entrever (el extractor lo infirió): lo viste tú
   | 'convive'      // el texto los trata juntos, aunque no enuncie el vínculo
   | 'aproximado'   // el vínculo existe; el tipo es de la misma familia o vecino
-  | 'plausible'    // no lo dice, pero están cerca en el grafo: sin castigo
+  | 'propuesta'    // no lo dice, pero están CERCA en el grafo: conexión tuya, se guarda
+  | 'plausible'    // no lo dice; solo comparten página: sin castigo, no se guarda
   | 'silencio'     // nada
   | 'invertido'    // el texto dice lo contrario, con un tipo que sí tiene dirección
   | 'error'        // falsificación afirmada como verdadera, o tachón injusto
 
-/** Los que cuentan como acierto para combos, alcance y Atlas. */
+/** Los que cuentan como EVIDENCIA: combos, alcance y Atlas. Solo lo que el
+ *  texto sostiene o lo que se sigue de él. */
 export const ACIERTA: Estado[] = ['sostenido', 'equivalente', 'compatible', 'derivado']
 export const esAcierto = (e: Estado): boolean => ACIERTA.includes(e)
+
+/** Los que cuentan como LOGRO: sostienen la racha y curan la sequía. Incluye
+ *  lo insinuado —una lectura entre líneas es un logro aunque no sea evidencia—
+ *  pero no las propuestas: proponer es libre, no es sostener. */
+export const LOGRA: Estado[] = [...ACIERTA, 'insinuado']
+export const esLogro = (e: Estado): boolean => LOGRA.includes(e)
+
+/** Los que son CREATIVIDAD: conexiones que el texto no enuncia y el lector sí.
+ *  Van a la capa propia del Atlas, nunca a la evidencia. */
+export const CREA: Estado[] = ['insinuado', 'propuesta']
+export const esCreacion = (e: Estado): boolean => CREA.includes(e)
+
+/** Los que son FALLO, y los únicos que el Atlas anota como tal (regla 3: lo
+ *  que el texto no dice no castiga). Un matiz impreciso, una convivencia o
+ *  una propuesta no son fallos: son otra cosa, y contarlos como fallo haría
+ *  que explorar bajara un concepto a «se te resiste». */
+export const FALLA: Estado[] = ['invertido', 'error']
+export const esFallo = (e: Estado): boolean => FALLA.includes(e)
 
 export interface Veredicto {
   trazo: Trazo
@@ -205,7 +226,18 @@ export interface Veredicto {
   /** el veredicto salió de una inferencia, no de una lectura literal */
   inferencia: boolean
   /** conexión que el texto no hace y que el lector propone: se guarda aparte */
-  propuesta: { from: string; to: string; tipo: string; motivo: string } | null
+  propuesta: Propuesta | null
+}
+
+/** Una conexión propia del lector, con qué la respalda. */
+export interface Propuesta {
+  from: string
+  to: string
+  tipo: string
+  motivo: string
+  /** texto_insinua: el extractor la infirió (creatividad respaldada);
+   *  vecino_comun / misma_zona: cerca en el grafo (creatividad admisible) */
+  respaldo: 'texto_insinua' | 'vecino_comun' | 'misma_zona'
 }
 
 /** Cada pasiva toca un eje distinto a propósito: así apilarlas nunca es
@@ -257,7 +289,7 @@ export const SIN_LENTES: ModificadoresLente = {
 export type ComboId =
   | 'articulacion' | 'constelacion' | 'cierre' | 'doble_registro'
   | 'refutacion_completa' | 'traduccion' | 'coherencia'
-  | 'veta' | 'mestizaje'
+  | 'veta' | 'mestizaje' | 'hallazgo'
 
 export interface Combo {
   id: ComboId
@@ -276,7 +308,8 @@ const NOMBRE_COMBO: Record<ComboId, string> = {
   traduccion: 'Traducción',
   coherencia: 'Coherencia',
   veta: 'Veta',
-  mestizaje: 'Mestizaje'
+  mestizaje: 'Mestizaje',
+  hallazgo: 'Hallazgo'
 }
 
 /** Un ajuste de recompensa aplicado DESPUÉS de la cuenta base (condición de
@@ -315,7 +348,9 @@ export interface Diagnostico {
   aristas: { from: string; to: string; tipo: string }[]
   fusiona: string[]
   /** lo que el lector propone y el texto no dice: capa aparte del Atlas */
-  propuestas: { from: string; to: string; tipo: string; motivo: string }[]
+  propuestas: Propuesta[]
+  /** cuántas creaciones (insinuadas + propuestas) llevó este diagrama */
+  creaciones: number
   apocrifasDetectadas: string[]
   repertoriosReubicados: string[]
   autodano: number
@@ -358,13 +393,21 @@ const PESO: Record<Estado, { f: number; m: number }> = {
   equivalente: { f: 1, m: 1 },
   compatible: { f: 0.9, m: 0.85 },
   derivado: { f: 0.7, m: 0.65 },
+  // lo insinuado paga casi como una inferencia: el texto lo deja entrever y
+  // el lector lo vio. Determinista, como toda recompensa a la creatividad.
+  insinuado: { f: 0.65, m: 0.55 },
   convive: { f: 0.55, m: 0.45 },
   aproximado: { f: 0.5, m: 0.35 },
+  // una conexión propia entre conceptos cercanos vale el doble que antes:
+  // proponer con criterio es lo que hace un lector crítico
+  propuesta: { f: 0.35, m: 0.2 },
   plausible: { f: 0.18, m: 0 },
   silencio: { f: 0, m: 0 },
   invertido: { f: 0, m: -1 },
   error: { f: 0, m: -0.6 }
 }
+/** `aproximado` con el tipo de OTRA familia: otra afirmación, no otro matiz. */
+const PESO_APROXIMADO_LEJANO = { f: 0.3, m: 0.2 }
 
 const titulo = (c: Contenido, id: string | null) => (id && c.conceptos[id]?.titulo) || '—'
 
@@ -443,7 +486,9 @@ function juzgarMixto(
   }
 }
 
-function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
+function validarFlecha(
+  c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente, opciones: OpcionesJuicio = {}
+): Veredicto {
   const v = vacio(t, 'relacion')
   const [a, b] = ps
   const tipo = t.param ?? 'apoya'
@@ -481,7 +526,7 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
   const rb = resolver(b)
   if (!ra.id || !rb.id) return { ...v, nota: 'Esa pieza no es un nodo del texto.' }
 
-  let h = juzgarVinculo(c, ra.id, rb.id, tipo)
+  let h = juzgarVinculo(c, ra.id, rb.id, tipo, opciones)
   let desde = ra.id
   let hasta = rb.id
   let porContenido = false
@@ -495,7 +540,7 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
       from: a.clase === 'apocrifa' ? (a.duenoReal ?? ra.id) : ra.id,
       to: b.clase === 'apocrifa' ? (b.duenoReal ?? rb.id) : rb.id
     }
-    const h2 = juzgarVinculo(c, alt.from, alt.to, tipo)
+    const h2 = juzgarVinculo(c, alt.from, alt.to, tipo, opciones)
     if (ACIERTA_H.includes(h2.estado)) {
       h = h2
       desde = alt.from
@@ -506,13 +551,18 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
 
   const MAPA: Record<string, Estado> = {
     sostenida: 'sostenido', equivalente: 'equivalente', compatible: 'compatible',
-    derivada: 'derivado',
+    derivada: 'derivado', insinuada: 'insinuado',
     aproximada: 'aproximado', convive: 'convive', plausible: 'plausible',
     muda: 'silencio', invertida: 'invertido'
   }
-  const estado = MAPA[h.estado] ?? 'silencio'
+  // una corazonada entre conceptos CERCANOS es una propuesta (se guarda y se
+  // paga); compartir solo página se queda en plausible (sin castigo, no se anota)
+  const motivoPropuesta = h.estado === 'plausible' && !ra.reserva && !rb.reserva
+    ? admisibleComoPropuesta(c, ra.id, rb.id) : null
+  const estado: Estado = h.estado === 'plausible' && motivoPropuesta
+    ? 'propuesta' : (MAPA[h.estado] ?? 'silencio')
   const imp = (a.importancia + b.importancia) / 2
-  const peso = PESO[estado]
+  const peso = estado === 'aproximado' && h.lejana ? PESO_APROXIMADO_LEJANO : PESO[estado]
   const fichasBase = 8 + Math.round(12 * imp) + lentes.fichasPorSostenido
   const multBase = rarezaRelacion(c, h.tipoReal ?? tipo) + (lentes.multPorTipo[tipo] ?? 0)
   const reserva = ra.reserva ?? rb.reserva
@@ -533,14 +583,16 @@ function validarFlecha(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
     })(),
     reserva,
     inferencia: estado === 'derivado',
-    // una propuesta solo se guarda si los conceptos están cerca en el grafo:
-    // el listón evita que la capa propia se llene de corazonadas sin fondo
-    propuesta: estado === 'plausible' && !ra.reserva && !rb.reserva
-      ? (() => {
-          const motivo = admisibleComoPropuesta(c, desde, hasta)
-          return motivo ? { from: desde, to: hasta, tipo, motivo } : null
-        })()
-      : null,
+    // la capa propia del lector: lo insinuado (respaldado por el extractor) y
+    // las propuestas entre conceptos cercanos. Ni lo uno ni lo otro es
+    // evidencia, y por eso viven aparte; pero se guardan, se cuentan y pagan.
+    propuesta: estado === 'insinuado' && !ra.reserva && !rb.reserva
+      ? { from: desde, to: hasta, tipo, respaldo: 'texto_insinua',
+          motivo: `el texto lo deja entrever (como «${h.tipoReal ?? tipo}»)` }
+      : estado === 'propuesta' && motivoPropuesta
+        ? { from: desde, to: hasta, tipo, motivo: motivoPropuesta,
+            respaldo: motivoPropuesta.startsWith('ambos') ? 'vecino_comun' : 'misma_zona' }
+        : null,
     conceptIds: [desde, hasta],
     // el Atlas solo recoge lo que el texto afirma literalmente, no lo inferido
     aristas: estado === 'sostenido' || estado === 'equivalente' || estado === 'compatible'
@@ -967,7 +1019,7 @@ function validarDescomposicion(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Mod
   return { ...v, reserva, nota: 'Las partes se toman de las subdimensiones que el texto declara.' }
 }
 
-const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l: ModificadoresLente) => Veredicto> = {
+const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l: ModificadoresLente, o?: OpcionesJuicio) => Veredicto> = {
   flecha: validarFlecha,
   identidad: validarIdentidad,
   campo: validarCampo,
@@ -987,7 +1039,8 @@ const VALIDADORES: Record<HerramientaId, (c: Contenido, t: Trazo, ps: Pieza[], l
    ========================================================================== */
 
 export function evaluarDiagrama(
-  c: Contenido, piezas: Pieza[], trazos: Trazo[], lentes: ModificadoresLente = SIN_LENTES
+  c: Contenido, piezas: Pieza[], trazos: Trazo[], lentes: ModificadoresLente = SIN_LENTES,
+  opciones: OpcionesJuicio = {}
 ): Diagnostico {
   const porUid = new Map(piezas.map((p) => [p.uid, p]))
   const veredictos: Veredicto[] = []
@@ -999,7 +1052,7 @@ export function evaluarDiagrama(
       veredictos.push({ ...vacio(t, h.dimension), nota: `${h.nombre} necesita al menos ${h.aridad[0]} piezas.` })
       continue
     }
-    const ver = VALIDADORES[t.tool](c, t, ps, lentes)
+    const ver = VALIDADORES[t.tool](c, t, ps, lentes, opciones)
     const extra = lentes.multPorHerramienta[t.tool] ?? 0
     veredictos.push({ ...ver, mult: ver.mult + (ver.estado === 'sostenido' ? extra : 0) })
   }
@@ -1010,7 +1063,7 @@ export function evaluarDiagrama(
   const anclas = veredictos.filter((v) => v.trazo.tool === 'ancla' && esAcierto(v.estado))
   if (anclas.length) {
     for (const v of veredictos) {
-      if (v.estado !== 'plausible' || v.conceptIds.length < 2) continue
+      if ((v.estado !== 'plausible' && v.estado !== 'propuesta') || v.conceptIds.length < 2) continue
       const [a, b] = v.conceptIds
       const sostenida = anclas.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
       if (!sostenida) continue
@@ -1116,6 +1169,20 @@ export function evaluarDiagrama(
     }
   }
 
+  // Hallazgo: creatividad ANCLADA. Proponer lo que el texto no dice, en el
+  // mismo diagrama en que sostienes lo que sí dice. Es la marca del lector
+  // crítico —añade sin inventar— y se paga siempre, nunca al azar. Exige al
+  // menos un sostenido: una propuesta suelta es una corazonada; junto a
+  // evidencia es una lectura.
+  const creaciones = veredictos.filter((v) => esCreacion(v.estado))
+  if (creaciones.length && sostenidos.length >= 1) {
+    const respaldadas = creaciones.filter((v) => v.estado === 'insinuado').length
+    anadir('hallazgo', 6 * creaciones.length + 6 * respaldadas, 0.6 + 0.3 * respaldadas,
+      respaldadas
+        ? `${creaciones.length} conexión(es) tuya(s), ${respaldadas} que el texto insinúa, junto a lo que sí sostiene.`
+        : `${creaciones.length} conexión(es) tuya(s) junto a lo que el texto sí sostiene.`)
+  }
+
   const umbrales = new Set(
     sostenidos.flatMap((v) => v.conceptIds).filter((id) => c.conceptos[id]?.esUmbral)
   ).size
@@ -1129,7 +1196,7 @@ export function evaluarDiagrama(
   if (nInf) fichas += lentes.fichasPorInferencia * nInf
   if (aproximados.length) mult += lentes.multPorAproximado * aproximados.length
   if (lentes.plausibleCuenta) {
-    const pl = veredictos.filter((v) => v.estado === 'plausible').length
+    const pl = veredictos.filter((v) => v.estado === 'plausible' || v.estado === 'propuesta').length
     fichas += pl * 6
   }
   // un error resta, pero ya no derrumba el diagrama entero: lo demás sigue en pie
@@ -1186,6 +1253,7 @@ export function evaluarDiagrama(
     aristas: sostenidos.flatMap((v) => v.aristas),
     fusiona: [...new Set(sostenidos.flatMap((v) => v.fusiona))],
     propuestas: veredictos.map((v) => v.propuesta).filter((x): x is NonNullable<typeof x> => !!x),
+    creaciones: creaciones.length,
     apocrifasDetectadas: sostenidos.map((v) => v.apocrifaDetectada).filter((x): x is string => !!x),
     repertoriosReubicados: sostenidos.map((v) => v.repertorioReubicado).filter((x): x is string => !!x),
     autodano: errores.length * 4 + (lentes.sinCastigoInvertido ? 0 : invertidos.length * 3),

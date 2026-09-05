@@ -39,18 +39,25 @@ export interface AccionesBatalla {
 const COLOR_ESTADO: Record<string, string> = {
   sostenido: 'var(--verdigris)', equivalente: 'var(--verdigris)',
   compatible: 'var(--verdigris)', derivado: '#7fa8d6',
-  aproximado: 'var(--laton)', plausible: '#a78bd0', silencio: 'var(--niebla)',
+  // la capa propia del lector va en violeta: lo insinuado (respaldado por el
+  // texto entre líneas) más saturado que la propuesta (cercanía en el grafo)
+  insinuado: '#c4a6ee', propuesta: '#a78bd0',
+  aproximado: 'var(--laton)', convive: 'var(--laton)', plausible: '#8a7fa6',
+  silencio: 'var(--niebla)',
   invertido: 'var(--oxido)', error: 'var(--oxido)'
 }
 const ETIQUETA_ESTADO: Record<string, string> = {
   sostenido: 'sostenido', equivalente: 'lo mismo dicho al revés',
   compatible: 'también es cierto',
   derivado: 'se sigue del texto', aproximado: 'vas bien, otro matiz',
-  plausible: 'propuesta tuya', silencio: 'el texto no lo dice',
+  insinuado: 'lo viste tú: el texto lo insinúa', propuesta: 'propuesta tuya',
+  convive: 'el texto los junta', plausible: 'comparten página, nada más',
+  silencio: 'el texto no lo dice',
   invertido: 'al revés', error: 'falla'
 }
 const TONO_NOTA: Record<string, string> = {
   sostenido: 'ok', equivalente: 'ok', compatible: 'ok', derivado: 'ok', aproximado: 'nota',
+  insinuado: 'ok', propuesta: 'nota', convive: 'nota',
   plausible: 'nota', silencio: 'nota', invertido: 'mal', error: 'mal'
 }
 const ETIQUETA: Record<Pieza['clase'], string> = {
@@ -544,6 +551,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                     if (est?.ondulada) return null
                     const dash = est?.dash ?? (t.tool === 'identidad' ? '3 3'
                       : ver?.estado === 'derivado' ? '9 4'
+                      : ver?.estado === 'insinuado' || ver?.estado === 'propuesta' ? '4 5'
                       : ver?.estado === 'plausible' ? '2 6' : undefined)
                     const ancho = est?.ancho ?? 2.4
                     return (
@@ -574,7 +582,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                       {ver.estado === 'sostenido' ? '✓' : ver.estado === 'equivalente' ? '✓ ='
                       : ver.estado === 'compatible' ? '✓ también'
                         : ver.estado === 'derivado' ? '✓ se sigue' : ver.estado === 'aproximado' ? '≈'
-                        : ver.estado === 'plausible' ? '✎' : ver.estado === 'invertido' ? '↺' : '·'}
+                        : ver.estado === 'insinuado' ? '✎ lo viste' : ver.estado === 'propuesta' ? '✎'
+                        : ver.estado === 'convive' ? '~' : ver.estado === 'plausible' ? '·'
+                        : ver.estado === 'invertido' ? '↺' : '·'}
                     </text>
                   )}
                 </g>

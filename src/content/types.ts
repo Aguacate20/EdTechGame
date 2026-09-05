@@ -29,6 +29,10 @@ export interface Concepto {
   subdimensiones: Subdimension[]
   tensiones: string[]
   paginas: number[]
+  /** cita LITERAL del texto donde el concepto aparece, verificada por el
+   *  extractor carácter por carácter. Es el ancla que devuelve al lector al
+   *  documento: el juego la muestra, nunca la parafrasea. */
+  evidencia: string
 }
 
 export interface Arista {
@@ -36,6 +40,14 @@ export interface Arista {
   to: string
   tipo: string
   descripcion: string
+  /** 0..1 según el extractor: ≥0.8 el texto lo afirma, 0.6–0.8 lo implica,
+   *  <0.6 el extractor lo INFIERE del sentido de los conceptos (el texto no
+   *  lo trata). Las inferidas no viven en `aristas`: van a `insinuadas`. */
+  confianza: number
+  /** ¿la descripción cita el texto (verificado) o el extractor la sintetizó? */
+  anclaje: 'verificado' | 'inferida'
+  /** cuántos lotes independientes del extractor afirmaron lo mismo */
+  veces: number
 }
 
 export interface Repertorio {
@@ -47,6 +59,8 @@ export interface Repertorio {
   contrasteCientifico: string
   contextoDondeFunciona: string
   conceptoConfundido: string | null
+  /** false = el extractor la infirió y ningún profesor la ha aprobado aún */
+  revisado: boolean
 }
 
 export interface Caso {
@@ -168,7 +182,12 @@ export interface Contenido {
   schema: string
   conceptos: Record<string, Concepto>
   ordenConceptos: string[]
+  /** vínculos que el texto AFIRMA o IMPLICA (confianza ≥ 0.6) */
   aristas: Arista[]
+  /** vínculos que el extractor INFIERE (confianza < 0.6): el texto los deja
+   *  entre líneas. No son evidencia; son la materia de la creatividad
+   *  respaldada: si el lector los propone, «lo viste tú». */
+  insinuadas: Arista[]
   frecuenciaRelacion: Record<string, number>
   unidades: Unidad[]
   clusters: { id: string; label: string; conceptIds: string[] }[]

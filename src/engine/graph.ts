@@ -151,8 +151,9 @@ export function mismaPagina(c: Contenido, a: string, b: string): number[] {
  *  Vecino común o mismo cluster: afirmar algo entre ellos es plausible,
  *  no absurdo, y no debe castigarse. */
 export function proximidad(c: Contenido, a: string, b: string): 'vecino_comun' | 'mismo_cluster' | null {
+  const todas = [...c.aristas, ...(c.insinuadas ?? [])]
   const vec = (id: string) => new Set(
-    c.aristas.filter((x) => x.from === id || x.to === id).map((x) => (x.from === id ? x.to : x.from))
+    todas.filter((x) => x.from === id || x.to === id).map((x) => (x.from === id ? x.to : x.from))
   )
   const va = vec(a), vb = vec(b)
   for (const x of va) if (vb.has(x)) return 'vecino_comun'
@@ -163,10 +164,27 @@ export function proximidad(c: Contenido, a: string, b: string): 'vecino_comun' |
 }
 
 export interface Hallazgo {
-  estado: 'sostenida' | 'equivalente' | 'compatible' | 'aproximada' | 'derivada' | 'convive' | 'plausible' | 'muda' | 'invertida'
+  estado:
+    | 'sostenida' | 'equivalente' | 'compatible' | 'aproximada' | 'derivada'
+    /** el texto no lo enuncia, pero el extractor lo lee entre líneas: si el
+     *  lector lo propone, «lo viste tú». No es evidencia; es creatividad
+     *  respaldada por el propio material. */
+    | 'insinuada'
+    | 'convive' | 'plausible' | 'muda' | 'invertida'
   tipoReal: string | null
   nota: string
   camino: Camino | null
+  /** en `aproximada`: el tipo afirmado es de OTRA familia que el real. No es
+   *  un matiz de etiqueta, es otra afirmación: vale menos. */
+  lejana?: boolean
+}
+
+export interface OpcionesJuicio {
+  /** tipos de vínculo que el jugador PUEDE afirmar ahora. Si el texto dice
+   *  «causa» y ese verbo todavía no se ha descubierto, forzar «apoya» no es
+   *  imprecisión del lector: es una restricción del juego, y no debe costarle
+   *  la evidencia. */
+  tiposDisponibles?: string[]
 }
 
 /** El corazón del arreglo: una escalera de veredictos en vez de acierto/error.
@@ -187,11 +205,14 @@ export function admisibleComoPropuesta(c: Contenido, a: string, b: string): stri
 }
 
 export function juzgarVinculo(
-  c: Contenido, from: string, to: string, tipo: string
+  c: Contenido, from: string, to: string, tipo: string, opciones: OpcionesJuicio = {}
 ): Hallazgo {
   const T = (id: string) => c.conceptos[id]?.titulo ?? id
   const directa = c.aristas.filter((x) => x.from === from && x.to === to)
   const inversa = c.aristas.filter((x) => x.from === to && x.to === from)
+  const disponibles = opciones.tiposDisponibles
+  // ¿el verbo real todavía está bloqueado para este jugador?
+  const bloqueado = (t: string) => !!disponibles && disponibles.length > 0 && !disponibles.includes(t)
 
   const exacta = directa.find((x) => x.tipo === tipo)
   if (exacta) return { estado: 'sostenida', tipoReal: exacta.tipo, nota: exacta.descripcion, camino: null }
@@ -233,6 +254,13 @@ export function juzgarVinculo(
   // misma familia en la misma dirección: impreciso, no falso
   const pariente = directa.find((x) => mismaFamilia(x.tipo, tipo))
   if (pariente) {
+    if (bloqueado(pariente.tipo)) {
+      return {
+        estado: 'compatible', tipoReal: pariente.tipo, camino: null,
+        nota: `El texto lo dice como «${pariente.tipo}», un verbo que todavía no has descubierto: ` +
+          `viste el vínculo y eso es lo que cuenta. ${pariente.descripcion}`
+      }
+    }
     return {
       estado: 'aproximada', tipoReal: pariente.tipo,
       nota: `Vas bien: el texto lo dice como «${pariente.tipo}». ${pariente.descripcion}`,
@@ -240,8 +268,17 @@ export function juzgarVinculo(
     }
   }
   if (directa.length) {
+    if (bloqueado(directa[0].tipo)) {
+      return {
+        estado: 'compatible', tipoReal: directa[0].tipo, camino: null,
+        nota: `El texto lo dice como «${directa[0].tipo}», un verbo que todavía no has descubierto: ` +
+          `viste el vínculo y eso es lo que cuenta. ${directa[0].descripcion}`
+      }
+    }
+    // otra familia: no es un matiz de etiqueta, es otra afirmación sobre el
+    // mismo par. Vale menos que confundir «apoya» con «extiende».
     return {
-      estado: 'aproximada', tipoReal: directa[0].tipo,
+      estado: 'aproximada', tipoReal: directa[0].tipo, lejana: true,
       nota: `El vínculo existe, pero es de otra clase: «${directa[0].tipo}». ${directa[0].descripcion}`,
       camino: null
     }
@@ -249,9 +286,10 @@ export function juzgarVinculo(
   // se sigue de dos vínculos que sí están: es inferencia, no memoria
   const der = derivacion(c, from, to, tipo)
   if (der) {
+    const cadena = T(der.pasos[0].from) + der.pasos.map((p) => ` ${p.tipo} ${T(p.to)}`).join('')
     return {
       estado: 'derivada', tipoReal: tipo, camino: der,
-      nota: `El texto no lo dice directamente, pero se sigue: ${T(der.pasos[0].from)} ${der.pasos[0].tipo} ${T(der.pasos[0].to)} ${der.pasos[1].tipo} ${T(der.pasos[1].to)}.`
+      nota: `El texto no lo dice directamente, pero se sigue${der.pasos.length === 3 ? ' (en tres pasos)' : ''}: ${cadena}.`
     }
   }
   // invertida: solo es error si el tipo tiene dirección
@@ -299,6 +337,22 @@ export function juzgarVinculo(
     }
   }
 
+  // insinuada: el extractor leyó este vínculo entre líneas (confianza baja,
+  // «el texto no lo trata»). No es evidencia de lectura; es creatividad
+  // respaldada por el propio material, y se paga como tal.
+  const insinuada = c.insinuadas.find((x) =>
+    (x.from === from && x.to === to) ||
+    ((SIMETRICOS.has(x.tipo) || SIMETRICOS.has(tipo)) && x.from === to && x.to === from) ||
+    (DUALES[tipo] && x.from === to && x.to === from && x.tipo === DUALES[tipo]))
+  if (insinuada) {
+    const mismo = insinuada.tipo === tipo || DUALES[tipo] === insinuada.tipo
+    return {
+      estado: 'insinuada', tipoReal: insinuada.tipo, camino: null,
+      nota: mismo
+        ? `El texto no lo enuncia, pero lo insinúa — y lo viste tú: ${insinuada.descripcion}`
+        : `El texto no lo enuncia, pero deja entrever un vínculo (como «${insinuada.tipo}») — y lo viste tú: ${insinuada.descripcion}`
+    }
+  }
   // el texto los trata juntos aunque no enuncie el vínculo
   const juntos = convivencia(c, from, to)
   if (juntos) {

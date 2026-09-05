@@ -57,6 +57,17 @@ E = [
   ("relational_ai","bucles_resonantes","ejemplifica","La IA relacional es el caso concreto donde el bucle se observa."),
 ]
 
+# Vínculos INSINUADOS: los que el extractor v3.5+ infiere del sentido de los
+# conceptos con confianza baja («el texto no la trata»). No son evidencia; si
+# el lector los propone, el juego responde «lo viste tú».
+INS = [
+  ("presencia_social","confianza_calibrada","apoya","La presencia social parece facilitar que la confianza se calibre con el agente.",0.45),
+  ("espejado","apego","causa","El espejado sostenido podría alimentar el apego al agente.",0.4),
+  ("camaras_eco","vigilancia_epistemica","contrasta","Las cámaras de eco se leen como el escenario donde la vigilancia epistémica deja de operar.",0.5),
+  ("autonomia","resistencia_correccion","contrasta","La autonomía epistémica y la resistencia a la corrección se oponen en su efecto sobre el juicio.",0.45),
+  ("objeto_interno","apego","requiere","Un objeto interno presupone un vínculo de apego previo.",0.35),
+]
+
 REPS = [
   ("rep_apego","apego","El apego como simple afinidad",
    "Un cliente habitual confía a ciegas en la recomendación del barista porque le cae bien.",
@@ -262,10 +273,24 @@ for (sid, desc, cids, dist, dom, res, err) in ESCEN:
 
 por_tipo, ady = {}, {cid: [] for cid in conceptos}
 for (a, b, tipo, desc) in E:
-    e = dict(**{"from": a}, to=b, tipo=tipo, descripcion=desc)
+    # confianza y anclaje como en el bundle 1.1.0: afirmadas por el texto
+    e = dict(**{"from": a}, to=b, tipo=tipo, descripcion=desc,
+             confianza=0.85, anclaje="verificado", veces=1)
     por_tipo.setdefault(tipo, []).append(e)
     ady[a].append(e)
-    ady[b].append(dict(**{"from": a}, to=b, tipo=tipo, descripcion=desc, invertida=True))
+    ady[b].append(dict(e, invertida=True))
+for (a, b, tipo, desc, conf) in INS:
+    e = dict(**{"from": a}, to=b, tipo=tipo, descripcion=desc,
+             confianza=conf, anclaje="inferida", veces=1)
+    por_tipo.setdefault(tipo, []).append(e)
+    ady[a].append(e)
+    ady[b].append(dict(e, invertida=True))
+
+# cita literal de muestra por concepto: en un bundle real sale del PDF,
+# verificada carácter por carácter por el extractor
+for cid, c in conceptos.items():
+    c["evidencia_textual"] = c["definicion_corta"].split(",")[0].rstrip(".") + "…"
+    c["status"] = "aprobado"
 
 clusters = {}
 for (cid, *_rest) in C:
@@ -283,7 +308,7 @@ PROFUNDIDAD = {k: ("superficial" if v < 0.5 else "profundo")
                for k, v in ((cid, c["dificultad_objetivo"]) for cid, c in conceptos.items())}
 
 bundle = dict(
-    bundle_version="1.0.0-demo", compiled_from_schema="2.1.0",
+    bundle_version="1.1.0-demo", compiled_from_schema="2.1.0",
     source_filename="Bundle de muestra — amplificación resonante (contenido abreviado)",
     course_id="demo", fuentes=[dict(id="demo", title="Bundle de muestra")],
     concepts=conceptos,

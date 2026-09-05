@@ -4,8 +4,8 @@ import {
   piezaMarco, piezaTesis, piezasCriterio, piezasSubdimension, type Pieza
 } from './pieces'
 import {
-  esAcierto, evaluarDiagrama, HERRAMIENTAS, type Diagnostico, type Dimension,
-  type HerramientaId, type ModificadoresLente, type Trazo
+  esAcierto, esCreacion, esFallo, esLogro, evaluarDiagrama, HERRAMIENTAS, type Diagnostico, type Dimension,
+  type HerramientaId, type ModificadoresLente, type Propuesta, type Trazo
 } from './tools'
 import {
   crearEnemigo, factorBlindaje, generarOleada, tipoPorId, type Dificultad, type Enemigo
@@ -16,7 +16,7 @@ import { piezaContexto } from './pieces'
 import { armarDisparo, type Disparo } from './weapons'
 import { componerOleadas, oleadaDePuerta, type NivelApoyo, type Oleada } from './aprendizaje'
 import { juzgarSello, PRIMA_MARCADO, SELLO_FALLA, SELLO_X, type Encargo } from './srl'
-import { manoJugable, repararApertura, robarRepartido } from './dealer'
+import { manoJugable, repararApertura, repartirApertura, robarRepartido, type InformeApertura } from './dealer'
 
 /* ==========================================================================
    Estado de la batalla. El tablero es libre: las piezas se sueltan donde el
@@ -164,6 +164,14 @@ export interface EstadoBatalla {
   secos: number
   /** conceptos recién cambiados: el Repartidor no los devuelve enseguida */
   vetadasReparto: string[]
+  /** qué garantizó el Repartidor en la apertura de esta sala */
+  apertura: InformeApertura | null
+  /** aviso de la piedad del Archivo (un cambio extra tras dos turnos secos) */
+  avisoPiedad: string | null
+  /** turnos que pasaron sin afirmar nada: la mano llena sin jugada */
+  turnosVacios: number
+  /** creaciones (insinuadas + propuestas) a lo largo del combate */
+  creacionesTotales: number
 }
 
 /* Lo que el jugador sostuvo durante el combate, guardado para el mapa de cierre.
@@ -193,6 +201,9 @@ export interface Hallazgos {
   grupos: Grupo[]
   /** conceptos cuyo nombre emparejaste con su descripción */
   reconocidos: string[]
+  /** la capa propia: lo que propusiste y el texto no dice (insinuadas y
+   *  propuestas). Se dibujan aparte, en violeta: no son evidencia, son lectura. */
+  propuestas: (Propuesta & { veces: number })[]
 }
 
 export interface ContextoBatalla {
@@ -316,7 +327,7 @@ export function iniciarBatalla(
     sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
     bonusMult: 0, carrilCongelado: false,
     quemasAcertadas: 0, inferenciasTotales: 0,
-    hallazgos: { vinculos: [], grupos: [], reconocidos: [] },
+    hallazgos: { vinculos: [], grupos: [], reconocidos: [], propuestas: [] },
     relacionesNuevas: [],
     inicioTurno: Date.now(), latencias: [], terrenosGanados: [], mejorGolpe: { dano: 0, fichas: 0, mult: 0, trazos: 0 },
     encargo: null, encargosOfrecidos: [], sellado: false, sellosHechos: 0, sellosAcertados: 0,
@@ -324,7 +335,8 @@ export function iniciarBatalla(
     fallosPorConcepto: {}, marcados: bolsa.marcados ?? [],
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
-    secos: 0, vetadasReparto: []
+    secos: 0, vetadasReparto: [],
+    apertura: null, avisoPiedad: null, turnosVacios: 0, creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
@@ -341,7 +353,18 @@ export function iniciarBatalla(
       e.mano = []
     }
   }
-  robar(e, e.manoBase)
+  if (bolsa.mazoFijo) {
+    // tutorial: la mano es la que el guion prescribe, en ese orden
+    robar(e, e.manoBase)
+  } else {
+    // la apertura con plan: una pareja, un puente que valga la pena, una
+    // chispa para proponer, y el resto por ruleta. Nunca una lotería.
+    e.apertura = repartirApertura(e.mano, e.mazo, ctx.contenido, ctx.rng, {
+      acto, marcados: e.marcados, asentadas: e.asentadas,
+      relacionesDisponibles: e.relacionesDisponibles, condicion: e.condicion,
+      tamano: e.manoBase
+    })
+  }
   // el piso del Repartidor: ninguna apertura muda
   repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng, e.condicion)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
@@ -497,7 +520,8 @@ export function cambiar(e: EstadoBatalla, uid: string, ctx?: ContextoBatalla): E
   if (ctx) {
     const carta = robarRepartido(
       e.mazo, e.mano, ctx.contenido, ctx.rng,
-      e.acto, e.secos + 1, e.marcados, e.asentadas, e.vetadasReparto, e.condicion)
+      e.acto, Math.max(e.secos, e.turnosVacios) + 1, e.marcados, e.asentadas, e.vetadasReparto, e.condicion,
+      e.relacionesDisponibles)
     if (carta) e.mano.push(carta)
     else robar(e, 1)
   } else robar(e, 1)
@@ -582,7 +606,10 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   const lentesConBonus = e.bonusMult > 0
     ? { ...ctx.lentes, multGlobal: ctx.lentes.multGlobal + e.bonusMult }
     : ctx.lentes
-  const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, lentesConBonus)
+  // el juez sabe qué verbos puede usar el jugador: si el texto dice «causa»
+  // y ese verbo aún no se ha descubierto, decir «apoya» no le cuesta la evidencia
+  const diag = evaluarDiagrama(ctx.contenido, piezas, e.trazos, lentesConBonus,
+    { tiposDisponibles: e.relacionesDisponibles })
   // no se avanza acumulando, se avanza reusando: si el diagrama no toca nada de
   // las oleadas anteriores, rinde la mitad
   if (e.previos.length && diag.dano > 0) {
@@ -633,8 +660,9 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   }
   // racha: turnos seguidos sosteniendo algo. Solo error/inversión la rompen.
   {
-    const aciertosTurno = diag.veredictos.filter((v) => esAcierto(v.estado)).length
-    e.secos = aciertosTurno > 0 ? 0 : e.secos + 1
+    // un logro cura la sequía: lo sostenido y también lo insinuado que viste
+    const logrosTurno = diag.veredictos.filter((v) => esLogro(v.estado)).length
+    e.secos = logrosTurno > 0 ? 0 : e.secos + 1
   }
   if (e.racha > 0 && diag.dano > 0) {
     diag.mult += 0.1 * e.racha
@@ -860,9 +888,12 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   e.invertidosTotales += diag.invertidos
   // la racha respeta la regla 3: el silencio no castiga, así que no la rompe
   if (diag.errores > 0 || diag.invertidos > 0) e.racha = 0
-  else if (diag.sostenidos > 0) e.racha += 1
+  else if (diag.sostenidos > 0 || diag.veredictos.some((v) => v.estado === 'insinuado')) e.racha += 1
+  e.creacionesTotales += diag.creaciones
+  // solo lo que duele es fallo (regla 3): la Marca de cierre se contrasta
+  // contra inversiones y errores, no contra matices ni propuestas
   for (const v of diag.veredictos) {
-    if (esAcierto(v.estado) || v.estado === 'silencio') continue
+    if (!esFallo(v.estado)) continue
     for (const id of v.conceptIds) e.fallosPorConcepto[id] = (e.fallosPorConcepto[id] ?? 0) + 1
   }
   if (diag.dano > e.mejorGolpe.dano) {
@@ -964,6 +995,14 @@ export function avanzarOleada(e: EstadoBatalla, ctx: ContextoBatalla, bolsa: Bol
 function registrarHallazgos(e: EstadoBatalla, diag: Diagnostico): void {
   const h = e.hallazgos
   for (const v of diag.veredictos) {
+    // la capa propia: se anota aparte, nunca entre los vínculos sostenidos
+    if (esCreacion(v.estado) && v.propuesta) {
+      const pr = v.propuesta
+      const ya = h.propuestas.find((x) => x.from === pr.from && x.to === pr.to && x.tipo === pr.tipo)
+      if (ya) ya.veces += 1
+      else h.propuestas.push({ ...pr, veces: 1 })
+      continue
+    }
     if (!esAcierto(v.estado)) continue
     const tool = v.trazo.tool
 
@@ -1082,10 +1121,25 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
 }
 
 export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
+  // un turno que pasó sin afirmar (la fase seguía en «jugando» al pedir el
+  // siguiente) es un turno vacío: la mano no se movió y no entró carta nueva.
+  // Se lee ANTES de reasignar la fase, o contaría vacío cada turno.
+  const veniaVacio = e.fase === 'jugando'
   e.turno += 1
   e.inicioTurno = Date.now()
   e.fase = 'jugando'
   e.ultimoPozo = null
+  e.avisoPiedad = null
+  if (veniaVacio) e.turnosVacios += 1
+  else e.turnosVacios = 0
+  // regla 5: nunca te bloqueas. Con la mano llena, sin jugada y sin cambios,
+  // el turno sería un callejón. Tras un turno vacío (o dos secos) el Archivo
+  // se apiada y devuelve un cambio. Toca la economía de la mano, jamás un
+  // veredicto.
+  if ((e.turnosVacios >= 1 || e.secos >= 2) && e.cambiosRestantes <= 0 && e.mano.length >= e.manoBase) {
+    e.cambiosRestantes = 1
+    e.avisoPiedad = 'El Archivo se apiada: un cambio más. Nadie se queda bloqueado con la mano llena.'
+  }
   const faltan = Math.max(0, e.manoBase - e.mano.length)
   if (ctx) {
     // el Repartidor: robo ponderado por tiers, con piedad y vetos.
@@ -1097,7 +1151,8 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
       }
       const carta = robarRepartido(
         e.mazo, e.mano, ctx.contenido, ctx.rng,
-        e.acto, e.secos, e.marcados, e.asentadas, e.vetadasReparto, e.condicion)
+        e.acto, Math.max(e.secos, e.turnosVacios), e.marcados, e.asentadas, e.vetadasReparto, e.condicion,
+        e.relacionesDisponibles)
       if (carta) e.mano.push(carta)
       else break
     }

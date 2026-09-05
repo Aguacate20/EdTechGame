@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.20
+# El Archivo Infinito — v5.36
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -95,10 +95,17 @@ verdad. Por eso un vínculo no se juzga como acierto o error, sino en una escale
 | **También es cierto** | el texto lo enuncia de otro modo, pero lo tuyo se sostiene igual | 90% |
 | **Derivado** | no lo dice, pero **se sigue** de dos vínculos que sí están | 70% y se marca como inferencia |
 | **Aproximado** | el vínculo existe; tu tipo es de la misma familia | 50% |
+| **Aproximado lejano** | el vínculo existe, pero tu tipo es de OTRA familia: otra afirmación, no otro matiz | 30% |
+| **Insinuado** | el texto no lo enuncia, pero el extractor lo lee entre líneas (confianza < 0.6) — *lo viste tú* | 65%, capa propia, no es evidencia |
 | **Convive** | el texto los trata juntos en el mismo caso, escenario, tesis o marco | 55% |
-| **Propuesta tuya** | vecino común, misma zona o misma página | 18%, y se guarda aparte |
+| **Propuesta tuya** | vecino común o misma zona: conexión tuya, se guarda | 35%, capa propia |
+| **Plausible** | solo comparten página | 18%, no se guarda |
 | **Mudo** | nada | cero, sin castigo |
 | **Invertido** | el texto dice lo contrario, con un tipo que sí tiene dirección | castigo |
+
+Solo **sostenido, equivalente, también es cierto y derivado** son evidencia: alimentan
+el Atlas, los combos y el alcance. Solo **invertido** y **error** son fallo. Todo lo demás
+es otra cosa —matiz, convivencia, creación— y no se anota ni como lo uno ni como lo otro.
 
 **Los vínculos no son alternativas.** Si el texto dice que A *extiende* B, también es
 cierto que A *requiere* B: no se amplía lo que no está antes. El extractor emite un tipo
@@ -536,12 +543,92 @@ discriminación sigue siendo del jugador); y es determinista con el RNG de la
 run. `npm run smoke` lo vigila: criterio 13, cero aperturas mudas, y el azar
 sigue sin ganar nada.
 
+## Integridad de señal y creatividad respaldada (v5.36)
+
+Requiere el bundle **1.1.0** del extractor (cada arista trae `confianza`, `anclaje`,
+`veces` y `status`; cada concepto trae `evidencia_textual` y `status`). Los bundles
+1.0.0 siguen cargando: sin confianza, toda arista se toma como afirmada.
+
+**Lo que se corrige.** Desde el extractor v3.5 el prompt de capa 2 emite también las
+relaciones que el modelo *infiere* del sentido de los conceptos, marcadas con confianza
+0.3–0.5 («el texto no la trata»). El compilador tiraba la confianza y el juego decía
+*«el texto lo dice»* de vínculos que el propio extractor había declarado inferidos: el
+Atlas registraba como evidencia textual algo que nadie leyó. Ahora:
+
+- **Aristas afirmadas** (confianza ≥ 0.6) son la única verdad del juez. Viven en
+  `contenido.aristas`; son el denominador de «Vínculos trazados» y del Atlas.
+- **Aristas insinuadas** (< 0.6) viven aparte, en `contenido.insinuadas`. Si el lector
+  traza exactamente eso, el peldaño es **insinuado**: *«el texto no lo enuncia, pero lo
+  insinúa — y lo viste tú»*. Paga el 65 %, sostiene la racha, enciende Hallazgo, y **no
+  entra al Atlas como evidencia**: va a la capa propia con `respaldo: texto_insinua`.
+  Si hay un vínculo firme entre los dos, la evidencia manda y lo inferido no se mira.
+- **Aproximado lejano.** Confundir `apoya` con `extiende` es un matiz (50 %); decir
+  `contrasta` donde el texto dice `causa` es otra afirmación (30 %).
+- **Verbos bloqueados.** Si el texto dice `causa` y ese verbo aún no se ha descubierto,
+  decir `apoya` no es imprecisión del lector: es una restricción del juego. El juez recibe
+  los tipos disponibles y lo devuelve como *también es cierto*, con la evidencia intacta.
+- **Propuesta ≠ plausible.** Una corazonada entre conceptos cercanos (vecino común,
+  misma zona) es una **propuesta**: se guarda, paga el 35 %. Compartir solo página se
+  queda en *plausible*: 18 %, no se anota.
+- **Hallazgo**, combo nuevo y determinista: proponer lo que el texto no dice **en el
+  mismo diagrama** en que sostienes lo que sí dice. Una propuesta suelta es una
+  corazonada; junto a evidencia es una lectura.
+- **El Atlas anota evidencia y fallo, nada más.** Hasta v5.35 cualquier veredicto que no
+  fuera sostenido/equivalente se contaba como fallo del concepto —derivado, compatible,
+  convive, una propuesta—, y explorar bajaba un concepto a «se te resiste». Ahora acierto
+  = evidencia (`ACIERTA`), fallo = `invertido`/`error` (`FALLA`), y las creaciones no
+  entran al cociente de calibración. Misma regla en la Marca de cierre.
+- **La cita literal viaja.** `Concepto.evidencia` trae la frase del PDF verificada por el
+  extractor carácter por carácter, con página. Es el ancla que devuelve al lector al
+  documento; pendiente de mostrarse en carta y veredicto.
+- **Lo que el profesor rechaza no entra.** Conceptos, aristas y repertorios con
+  `status: rechazado` se descartan al adaptar; los repertorios inferidos sin aprobar
+  entran marcados (`revisado: false`) y el diagnóstico lo dice.
+
+**La apertura con plan.** La primera mano de cada sala ya no es el tope de un mazo
+barajado: una pareja para emparejar, un puente que valga la pena (**veta**: verbo
+disponible, no asentada, rara o entre zonas), una **chispa** para poder proponer (cerca en
+el grafo sin vínculo directo), un especial si tiene miembro en mesa, y el resto por
+ruleta sin que un concepto monopolice la mano. Cambia exposición, jamás veredictos. Y la
+piedad de la regla 5: tras un turno vacío con la mano llena y sin cambios, el Archivo
+devuelve un Cambiar. Medido: 100 % de las aperturas permiten una relación, 96 % traen
+veta o chispa.
+
+**El lector parcial.** `npm run smoke` simula ahora un cuarto perfil: leyó el texto una
+vez, reconoce el 60 % de los conceptos, recuerda el 50 % de los vínculos y no sabe
+detectar falsificaciones. Es el estudiante del piloto. Criterios 14–16:
+
+| # | Criterio | Estado |
+|---|---|---|
+| 14 | quien leyó a medias tiene una expedición justa (≥ 3/6) | **objetivo de balance: PENDIENTE** (2/6, 3.2 turnos/oleada) |
+| 15 | las aperturas dan para pensar | pasa |
+| 16 | la creatividad se paga siempre y nunca al azar | pasa |
+
+El 14 se mide en cada corrida y **solo bloquea con `EXIGIR_PARCIAL=1`**, para que un
+ajuste de balance pendiente no impida desplegar una corrección de integridad. El dato
+importa: quitar las apócrifas por completo no cambia el resultado (2/6); con 70 %/60 % de
+conocimiento sube a 3/6, con 80 %/70 % a 4/6. Solo quien conoce el grafo entero despeja
+en 1.2 turnos por oleada. **El frente está calibrado contra un lector perfecto.**
+Palancas: vida del frente en actos 0–1, o falsificaciones señaladas en el acto 0 como en
+aprendizaje. Es decisión de diseño, no de parche.
+
 ## Pendientes
 
+- **Balance del lector parcial** (criterio 14): decidir la palanca y subir el listón.
+- **La galaxia**: el Atlas persistente como cielo del texto entero —disposición fija,
+  estrellas por `nivelDe`, constelaciones por unidad, propuestas en violeta— con las
+  aristas ganadas viajando desde el mapa de la sala al cerrar. Hoy el Atlas es rejilla y
+  tabla; el único grafo dibujado es el de una sala.
+- `BattleMap` no dibuja todavía `hallazgos.propuestas` (ya se recogen).
+- Mostrar `Concepto.evidencia` (cita literal y página) en carta y veredicto.
+- `POST /students/{id}/atlas`: el Atlas vive en `localStorage`, con una sola clave — jugar
+  un segundo texto pisa el Atlas del primero, y el profesor no recibe nada del juego.
 - Reserva de una pieza entre turnos (segunda señal de planeación).
 - Familia H (colaborar) requiere un segundo estudiante.
 - `docs/PEGLIN.md` describe la Mesa de Tiradas, que sigue sin implementar y que ahora
-  encaja mejor: las clavijas serían las piezas del tablero.### El modo Aprendizaje
+  encaja mejor: las clavijas serían las piezas del tablero.
+
+### El modo Aprendizaje
 
 No es un modo fácil: es **otra vía al mismo sitio**, con el andamio puesto y anunciado.
 

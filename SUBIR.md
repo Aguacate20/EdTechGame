@@ -1,45 +1,77 @@
-# Subir v5.10 al repositorio
+# Subir v5.36 al repositorio
 
 Ruta del zip descomprimido (ajusta si Windows añadió un sufijo `_1`):
-`C:/Users/sebas/Downloads/edtech_v5.10/patch50/edtech-game`
+`C:/Users/sebas/Downloads/edtech_v5.36/edtech-game`
 
-v4 borra varios ficheros de v3.4 (`cards.ts`, `combat.ts`, `encounters.ts`, `threats.ts`,
-`boss.ts`, `intuition.ts`, `CombatView.tsx`, `Stage.tsx`), así que hay que limpiar
-`src/` antes de copiar.
+Este parche toca `src/`, `scripts/`, `public/bundles/demo.json`, `README.md`,
+`SUBIR.md` y `package.json`. **No toca `public/art/`** (tus sprites, fondos y
+manifest): por eso el `rm` de abajo NO incluye `public`.
 
 ```bash
 cd /c/Proyectos/edtech-game
-SRC="/c/Users/sebas/Downloads/edtech_v5.10/patch50/edtech-game"
+SRC="/c/Users/sebas/Downloads/edtech_v5.36/edtech-game"
 
 # 1. comprobar la ruta ANTES de tocar nada
 ls "$SRC/package.json" || echo "RUTA MAL: no sigas"
 
-# 2. limpiar solo lo que se reemplaza
-rm -rf src scripts docs public
+# 2. limpiar solo lo que se reemplaza (nunca public)
+rm -rf src scripts docs
 
-# 3. copiar
+# 3. copiar por encima (public/bundles/demo.json se sobreescribe; public/art queda intacto)
 cp -r "$SRC/." .
 
 # 4. comprobar: debe decir 43
-find src scripts public docs -type f | wc -l
+find src scripts docs public/bundles -type f | wc -l
 
 # 5. commit
 git add -A
-git commit -m "v5.10: creatividad recompensada y refuerzo variable en el botin
+git commit -m "v5.36: integridad de senal y creatividad respaldada
 
-- un caso o una tesis pertenecen al campo semantico del que hablan: antes se
-  ignoraban y el campo decia que faltaban conceptos
-- combo Veta: sostener vinculos de los que el autor apenas usa
-- combo Mestizaje: cruzar tres o mas clases de pieza en la misma afirmacion
-- refuerzo variable SOLO en el botin: una cuarta opcion rara tras el combate,
-  con probabilidad que sube con la calidad del mejor diagrama (11% a 49%)
-- el veredicto de una afirmacion nunca depende del azar"
+- las aristas INFERIDAS por el extractor (confianza < 0.6) ya no se juzgan
+  como 'el texto lo dice': viven aparte y rinden 'insinuado' (capa propia,
+  no evidencia). Requiere bundle 1.1.0; los 1.0.0 siguen cargando
+- aproximado lejano (otra familia = otra afirmacion, 30%); verbos bloqueados
+  no cuestan evidencia; propuesta (se guarda) separada de plausible
+- combo Hallazgo: proponer junto a lo que si sostienes, determinista
+- el Atlas anota evidencia y fallo, nada mas: explorar ya no baja un
+  concepto a 'se te resiste'; misma regla en la Marca de cierre
+- apertura con plan en el Repartidor (pareja, veta, chispa, especial) y
+  piedad de la regla 5 tras un turno vacio (bug de fase corregido)
+- smoke: bot lector parcial (60%/50%), criterios 14-16; el 14 es objetivo
+  de balance (PENDIENTE 2/6) y solo bloquea con EXIGIR_PARCIAL=1"
 
 git push origin main
 ```
 
 Si `npm` no está en el PATH de Git Bash no pasa nada: Vercel corre `tsc -b && vite build`
 en cada push, así que un error de tipos detiene el despliegue antes de publicar.
+
+## El extractor va aparte
+
+El zip trae también `edtech-project/backend/…` (compilador, validación y modelo).
+Se aplica sobre `EdTechProject` y se sincroniza con el Space como siempre:
+
+```bash
+cd /c/Proyectos/EdTechProject
+SRC="/c/Users/sebas/Downloads/edtech_v5.36/edtech-project"
+ls "$SRC/backend/pipeline/compiler.py" || echo "RUTA MAL: no sigas"
+cp -r "$SRC/." .
+git add -A
+git commit -m "backend: bundle 1.1.0 - confianza, anclaje y status en cada arista; evidencia textual en cada concepto
+
+- compiler: cada arista lleva confianza/anclaje/veces/status (y tipo_original
+  si la validacion reparo el tipo); cada concepto lleva evidencia_textual,
+  anclaje_textual, confianza y status; stats.aristas_afirmadas/inferidas
+- validation: conserva relation_type_original al aproximar a 'apoya'
+- models: ConceptRelation declara anclaje_textual, veces_afirmada,
+  relation_type_original y status (Pydantic los tiraba: el bundle salia con
+  veces=1 para todo)"
+git push origin main
+git push space main
+```
+
+Hasta que el Space no tenga el bundle 1.1.0, el juego trata todo como afirmado
+(igual que hasta v5.35): el parche del juego se puede subir antes sin riesgo.
 
 ## Vercel
 
