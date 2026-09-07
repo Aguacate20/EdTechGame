@@ -833,8 +833,13 @@ function validarJerarquia(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
   const aristas: Diagnostico['aristas'] = []
   for (let i = 0; i + 1 < ids.length; i++) {
     const arriba = ids[i], abajo = ids[i + 1]
+    // «A generaliza B» y «B ejemplifica A» son la misma contención dicha desde
+    // los dos lados (graph.ts los trata como duales). El extractor emite casi
+    // siempre la segunda; hasta v5.37 el validador solo miraba la primera y
+    // devolvía «el texto no establece esa contención» sobre jerarquías reales.
     const gen = c.aristas.find((x) => x.from === arriba && x.to === abajo && (x.tipo === 'generaliza' || x.tipo === 'requiere'))
-    if (gen) { ok++; aristas.push({ from: arriba, to: abajo, tipo: gen.tipo }) }
+      ?? c.aristas.find((x) => x.from === abajo && x.to === arriba && x.tipo === 'ejemplifica')
+    if (gen) { ok++; aristas.push({ from: gen.from, to: gen.to, tipo: gen.tipo }) }
   }
   if (ok === ids.length - 1) {
     return {
@@ -843,7 +848,9 @@ function validarJerarquia(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificad
     }
   }
   if (ok > 0) return { ...v, reserva, estado: 'aproximado', fichas: 5 * ok, nota: 'Parte de la jerarquía se sostiene.', conceptIds: ids, aristas }
-  const alReves = c.aristas.some((x) => x.from === ids[1] && x.to === ids[0] && x.tipo === 'generaliza')
+  const alReves = c.aristas.some((x) =>
+    (x.from === ids[1] && x.to === ids[0] && x.tipo === 'generaliza') ||
+    (x.from === ids[0] && x.to === ids[1] && x.tipo === 'ejemplifica'))
   return alReves
     ? { ...v, estado: 'invertido', mult: -1, nota: `«${titulo(c, ids[1])}» es la categoría, no lo contrario.`, conceptIds: ids }
     : { ...v, nota: 'El texto no establece esa contención.' }

@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.37
+# El Archivo Infinito — v5.38
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,19 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Auditoría de herramientas (v5.38)
+
+`npm run herramientas -- ruta/al/bundle.json` construye, para cada una de las 12
+herramientas, la mejor jugada posible con lo que trae el bundle y la pasa por el motor.
+Distingue «sin material en este bundle» (hueco del extractor para ese documento) de
+«muda con material» (bug del motor). La auditoría encontró y corrigió uno: **Jerarquía**
+solo aceptaba `generaliza` de arriba abajo e ignoraba su dual `ejemplifica`, que es lo que
+el extractor emite casi siempre; devolvía «el texto no establece esa contención» sobre
+jerarquías reales. Sobre el bundle de muestra las 10 herramientas con material se
+sostienen; **Eje** y **Descomposición** dependen de que el bundle traiga ejes reales y
+subdimensiones, y **Alcance** de aristas `matiza` o tensiones que nombren a otro
+concepto, que el extractor rara vez emite: ese es el siguiente hueco del lado del texto.
 
 ## Pendientes
 
