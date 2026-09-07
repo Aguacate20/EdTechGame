@@ -1,3 +1,4 @@
+import type React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Contenido } from './content/types'
 import {
@@ -20,6 +21,10 @@ import {
 } from './engine/savegame'
 import { contenidoTutorial, SALAS_TUTORIAL } from './content/tutorial'
 import { BundleLoader } from './ui/BundleLoader'
+import { Entrar } from './ui/Entrar'
+import { Shell, type Pestana } from './ui/Shell'
+import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
+import { observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
 import { AtlasView, EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
@@ -97,6 +102,7 @@ export default function App() {
   const [quemasRun, setQuemasRun] = useState(0)
   const [inferenciasRun, setInferenciasRun] = useState(0)
   const [atlas, setAtlas] = useState<Atlas | null>(null)
+  const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
 
@@ -122,10 +128,21 @@ export default function App() {
 
   /* ------------------------------- arranque ------------------------------- */
 
-  const alCargar = useCallback((c: Contenido) => {
-    setContenido(c); setAtlas(cargarAtlas(c.fuente))
+  const alCargar = useCallback((c: Contenido, s?: Sesion | null) => {
+    const ses = s === undefined ? leerSesion() : s
+    setSesion(ses)
+    const local = cargarAtlas(c.fuente)
+    setContenido(c); setAtlas(local)
     setGuardada(leerExpedicion(c.fuente))
     setFase('inicio')
+    // cada guardado del Atlas sube al backend (agrupado, sin bloquear)
+    observarAtlas(ses ? (a) => subirAtlas(ses, a) : null)
+    if (ses) {
+      void bajarAtlas(ses).then((remoto) => {
+        const mejor = masAvanzado(local, remoto)
+        if (mejor !== local) { setAtlas({ ...mejor, fuente: c.fuente }); guardarAtlas({ ...mejor, fuente: c.fuente }) }
+      })
+    }
   }, [])
 
   const empezarExpedicion = useCallback((conApoyo: boolean) => {
@@ -651,20 +668,28 @@ export default function App() {
   /* -------------------------------- render -------------------------------- */
 
   if (fase === 'cargar' || !contenido || !atlas || !progreso) {
-    return <div className="app"><BundleLoader onListo={alCargar} /></div>
+    return <div className="app"><Entrar onListo={alCargar} /></div>
   }
+  const irA = (p: Pestana) => {
+    if (p === 'coleccion' || p === 'logros') { setFaseAnterior(fase); setFase('atlas') }
+    else if (p === 'expedicion') setFase('inicio')
+  }
+  const salir = () => { cerrarSesion(); observarAtlas(null); setSesion(null); setContenido(null); setFase('cargar') }
+  const barra = (activa: Pestana, extra?: React.ReactNode) => (
+    <Shell sesion={sesion} atlas={atlas} activa={activa} onPestana={irA} onSalir={salir}>{extra}</Shell>
+  )
   if (fase === 'inicio') {
     return (
       <div className="app">
-        <header className="barra">
-          <span className="marca">El Archivo Infinito</span>
-          <span className="sep" />
-          <button
-            className="btn fantasma" aria-pressed={mudo}
-            onClick={() => { const v = !mudo; silenciar(v); setMudo(v); if (!v) despertarAudio() }}
-          >{mudo ? 'Sonido off' : 'Sonido on'}</button>
-          <button className="btn fantasma" onClick={descargarLog}>Señales</button>
-        </header>
+        {barra('expedicion', (
+          <>
+            <button
+              className="btn fantasma" aria-pressed={mudo}
+              onClick={() => { const v = !mudo; silenciar(v); setMudo(v); if (!v) despertarAudio() }}
+            >{mudo ? 'Sonido off' : 'Sonido on'}</button>
+            <button className="btn fantasma" onClick={descargarLog}>Señales</button>
+          </>
+        ))}
         <HomeView
           atlas={atlas} contenido={contenido} guardada={guardada}
           onExpedicion={empezarExpedicion}
@@ -705,7 +730,7 @@ export default function App() {
     )
   }
   if (!ruta && tutorial === null) {
-    return <div className="app"><BundleLoader onListo={alCargar} /></div>
+    return <div className="app"><BundleLoader onListo={(c) => alCargar(c)} /></div>
   }
 
   const acto = ruta?.actos[actoIdx] ?? null

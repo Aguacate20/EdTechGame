@@ -1,4 +1,4 @@
-# El Archivo Infinito — v5.38
+# LudusCog · El Archivo Infinito — v5.39
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,21 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Entrar, la barra y el Atlas que viaja (v5.39)
+
+- **Entrar sin contraseña.** Nombre + código del campo (6 caracteres, el del curso del
+  extractor). El backend crea el perfil y devuelve un **código de jugador** que aparece en
+  la barra y recupera el perfil en otro dispositivo. Sin código de campo, el cargador manual
+  de siempre (demo o bundle propio). Sesión en `localStorage` (`ludus:sesion`).
+- **La barra LudusCog** (`src/ui/Shell.tsx`): marca, pestañas (Expedición · Colección ·
+  Logros activas; Misión y Taller «pronto»), quién juega con nivel y XP, **Lucidez**
+  (= calibración del Atlas: apuestas acertadas / apuestas) y **Hallazgos** (= vínculos
+  ganados + propuestas propias). Todo sale del Atlas; no hay estado nuevo.
+- **El Atlas ya no se pisa.** Una clave por texto en `localStorage` (antes jugar el texto
+  B borraba el Atlas del texto A) y sincronización con el backend: cada guardado sube
+  agrupado a `POST /students/{id}/atlas` (backend v3.9); al entrar se baja el remoto y se
+  queda el más avanzado. El profesor puede leerlo por estudiante y campo.
 
 ## Auditoría de herramientas (v5.38)
 

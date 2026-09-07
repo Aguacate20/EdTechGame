@@ -1556,3 +1556,48 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   18% { opacity: .9; }
   100% { opacity: 0; transform: translateY(-130px) scale(1.15); }
 }
+
+/* ═════════════════════ LudusCog: entrar y barra ═════════════════════ */
+.entrar { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.entrar-tarjeta { width: min(440px, 100%); background: var(--tinta-alta); border: 1px solid var(--tinta-borde); border-radius: 6px; padding: 28px 28px 20px; box-shadow: var(--sombra); }
+.entrar-marca { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--laton); margin: 0 0 14px; }
+.entrar-titulo { font-size: 26px; line-height: 1.2; margin: 0 0 10px; }
+.entrar-sub { color: var(--niebla); margin: 0 0 22px; line-height: 1.45; }
+.entrar .campo { display: block; margin: 0 0 14px; }
+.entrar .campo span { display: block; font-size: 13px; color: var(--niebla); margin-bottom: 6px; }
+.entrar .campo input { width: 100%; box-sizing: border-box; background: var(--tinta); color: var(--papel); border: 1px solid var(--tinta-borde); border-radius: var(--r); padding: 10px 12px; font: inherit; font-size: 16px; }
+.entrar .campo input:focus-visible { outline: 2px solid var(--laton); outline-offset: 1px; }
+.entrar .campo input.codigo { font-family: var(--mono); letter-spacing: 0.18em; text-transform: uppercase; }
+.entrar .enlace { background: none; border: 0; color: var(--verdigris); text-decoration: underline; cursor: pointer; padding: 0; margin: 0 0 14px; font: inherit; font-size: 14px; }
+.entrar-error { color: #e0857c; margin: 0 0 12px; font-size: 14px; }
+.entrar-ir { width: 100%; padding: 12px; font-size: 16px; }
+.entrar-mas { margin-top: 16px; color: var(--niebla); font-size: 14px; }
+.entrar-mas summary { cursor: pointer; margin-bottom: 10px; }
+
+.ludus { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; padding: 10px 18px; background: var(--tinta-alta); border-bottom: 1px solid var(--tinta-borde); position: sticky; top: 0; z-index: 20; }
+.ludus-marca { display: flex; align-items: baseline; gap: 8px; font-size: 20px; letter-spacing: 0.01em; }
+.ludus-marca b { color: var(--laton); font-weight: 600; }
+.ludus-marca small { color: var(--niebla); font-size: 12px; font-family: var(--mono); margin-left: 6px; }
+.ludus-glifo { color: var(--laton); font-size: 14px; }
+.ludus-nav { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.ludus-tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--niebla); font: inherit; font-size: 15px; padding: 8px 12px; cursor: pointer; }
+.ludus-tab:hover:not(:disabled) { color: var(--papel); }
+.ludus-tab.activa { color: var(--papel); border-bottom-color: var(--laton); }
+.ludus-tab:disabled { opacity: 0.45; cursor: default; }
+.ludus-tab:focus-visible { outline: 2px solid var(--laton); outline-offset: 2px; border-radius: 2px; }
+.ludus-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.chip { display: flex; align-items: center; gap: 8px; background: var(--tinta); border: 1px solid var(--tinta-borde); border-radius: 999px; padding: 4px 12px 4px 6px; min-height: 40px; }
+.chip-texto { display: flex; flex-direction: column; line-height: 1.15; }
+.chip-texto b { font-weight: 600; font-size: 14px; }
+.chip-texto small { color: var(--niebla); font-size: 11px; font-family: var(--mono); }
+.chip-inicial { width: 28px; height: 28px; border-radius: 50%; background: var(--verdigris); color: var(--tinta); display: grid; place-items: center; font-weight: 700; }
+.chip.lucidez .anillo-fondo { fill: none; stroke: var(--tinta-borde); stroke-width: 3.5; }
+.chip.lucidez .anillo { fill: none; stroke: var(--laton); stroke-width: 3.5; stroke-linecap: round; transition: stroke-dasharray 600ms ease; }
+.chip.hallazgos { padding-left: 12px; }
+.chip.hallazgos b::before { content: '◆ '; color: var(--verdigris); }
+@media (max-width: 860px) {
+  .ludus { grid-template-columns: 1fr auto; }
+  .ludus-nav { grid-column: 1 / -1; justify-content: flex-start; overflow-x: auto; }
+  .ludus-marca small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .chip.lucidez .anillo { transition: none; } }

@@ -103,9 +103,18 @@ export function atlasVacio(fuente: string): Atlas {
   }
 }
 
+// v5.39: una clave por texto. Antes había una sola y jugar el texto B pisaba
+// el Atlas del texto A. La clave vieja se lee una vez para migrar.
+const claveDe = (fuente: string) => `${CLAVE}:${fuente}`
+
+/** Quien quiera enterarse de cada guardado (la sincronización con el
+ *  backend) se registra aquí; así no hay que tocar los diez sitios que guardan. */
+let alGuardar: ((a: Atlas) => void) | null = null
+export function observarAtlas(fn: ((a: Atlas) => void) | null): void { alGuardar = fn }
+
 export function cargarAtlas(fuente: string): Atlas {
   try {
-    const raw = localStorage.getItem(CLAVE)
+    const raw = localStorage.getItem(claveDe(fuente)) ?? localStorage.getItem(CLAVE)
     if (!raw) return atlasVacio(fuente)
     const a = JSON.parse(raw) as Atlas
     if (a.fuente !== fuente) return atlasVacio(fuente)
@@ -124,10 +133,11 @@ export function cargarAtlas(fuente: string): Atlas {
 
 export function guardarAtlas(a: Atlas): void {
   try {
-    localStorage.setItem(CLAVE, JSON.stringify(a))
+    localStorage.setItem(claveDe(a.fuente), JSON.stringify(a))
   } catch {
     /* almacenamiento no disponible: el Atlas vive solo en esta sesión */
   }
+  if (alGuardar) alGuardar(a)
 }
 
 export function nivelDe(e: EvidenciaConcepto | undefined): number {
