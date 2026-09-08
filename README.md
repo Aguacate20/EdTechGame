@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.40
+# LudusCog · El Archivo Infinito — v5.41
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,14 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Entrar como en el extractor (v5.41)
+
+Entrar tiene ahora dos listas y un botón: **¿Quién juega?** (los perfiles existentes con su
+código de jugador, `GET /students`, o «Crear perfil nuevo» con solo un nombre) y **¿En qué
+campo?** (los campos publicados con nombre y tamaño, `GET /campos`, o un código escrito a
+mano para campos privados). Se preselecciona lo de la última vez. Sin servidor, las listas
+avisan y el cargador manual sigue en Opciones.
 
 ## El sistema visual LudusCog (v5.40)
 

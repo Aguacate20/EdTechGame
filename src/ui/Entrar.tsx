@@ -1,45 +1,72 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { adaptarBundle } from '../content/adapter'
 import type { Contenido } from '../content/types'
 import { BundleLoader } from './BundleLoader'
 import {
-  API_POR_DEFECTO, cargarCampo, entrar, guardarSesion, leerSesion, type Sesion
+  API_POR_DEFECTO, cargarCampo, entrar, guardarSesion, leerSesion, listarCampos, listarPerfiles,
+  type CampoResumen, type PerfilResumen, type Sesion
 } from '../net/sesion'
 
 interface Props { onListo: (c: Contenido, sesion: Sesion | null) => void }
 
-/** Entrar: un nombre y el código del campo. Con un código de jugador se
- *  recupera un perfil de otro dispositivo. Sin código de campo, el cargador
- *  manual de siempre (demo o un bundle propio). */
+/** Entrar, como el menú del extractor: se elige un perfil existente o se crea
+ *  uno nuevo, y se elige el campo publicado (o se escribe un código). Sin
+ *  contraseña. Sin código de campo, el cargador manual de siempre. */
 export function Entrar({ onListo }: Props) {
   const previa = leerSesion()
-  const [nombre, setNombre] = useState(previa?.nombre ?? '')
-  const [campo, setCampo] = useState(previa?.campo ?? '')
-  const [recuperar, setRecuperar] = useState(false)
-  const [codigoJugador, setCodigoJugador] = useState('')
   const [api, setApi] = useState(previa?.api ?? API_POR_DEFECTO)
+  const [perfiles, setPerfiles] = useState<PerfilResumen[] | null>(null)
+  const [campos, setCampos] = useState<CampoResumen[] | null>(null)
+  const [perfil, setPerfil] = useState<PerfilResumen | 'nuevo' | null>(null)
+  const [nombre, setNombre] = useState('')
+  const [campo, setCampo] = useState<CampoResumen | null>(null)
+  const [codigo, setCodigo] = useState('')
   const [manual, setManual] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sinRed, setSinRed] = useState(false)
 
-  const listo = nombre.trim().length >= 2 && campo.trim().length >= 4 && !ocupado
+  const base = api.trim().replace(/\/+$/, '')
+
+  useEffect(() => {
+    let vivo = true
+    setPerfiles(null); setCampos(null); setSinRed(false)
+    Promise.all([listarPerfiles(base), listarCampos(base)])
+      .then(([p, c]) => {
+        if (!vivo) return
+        setPerfiles(p); setCampos(c)
+        // se preselecciona lo de la última vez
+        const mio = previa ? p.find((x) => x.id === previa.studentId) : undefined
+        if (mio) setPerfil(mio)
+        const suyo = previa ? c.find((x) => x.campoId === previa.campoId) : undefined
+        if (suyo) setCampo(suyo)
+      })
+      .catch(() => { if (vivo) { setPerfiles([]); setCampos([]); setSinRed(true) } })
+    return () => { vivo = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [base])
+
+  const quienListo = perfil === 'nuevo' ? nombre.trim().length >= 2 : perfil !== null
+  const campoCodigo = campo ? campo.codigo : codigo.trim().toUpperCase()
+  const listo = quienListo && campoCodigo.length >= 4 && !ocupado
 
   async function ir() {
     setOcupado(true); setError(null)
     try {
-      const base = api.trim().replace(/\/+$/, '')
-      const perfil = previa && previa.nombre === nombre.trim() && !recuperar
-        ? { studentId: previa.studentId, codigoJugador: previa.codigoJugador }
-        : await entrar(base, nombre.trim(), recuperar ? codigoJugador.trim() : undefined)
-      const c = await cargarCampo(base, campo.trim().toUpperCase())
+      const quien = perfil === 'nuevo'
+        ? await entrar(base, nombre.trim())
+        : { studentId: perfil!.id, codigoJugador: perfil!.codigoJugador }
+      const c = await cargarCampo(base, campoCodigo)
       const sesion: Sesion = {
-        api: base, nombre: nombre.trim(), studentId: perfil.studentId, codigoJugador: perfil.codigoJugador,
-        campo: campo.trim().toUpperCase(), campoId: c.campoId, campoNombre: c.nombre
+        api: base, nombre: perfil === 'nuevo' ? nombre.trim() : perfil!.nombre,
+        studentId: quien.studentId, codigoJugador: quien.codigoJugador,
+        campo: campoCodigo, campoId: c.campoId, campoNombre: c.nombre
       }
       guardarSesion(sesion)
       onListo(adaptarBundle(c.bundle), sesion)
     } catch (e) {
-      setError(e instanceof Error && /campo/i.test(e.message) ? 'No hay un campo con ese código. Pídeselo a tu profesor.' : e instanceof Error ? e.message : 'No se pudo entrar.')
+      const msg = e instanceof Error ? e.message : ''
+      setError(/campo/i.test(msg) ? 'No hay un campo con ese código. Pídeselo a tu profesor.' : msg || 'No se pudo entrar.')
       setOcupado(false)
     }
   }
@@ -47,7 +74,7 @@ export function Entrar({ onListo }: Props) {
   if (manual) {
     return (
       <div className="entrar">
-        <button className="btn fantasma" onClick={() => setManual(false)}>Volver a entrar con código</button>
+        <button className="btn fantasma" onClick={() => setManual(false)}>Volver a entrar con perfil</button>
         <BundleLoader onListo={(c) => onListo(c, null)} />
       </div>
     )
@@ -61,23 +88,66 @@ export function Entrar({ onListo }: Props) {
           <span className="nombre"><b>Ludus<span>Cog</span></b><small>aprender · entender · avanzar</small></span>
         </div>
         <h1 className="entrar-titulo">Tu galaxia de conocimiento empieza con un nombre.</h1>
-        <p className="entrar-sub">El código del campo te lo da tu profesor. No hay contraseña.</p>
-        <label className="campo">
-          <span>Nombre</span>
-          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Cómo quieres que te llame Andy" autoFocus maxLength={40} />
-        </label>
-        <label className="campo">
-          <span>Código del campo</span>
-          <input value={campo} onChange={(e) => setCampo(e.target.value.toUpperCase())} placeholder="LJH7K2" maxLength={8} className="codigo" aria-invalid={error ? true : undefined} />
-        </label>
-        {recuperar ? (
+
+        <fieldset className="entrar-grupo">
+          <legend>¿Quién juega?</legend>
+          {perfiles === null ? <p className="entrar-nota">Buscando perfiles…</p> : (
+            <div className="entrar-lista" role="listbox" aria-label="Perfiles">
+              {perfiles.map((p) => (
+                <button
+                  key={p.id} type="button" role="option" aria-selected={perfil !== 'nuevo' && perfil?.id === p.id}
+                  className={`entrar-item${perfil !== 'nuevo' && perfil?.id === p.id ? ' elegido' : ''}`}
+                  onClick={() => setPerfil(p)}
+                >
+                  <span className="chip-inicial" aria-hidden="true">{p.nombre[0] ?? '?'}</span>
+                  <span className="entrar-item-texto"><b>{p.nombre}</b><small><code>{p.codigoJugador}</code></small></span>
+                </button>
+              ))}
+              <button
+                type="button" role="option" aria-selected={perfil === 'nuevo'}
+                className={`entrar-item nuevo${perfil === 'nuevo' ? ' elegido' : ''}`}
+                onClick={() => setPerfil('nuevo')}
+              >
+                <span className="chip-inicial" aria-hidden="true">+</span>
+                <span className="entrar-item-texto"><b>Crear perfil nuevo</b><small>{sinRed ? 'Sin conexión con el servidor' : 'Solo un nombre, sin contraseña'}</small></span>
+              </button>
+            </div>
+          )}
+          {perfil === 'nuevo' && (
+            <label className="campo">
+              <span>Nombre</span>
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Cómo quieres que te llame Andy" autoFocus maxLength={40} />
+            </label>
+          )}
+        </fieldset>
+
+        <fieldset className="entrar-grupo">
+          <legend>¿En qué campo?</legend>
+          {campos === null ? <p className="entrar-nota">Buscando campos publicados…</p> : campos.length === 0 ? (
+            <p className="entrar-nota">{sinRed ? 'No se pudo llegar al servidor. Revisa la dirección en Opciones.' : 'Todavía no hay campos publicados. Escribe el código que te dio tu profesor.'}</p>
+          ) : (
+            <div className="entrar-lista" role="listbox" aria-label="Campos">
+              {campos.map((c) => (
+                <button
+                  key={c.campoId} type="button" role="option" aria-selected={campo?.campoId === c.campoId}
+                  className={`entrar-item${campo?.campoId === c.campoId ? ' elegido' : ''}`}
+                  onClick={() => { setCampo(c); setCodigo('') }}
+                >
+                  <span className="entrar-punto" aria-hidden="true" />
+                  <span className="entrar-item-texto"><b>{c.nombre}</b><small><code>{c.codigo}</code>{c.conceptos ? ` · ${c.conceptos} conceptos` : ''}</small></span>
+                </button>
+              ))}
+            </div>
+          )}
           <label className="campo">
-            <span>Código de jugador (de tu otro dispositivo)</span>
-            <input value={codigoJugador} onChange={(e) => setCodigoJugador(e.target.value.toUpperCase())} placeholder="A1B2C3" maxLength={8} className="codigo" />
+            <span>O un código de campo</span>
+            <input
+              value={codigo} onChange={(e) => { setCodigo(e.target.value.toUpperCase()); setCampo(null) }}
+              placeholder="LJH7K2" maxLength={8} className="codigo" aria-invalid={error ? true : undefined}
+            />
           </label>
-        ) : (
-          <button className="enlace" onClick={() => setRecuperar(true)}>Ya tengo un código de jugador</button>
-        )}
+        </fieldset>
+
         {error && <p className="entrar-error" role="alert">{error}</p>}
         <button className="btn primario entrar-ir" disabled={!listo} onClick={ir}>
           {ocupado ? 'Entrando…' : 'Entrar al campo'}

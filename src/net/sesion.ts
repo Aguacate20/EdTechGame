@@ -106,3 +106,16 @@ export function hallazgosDe(a: Atlas | null): number {
   if (!a) return 0
   return Object.keys(a.aristas ?? {}).length + Object.keys(a.propuestas ?? {}).length
 }
+
+/* ── listas para entrar como en el menú del extractor ── */
+export interface PerfilResumen { id: string; nombre: string; codigoJugador: string }
+export interface CampoResumen { codigo: string; campoId: string; nombre: string; conceptos: number | null }
+
+export async function listarPerfiles(api: string): Promise<PerfilResumen[]> {
+  const r = await json<{ students: { id: string; display_name?: string; codigo_jugador?: string }[] }>(`${api}/students`)
+  return r.students.map((e) => ({ id: String(e.id), nombre: e.display_name ?? 'Sin nombre', codigoJugador: e.codigo_jugador ?? '' }))
+}
+export async function listarCampos(api: string): Promise<CampoResumen[]> {
+  const r = await json<{ campos: { codigo: string; course_id: string; nombre: string; conceptos: number | null }[] }>(`${api}/campos`)
+  return r.campos.map((c) => ({ codigo: c.codigo, campoId: String(c.course_id), nombre: c.nombre, conceptos: c.conceptos }))
+}
