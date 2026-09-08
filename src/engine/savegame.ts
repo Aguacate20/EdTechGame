@@ -10,7 +10,11 @@ import type { SelloId } from './powers'
    compensa la complejidad.
    ========================================================================== */
 
-const CLAVE = 'archivo-infinito:expedicion:v1'
+import { ambitoActual } from './atlas'
+
+const CLAVE_BASE = 'archivo-infinito:expedicion:v1'
+// con perfil, la expedición guardada es del perfil; sin perfil, la clave de siempre
+const clave = () => { const a = ambitoActual(); return a ? `${CLAVE_BASE}:perfil:${a}` : CLAVE_BASE }
 
 export interface ExpedicionGuardada {
   fuente: string
@@ -40,22 +44,23 @@ export interface ExpedicionGuardada {
 }
 
 export function guardarExpedicion(e: ExpedicionGuardada): void {
-  try { localStorage.setItem(CLAVE, JSON.stringify(e)) } catch { /* sin almacenamiento */ }
+  try { localStorage.setItem(clave(), JSON.stringify(e)) } catch { /* sin almacenamiento */ }
 }
 
 export function leerExpedicion(fuente: string): ExpedicionGuardada | null {
   try {
-    const raw = localStorage.getItem(CLAVE)
+    const raw = localStorage.getItem(clave())
     if (!raw) return null
     const e = JSON.parse(raw) as ExpedicionGuardada
-    return e.fuente === fuente ? e : null
+    // con perfil el texto puede haber cambiado (lectura nueva en el plan): la partida es del perfil
+    return ambitoActual() || e.fuente === fuente ? e : null
   } catch {
     return null
   }
 }
 
 export function borrarExpedicion(): void {
-  try { localStorage.removeItem(CLAVE) } catch { /* noop */ }
+  try { localStorage.removeItem(clave()) } catch { /* noop */ }
 }
 
 export function haceCuanto(ts: number): string {

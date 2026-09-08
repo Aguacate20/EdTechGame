@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.42
+# LudusCog · El Archivo Infinito — v5.43
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,16 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El avance es del perfil (v5.43)
+
+Bug de v5.39–v5.42: el Atlas y la expedición guardada se guardaban en `localStorage` por
+**texto** (`atlas:<fuente>`) y se leía además la clave vieja como respaldo. Un perfil nuevo
+con el mismo PDF en el mismo navegador heredaba el Atlas del perfil anterior («71 % de
+cobertura al entrar»). Ahora, con perfil, la clave es `:perfil:<id>` para el Atlas y para
+la expedición; sobreviven a que entren lecturas nuevas al plan (el texto cambia, el perfil
+no). Sin perfil (demo, bundle a mano), por texto como antes. `fijarAmbito` en
+`engine/atlas.ts` es el único interruptor; `App` lo fija al entrar y lo suelta al salir.
 
 ## Un perfil, una galaxia, muchas lecturas (v5.42)
 

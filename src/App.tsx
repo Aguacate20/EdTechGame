@@ -27,7 +27,7 @@ import { Biblioteca } from './ui/Biblioteca'
 import { cargarPlan } from './net/sesion'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
-import { observarAtlas } from './engine/atlas'
+import { fijarAmbito, observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
 import { AtlasView, EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
@@ -134,6 +134,7 @@ export default function App() {
   const alCargar = useCallback((c: Contenido, s?: Sesion | null) => {
     const ses = s === undefined ? leerSesion() : s
     setSesion(ses)
+    fijarAmbito(ses?.studentId ?? null)
     const local = cargarAtlas(c.fuente)
     setContenido(c); setAtlas(local)
     setGuardada(leerExpedicion(c.fuente))
@@ -678,7 +679,7 @@ export default function App() {
     else if (p === 'biblioteca') { setFaseAnterior(fase); setFase('biblioteca') }
     else if (p === 'expedicion') setFase('inicio')
   }
-  const salir = () => { cerrarSesion(); observarAtlas(null); setSesion(null); setContenido(null); setFase('cargar') }
+  const salir = () => { cerrarSesion(); observarAtlas(null); fijarAmbito(null); setSesion(null); setContenido(null); setFase('cargar') }
   const barra = (activa: Pestana, extra?: React.ReactNode) => (
     <Shell sesion={sesion} atlas={atlas} activa={activa} onPestana={irA} onSalir={salir}>{extra}</Shell>
   )

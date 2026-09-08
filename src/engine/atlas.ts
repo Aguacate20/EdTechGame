@@ -105,7 +105,15 @@ export function atlasVacio(fuente: string): Atlas {
 
 // v5.39: una clave por texto. Antes había una sola y jugar el texto B pisaba
 // el Atlas del texto A. La clave vieja se lee una vez para migrar.
-const claveDe = (fuente: string) => `${CLAVE}:${fuente}`
+/** El ámbito de guardado. Con perfil, el Atlas y la expedición se guardan POR
+ *  PERFIL (`:perfil:<id>`), y sobreviven a que entren lecturas nuevas al plan.
+ *  Sin perfil (bundle a mano, demo), por texto como antes. v5.43: hasta aquí la
+ *  clave era solo por texto y un perfil nuevo con el mismo PDF heredaba el
+ *  Atlas del anterior. */
+let ambito: string | null = null
+export function fijarAmbito(studentId: string | null): void { ambito = studentId }
+export function ambitoActual(): string | null { return ambito }
+const claveDe = (fuente: string) => ambito ? `${CLAVE}:perfil:${ambito}` : `${CLAVE}:${fuente}`
 
 /** Quien quiera enterarse de cada guardado (la sincronización con el
  *  backend) se registra aquí; así no hay que tocar los diez sitios que guardan. */
@@ -114,10 +122,14 @@ export function observarAtlas(fn: ((a: Atlas) => void) | null): void { alGuardar
 
 export function cargarAtlas(fuente: string): Atlas {
   try {
-    const raw = localStorage.getItem(claveDe(fuente)) ?? localStorage.getItem(CLAVE)
+    // la clave vieja (una sola para todo) solo se lee sin perfil, y solo para migrar
+    const raw = localStorage.getItem(claveDe(fuente)) ?? (ambito ? null : localStorage.getItem(CLAVE))
     if (!raw) return atlasVacio(fuente)
     const a = JSON.parse(raw) as Atlas
-    if (a.fuente !== fuente) return atlasVacio(fuente)
+    // sin perfil, un Atlas de otro texto no vale; con perfil, el texto puede
+    // cambiar (entró una lectura nueva al plan) y el Atlas se conserva
+    if (!ambito && a.fuente !== fuente) return atlasVacio(fuente)
+    a.fuente = fuente
     const base = atlasVacio(fuente)
     return {
       ...base, ...a,
