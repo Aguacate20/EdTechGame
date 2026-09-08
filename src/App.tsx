@@ -25,12 +25,13 @@ import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
 import { InicioView } from './ui/InicioView'
 import { CierreView } from './ui/CierreView'
+import { ColeccionView } from './ui/ColeccionView'
 import { cargarPlan } from './net/sesion'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
 import { fijarAmbito, nivelDe, observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
-import { AtlasView, EndView, MapView, PortadaView, RewardView } from './ui/Screens'
+import { EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
 import { VistazoView } from './ui/VistazoView'
 import { HomeView } from './ui/HomeView'
@@ -45,7 +46,7 @@ import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
 type Fase =
   | 'cargar' | 'inicio' | 'portada' | 'mapa' | 'batalla'
-  | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin' | 'biblioteca'
+  | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin' | 'biblioteca' | 'logros'
 
 const LUCIDEZ_MAX = 80
 
@@ -679,8 +680,10 @@ export default function App() {
     return <div className="app"><Entrar onListo={alCargar} /></div>
   }
   const irA = (p: Pestana) => {
-    if (p === 'coleccion' || p === 'logros') { setFaseAnterior(fase); setFase('atlas') }
-    else if (p === 'biblioteca') { setFaseAnterior(fase); setFase('biblioteca') }
+    const suelta = (f: Fase) => (['atlas', 'logros', 'biblioteca'] as Fase[]).includes(f) ? faseAnterior : f
+    if (p === 'coleccion') { setFaseAnterior(suelta(fase)); setFase('atlas') }
+    else if (p === 'logros') { setFaseAnterior(suelta(fase)); setFase('logros') }
+    else if (p === 'biblioteca') { setFaseAnterior(suelta(fase)); setFase('biblioteca') }
     else if (p === 'expedicion') setFase('inicio')
   }
   const salir = () => { cerrarSesion(); observarAtlas(null); fijarAmbito(null); setSesion(null); setContenido(null); setFase('cargar') }
@@ -764,11 +767,15 @@ export default function App() {
       </div>
     )
   }
-  if (fase === 'atlas') {
+  if (fase === 'atlas' || fase === 'logros') {
+    const volver = () => setFase((['atlas', 'logros', 'biblioteca'] as Fase[]).includes(faseAnterior) ? 'inicio' : faseAnterior)
     return (
       <div className="app">
-        {barra('coleccion')}
-        <AtlasView atlas={atlas} contenido={contenido} onVolver={() => setFase(faseAnterior === 'atlas' ? 'inicio' : faseAnterior)} />
+        {barra(fase === 'logros' ? 'logros' : 'coleccion')}
+        <ColeccionView
+          key={fase} contenido={contenido} atlas={atlas} inicial={fase === 'logros' ? 'logros' : 'estrellas'}
+          onAtlas={(a) => { setAtlas(a); guardarAtlas(a) }} onVolver={volver}
+        />
       </div>
     )
   }

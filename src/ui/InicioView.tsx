@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Contenido } from '../content/types'
 import { coberturaAtlas, nivelDe, type Atlas } from '../engine/atlas'
 import { lucidezDe, type Sesion } from '../net/sesion'
@@ -29,6 +29,7 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
 ]
 
 export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, onAtlas, onEstrella, acciones }: Props) {
+  const [zonaFoco, setZonaFoco] = useState<string | null>(null)
   const ids = contenido.ordenConceptos
   const total = Math.max(1, ids.length)
   const niveles = ids.map((id) => nivelDe(atlas.conceptos[id]))
@@ -93,7 +94,7 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, on
           <span><i style={{ background: 'var(--resiste)' }} />Se te resiste</span>
           <span><i className="punteada" />Propuesta</span>
         </div>
-        <Galaxia contenido={contenido} atlas={atlas} modo="vivo" alto={420} onEstrella={onEstrella} />
+        <Galaxia contenido={contenido} atlas={atlas} modo="vivo" alto={420} onEstrella={onEstrella} zonaFoco={zonaFoco} />
         <small className="inicio-ayuda">Arrastra para girar · toca una estrella</small>
         <div className="escalones">
           {DIMS.map((d) => (
@@ -107,9 +108,24 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, on
 
       <aside className="inicio-col">
         <section className="panel">
-          <h3>Constelación · {unidadActual?.titulo ?? 'Unidad'}</h3>
-          <Galaxia contenido={contenido} atlas={atlas} modo="quieto" soloUnidad={unidadActual?.id ?? null} alto={170} />
-          <button className="btn fantasma" onClick={onAtlas}>Ver en el atlas</button>
+          <h3>Zonas de tu cielo</h3>
+          <ul className="zonas">
+            {contenido.clusters.map((z, i) => {
+              const encendidas = z.conceptIds.filter((id) => nivelDe(atlas.conceptos[id]) >= 1).length
+              const activa = zonaFoco === z.id
+              return (
+                <li key={z.id}>
+                  <button className={`zona${activa ? ' activa' : ''}`} onClick={() => setZonaFoco(activa ? null : z.id)} aria-pressed={activa}>
+                    <i style={{ background: `rgb(${['56,182,255', '91,211,111', '155,108,255', '255,194,61', '255,106,26', '224,163,58'][i % 6]})` }} />
+                    <span className="zona-texto"><b>{z.label.replace(/^Zona de /, '')}</b><small>{encendidas} de {z.conceptIds.length} encendidas</small></span>
+                    <div className="barra-prog"><span style={{ width: `${(100 * encendidas) / Math.max(1, z.conceptIds.length)}%` }} /></div>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+          <small>{zonaFoco ? 'Toca la zona otra vez para ver todo el cielo.' : 'Toca una zona para acercarte.'}</small>
+          <button className="btn fantasma" onClick={onAtlas}>Ver la colección</button>
         </section>
         <section className="panel">
           <h3>Tu progreso</h3>

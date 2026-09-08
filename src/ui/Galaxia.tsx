@@ -16,6 +16,8 @@ interface Props {
   onEstrella?: (conceptId: string) => void
   /** modo cierre: lo ganado en esta expedición, que se dibuja delante del estudiante */
   nuevos?: { aristas: string[]; conceptos: string[] }
+  /** id del cluster en foco: se acerca la cámara, el resto se atenúa */
+  zonaFoco?: string | null
 }
 
 const C = { desc: '#38B6FF', sost: '#5BD36F', trans: '#9B6CFF', dom: '#FFC23D', texto: '#F3F6FF', t2: '#9AA7C7', rojo: '#FF5A5A', ambar: '#E0A33A' }
@@ -38,23 +40,39 @@ function estadoDe(a: Atlas | null, id: string): number {
   return 1
 }
 
-/** Disposición estable: cada zona ocupa un sector; cada estrella una posición
- *  fija derivada de su id. No cambia entre sesiones ni entre lecturas nuevas. */
+/** Disposición estable y escalable. Las zonas van sobre un anillo con el ángulo
+ *  áureo (nunca se encima una con otra, aunque haya 20); el radio de cada zona
+ *  crece con la raíz de su tamaño; cada estrella tiene una posición fija que
+ *  sale de su id. Al final todo se normaliza para que la estrella más lejana
+ *  quede en el borde: con 18 o con 400 conceptos la galaxia ocupa el mismo
+ *  lienzo, solo cambia la densidad. No cambia entre sesiones ni al entrar
+ *  lecturas nuevas: las estrellas nuevas aparecen apagadas donde les toca. */
+const ANGULO_AUREO = 2.399963
 function disponer(c: Contenido, soloUnidad: string | null): Estrella[] {
-  const zonas = new Map<string, number>()
-  c.clusters.forEach((k, i) => zonas.set(k.id, i))
   const ids = c.ordenConceptos.filter((id) => !soloUnidad || c.conceptos[id].unidadId === soloUnidad)
-  const nz = Math.max(1, c.clusters.length)
-  return ids.map((id) => {
-    const k = c.conceptos[id]
-    const z = k.clusterId && zonas.has(k.clusterId) ? zonas.get(k.clusterId)! : (hash(id + 'z') * nz) | 0
-    const ang = (z / nz) * Math.PI * 2 + (hash(id + 'a') - 0.5) * (Math.PI * 2 / nz) * 0.85
-    const rad = 0.35 + hash(id + 'r') * 0.5
-    return { id, nombre: k.titulo, zona: z, estado: 0, x: Math.cos(ang) * rad, y: (hash(id + 'y') - 0.5) * 0.7, z: Math.sin(ang) * rad }
+  const zonaDe = (id: string) => { const k = c.conceptos[id]; const i = k.clusterId ? c.clusters.findIndex((z) => z.id === k.clusterId) : -1; return i >= 0 ? i : c.clusters.length + ((hash(id + 'z') * 3) | 0) }
+  const tam = new Map<number, number>()
+  for (const id of ids) tam.set(zonaDe(id), (tam.get(zonaDe(id)) ?? 0) + 1)
+  const nz = Math.max(1, tam.size)
+  const total = Math.max(1, ids.length)
+  const centros = new Map<number, { x: number; y: number; z: number; r: number }>()
+  ;[...tam.keys()].sort((a, b) => a - b).forEach((z, i) => {
+    const ang = i * ANGULO_AUREO
+    const anillo = nz === 1 ? 0 : 0.55 + 0.25 * ((i % 2) - 0.5)
+    const r = 0.16 + 0.55 * Math.sqrt((tam.get(z) ?? 1) / total)
+    centros.set(z, { x: Math.cos(ang) * anillo, y: (hash(`zona${z}`) - 0.5) * 0.5, z: Math.sin(ang) * anillo, r })
   })
+  const estrellas = ids.map((id) => {
+    const k = c.conceptos[id], z = zonaDe(id), cz = centros.get(z)!
+    const a = hash(id + 'a') * Math.PI * 2, b = (hash(id + 'b') - 0.5) * Math.PI, rr = cz.r * (0.25 + 0.75 * Math.sqrt(hash(id + 'r')))
+    return { id, nombre: k.titulo, zona: z, estado: 0, x: cz.x + Math.cos(a) * Math.cos(b) * rr, y: cz.y + Math.sin(b) * rr * 0.6, z: cz.z + Math.sin(a) * Math.cos(b) * rr }
+  })
+  const lejos = Math.max(0.001, ...estrellas.map((s) => Math.hypot(s.x, s.y, s.z)))
+  for (const s of estrellas) { s.x = (s.x / lejos) * 0.92; s.y = (s.y / lejos) * 0.92; s.z = (s.z / lejos) * 0.92 }
+  return estrellas
 }
 
-export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, alto = 420, onEstrella, nuevos }: Props) {
+export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, alto = 420, onEstrella, nuevos, zonaFoco = null }: Props) {
   const ref = useRef<HTMLCanvasElement>(null)
   const estado = useRef({ rot: 0.6, tilt: 0.35, arrastre: null as null | { x: number; rot: number }, foco: null as string | null, quieto: modo === 'quieto' })
 
@@ -82,8 +100,15 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
       const y = s.y * Math.cos(st.tilt) + z * Math.sin(st.tilt)
       const zz = z * Math.cos(st.tilt) - s.y * Math.sin(st.tilt)
       const k = 1 / (1.9 - zz)
-      return { x: w / 2 + x * k * Math.min(w, h) * 0.78, y: h / 2 + y * k * Math.min(w, h) * 0.78, k, z: zz }
+      return { x: w / 2 + x * k * Math.min(w, h) * 0.66, y: h / 2 + y * k * Math.min(w, h) * 0.66, k, z: zz }
     }
+    const zonaFocoIdx = zonaFoco ? contenido.clusters.findIndex((z) => z.id === zonaFoco) : -1
+    const densa = estrellas.length > 60
+    // presupuesto de etiquetas: con muchas estrellas solo se nombran las que más brillan
+    const importancia = (id: string) => contenido.conceptos[id]?.importancia ?? 0
+    const conEtiqueta = new Set(
+      [...estrellas].sort((a, b) => b.estado - a.estado || importancia(b.id) - importancia(a.id)).slice(0, densa ? 22 : 40).map((s) => s.id)
+    )
     const dibujar = (t: number) => {
       if (!vivo) return
       const dpr = window.devicePixelRatio || 1
@@ -96,7 +121,15 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
       t0 = t
       // nebulosas: una por zona, en el centroide proyectado
       const porZona = new Map<number, { x: number; y: number; n: number }>()
-      const pos = estrellas.map((s) => ({ s, p: proyectar(s, w, h) }))
+      let pos = estrellas.map((s) => ({ s, p: proyectar(s, w, h) }))
+      if (zonaFocoIdx >= 0) {
+        // la cámara se acerca a la zona: se centra en su centroide y amplía ×1.6
+        const enFoco = pos.filter(({ s }) => s.zona === zonaFocoIdx)
+        if (enFoco.length) {
+          const cx = enFoco.reduce((n, { p }) => n + p.x, 0) / enFoco.length, cy = enFoco.reduce((n, { p }) => n + p.y, 0) / enFoco.length
+          pos = pos.map(({ s, p }) => ({ s, p: { ...p, x: w / 2 + (p.x - cx) * 1.6, y: h / 2 + (p.y - cy) * 1.6 } }))
+        }
+      }
       for (const { s, p } of pos) { const z = porZona.get(s.zona) ?? { x: 0, y: 0, n: 0 }; z.x += p.x; z.y += p.y; z.n++; porZona.set(s.zona, z) }
       for (const [z, c] of porZona) {
         const cx = c.x / c.n, cy = c.y / c.n, r = Math.min(w, h) * (0.16 + 0.05 * Math.min(4, c.n))
@@ -134,6 +167,9 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
           case 5: r = 3; col = C.rojo; label = C.rojo; alfa = reducido ? 0.85 : 0.7 + 0.3 * Math.sin(t / 260); break
         }
         r *= 0.7 + p.k * 0.6
+        if (densa && s.estado === 0) { r *= 0.8; alfa *= 0.7 }
+        if (zonaFocoIdx >= 0 && s.zona !== zonaFocoIdx) { alfa *= 0.3; label = null }
+        if (!conEtiqueta.has(s.id) && st.foco !== s.id) label = null
         g.save(); g.globalAlpha = alfa
         if (s.estado === 3) { g.strokeStyle = 'rgba(56,182,255,0.45)'; g.lineWidth = 1; g.beginPath(); g.arc(p.x, p.y, r + 5, 0, 7); g.stroke() }
         if (s.estado === 4) { g.shadowColor = C.dom; g.shadowBlur = st.quieto || reducido ? 10 : 14 + 6 * Math.sin(t / 700 + p.x) }
@@ -170,7 +206,7 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
     cv.addEventListener('pointerdown', abajo); cv.addEventListener('pointermove', mueve); cv.addEventListener('pointerup', arriba)
     void idx
     return () => { vivo = false; cv.removeEventListener('pointerdown', abajo); cv.removeEventListener('pointermove', mueve); cv.removeEventListener('pointerup', arriba) }
-  }, [contenido, atlas, soloUnidad, onEstrella, modo, nuevos])
+  }, [contenido, atlas, soloUnidad, onEstrella, modo, nuevos, zonaFoco])
 
   return <canvas ref={ref} className={`galaxia ${modo}`} style={{ height: alto }} role="img" aria-label="Tu galaxia de conocimiento" />
 }

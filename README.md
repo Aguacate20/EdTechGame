@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.46
+# LudusCog · El Archivo Infinito — v5.47
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,25 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Colección, zonas y una galaxia que aguanta 30 documentos (v5.47)
+
+- **Colección** (`src/ui/ColeccionView.tsx`, según `Coleccion.dc.html`): Estrellas (por zona,
+  con su estado y nivel; «Se te resiste» primero), Propuestas (confirmar / descartar; las
+  confirmadas quedan punteadas en violeta en la galaxia), Logros (las hazañas con su progreso
+  y la lente que desbloquean) y Atlas completo (la vista de siempre). **Logros** tiene fase
+  propia y se abre desde cualquier pantalla; antes compartía fase con Colección y desde
+  Colección no respondía.
+- **Barra**: las pestañas ya no se parten a dos líneas en Expedición; ceden los chips.
+- **Zonas de tu cielo** sustituye a la constelación redundante de la derecha: cada zona con
+  cuántas estrellas tiene encendidas y un toque para acercar la cámara a esa zona (el resto se
+  atenúa). Es la navegación pensada para cuando el cielo sea grande.
+- **La galaxia escala**: las zonas van sobre un anillo con el ángulo áureo (nunca se encima
+  una con otra), el radio de cada zona crece con la raíz de su tamaño, y todo se normaliza
+  para que la estrella más lejana quede en el borde: con 18 o con 400 conceptos ocupa el
+  mismo lienzo. Con más de 60 estrellas, las no tocadas se hacen más pequeñas y tenues y solo
+  se nombran las 22 que más brillan (por estado e importancia); el resto muestra su nombre al
+  pasar el cursor. Nunca hay que desplazarse ni el lienzo crece.
 
 ## El cierre, solo la galaxia (v5.46)
 

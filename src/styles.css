@@ -1745,3 +1745,32 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .cierre-pie { display: flex; justify-content: center; padding: 8px 0 20px; }
 @media (max-width: 1080px) { .cierre-fila { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .cierre-fila { grid-template-columns: 1fr; } }
+/* ── barra: las pestañas no se parten; los chips ceden ── */
+.ludus-nav { flex-wrap: nowrap; min-width: max-content; overflow-x: auto; }
+.ludus .btn.fantasma { padding: 6px 10px; font-size: 13px; }
+/* ── zonas del cielo ── */
+.zonas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.zona { width: 100%; display: grid; grid-template-columns: 10px 1fr; grid-template-areas: "punto texto" "barra barra"; align-items: center; column-gap: 8px; row-gap: 5px; text-align: left; background: var(--panel-hundido); border: 1px solid var(--borde); border-radius: 10px; padding: 8px 10px; color: var(--texto); font: inherit; cursor: pointer; }
+.zona i { grid-area: punto; width: 10px; height: 10px; border-radius: 50%; }
+.zona .zona-texto { grid-area: texto; display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.zona .zona-texto b { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zona .zona-texto small { font-size: 11px; color: var(--texto-2); }
+.zona .barra-prog { grid-area: barra; }
+.zona:hover { border-color: var(--descubierto); }
+.zona.activa { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento) inset; }
+/* ── colección ── */
+.coleccion { max-width: 1100px; margin: 0 auto; padding: 16px 20px 32px; display: flex; flex-direction: column; gap: 14px; }
+.coleccion-cab { text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.coleccion-cab small { font-size: 11px; letter-spacing: 0.22em; color: var(--acento); text-transform: uppercase; }
+.coleccion-cab b { font-size: 16px; }
+.coleccion-tabs { display: flex; gap: 4px; justify-content: center; border-bottom: 1px solid var(--borde); flex-wrap: wrap; }
+.coleccion-cuerpo { display: flex; flex-direction: column; gap: 12px; }
+.coleccion-cuerpo.logros { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.estrellas { display: flex; flex-wrap: wrap; gap: 6px; }
+.estrella-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--panel-hundido); border: 1px solid var(--borde); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.estrella-chip i { width: 8px; height: 8px; border-radius: 50%; }
+.estrella-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; }
+.estrella-lista li { display: flex; align-items: center; gap: 10px; background: var(--panel-hundido); border: 1px solid var(--borde); border-radius: 10px; padding: 8px 10px; }
+.estrella-punto { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.coleccion-acciones { margin-left: auto; display: flex; gap: 6px; }
+.logro.hecha { border-color: var(--dominar); }
