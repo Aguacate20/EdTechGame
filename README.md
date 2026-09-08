@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.41
+# LudusCog · El Archivo Infinito — v5.42
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,18 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Un perfil, una galaxia, muchas lecturas (v5.42)
+
+El modelo es el del extractor v2.5 (`engine/merge.py`), ahora visible en el juego: **el
+conocimiento pertenece al perfil, no al documento**. Entrar es solo elegir o crear un
+perfil. Dentro, **Biblioteca** deja subir un PDF: el extractor lo procesa con
+`student_id`, lo suma al plan del perfil, unifica los conceptos que se repiten entre
+lecturas (canonicalización conservadora entre documentos) y recalcula las zonas. El juego
+carga `GET /students/{id}/bundle`, que es el plan fusionado; un perfil sin material cae
+directo en Biblioteca. Las zonas ya se llaman por su concepto eje («Zona de Crítica
+social») y son las nebulosas de la galaxia. El Atlas se sincroniza por perfil
+(`campo = "plan"`) y se conserva cuando entra una lectura nueva.
 
 ## Entrar como en el extractor (v5.41)
 

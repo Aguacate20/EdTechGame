@@ -119,3 +119,29 @@ export async function listarCampos(api: string): Promise<CampoResumen[]> {
   const r = await json<{ campos: { codigo: string; course_id: string; nombre: string; conceptos: number | null }[] }>(`${api}/campos`)
   return r.campos.map((c) => ({ codigo: c.codigo, campoId: String(c.course_id), nombre: c.nombre, conceptos: c.conceptos }))
 }
+
+/* ── el plan del perfil (todos sus documentos fusionados) y la biblioteca ── */
+export async function cargarPlan(api: string, studentId: string): Promise<unknown | null> {
+  const r = await fetch(`${api}/students/${studentId}/bundle`)
+  if (r.status === 404) return null
+  if (!r.ok) throw new Error(`${r.status}`)
+  return r.json()
+}
+export interface DocumentoResumen { id: string; titulo: string; conceptos: number; relaciones: number; objeto: string | null }
+export async function listarBiblioteca(api: string, studentId: string): Promise<DocumentoResumen[]> {
+  const r = await json<{ documentos: { id: string; titulo: string; conceptos: number; relaciones: number; objeto_de_estudio: string | null }[] }>(`${api}/students/${studentId}/biblioteca`)
+  return r.documentos.map((d) => ({ id: d.id, titulo: d.titulo, conceptos: d.conceptos, relaciones: d.relaciones, objeto: d.objeto_de_estudio }))
+}
+/** Sube un archivo al perfil: el extractor lo procesa y se suma al plan. */
+export async function subirDocumento(api: string, studentId: string, archivo: File): Promise<string> {
+  const fd = new FormData()
+  fd.append('file', archivo)
+  fd.append('student_id', studentId)
+  const r = await fetch(`${api}/extract`, { method: 'POST', body: fd })
+  if (!r.ok) throw new Error(`${r.status}`)
+  const j = (await r.json()) as { job_id?: string; id?: string }
+  return j.job_id ?? j.id ?? ''
+}
+export async function estadoJob(api: string, jobId: string): Promise<{ status: string; error?: string | null; progreso?: unknown }> {
+  return json(`${api}/jobs/${jobId}?incluir_bundle=false`)
+}

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { Atlas } from '../engine/atlas'
 import { hallazgosDe, lucidezDe, nivelDe, xpDe, type Sesion } from '../net/sesion'
 
-export type Pestana = 'expedicion' | 'mision' | 'coleccion' | 'taller' | 'logros'
+export type Pestana = 'expedicion' | 'biblioteca' | 'mision' | 'coleccion' | 'taller' | 'logros'
 
 interface Props {
   sesion: Sesion | null
@@ -15,6 +15,7 @@ interface Props {
 
 const PESTANAS: { id: Pestana; nombre: string; lista: boolean }[] = [
   { id: 'expedicion', nombre: 'Expedición', lista: true },
+  { id: 'biblioteca', nombre: 'Biblioteca', lista: true },
   { id: 'mision', nombre: 'Misión', lista: false },
   { id: 'coleccion', nombre: 'Colección', lista: true },
   { id: 'taller', nombre: 'Taller', lista: false },

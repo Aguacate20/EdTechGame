@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { adaptarBundle } from '../content/adapter'
 import type { Contenido } from '../content/types'
 import { BundleLoader } from './BundleLoader'
+import { Biblioteca } from './Biblioteca'
 import {
-  API_POR_DEFECTO, cargarCampo, entrar, guardarSesion, leerSesion, listarCampos, listarPerfiles,
-  type CampoResumen, type PerfilResumen, type Sesion
+  API_POR_DEFECTO, cargarPlan, entrar, guardarSesion, leerSesion, listarPerfiles,
+  type PerfilResumen, type Sesion
 } from '../net/sesion'
 
 interface Props { onListo: (c: Contenido, sesion: Sesion | null) => void }
@@ -16,11 +17,9 @@ export function Entrar({ onListo }: Props) {
   const previa = leerSesion()
   const [api, setApi] = useState(previa?.api ?? API_POR_DEFECTO)
   const [perfiles, setPerfiles] = useState<PerfilResumen[] | null>(null)
-  const [campos, setCampos] = useState<CampoResumen[] | null>(null)
   const [perfil, setPerfil] = useState<PerfilResumen | 'nuevo' | null>(null)
   const [nombre, setNombre] = useState('')
-  const [campo, setCampo] = useState<CampoResumen | null>(null)
-  const [codigo, setCodigo] = useState('')
+  const [sinMaterial, setSinMaterial] = useState<Sesion | null>(null)
   const [manual, setManual] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -30,25 +29,22 @@ export function Entrar({ onListo }: Props) {
 
   useEffect(() => {
     let vivo = true
-    setPerfiles(null); setCampos(null); setSinRed(false)
-    Promise.all([listarPerfiles(base), listarCampos(base)])
-      .then(([p, c]) => {
+    setPerfiles(null); setSinRed(false)
+    listarPerfiles(base)
+      .then((p) => {
         if (!vivo) return
-        setPerfiles(p); setCampos(c)
+        setPerfiles(p)
         // se preselecciona lo de la última vez
         const mio = previa ? p.find((x) => x.id === previa.studentId) : undefined
         if (mio) setPerfil(mio)
-        const suyo = previa ? c.find((x) => x.campoId === previa.campoId) : undefined
-        if (suyo) setCampo(suyo)
       })
-      .catch(() => { if (vivo) { setPerfiles([]); setCampos([]); setSinRed(true) } })
+      .catch(() => { if (vivo) { setPerfiles([]); setSinRed(true) } })
     return () => { vivo = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [base])
 
   const quienListo = perfil === 'nuevo' ? nombre.trim().length >= 2 : perfil !== null
-  const campoCodigo = campo ? campo.codigo : codigo.trim().toUpperCase()
-  const listo = quienListo && campoCodigo.length >= 4 && !ocupado
+  const listo = quienListo && !ocupado
 
   async function ir() {
     setOcupado(true); setError(null)
@@ -56,19 +52,38 @@ export function Entrar({ onListo }: Props) {
       const quien = perfil === 'nuevo'
         ? await entrar(base, nombre.trim())
         : { studentId: perfil!.id, codigoJugador: perfil!.codigoJugador }
-      const c = await cargarCampo(base, campoCodigo)
       const sesion: Sesion = {
         api: base, nombre: perfil === 'nuevo' ? nombre.trim() : perfil!.nombre,
         studentId: quien.studentId, codigoJugador: quien.codigoJugador,
-        campo: campoCodigo, campoId: c.campoId, campoNombre: c.nombre
+        campo: 'plan', campoId: 'plan', campoNombre: 'Tu galaxia'
       }
       guardarSesion(sesion)
-      onListo(adaptarBundle(c.bundle), sesion)
+      const plan = await cargarPlan(base, quien.studentId)
+      if (!plan) { setSinMaterial(sesion); setOcupado(false); return }
+      onListo(adaptarBundle(plan), sesion)
     } catch (e) {
-      const msg = e instanceof Error ? e.message : ''
-      setError(/campo/i.test(msg) ? 'No hay un campo con ese código. Pídeselo a tu profesor.' : msg || 'No se pudo entrar.')
+      setError(e instanceof Error ? e.message : 'No se pudo entrar.')
       setOcupado(false)
     }
+  }
+
+  if (sinMaterial) {
+    return (
+      <div className="entrar">
+        <div className="entrar-tarjeta ancha">
+          <div className="marca-lc" aria-label="LudusCog">
+            <span className="orbita" aria-hidden="true" />
+            <span className="nombre"><b>Ludus<span>Cog</span></b><small>aprender · entender · avanzar</small></span>
+          </div>
+          <h1 className="entrar-titulo">Hola, {sinMaterial.nombre}. Tu galaxia está vacía: sube tu primera lectura.</h1>
+          <Biblioteca
+            sesion={sinMaterial}
+            onActualizado={() => { void cargarPlan(base, sinMaterial.studentId).then((plan) => { if (plan) onListo(adaptarBundle(plan), sinMaterial) }) }}
+            onVolver={() => setSinMaterial(null)}
+          />
+        </div>
+      </div>
+    )
   }
 
   if (manual) {
@@ -121,36 +136,10 @@ export function Entrar({ onListo }: Props) {
           )}
         </fieldset>
 
-        <fieldset className="entrar-grupo">
-          <legend>¿En qué campo?</legend>
-          {campos === null ? <p className="entrar-nota">Buscando campos publicados…</p> : campos.length === 0 ? (
-            <p className="entrar-nota">{sinRed ? 'No se pudo llegar al servidor. Revisa la dirección en Opciones.' : 'Todavía no hay campos publicados. Escribe el código que te dio tu profesor.'}</p>
-          ) : (
-            <div className="entrar-lista" role="listbox" aria-label="Campos">
-              {campos.map((c) => (
-                <button
-                  key={c.campoId} type="button" role="option" aria-selected={campo?.campoId === c.campoId}
-                  className={`entrar-item${campo?.campoId === c.campoId ? ' elegido' : ''}`}
-                  onClick={() => { setCampo(c); setCodigo('') }}
-                >
-                  <span className="entrar-punto" aria-hidden="true" />
-                  <span className="entrar-item-texto"><b>{c.nombre}</b><small><code>{c.codigo}</code>{c.conceptos ? ` · ${c.conceptos} conceptos` : ''}</small></span>
-                </button>
-              ))}
-            </div>
-          )}
-          <label className="campo">
-            <span>O un código de campo</span>
-            <input
-              value={codigo} onChange={(e) => { setCodigo(e.target.value.toUpperCase()); setCampo(null) }}
-              placeholder="LJH7K2" maxLength={8} className="codigo" aria-invalid={error ? true : undefined}
-            />
-          </label>
-        </fieldset>
 
         {error && <p className="entrar-error" role="alert">{error}</p>}
         <button className="btn primario entrar-ir" disabled={!listo} onClick={ir}>
-          {ocupado ? 'Entrando…' : 'Entrar al campo'}
+          {ocupado ? 'Entrando…' : 'Entrar'}
         </button>
         <details className="entrar-mas">
           <summary>Opciones</summary>

@@ -1668,3 +1668,15 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .entrar-item-texto code { font-family: var(--mono); color: var(--descubierto); }
 .entrar-punto { width: 10px; height: 10px; border-radius: 50%; background: var(--dominar); box-shadow: 0 0 10px var(--dominar); flex: none; margin: 0 12px; }
 .entrar-nota { margin: 0; font-size: 13px; color: var(--texto-2); }
+
+/* ── Biblioteca ── */
+.entrar-tarjeta.ancha { width: min(720px, 100%); }
+.biblioteca { max-width: 760px; margin: 24px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 18px; }
+.biblioteca-cab h2 { margin: 0 0 6px; font-size: 22px; font-weight: 800; }
+.biblioteca-cab p { margin: 0; color: var(--texto-2); line-height: 1.45; }
+.biblioteca-caja { border: 1.5px dashed var(--borde); border-radius: 12px; padding: 26px; text-align: center; background: var(--panel-hundido); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.biblioteca-caja.activa { border-color: var(--acento); }
+.biblioteca-caja p { margin: 0; }
+.biblioteca-caja small { color: var(--texto-2); }
+.biblioteca-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.biblioteca-lista li { display: flex; align-items: center; gap: 4px; background: var(--panel); border: 1px solid var(--borde); border-radius: 10px; padding: 8px 10px; }

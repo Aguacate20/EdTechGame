@@ -23,6 +23,9 @@ import { contenidoTutorial, SALAS_TUTORIAL } from './content/tutorial'
 import { BundleLoader } from './ui/BundleLoader'
 import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
+import { Biblioteca } from './ui/Biblioteca'
+import { cargarPlan } from './net/sesion'
+import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
 import { observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
@@ -42,7 +45,7 @@ import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
 type Fase =
   | 'cargar' | 'inicio' | 'portada' | 'mapa' | 'batalla'
-  | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin'
+  | 'vistazo' | 'resumen' | 'recompensa' | 'refugio' | 'atlas' | 'fin' | 'tutorial-fin' | 'biblioteca'
 
 const LUCIDEZ_MAX = 80
 
@@ -672,12 +675,28 @@ export default function App() {
   }
   const irA = (p: Pestana) => {
     if (p === 'coleccion' || p === 'logros') { setFaseAnterior(fase); setFase('atlas') }
+    else if (p === 'biblioteca') { setFaseAnterior(fase); setFase('biblioteca') }
     else if (p === 'expedicion') setFase('inicio')
   }
   const salir = () => { cerrarSesion(); observarAtlas(null); setSesion(null); setContenido(null); setFase('cargar') }
   const barra = (activa: Pestana, extra?: React.ReactNode) => (
     <Shell sesion={sesion} atlas={atlas} activa={activa} onPestana={irA} onSalir={salir}>{extra}</Shell>
   )
+  if (fase === 'biblioteca' && sesion) {
+    return (
+      <div className="app">
+        {barra('biblioteca')}
+        <Biblioteca
+          sesion={sesion}
+          onVolver={() => setFase('inicio')}
+          onActualizado={() => {
+            // un documento nuevo → el plan cambia → se recarga el contenido; el Atlas se conserva
+            void cargarPlan(sesion.api, sesion.studentId).then((plan) => { if (plan) { setContenido(adaptarBundle(plan)); setFase('inicio') } })
+          }}
+        />
+      </div>
+    )
+  }
   if (fase === 'inicio') {
     return (
       <div className="app">
