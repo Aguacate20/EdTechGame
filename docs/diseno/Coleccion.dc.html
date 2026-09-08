@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 22px 31px,rgba(243,246,255,.6),transparent),radial-gradient(1px 1px at 140px 88px,rgba(243,246,255,.4),transparent),radial-gradient(1.5px 1.5px at 210px 190px,rgba(243,246,255,.5),transparent),radial-gradient(1px 1px at 70px 230px,rgba(243,246,255,.35),transparent),radial-gradient(1px 1px at 250px 40px,rgba(56,182,255,.5),transparent);background-size:280px 280px}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Colección" style="position:relative;min-height:100vh;display:flex;flex-direction:column;padding-bottom:{{ padBottom }}">
+  <header style="display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;padding:12px 20px;border-bottom:1px solid #24335E;background:rgba(21,34,74,.55);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5">
+    <a href="Inicio.dc.html" style="display:flex;align-items:center;gap:10px;color:#F3F6FF">
+      <span style="width:34px;height:34px;border-radius:50%;border:1.5px solid #38B6FF;display:grid;place-items:center;position:relative"><span style="width:10px;height:10px;border-radius:50%;background:#FF6A1A;box-shadow:0 0 12px #FF6A1A"></span><span style="position:absolute;top:-3px;right:4px;width:5px;height:5px;border-radius:50%;background:#FFC23D"></span></span>
+      <span style="display:flex;flex-direction:column;line-height:1"><span style="font-weight:800;font-size:20px">Ludus<span style="color:#FF6A1A">Cog</span></span><span style="font-size:9px;letter-spacing:.18em;color:#9AA7C7;text-transform:uppercase;margin-top:3px">aprender · entender · avanzar</span></span>
+    </a>
+    <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;gap:4px;margin-left:12px">
+        <a href="Inicio.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Expedición</a>
+        <a href="Sala.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Misión</a>
+        <a href="Coleccion.dc.html" style="padding:8px 14px;color:#F3F6FF;font-weight:700;font-size:14px;border-bottom:2px solid #FF6A1A">Colección</a>
+        <a href="Sintesis.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Taller</a>
+        <a href="Coleccion.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Logros</a>
+      </nav>
+    </sc-if>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border:1px solid #24335E;border-radius:12px;background:#15224A">
+        <div style="width:34px;height:34px;border-radius:10px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E"></div>
+        <div style="line-height:1.15"><div style="font-weight:700;font-size:14px">Ana Sofía</div><div style="font-size:11px;color:#9AA7C7">Nivel 12 · <span style="font-family:'JetBrains Mono',monospace">1250/2000</span> XP</div></div>
+      </div>
+      <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #24335E;border-radius:12px;background:#15224A;font-size:13px"><span style="color:#9AA7C7;font-weight:600">Hallazgos</span><span style="color:#38B6FF">◆</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600">128</span></div>
+      </sc-if>
+    </div>
+  </header>
+
+  <main style="padding:20px;max-width:1200px;width:100%;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;flex:1">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Colección</div>
+        <div style="font-size:13px;color:#9AA7C7;margin-top:4px">Los Juegos del Hambre — impacto cultural y literatura juvenil · 18 conceptos</div>
+      </div>
+      <div style="display:flex;gap:4px;padding:4px;border:1px solid #24335E;border-radius:12px;background:#15224A">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.ir }}" style="padding:8px 14px;border-radius:9px;border:0;background:{{ t.fondo }};color:{{ t.color }};font-size:13px;font-weight:700;min-height:36px">{{ t.nombre }} <span style="font-family:'JetBrains Mono',monospace;font-weight:500;opacity:.8">{{ t.n }}</span></button>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{ esAtlas }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px">
+        <sc-for list="{{ filtros }}" as="f" hint-placeholder-count="5">
+          <button onClick="{{ f.ir }}" style="padding:4px 10px;border-radius:999px;border:1px solid {{ f.borde }};background:transparent;color:{{ f.color }};font-size:12px;font-weight:600;min-height:28px">{{ f.nombre }}</button>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+        <sc-for list="{{ conceptos }}" as="c" hint-placeholder-count="18">
+          <a href="Inicio.dc.html" style="background:#15224A;border:1px solid {{ c.borde }};border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;color:#F3F6FF;min-height:110px" style-hover="border-color:#9AA7C7">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#9AA7C7">{{ c.zona }}</span><span style="width:10px;height:10px;border-radius:50%;background:{{ c.color }};box-shadow:{{ c.brillo }}"></span></div>
+            <div style="font-weight:800;font-size:15px;line-height:1.25;text-wrap:pretty;flex:1">{{ c.nombre }}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:{{ c.color }};font-weight:700">{{ c.estado }}</span><span style="font-family:'JetBrains Mono',monospace;color:#9AA7C7">Nivel {{ c.nivel }}</span></div>
+          </a>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ esEdicion }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:0;font-size:14px;color:#9AA7C7;max-width:640px;line-height:1.5;text-wrap:pretty">Vínculos que propusiste y el texto no afirma. Confírmalos con evidencia o descártalos. Los confirmados quedan punteados en violeta en tu galaxia.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ propuestas }}" as="p" hint-placeholder-count="3">
+          <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:grid;grid-template-columns:{{ colsProp }};gap:14px;align-items:center">
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px;font-weight:700"><span>{{ p.a }}</span><span style="padding:2px 10px;border-radius:999px;border:1px dashed #9B6CFF;color:#9B6CFF;font-size:12px;font-family:'JetBrains Mono',monospace">{{ p.tipo }}</span><span>{{ p.b }}</span></div>
+              <p style="margin:8px 0 0;font-size:13px;color:#9AA7C7;line-height:1.45;text-wrap:pretty">{{ p.nota }}</p>
+              <div style="margin-top:8px;font-size:12px;color:{{ p.estadoColor }};font-weight:700">{{ p.estado }}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ p.confirmar }}" style="padding:10px 14px;border-radius:10px;border:1px solid #5BD36F;background:transparent;color:#5BD36F;font-size:13px;font-weight:700;min-height:40px">Confirmar</button>
+              <button onClick="{{ p.descartar }}" style="padding:10px 14px;border-radius:10px;border:1px solid #24335E;background:transparent;color:#9AA7C7;font-size:13px;font-weight:700;min-height:40px">Descartar</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ esLogros }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">
+        <sc-for list="{{ hazanas }}" as="h" hint-placeholder-count="6">
+          <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;gap:12px;opacity:{{ h.op }}">
+            <div style="width:44px;height:44px;flex:none;border-radius:50%;border:2px solid {{ h.color }};display:grid;place-items:center;color:{{ h.color }};font-weight:800;font-size:16px;box-shadow:{{ h.brillo }}">{{ h.ini }}</div>
+            <div><div style="font-weight:800;font-size:15px">{{ h.nombre }}</div><div style="font-size:13px;color:#9AA7C7;line-height:1.4;margin-top:3px">{{ h.desc }}</div><div style="font-size:11px;color:{{ h.color }};margin-top:6px;font-weight:700;font-family:'JetBrains Mono',monospace">{{ h.fecha }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ movil }}" hint-placeholder-val="{{ false }}">
+    <nav style="position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:#15224A;border-top:1px solid #24335E;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:6">
+      <a href="Inicio.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Expedición</a>
+      <a href="Sala.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Misión</a>
+      <a href="Coleccion.dc.html" style="text-align:center;font-size:11px;font-weight:700;color:#FF6A1A;min-height:44px;display:grid;place-items:center">Colección</a>
+      <a href="Sintesis.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Taller</a>
+      <a href="Coleccion.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Logros</a>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;'auto'|'escritorio'|'movil'&quot;,&quot;section&quot;:&quot;Vista&quot;},&quot;subvista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;atlas&quot;,&quot;edicion&quot;,&quot;logros&quot;],&quot;default&quot;:&quot;atlas&quot;,&quot;tsType&quot;:&quot;'atlas'|'edicion'|'logros'&quot;,&quot;section&quot;:&quot;Vista&quot;}}">
+const ESTADOS = ['No tocada', 'Vista', 'Reconocida', 'Relacionada', 'Consolidada', 'Se te resiste'];
+const COLOR = ['#9AA7C7', '#9AA7C7', '#38B6FF', '#38B6FF', '#FFC23D', '#FF5A5A'];
+const Z = { narrativa: 'Narrativa y símbolo', sociedad: 'Sociedad y conciencia', poder: 'Empoderamiento', medios: 'Medios y método' };
+const CONCEPTOS = [['Literatura juvenil', 'narrativa', 4], ['Crítica social', 'sociedad', 4], ['Impacto cultural', 'medios', 3], ['Simbolismo', 'narrativa', 3], ['Elementos narrativos', 'narrativa', 2], ['Elementos sociales', 'sociedad', 2], ['Conciencia social', 'sociedad', 3], ['Conciencia crítica', 'sociedad', 1], ['Empoderamiento', 'poder', 3], ['Empoderamiento de las mujeres', 'poder', 2], ['Protagonista femenina fuerte y compleja', 'narrativa', 3], ['Herramienta de crítica social', 'poder', 1], ['Ética del entretenimiento', 'medios', 0], ['Papel de los medios de comunicación', 'medios', 1], ['Conciencia política y activismo', 'poder', 5], ['Discusión cultural sobre desigualdad, violencia y poder de los medios', 'sociedad', 1], ['Análisis de contenido', 'medios', 2], ['Análisis crítico de discursos', 'medios', 0]];
+const PROPUESTAS = [
+  { a: 'Papel de los medios', tipo: 'matiza', b: 'Impacto cultural', nota: 'Propuesta en la sala 2. El texto trata ambos conceptos pero no los vincula. El extractor la marca como insinuada (confianza 0,52).' },
+  { a: 'Ética del entretenimiento', tipo: 'matiza', b: 'Papel de los medios', nota: 'Propuesta en la síntesis. Sin evidencia literal en el texto: la sostienes tú.' },
+  { a: 'Análisis crítico de discursos', tipo: 'extiende', b: 'Análisis de contenido', nota: 'El texto lo implica (confianza 0,71). Confirmarla la convierte en hilo firme.' }
+];
+const HAZANAS = [
+  { nombre: 'Lo viste tú', desc: 'Propusiste un vínculo que el texto no afirma y lo sostuviste.', color: '#9B6CFF', fecha: '07 sep 2026', on: true },
+  { nombre: 'Rompe-monocultivos', desc: 'Venciste a Monocultivo usando tres tipos de vínculo distintos.', color: '#FF6A1A', fecha: '04 sep 2026', on: true },
+  { nombre: 'Primera constelación', desc: 'Consolidaste una unidad completa.', color: '#FFC23D', fecha: '29 ago 2026', on: true },
+  { nombre: 'Racha de siete', desc: 'Siete días seguidos con al menos una sala.', color: '#5BD36F', fecha: 'mañana, si vuelves', on: false },
+  { nombre: 'Sin eslabones', desc: 'Derrota a Cadena sin un solo vínculo en fila.', color: '#38B6FF', fecha: 'pendiente', on: false },
+  { nombre: 'Contra el eco', desc: 'Descarta la intuición cotidiana tres veces seguidas.', color: '#38B6FF', fecha: 'pendiente', on: false }
+];
+class Component extends DCLogic {
+  state = { w: window.innerWidth, tab: 0, filtro: 'todos', decisiones: {} };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  renderVals() {
+    const vista = this.props.vista ?? 'auto';
+    const movil = vista === 'movil' || (vista === 'auto' && this.state.w < 860);
+    const sv = this.props.subvista;
+    if (sv && sv !== this._sv) { this._sv = sv; this.state.tab = Math.max(0, ['atlas', 'edicion', 'logros'].indexOf(sv)); }
+    const tab = this.state.tab;
+    const f = this.state.filtro;
+    const lista = CONCEPTOS.filter(([, z, n]) => f === 'todos' || (f === 'resiste' ? n === 5 : f === 'consolidadas' ? n === 4 : f === 'pendientes' ? n <= 1 : z === f));
+    return {
+      movil, escritorio: !movil, padBottom: movil ? '72px' : '0px', colsProp: movil ? 'minmax(0,1fr)' : 'minmax(0,1fr) auto',
+      esAtlas: tab === 0, esEdicion: tab === 1, esLogros: tab === 2,
+      tabs: [['Atlas', 18], ['Edición crítica', 3], ['Logros', 3]].map(([n, k], i) => ({ nombre: n, n: k, fondo: tab === i ? '#FF6A1A' : 'transparent', color: tab === i ? '#0A1230' : '#9AA7C7', ir: () => this.setState({ tab: i }) })),
+      filtros: [['todos', 'Todos'], ['resiste', 'Se te resiste'], ['consolidadas', 'Consolidadas'], ['pendientes', 'Sin tocar'], ['narrativa', Z.narrativa], ['sociedad', Z.sociedad], ['poder', Z.poder], ['medios', Z.medios]].map(([k, n]) => ({ nombre: n, borde: f === k ? '#FF6A1A' : '#24335E', color: f === k ? '#FF6A1A' : '#9AA7C7', ir: () => this.setState({ filtro: k }) })),
+      conceptos: lista.map(([nombre, z, n]) => ({ nombre, zona: Z[z], nivel: n === 5 ? 1 : n, estado: ESTADOS[n], color: COLOR[n], borde: n === 5 ? 'rgba(255,90,90,.5)' : '#24335E', brillo: n === 4 ? '0 0 10px #FFC23D' : 'none' })),
+      propuestas: PROPUESTAS.map((p, i) => { const d = this.state.decisiones[i]; return Object.assign({}, p, { estado: d === 'ok' ? 'Confirmada · ahora punteada en tu galaxia' : d === 'no' ? 'Descartada' : 'Pendiente de tu decisión', estadoColor: d === 'ok' ? '#5BD36F' : d === 'no' ? '#9AA7C7' : '#9B6CFF', confirmar: () => this.setState({ decisiones: Object.assign({}, this.state.decisiones, { [i]: 'ok' }) }), descartar: () => this.setState({ decisiones: Object.assign({}, this.state.decisiones, { [i]: 'no' }) }) }); }),
+      hazanas: HAZANAS.map(h => Object.assign({}, h, { ini: h.nombre[0], op: h.on ? 1 : 0.5, brillo: h.on ? `0 0 12px ${h.color}66` : 'none' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Galaxia — componente y especificación" style="max-width:1200px;margin:0 auto;padding:32px 20px 60px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+  <div>
+    <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Componente · Galaxia</div>
+    <h1 style="margin:8px 0 6px;font-size:32px;font-weight:800;letter-spacing:-.01em">La galaxia de conocimiento</h1>
+    <p style="margin:0;max-width:680px;font-size:15px;color:#9AA7C7;line-height:1.5;text-wrap:pretty">Estrellas son conceptos; hilos, relaciones sostenidas; nebulosas, zonas del texto; constelaciones, unidades. Es el único lugar de la aplicación con bloom, partículas y movimiento lento. Esta es la versión 2D plana (canvas) para pantallas sin WebGL; el 3D se implementa aparte en Three.js con esta misma especificación.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:{{ cols }};gap:16px;align-items:start">
+    <div style="position:relative;height:{{ altoGalaxia }};border:1px solid #24335E;border-radius:12px;overflow:hidden;background:#0A1230">
+      <x-import component-from-global-scope="LcGalaxia" from="./galaxia.js" modo="{{ modo }}" foco="{{ focoId }}" style="position:absolute;inset:0" hint-size="100%,100%"></x-import>
+      <div style="position:absolute;top:12px;left:12px;display:flex;gap:4px;padding:4px;border:1px solid #24335E;border-radius:10px;background:rgba(21,34,74,.9)">
+        <sc-for list="{{ modos }}" as="m" hint-placeholder-count="3">
+          <button onClick="{{ m.ir }}" style="padding:6px 12px;border-radius:7px;border:0;background:{{ m.fondo }};color:{{ m.color }};font-size:12px;font-weight:700;min-height:32px">{{ m.nombre }}</button>
+        </sc-for>
+      </div>
+      <div style="position:absolute;right:12px;bottom:12px;font-size:11px;color:#9AA7C7;pointer-events:none">Arrastra para girar · toca una estrella</div>
+      <sc-if value="{{ hayEstrella }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:12px;right:12px;width:min(280px,calc(100% - 24px));background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px;box-sizing:border-box">
+          <div style="display:flex;justify-content:space-between;gap:8px"><div><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">{{ estrella.zonaNombre }}</div><div style="font-weight:800;font-size:16px;line-height:1.25;margin-top:4px">{{ estrella.nombre }}</div></div><button onClick="{{ cerrar }}" aria-label="Cerrar" style="border:0;background:transparent;color:#9AA7C7;font-size:18px;line-height:1;padding:0 2px">×</button></div>
+          <div style="margin-top:10px;font-size:12px;color:{{ estadoColor }};font-weight:700">{{ estadoNombre }}</div>
+        </div>
+      </sc-if>
+    </div>
+
+    <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Estados de estrella</div>
+      <sc-for list="{{ estados }}" as="e" hint-placeholder-count="6">
+        <div style="display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:center">
+          <div style="display:grid;place-items:center;height:36px"><span style="width:{{ e.tam }};height:{{ e.tam }};border-radius:50%;background:{{ e.color }};opacity:{{ e.op }};box-shadow:{{ e.sombra }};outline:{{ e.halo }};outline-offset:4px"></span></div>
+          <div><div style="font-weight:700;font-size:14px">{{ e.nombre }}</div><div style="font-size:12px;color:#9AA7C7;line-height:1.4">{{ e.desc }}</div></div>
+        </div>
+      </sc-for>
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-top:6px">Hilos</div>
+      <div style="display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:center"><span style="border-top:1.6px solid #38B6FF"></span><div><span style="font-weight:700;font-size:14px">Firme</span> <span style="font-size:12px;color:#9AA7C7">continuo · 1,6 px · cian 55–75 %</span></div></div>
+      <div style="display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:center"><span style="border-top:1px solid #E0A33A"></span><div><span style="font-weight:700;font-size:14px">Insinuado</span> <span style="font-size:12px;color:#9AA7C7">fino · 0,9 px · ámbar</span></div></div>
+      <div style="display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:center"><span style="border-top:1.6px dashed #9B6CFF"></span><div><span style="font-weight:700;font-size:14px">Propuesta</span> <span style="font-size:12px;color:#9AA7C7">punteado 4/5 · violeta · etiqueta «lo viste tú»</span></div></div>
+    </section>
+  </div>
+
+  <div style="display:grid;grid-template-columns:{{ colsSpec }};gap:16px">
+    <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:10px">Geometría y color</div>
+      <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:#F3F6FF">
+        <li>Radio base de estrella: 1,4 · 2 · 3 · 3,4 · 4,2 · 3 px (por estado), × escala de profundidad 0,68–1,32.</li>
+        <li>Halo (relacionada): anillo a r+5, cian 45 %. Bloom (consolidada): sombra oro 14 ± 6 px, periodo 4,4 s.</li>
+        <li>Nebulosa por zona: gradiente radial centrado en sus estrellas, radio 34 % del lado menor, alfa 0,13 → 0.</li>
+        <li>Zonas: Narrativa cian · Sociedad verde · Empoderamiento violeta · Medios oro.</li>
+        <li>Etiquetas: Manrope 10–12 px; ocultas en «no tocada» y en anchos &lt; 360 px.</li>
+        <li>70 partículas de 0,3–1,5 px, alfa 0,25–0,5, deriva vertical lenta.</li>
+      </ul>
+    </section>
+    <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:10px">Movimiento e interacción</div>
+      <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6">
+        <li>Órbita automática: 0,0011 rad/frame ≈ una vuelta cada 95 s. Se detiene al arrastrar.</li>
+        <li>Arrastrar rota (0,006 rad/px). Tocar (&lt; 4 px de movimiento) sobre una estrella a ≤ 18 px abre su carta.</li>
+        <li>Parpadeo «se te resiste»: alfa 0,7–1,0, periodo 1,6 s.</li>
+        <li><span style="font-family:'JetBrains Mono',monospace;font-size:12px">prefers-reduced-motion</span>: sin órbita, sin partículas, bloom fijo, cierre mostrado en su estado final.</li>
+        <li>Eventos: <span style="font-family:'JetBrains Mono',monospace;font-size:12px">lc-estrella</span> (detalle: concepto) · <span style="font-family:'JetBrains Mono',monospace;font-size:12px">lc-cierre-fin</span>.</li>
+      </ul>
+    </section>
+    <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:10px">Timing del cierre de expedición</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px"><span style="font-family:'JetBrains Mono',monospace;color:#FFC23D">0,0–3,3 s</span><span>Hilos ganados se dibujan uno a uno: 900 ms cada trazo (oro, con bloom) + 200 ms de pausa.</span></div>
+        <div style="display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px"><span style="font-family:'JetBrains Mono',monospace;color:#38B6FF">3,5–4,9 s</span><span>Estrellas que suben de nivel: destello blanco (radio +6 px, sombra 40 px) que decae en 700 ms; cambia el estado al inicio.</span></div>
+        <div style="display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px"><span style="font-family:'JetBrains Mono',monospace;color:#9B6CFF">5,0–5,9 s</span><span>Propuestas propias aparecen punteadas en violeta; al completarse, etiqueta «lo viste tú».</span></div>
+        <div style="display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px"><span style="font-family:'JetBrains Mono',monospace;color:#9AA7C7">6,2 s</span><span>Evento de fin. El panel de recompensas ya es interactivo desde el inicio; el botón «Continuar» nunca espera.</span></div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ESTADOS = [
+  { nombre: 'No tocada', desc: 'Punto tenue sin nombre.', color: '#9AA7C7', tam: '4px', op: .45, sombra: 'none', halo: 'none' },
+  { nombre: 'Vista', desc: 'Punto pequeño, nombre en gris.', color: '#9AA7C7', tam: '5px', op: 1, sombra: 'none', halo: 'none' },
+  { nombre: 'Reconocida', desc: 'Encendida en cian, nombre en blanco.', color: '#38B6FF', tam: '7px', op: 1, sombra: 'none', halo: 'none' },
+  { nombre: 'Relacionada', desc: 'Cian con halo: tiene al menos un hilo firme.', color: '#38B6FF', tam: '8px', op: 1, sombra: 'none', halo: '1px solid rgba(56,182,255,.45)' },
+  { nombre: 'Consolidada', desc: 'Oro con bloom y destello lento.', color: '#FFC23D', tam: '10px', op: 1, sombra: '0 0 14px #FFC23D', halo: 'none' },
+  { nombre: 'Se te resiste', desc: 'Parpadeo rojizo. Andy la propone como siguiente sala.', color: '#FF5A5A', tam: '7px', op: .85, sombra: 'none', halo: 'none' }
+];
+const NOMBRES = ['No tocada', 'Vista', 'Reconocida', 'Relacionada', 'Consolidada', 'Se te resiste'];
+const COLOR = ['#9AA7C7', '#9AA7C7', '#38B6FF', '#38B6FF', '#FFC23D', '#FF5A5A'];
+class Component extends DCLogic {
+  state = { w: window.innerWidth, modo: 'vivo', estrella: null };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); this.onE = e => this.setState({ estrella: e.detail }); window.addEventListener('resize', this.onR); window.addEventListener('lc-estrella', this.onE); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); window.removeEventListener('lc-estrella', this.onE); }
+  renderVals() {
+    const movil = this.state.w < 860, e = this.state.estrella;
+    return {
+      cols: movil ? 'minmax(0,1fr)' : 'minmax(0,1fr) 320px', colsSpec: movil ? 'minmax(0,1fr)' : 'repeat(3,minmax(0,1fr))', altoGalaxia: movil ? '360px' : '520px',
+      modo: this.state.modo,
+      modos: [['vivo', 'Vivo'], ['cierre', 'Cierre'], ['quieto', 'Sin movimiento']].map(([k, n]) => ({ nombre: n, fondo: this.state.modo === k ? '#FF6A1A' : 'transparent', color: this.state.modo === k ? '#0A1230' : '#9AA7C7', ir: () => this.setState({ modo: k }) })),
+      estados: ESTADOS,
+      hayEstrella: !!e, estrella: e || {}, focoId: e ? e.id : '', estadoNombre: e ? NOMBRES[e.estado] : '', estadoColor: e ? COLOR[e.estado] : '#9AA7C7',
+      cerrar: () => this.setState({ estrella: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

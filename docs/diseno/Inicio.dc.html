@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 22px 31px,rgba(243,246,255,.6),transparent),radial-gradient(1px 1px at 140px 88px,rgba(243,246,255,.4),transparent),radial-gradient(1.5px 1.5px at 210px 190px,rgba(243,246,255,.5),transparent),radial-gradient(1px 1px at 70px 230px,rgba(243,246,255,.35),transparent),radial-gradient(1px 1px at 250px 40px,rgba(56,182,255,.5),transparent);background-size:280px 280px}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Inicio / Expedición" style="position:relative;min-height:100vh;display:flex;flex-direction:column;padding-bottom:{{ padBottom }}">
+
+  <header style="display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;padding:12px 20px;border-bottom:1px solid #24335E;background:rgba(21,34,74,.55);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5">
+    <a href="Inicio.dc.html" style="display:flex;align-items:center;gap:10px;color:#F3F6FF">
+      <span style="width:34px;height:34px;border-radius:50%;border:1.5px solid #38B6FF;display:grid;place-items:center;position:relative"><span style="width:10px;height:10px;border-radius:50%;background:#FF6A1A;box-shadow:0 0 12px #FF6A1A"></span><span style="position:absolute;top:-3px;right:4px;width:5px;height:5px;border-radius:50%;background:#FFC23D"></span></span>
+      <span style="display:flex;flex-direction:column;line-height:1"><span style="font-weight:800;font-size:20px;letter-spacing:-.01em">Ludus<span style="color:#FF6A1A">Cog</span></span><span style="font-size:9px;letter-spacing:.18em;color:#9AA7C7;text-transform:uppercase;margin-top:3px">aprender · entender · avanzar</span></span>
+    </a>
+    <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;gap:4px;margin-left:12px">
+        <a href="Inicio.dc.html" style="padding:8px 14px;border-radius:10px;color:#F3F6FF;font-weight:700;font-size:14px;border-bottom:2px solid #FF6A1A;border-radius:10px 10px 0 0">Expedición</a>
+        <a href="Sala.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Misión</a>
+        <a href="Coleccion.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Colección</a>
+        <a href="Sintesis.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Taller</a>
+        <a href="Coleccion.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Logros</a>
+      </nav>
+    </sc-if>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border:1px solid #24335E;border-radius:12px;background:#15224A">
+        <div style="width:34px;height:34px;border-radius:10px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E"></div>
+        <div style="line-height:1.15"><div style="font-weight:700;font-size:14px">Ana Sofía</div><div style="font-size:11px;color:#9AA7C7">Nivel 12 · <span style="font-family:'JetBrains Mono',monospace">1250/2000</span> XP · <span style="font-family:'JetBrains Mono',monospace;color:#38B6FF">A1B2C3</span></div></div>
+        <button aria-label="Ajustes" style="width:32px;height:32px;border:1px solid #24335E;border-radius:8px;background:transparent;color:#9AA7C7;font-size:13px;font-weight:700;margin-left:4px" style-hover="color:#F3F6FF">⋯</button>
+      </div>
+      <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 12px;border:1px solid #24335E;border-radius:12px;background:#15224A">
+          <span style="font-size:13px;color:#9AA7C7;font-weight:600">Lucidez</span>
+          <span style="width:38px;height:38px;border-radius:50%;background:conic-gradient(#FF6A1A 78%,#24335E 0);display:grid;place-items:center"><span style="width:30px;height:30px;border-radius:50%;background:#15224A;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">78%</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #24335E;border-radius:12px;background:#15224A;font-size:13px"><span style="color:#9AA7C7;font-weight:600">Hallazgos</span><span style="color:#38B6FF">◆</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600">128</span></div>
+      </sc-if>
+    </div>
+  </header>
+
+  <main style="display:grid;grid-template-columns:{{ cols }};gap:16px;padding:16px 20px;flex:1;max-width:1480px;width:100%;margin:0 auto;box-sizing:border-box">
+
+    <aside style="display:flex;flex-direction:column;gap:12px;min-width:0;order:{{ ordenIzq }}">
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+        <div style="width:52px;height:52px;flex:none;border-radius:12px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:#9AA7C7">andy</div>
+        <div><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:4px">Andy</div><p style="margin:0;font-size:14px;line-height:1.45;text-wrap:pretty">Cada vínculo que sostienes se queda en tu cielo.</p></div>
+      </section>
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Misión actual</div>
+        <h2 style="margin:6px 0 4px;font-size:20px;font-weight:800;line-height:1.2">Expedición del Archivo Infinito</h2>
+        <p style="margin:0 0 12px;font-size:13px;color:#9AA7C7;line-height:1.45">Sostén los vínculos de la unidad 2 y presenta tu diagrama de Crítica social.</p>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="color:#9AA7C7">Progreso</span><span style="font-family:'JetBrains Mono',monospace">60%</span></div>
+        <div style="height:6px;background:#24335E;border-radius:3px;overflow:hidden"><div style="width:60%;height:100%;background:#FF6A1A;border-radius:3px"></div></div>
+      </section>
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:10px">Próximo desafío</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:48px;height:48px;flex:none;border-radius:12px;background:repeating-linear-gradient(45deg,#2A1B44 0 4px,#1B1436 4px 8px);border:1px solid #3A2A66;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:8px;color:#9B6CFF">entidad</div>
+          <div><div style="font-weight:700;font-size:15px">Monocultivo</div><div style="font-size:13px;color:#9AA7C7;line-height:1.4">3 conceptos de zonas distintas</div></div>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:12px;color:#9AA7C7"><span>Recompensa</span><span style="font-family:'JetBrains Mono',monospace;color:#FFC23D">+20 XP</span></div>
+      </section>
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:8px">Concepto recomendado</div>
+        <div style="font-weight:700;font-size:15px">Conciencia crítica</div>
+        <div style="display:flex;gap:6px;margin:8px 0 12px;flex-wrap:wrap">
+          <span style="padding:3px 10px;border-radius:999px;border:1px solid #24335E;font-size:12px;color:#9AA7C7">Nivel 1</span>
+          <span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(255,106,26,.5);font-size:12px;color:#FF6A1A">Relacionar</span>
+        </div>
+        <a href="Coleccion.dc.html" style="display:flex;justify-content:space-between;padding:10px 12px;border:1px solid #24335E;border-radius:10px;font-size:13px;font-weight:600;color:#F3F6FF" style-hover="border-color:#9AA7C7"><span>Explorar concepto</span><span>→</span></a>
+      </section>
+    </aside>
+
+    <section style="display:flex;flex-direction:column;gap:12px;min-width:0;order:{{ ordenCentro }}">
+      <div style="text-align:center;padding-top:4px">
+        <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#F3F6FF;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Galaxia del campo <span style="color:#FF6A1A">· ··</span></div>
+        <div style="font-size:13px;color:#9AA7C7;margin-top:4px">Los Juegos del Hambre — impacto cultural y literatura juvenil</div>
+      </div>
+      <div style="position:relative;flex:1;min-height:{{ altoGalaxia }};border-radius:12px;overflow:hidden">
+        <x-import component-from-global-scope="LcGalaxia" from="./galaxia.js" modo="vivo" foco="{{ focoId }}" style="position:absolute;inset:0" hint-size="100%,100%"></x-import>
+        <div style="position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:6px 12px;flex-wrap:wrap;align-items:center;font-size:11px;color:#9AA7C7;pointer-events:none">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#38B6FF"></span>Reconocida</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#FFC23D;box-shadow:0 0 8px #FFC23D"></span>Consolidada</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#FF5A5A"></span>Se te resiste</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;border-top:1px dashed #9B6CFF"></span>Propuesta</span>
+          <span style="margin-left:auto">Arrastra para girar · toca una estrella</span>
+        </div>
+        <sc-if value="{{ hayEstrella }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:12px;right:12px;width:min(300px,calc(100% - 24px));background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px;box-sizing:border-box">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+              <div><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">{{ estrella.zonaNombre }}</div><div style="font-weight:800;font-size:16px;line-height:1.25;margin-top:4px">{{ estrella.nombre }}</div></div>
+              <button onClick="{{ cerrar }}" aria-label="Cerrar" style="border:0;background:transparent;color:#9AA7C7;font-size:18px;line-height:1;padding:0 2px">×</button>
+            </div>
+            <div style="display:flex;gap:6px;margin:10px 0 12px;flex-wrap:wrap">
+              <span style="padding:3px 10px;border-radius:999px;border:1px solid #24335E;font-size:12px;color:{{ estadoColor }}">{{ estadoNombre }}</span>
+              <span style="padding:3px 10px;border-radius:999px;border:1px solid #24335E;font-size:12px;color:#9AA7C7">Nivel {{ estrella.estado }}</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <a href="Coleccion.dc.html" style="flex:1;text-align:center;padding:9px;border:1px solid #24335E;border-radius:10px;font-size:13px;font-weight:600;color:#F3F6FF">Ver en el atlas</a>
+              <a href="Sala.dc.html" style="flex:1;text-align:center;padding:9px;border-radius:10px;font-size:13px;font-weight:700;background:#FF6A1A;color:#0A1230">Practicar</a>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:8px;background:#15224A;border:1px solid #24335E;border-radius:12px;padding:12px">
+        <sc-for list="{{ escalones }}" as="e" hint-placeholder-count="5">
+          <div style="text-align:center;min-width:0">
+            <div style="width:36px;height:36px;margin:0 auto 6px;border-radius:50%;border:2px solid {{ e.color }};display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">{{ e.pct }}</div>
+            <div style="font-size:12px;font-weight:600;color:#9AA7C7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ e.nombre }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <aside style="display:flex;flex-direction:column;gap:12px;min-width:0;order:{{ ordenDer }}">
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Constelación · Unidad 2</div>
+        <div style="font-size:13px;color:#9AA7C7;margin-top:2px">Crítica social y conciencia</div>
+        <svg viewBox="0 0 280 150" style="width:100%;height:auto;margin-top:8px;display:block" aria-hidden="true">
+          <line x1="60" y1="40" x2="140" y2="75" stroke="#38B6FF" stroke-width="1.5"/><line x1="140" y1="75" x2="225" y2="45" stroke="#38B6FF" stroke-width="1.5"/><line x1="140" y1="75" x2="95" y2="120" stroke="#38B6FF" stroke-width="1.5"/><line x1="140" y1="75" x2="210" y2="118" stroke="#9B6CFF" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <circle cx="60" cy="40" r="5" fill="#38B6FF"/><circle cx="140" cy="75" r="7" fill="#FFC23D"/><circle cx="225" cy="45" r="5" fill="#38B6FF"/><circle cx="95" cy="120" r="5" fill="#38B6FF"/><circle cx="210" cy="118" r="5" fill="none" stroke="#9AA7C7" stroke-dasharray="2 2"/>
+          <text x="60" y="26" fill="#F3F6FF" font-size="10" text-anchor="middle" font-family="Manrope">Simbolismo</text><text x="140" y="98" fill="#F3F6FF" font-size="10" text-anchor="middle" font-family="Manrope" font-weight="700">Crítica social</text><text x="225" y="31" fill="#F3F6FF" font-size="10" text-anchor="middle" font-family="Manrope">Impacto cultural</text><text x="95" y="140" fill="#F3F6FF" font-size="10" text-anchor="middle" font-family="Manrope">Conciencia social</text><text x="210" y="138" fill="#9AA7C7" font-size="10" text-anchor="middle" font-family="Manrope">Conecta aquí</text>
+        </svg>
+      </section>
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Tu progreso</div>
+        <sc-for list="{{ escalones }}" as="e" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:90px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:13px">
+            <span style="font-weight:600">{{ e.nombre }}</span>
+            <div style="height:6px;background:#24335E;border-radius:3px;overflow:hidden"><div style="width:{{ e.pct }};height:100%;background:{{ e.color }};border-radius:3px"></div></div>
+            <span style="font-family:'JetBrains Mono',monospace;text-align:right;color:#9AA7C7">{{ e.pct }}</span>
+          </div>
+        </sc-for>
+      </section>
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center">
+        <span style="width:72px;height:72px;flex:none;border-radius:50%;background:conic-gradient(#FF6A1A 78%,#24335E 0);display:grid;place-items:center"><span style="width:58px;height:58px;border-radius:50%;background:#15224A;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600">78%</span></span>
+        <div style="flex:1">
+          <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Lucidez</div>
+          <div style="font-size:13px;color:#9AA7C7;margin:4px 0 8px;line-height:1.4">Claridad para ver vínculos correctos.</div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#9AA7C7">Racha</span><span style="font-family:'JetBrains Mono',monospace;color:#FFC23D">6 días</span></div>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div style="padding:0 20px 20px;max-width:1480px;width:100%;margin:0 auto;box-sizing:border-box">
+    <a href="Sala.dc.html" style="display:flex;justify-content:center;align-items:center;gap:10px;padding:18px 24px;border-radius:12px;background:#FF6A1A;color:#0A1230;font-size:18px;font-weight:800" style-hover="background:#FF7E3A">Continuar expedición <span>→</span></a>
+  </div>
+
+  <sc-if value="{{ movil }}" hint-placeholder-val="{{ false }}">
+    <nav style="position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:#15224A;border-top:1px solid #24335E;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:6">
+      <a href="Inicio.dc.html" style="text-align:center;font-size:11px;font-weight:700;color:#FF6A1A;padding:6px 0;min-height:44px;display:grid;place-items:center">Expedición</a>
+      <a href="Sala.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;padding:6px 0;min-height:44px;display:grid;place-items:center">Misión</a>
+      <a href="Coleccion.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;padding:6px 0;min-height:44px;display:grid;place-items:center">Colección</a>
+      <a href="Sintesis.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;padding:6px 0;min-height:44px;display:grid;place-items:center">Taller</a>
+      <a href="Coleccion.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;padding:6px 0;min-height:44px;display:grid;place-items:center">Logros</a>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;'auto'|'escritorio'|'movil'&quot;,&quot;section&quot;:&quot;Vista&quot;}}">
+const ESTADOS = ['No tocada', 'Vista', 'Reconocida', 'Relacionada', 'Consolidada', 'Se te resiste'];
+const ESTADO_COLOR = ['#9AA7C7', '#9AA7C7', '#38B6FF', '#38B6FF', '#FFC23D', '#FF5A5A'];
+class Component extends DCLogic {
+  state = { w: window.innerWidth, estrella: null };
+  componentDidMount() {
+    this.onR = () => this.setState({ w: window.innerWidth });
+    this.onE = e => this.setState({ estrella: e.detail });
+    window.addEventListener('resize', this.onR); window.addEventListener('lc-estrella', this.onE);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); window.removeEventListener('lc-estrella', this.onE); }
+  renderVals() {
+    const vista = this.props.vista ?? 'auto';
+    const movil = vista === 'movil' || (vista === 'auto' && this.state.w < 860);
+    const e = this.state.estrella;
+    return {
+      movil, escritorio: !movil,
+      cols: movil ? 'minmax(0,1fr)' : (this.state.w < 1150 ? '240px minmax(0,1fr) 260px' : '280px minmax(0,1fr) 320px'),
+      ordenIzq: movil ? 2 : 1, ordenCentro: movil ? 1 : 2, ordenDer: 3,
+      altoGalaxia: movil ? '340px' : '460px',
+      padBottom: movil ? '72px' : '0px',
+      escalones: [
+        { nombre: 'Descubrir', pct: '100%', color: '#5BD36F' }, { nombre: 'Practicar', pct: '72%', color: '#38B6FF' },
+        { nombre: 'Relacionar', pct: '58%', color: '#FF6A1A' }, { nombre: 'Transferir', pct: '36%', color: '#9B6CFF' },
+        { nombre: 'Dominar', pct: '12%', color: '#FFC23D' }
+      ],
+      hayEstrella: !!e, estrella: e || {}, focoId: e ? e.id : '',
+      estadoNombre: e ? ESTADOS[e.estado] : '', estadoColor: e ? ESTADO_COLOR[e.estado] : '#9AA7C7',
+      cerrar: () => this.setState({ estrella: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 22px 31px,rgba(243,246,255,.6),transparent),radial-gradient(1px 1px at 140px 88px,rgba(243,246,255,.4),transparent),radial-gradient(1.5px 1.5px at 210px 190px,rgba(243,246,255,.5),transparent),radial-gradient(1px 1px at 70px 230px,rgba(243,246,255,.35),transparent),radial-gradient(1px 1px at 250px 40px,rgba(56,182,255,.5),transparent);background-size:280px 280px}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Sala de síntesis" style="position:relative;min-height:100vh;display:flex;flex-direction:column;padding-bottom:{{ padBottom }}">
+  <header style="display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;padding:12px 20px;border-bottom:1px solid #24335E;background:rgba(21,34,74,.55);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5">
+    <a href="Inicio.dc.html" style="display:flex;align-items:center;gap:10px;color:#F3F6FF">
+      <span style="width:34px;height:34px;border-radius:50%;border:1.5px solid #38B6FF;display:grid;place-items:center;position:relative"><span style="width:10px;height:10px;border-radius:50%;background:#FF6A1A;box-shadow:0 0 12px #FF6A1A"></span><span style="position:absolute;top:-3px;right:4px;width:5px;height:5px;border-radius:50%;background:#FFC23D"></span></span>
+      <span style="display:flex;flex-direction:column;line-height:1"><span style="font-weight:800;font-size:20px">Ludus<span style="color:#FF6A1A">Cog</span></span><span style="font-size:9px;letter-spacing:.18em;color:#9AA7C7;text-transform:uppercase;margin-top:3px">aprender · entender · avanzar</span></span>
+    </a>
+    <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;gap:4px;margin-left:12px">
+        <a href="Inicio.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Expedición</a>
+        <a href="Sala.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Misión</a>
+        <a href="Coleccion.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Colección</a>
+        <a href="Sintesis.dc.html" style="padding:8px 14px;color:#F3F6FF;font-weight:700;font-size:14px;border-bottom:2px solid #FF6A1A">Taller</a>
+        <a href="Coleccion.dc.html" style="padding:8px 14px;color:#9AA7C7;font-weight:600;font-size:14px" style-hover="color:#F3F6FF">Logros</a>
+      </nav>
+    </sc-if>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border:1px solid #24335E;border-radius:12px;background:#15224A">
+        <div style="width:34px;height:34px;border-radius:10px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E"></div>
+        <div style="line-height:1.15"><div style="font-weight:700;font-size:14px">Ana Sofía</div><div style="font-size:11px;color:#9AA7C7">Nivel 12 · <span style="font-family:'JetBrains Mono',monospace">1250/2000</span> XP</div></div>
+      </div>
+      <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 12px;border:1px solid #24335E;border-radius:12px;background:#15224A"><span style="font-size:13px;color:#9AA7C7;font-weight:600">Lucidez</span><span style="width:38px;height:38px;border-radius:50%;background:conic-gradient(#FF6A1A 78%,#24335E 0);display:grid;place-items:center"><span style="width:30px;height:30px;border-radius:50%;background:#15224A;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">78%</span></span></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #24335E;border-radius:12px;background:#15224A;font-size:13px"><span style="color:#9AA7C7;font-weight:600">Hallazgos</span><span style="color:#38B6FF">◆</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600">128</span></div>
+      </sc-if>
+    </div>
+  </header>
+
+  <main style="display:grid;grid-template-columns:{{ cols }};gap:16px;padding:16px 20px 0;flex:1;max-width:1480px;width:100%;margin:0 auto;box-sizing:border-box">
+    <section style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Sala de síntesis</div>
+          <div style="font-size:13px;color:#9AA7C7;margin-top:4px">Conecta lo que sostuviste. Cadena se rompe con vínculos que no van en línea.</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#9AA7C7">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;border-top:2px solid #38B6FF"></span>Recuperar</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;border-top:2px solid #FF6A1A"></span>Relacionar</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;border-top:2px solid #9B6CFF"></span>Transferir</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;border-top:2px solid #FFC23D"></span>Dominar</span>
+        </div>
+      </div>
+
+      <div style="position:relative;background:#0F1A3C;border:1px solid #24335E;border-radius:12px;min-height:{{ altoTablero }};flex:1;overflow:hidden">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">
+          <line x1="22" y1="26" x2="50" y2="50" stroke="#FF6A1A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          <line x1="50" y1="20" x2="50" y2="50" stroke="#38B6FF" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          <line x1="78" y1="26" x2="50" y2="50" stroke="#FF6A1A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          <line x1="50" y1="50" x2="22" y2="76" stroke="#FFC23D" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          <line x1="50" y1="50" x2="78" y2="76" stroke="#9B6CFF" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="6 5"/>
+          <line x1="14" y1="52" x2="50" y2="50" stroke="#9AA7C7" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-dasharray="4 5"/>
+          <line x1="86" y1="52" x2="50" y2="50" stroke="#9AA7C7" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-dasharray="4 5"/>
+          <line x1="50" y1="50" x2="50" y2="82" stroke="#38B6FF" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <sc-for list="{{ nodos }}" as="n" hint-placeholder-count="9">
+          <div style="position:absolute;left:{{ n.x }};top:{{ n.y }};transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:120px;text-align:center">
+            <div style="width:{{ n.tam }};height:{{ n.tam }};border-radius:50%;background:{{ n.fondo }};border:2px {{ n.trazo }} {{ n.color }};display:grid;place-items:center;font-weight:800;font-size:16px;color:{{ n.color }};box-shadow:{{ n.sombra }}">{{ n.ini }}</div>
+            <div style="font-size:12px;font-weight:{{ n.peso }};line-height:1.25;color:{{ n.texto }};background:rgba(15,26,60,.85);padding:2px 6px;border-radius:6px">{{ n.nombre }}</div>
+          </div>
+        </sc-for>
+        <div style="position:absolute;left:12px;bottom:12px;font-size:11px;color:#9AA7C7">Arrastra un concepto sobre otro para crear un vínculo · {{ conexiones }} conexiones</div>
+      </div>
+    </section>
+
+    <aside style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Jefe del pensamiento lineal</div>
+        <h2 style="margin:4px 0 2px;font-size:26px;font-weight:800;color:#FF6A1A">Cadena</h2>
+        <div style="font-size:13px;color:#9AA7C7">Encadena ideas en línea recta. Confunde caminos.</div>
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0"><div style="flex:1;height:8px;background:#24335E;border-radius:4px;overflow:hidden"><div style="width:69%;height:100%;background:#FF5A5A;border-radius:4px"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:13px">620 / 900</span></div>
+        <div style="height:150px;border-radius:12px;background:repeating-linear-gradient(45deg,#2A1B44 0 6px,#1B1436 6px 12px);border:1px solid #3A2A66;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#9B6CFF;text-align:center">sprite del jefe<br>Cadena · 220×150</div>
+        <p style="margin:12px 0 0;font-size:13px;color:#9AA7C7;line-height:1.45;text-wrap:pretty">Cadena se fortalece con vínculos en fila. Rompe sus eslabones con un vínculo que cruce zonas.</p>
+      </section>
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Objetivos</div>
+        <sc-for list="{{ objetivos }}" as="o" hint-placeholder-count="3">
+          <button onClick="{{ o.alternar }}" style="display:flex;gap:10px;align-items:flex-start;text-align:left;background:transparent;border:0;padding:0;color:#F3F6FF;font-size:13px;line-height:1.4">
+            <span style="width:20px;height:20px;flex:none;border-radius:6px;border:1.5px solid {{ o.borde }};background:{{ o.fondo }};display:grid;place-items:center;color:#0A1230;font-size:13px;font-weight:800">{{ o.marca }}</span>
+            <span style="color:{{ o.color }}">{{ o.texto }}</span>
+          </button>
+        </sc-for>
+      </section>
+    </aside>
+  </main>
+
+  <div style="display:flex;gap:12px;align-items:stretch;padding:16px 20px 20px;max-width:1480px;width:100%;margin:0 auto;box-sizing:border-box;flex-wrap:wrap">
+    <div style="flex:1 1 420px;min-width:0;display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+      <sc-for list="{{ herramientas }}" as="h" hint-placeholder-count="12">
+        <button onClick="{{ h.elegir }}" style="flex:0 0 150px;text-align:left;background:#15224A;border:1px solid {{ h.borde }};border-radius:12px;padding:10px 12px;color:#F3F6FF;display:flex;flex-direction:column;gap:4px" style-hover="border-color:#9AA7C7">
+          <span style="font-weight:800;font-size:13px;color:{{ h.color }}">{{ h.nombre }}</span><span style="font-size:11px;color:#9AA7C7;line-height:1.35">{{ h.frase }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <button style="padding:12px 16px;border:1px solid #24335E;border-radius:12px;background:#15224A;color:#9AA7C7;font-size:14px;font-weight:600" style-hover="color:#F3F6FF">↺ Deshacer</button>
+    <a href="Cierre.dc.html" style="display:flex;justify-content:center;align-items:center;gap:10px;padding:16px 28px;border-radius:12px;background:#FF6A1A;color:#0A1230;font-size:17px;font-weight:800;flex:{{ flexBoton }}" style-hover="background:#FF7E3A">Activar núcleo de síntesis <span>→</span></a>
+  </div>
+
+  <sc-if value="{{ movil }}" hint-placeholder-val="{{ false }}">
+    <nav style="position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);background:#15224A;border-top:1px solid #24335E;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:6">
+      <a href="Inicio.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Expedición</a>
+      <a href="Sala.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Misión</a>
+      <a href="Coleccion.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Colección</a>
+      <a href="Sintesis.dc.html" style="text-align:center;font-size:11px;font-weight:700;color:#FF6A1A;min-height:44px;display:grid;place-items:center">Taller</a>
+      <a href="Coleccion.dc.html" style="text-align:center;font-size:11px;font-weight:600;color:#9AA7C7;min-height:44px;display:grid;place-items:center">Logros</a>
+    </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;'auto'|'escritorio'|'movil'&quot;,&quot;section&quot;:&quot;Vista&quot;}}">
+const NODOS = [
+  { nombre: 'Crítica social', x: 50, y: 50, estado: 'centro' },
+  { nombre: 'Simbolismo', x: 22, y: 26, estado: 'ok' }, { nombre: 'Literatura juvenil', x: 50, y: 20, estado: 'ok' }, { nombre: 'Impacto cultural', x: 78, y: 26, estado: 'ok' },
+  { nombre: 'Empoderamiento', x: 22, y: 76, estado: 'dom' }, { nombre: 'Papel de los medios', x: 78, y: 76, estado: 'prop' }, { nombre: 'Conciencia social', x: 50, y: 82, estado: 'ok' },
+  { nombre: 'Conecta aquí', x: 14, y: 52, estado: 'hueco' }, { nombre: 'Conecta aquí', x: 86, y: 52, estado: 'hueco' }
+];
+const HERR = [['Flecha', 'Un vínculo dirigido entre dos ideas.'], ['Identidad', 'Dos nombres, un mismo concepto.'], ['Campo', 'Agrupa lo que comparte zona.'], ['Jerarquía', 'Lo general arriba, lo particular abajo.'], ['Eje', 'Ordena conceptos en una dimensión.'], ['Secuencia', 'Antes y después.'], ['Ancla', 'Sujeta una idea a su evidencia.'], ['Balanza', 'Pone una tesis frente a su objeción.'], ['Contraejemplo', 'Un caso que rompe la regla.'], ['Analogía', 'Lo mismo, en otro terreno.'], ['Alcance', 'Hasta dónde vale una afirmación.'], ['Descomposición', 'Separa un concepto en sus partes.']];
+class Component extends DCLogic {
+  state = { w: window.innerWidth, herr: 'Balanza', obj: [true, true, false] };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  renderVals() {
+    const vista = this.props.vista ?? 'auto';
+    const movil = vista === 'movil' || (vista === 'auto' && this.state.w < 860);
+    const textos = ['Conecta al menos 8 conceptos correctamente.', 'Usa los 4 tipos de conexión (Recuperar, Relacionar, Transferir, Dominar).', 'Activa el núcleo de síntesis para derrotar a Cadena.'];
+    return {
+      movil, escritorio: !movil,
+      cols: movil ? 'minmax(0,1fr)' : (this.state.w < 1150 ? 'minmax(0,1fr) 260px' : 'minmax(0,1fr) 320px'),
+      altoTablero: movil ? '360px' : '520px', padBottom: movil ? '72px' : '0px', flexBoton: movil ? '1 1 100%' : '0 0 auto',
+      conexiones: '7 / 12',
+      nodos: NODOS.map(n => {
+        const e = n.estado; const centro = e === 'centro', hueco = e === 'hueco';
+        const color = centro ? '#FFC23D' : e === 'dom' ? '#FFC23D' : e === 'prop' ? '#9B6CFF' : hueco ? '#9AA7C7' : '#38B6FF';
+        return { nombre: n.nombre, x: n.x + '%', y: n.y + '%', tam: centro ? '56px' : '44px', color, trazo: hueco || e === 'prop' ? 'dashed' : 'solid', fondo: hueco ? 'transparent' : '#15224A', sombra: centro ? '0 0 22px rgba(255,194,61,.55)' : 'none', ini: hueco ? '?' : n.nombre[0], peso: centro ? 800 : 600, texto: hueco ? '#9AA7C7' : '#F3F6FF' };
+      }),
+      objetivos: textos.map((t, i) => { const on = this.state.obj[i]; return { texto: t, marca: on ? '✓' : '', borde: on ? '#5BD36F' : '#24335E', fondo: on ? '#5BD36F' : 'transparent', color: on ? '#F3F6FF' : '#9AA7C7', alternar: () => { const o = this.state.obj.slice(); o[i] = !o[i]; this.setState({ obj: o }); } }; }),
+      herramientas: HERR.map(([n, f]) => { const on = n === this.state.herr; return { nombre: n, frase: f, borde: on ? '#FF6A1A' : '#24335E', color: on ? '#FF6A1A' : '#F3F6FF', elegir: () => this.setState({ herr: n }) }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

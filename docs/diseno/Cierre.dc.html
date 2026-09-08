@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 22px 31px,rgba(243,246,255,.6),transparent),radial-gradient(1px 1px at 140px 88px,rgba(243,246,255,.4),transparent),radial-gradient(1.5px 1.5px at 210px 190px,rgba(243,246,255,.5),transparent),radial-gradient(1px 1px at 70px 230px,rgba(243,246,255,.35),transparent),radial-gradient(1px 1px at 250px 40px,rgba(56,182,255,.5),transparent);background-size:280px 280px}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Cierre de expedición" style="position:relative;min-height:100vh;display:flex;flex-direction:column">
+  <div style="position:absolute;inset:0">
+    <x-import component-from-global-scope="LcGalaxia" from="./galaxia.js" modo="cierre" style="position:absolute;inset:0" hint-size="100%,100%"></x-import>
+  </div>
+
+  <div style="position:relative;display:flex;flex-direction:column;min-height:100vh;pointer-events:none">
+    <div style="text-align:center;padding:36px 20px 0">
+      <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:#FFC23D;font-weight:700">Expedición completada</div>
+      <h1 style="margin:8px 0 6px;font-size:{{ tamTitulo }};font-weight:800;line-height:1.1;letter-spacing:-.01em">Nuevo conocimiento</h1>
+      <p style="margin:0;font-size:15px;color:#9AA7C7">{{ subtitulo }}</p>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <div style="display:grid;grid-template-columns:{{ cols }};gap:12px;padding:0 20px 20px;max-width:1100px;width:100%;margin:0 auto;box-sizing:border-box;pointer-events:auto;align-items:end">
+      <section style="background:rgba(21,34,74,.92);border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Lo que se inscribió</div>
+        <sc-for list="{{ ganancias }}" as="g" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;opacity:{{ g.op }};transition:opacity .5s">
+            <span style="width:22px;flex:none;border-top:2px {{ g.trazo }} {{ g.color }}"></span>
+            <span style="flex:1;min-width:0">{{ g.texto }}</span>
+            <span style="font-size:11px;color:{{ g.color }};font-weight:700">{{ g.etiqueta }}</span>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="background:rgba(21,34,74,.92);border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Recompensas</div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          <div style="border:1px solid #24335E;border-radius:10px;padding:10px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#FFC23D">+120</div><div style="font-size:11px;color:#9AA7C7">XP</div></div>
+          <div style="border:1px solid #24335E;border-radius:10px;padding:10px;text-align:center"><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#38B6FF">◆ 15</div><div style="font-size:11px;color:#9AA7C7">Hallazgos</div></div>
+          <div style="border:1px solid rgba(155,108,255,.6);border-radius:10px;padding:10px;text-align:center;background:rgba(155,108,255,.1)"><div style="font-size:13px;font-weight:800;color:#9B6CFF;line-height:1.2;padding-top:3px">Lo viste tú</div><div style="font-size:11px;color:#9AA7C7">Hazaña</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#9AA7C7"><span>Nivel 12</span><span style="font-family:'JetBrains Mono',monospace">1370 / 2000 XP</span></div>
+        <div style="height:6px;background:#24335E;border-radius:3px;overflow:hidden"><div style="width:68.5%;height:100%;background:#FF6A1A;border-radius:3px"></div></div>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ repetir }}" style="padding:14px 16px;border:1px solid #24335E;border-radius:12px;background:transparent;color:#9AA7C7;font-size:14px;font-weight:600" style-hover="color:#F3F6FF">↺ Ver de nuevo</button>
+          <a href="Inicio.dc.html" style="flex:1;display:flex;justify-content:center;align-items:center;gap:10px;padding:14px 24px;border-radius:12px;background:#FF6A1A;color:#0A1230;font-size:17px;font-weight:800" style-hover="background:#FF7E3A">Continuar <span>→</span></a>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;'auto'|'escritorio'|'movil'&quot;,&quot;section&quot;:&quot;Vista&quot;}}">
+// Timeline (galaxia.js, modo cierre): hilos 0–3.3 s (900 ms cada uno + 200 ms) · estrellas suben 3.5–4.9 s · propuesta 5.0–5.9 s · fin 6.2 s
+const G = [
+  { t: 0, texto: 'Conciencia crítica apoya Crítica social', etiqueta: 'firme', color: '#FFC23D', trazo: 'solid' },
+  { t: 1100, texto: 'Discusión cultural causa Conciencia política y activismo', etiqueta: 'firme', color: '#FFC23D', trazo: 'solid' },
+  { t: 2200, texto: 'Herramienta de crítica social ejemplifica Empoderamiento', etiqueta: 'firme', color: '#FFC23D', trazo: 'solid' },
+  { t: 3500, texto: 'Conciencia crítica · sube a Relacionada', etiqueta: 'nivel', color: '#38B6FF', trazo: 'solid' },
+  { t: 4200, texto: 'Herramienta de crítica social · sube a Reconocida', etiqueta: 'nivel', color: '#38B6FF', trazo: 'solid' },
+  { t: 5000, texto: 'Ética del entretenimiento matiza Papel de los medios', etiqueta: 'lo viste tú', color: '#9B6CFF', trazo: 'dashed' }
+];
+class Component extends DCLogic {
+  state = { w: window.innerWidth, t0: performance.now(), ms: 0, clave: 0 };
+  componentDidMount() {
+    this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR);
+    this.tick = setInterval(() => { const ms = performance.now() - this.state.t0; if (ms < 7000) this.setState({ ms }); }, 200);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); clearInterval(this.tick); }
+  renderVals() {
+    const vista = this.props.vista ?? 'auto';
+    const movil = vista === 'movil' || (vista === 'auto' && this.state.w < 860);
+    const ms = this.state.ms, fin = ms > 6200;
+    return {
+      movil, cols: movil ? 'minmax(0,1fr)' : 'minmax(0,1fr) minmax(0,1fr)', tamTitulo: movil ? '32px' : '44px', clave: this.state.clave,
+      subtitulo: fin ? 'Tres vínculos firmes, dos estrellas más altas y una propuesta tuya.' : ms < 3400 ? 'Los hilos que sostuviste se dibujan en tu cielo.' : ms < 5000 ? 'Las estrellas que trabajaste suben de nivel.' : 'Una propuesta tuya queda apuntada en violeta.',
+      ganancias: G.map(g => Object.assign({}, g, { op: ms >= g.t ? 1 : 0.25 })),
+      repetir: () => { const el = document.querySelector('[data-lc-galaxia]'); if (el && el.__galaxia) el.__galaxia.reiniciar(); this.setState({ t0: performance.now(), ms: 0 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

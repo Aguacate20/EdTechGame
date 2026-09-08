@@ -4,22 +4,38 @@
    existe después de resolver, y aparece estampado. */
 
 :root {
-  --tinta: #131a24;
-  --tinta-alta: #1c2733;
-  --tinta-borde: #2b3949;
-  --papel: #ede7da;
-  --papel-som: #ded5c3;
-  --grafito: #4a5262;
-  --verdigris: #4e8c7a;
-  --oxido: #a8443c;
-  --laton: #c9a227;
-  --niebla: #8f9aa8;
-
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-
-  --r: 3px;
-  --sombra: 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px rgba(0, 0, 0, 0.35);
+  /* ── Sistema LudusCog (Sistema.dc.html) ── */
+  --fondo: #0A1230;
+  --fondo-alto: #12204A;
+  --panel: #15224A;
+  --panel-hundido: #0F1A3C;
+  --borde: #24335E;
+  --texto: #F3F6FF;
+  --texto-2: #9AA7C7;
+  --acento: #FF6A1A;
+  --descubierto: #38B6FF;
+  --sostenido: #5BD36F;
+  --transferir: #9B6CFF;
+  --dominar: #FFC23D;
+  --propuesta: #9B6CFF;
+  --resiste: #FF5A5A;
+  --ambar: #E0A33A;
+  --sans: Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* ── nombres históricos del juego, remapeados al sistema (no se renombra nada) ── */
+  --tinta: var(--fondo);
+  --tinta-alta: var(--panel);
+  --tinta-borde: var(--borde);
+  --papel: var(--texto);
+  --papel-som: var(--texto-2);
+  --grafito: #6B7AA3;
+  --verdigris: var(--sostenido);
+  --oxido: var(--resiste);
+  --laton: var(--dominar);
+  --niebla: var(--texto-2);
+  --serif: var(--sans);
+  --r: 10px;
+  --sombra: 0 0 0 1px rgba(36, 51, 94, 0.6), 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
 * { box-sizing: border-box; }
@@ -28,9 +44,7 @@ html, body, #root { height: 100%; }
 
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 700px at 50% -10%, #1d2836 0%, transparent 60%),
-    var(--tinta);
+  background: var(--fondo) radial-gradient(ellipse 90% 60% at 50% 0%, var(--fondo-alto), var(--fondo) 70%);
   color: var(--papel);
   font-family: var(--serif);
   font-size: 16px;
@@ -1601,3 +1615,42 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   .ludus-marca small { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .chip.lucidez .anillo { transition: none; } }
+
+/* ═════════════════════ LudusCog: sistema aplicado ═════════════════════ */
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 6px; }
+.btn.primario { background: var(--acento); color: #fff; border-color: transparent; font-weight: 700; border-radius: 12px; box-shadow: 0 0 22px rgba(255, 106, 26, 0.35); }
+.btn.primario:hover:not(:disabled) { filter: brightness(1.08); }
+.btn.primario:disabled { opacity: 0.45; box-shadow: none; }
+.btn.fantasma { border-radius: 10px; }
+.marca-lc { display: flex; align-items: center; gap: 10px; color: var(--texto); }
+.marca-lc .orbita { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--descubierto); display: grid; place-items: center; position: relative; flex: none; }
+.marca-lc .orbita::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--acento); box-shadow: 0 0 12px var(--acento); }
+.marca-lc .orbita::after { content: ''; position: absolute; top: -3px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--dominar); }
+.marca-lc .nombre { display: flex; flex-direction: column; line-height: 1; }
+.marca-lc .nombre b { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.marca-lc .nombre b span { color: var(--acento); }
+.marca-lc .nombre small { font-size: 9px; letter-spacing: 0.18em; color: var(--texto-2); text-transform: uppercase; margin-top: 3px; }
+.ludus { background: rgba(21, 34, 74, 0.55); backdrop-filter: blur(8px); border-bottom: 1px solid var(--borde); padding: 12px 20px; gap: 12px 20px; }
+.ludus-marca { display: none; }
+.ludus-tab { padding: 8px 14px; font-weight: 600; font-size: 14px; border-radius: 10px 10px 0 0; border-bottom: 2px solid transparent; }
+.ludus-tab.activa { font-weight: 700; border-bottom-color: var(--acento); }
+.chip { border-radius: 12px; background: var(--panel); border: 1px solid var(--borde); padding: 6px 12px 6px 6px; }
+.chip-inicial { border-radius: 10px; background: repeating-linear-gradient(45deg, #1B2B5A 0 4px, var(--panel) 4px 8px); border: 1px solid var(--borde); color: var(--texto); width: 34px; height: 34px; font-weight: 800; }
+.chip-texto small { font-family: var(--sans); }
+.chip-texto small code { font-family: var(--mono); color: var(--descubierto); }
+.chip.lucidez .anillo { stroke: var(--acento); }
+.chip.hallazgos b::before { color: var(--descubierto); }
+.entrar { position: relative; }
+.entrar-tarjeta { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 28px; width: min(420px, 100%); display: flex; flex-direction: column; gap: 18px; }
+.entrar-marca { display: none; }
+.entrar-titulo { font-size: 24px; font-weight: 800; line-height: 1.25; margin: 0; }
+.entrar-sub { margin: 0; color: var(--texto-2); }
+.entrar .campo { margin: 0; }
+.entrar .campo span { font-size: 13px; font-weight: 600; color: var(--texto-2); }
+.entrar .campo input { padding: 12px 14px; border-radius: 10px; background: var(--panel-hundido); border: 1px solid var(--borde); min-height: 44px; font-size: 15px; }
+.entrar .campo input.codigo { font-size: 18px; letter-spacing: 0.3em; }
+.entrar .campo input[aria-invalid="true"] { border-color: var(--resiste); }
+.entrar .enlace { color: var(--descubierto); margin: 0; }
+.entrar-error { color: #FF8A8A; margin: 0; font-weight: 500; }
+.entrar-ir { min-height: 48px; font-size: 16px; }
+.entrar-mas { margin-top: 0; }

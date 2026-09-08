@@ -32,11 +32,10 @@ export function Shell({ sesion, atlas, activa, onPestana, onSalir, children }: P
   const r = 15, circ = 2 * Math.PI * r
   return (
     <header className="ludus">
-      <div className="ludus-marca" aria-label="LudusCog">
-        <span className="ludus-glifo" aria-hidden="true">✦</span>
-        <span>Ludus<b>Cog</b></span>
-        <small>{sesion?.campoNombre ?? 'El Archivo Infinito'}</small>
-      </div>
+      <a className="marca-lc" href="#inicio" onClick={(e) => { e.preventDefault(); onPestana('expedicion') }} aria-label="LudusCog, ir al inicio">
+        <span className="orbita" aria-hidden="true" />
+        <span className="nombre"><b>Ludus<span>Cog</span></b><small>aprender · entender · avanzar</small></span>
+      </a>
       <nav className="ludus-nav" aria-label="Secciones">
         {PESTANAS.map((p) => (
           <button
@@ -52,7 +51,7 @@ export function Shell({ sesion, atlas, activa, onPestana, onSalir, children }: P
           <span className="chip-inicial" aria-hidden="true">{(sesion?.nombre ?? 'A')[0]}</span>
           <span className="chip-texto">
             <b>{sesion?.nombre ?? 'Anónimo'}</b>
-            <small>Nivel {nivel} · {enNivel}/{paraSiguiente} XP{sesion ? ` · ${sesion.codigoJugador}` : ''}</small>
+            <small>Nivel {nivel} · <code>{enNivel}/{paraSiguiente}</code> XP{sesion ? <> · <code>{sesion.codigoJugador}</code></> : null}</small>
           </span>
         </div>
         <div className="chip lucidez" title="Lucidez: cuántas veces tu apuesta coincidió con el resultado">

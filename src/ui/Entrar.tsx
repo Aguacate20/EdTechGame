@@ -39,7 +39,7 @@ export function Entrar({ onListo }: Props) {
       guardarSesion(sesion)
       onListo(adaptarBundle(c.bundle), sesion)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo entrar.')
+      setError(e instanceof Error && /campo/i.test(e.message) ? 'No hay un campo con ese código. Pídeselo a tu profesor.' : e instanceof Error ? e.message : 'No se pudo entrar.')
       setOcupado(false)
     }
   }
@@ -56,16 +56,19 @@ export function Entrar({ onListo }: Props) {
   return (
     <div className="entrar">
       <div className="entrar-tarjeta">
-        <p className="entrar-marca">LudusCog</p>
+        <div className="marca-lc" aria-label="LudusCog">
+          <span className="orbita" aria-hidden="true" />
+          <span className="nombre"><b>Ludus<span>Cog</span></b><small>aprender · entender · avanzar</small></span>
+        </div>
         <h1 className="entrar-titulo">Tu galaxia de conocimiento empieza con un nombre.</h1>
-        <p className="entrar-sub">Escribe cómo quieres que te llamemos y el código del campo que te dio tu profesor. No hay contraseña.</p>
+        <p className="entrar-sub">El código del campo te lo da tu profesor. No hay contraseña.</p>
         <label className="campo">
           <span>Nombre</span>
-          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ana Sofía" autoFocus maxLength={40} />
+          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Cómo quieres que te llame Andy" autoFocus maxLength={40} />
         </label>
         <label className="campo">
           <span>Código del campo</span>
-          <input value={campo} onChange={(e) => setCampo(e.target.value.toUpperCase())} placeholder="LJH7K2" maxLength={8} className="codigo" />
+          <input value={campo} onChange={(e) => setCampo(e.target.value.toUpperCase())} placeholder="LJH7K2" maxLength={8} className="codigo" aria-invalid={error ? true : undefined} />
         </label>
         {recuperar ? (
           <label className="campo">

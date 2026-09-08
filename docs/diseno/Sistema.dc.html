@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Sistema" style="max-width:1200px;margin:0 auto;padding:32px 20px 60px;box-sizing:border-box;display:flex;flex-direction:column;gap:32px">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="width:44px;height:44px;border-radius:50%;border:1.5px solid #38B6FF;display:grid;place-items:center;position:relative"><span style="width:13px;height:13px;border-radius:50%;background:#FF6A1A;box-shadow:0 0 14px #FF6A1A"></span><span style="position:absolute;top:-3px;right:6px;width:6px;height:6px;border-radius:50%;background:#FFC23D"></span></span>
+    <span style="display:flex;flex-direction:column;line-height:1"><span style="font-weight:800;font-size:28px;letter-spacing:-.01em">Ludus<span style="color:#FF6A1A">Cog</span></span><span style="font-size:10px;letter-spacing:.18em;color:#9AA7C7;text-transform:uppercase;margin-top:4px">aprender · entender · avanzar</span></span>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Pantallas</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">
+      <sc-for list="{{ pantallas }}" as="p" hint-placeholder-count="8">
+        <a href="{{ p.href }}" style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px;color:#F3F6FF;display:flex;flex-direction:column;gap:6px;min-height:92px" style-hover="border-color:#9AA7C7">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#FF6A1A">{{ p.n }}</span>
+          <span style="font-weight:800;font-size:15px">{{ p.nombre }}</span>
+          <span style="font-size:12px;color:#9AA7C7;line-height:1.4">{{ p.desc }}</span>
+        </a>
+      </sc-for>
+    </div>
+    <p style="margin:0;font-size:13px;color:#9AA7C7">Todas las pantallas se apilan bajo 860 px: barra = marca + perfil, pestañas en barra inferior. Estrecha la ventana o usa el ajuste «vista».</p>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Tokens</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">
+      <sc-for list="{{ tokens }}" as="t" hint-placeholder-count="13">
+        <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="height:40px;border-radius:8px;background:{{ t.valor }};border:1px solid #24335E"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#F3F6FF">{{ t.nombre }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9AA7C7">{{ t.valor }}</div>
+          <div style="font-size:12px;color:#9AA7C7;line-height:1.35">{{ t.uso }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">--sans</div><div style="font-size:22px;font-weight:800;margin-top:6px">Manrope</div><div style="font-size:13px;color:#9AA7C7;margin-top:2px">Interfaz. Pesos 400–800. Títulos 800 con tracking −1 %.</div></div>
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">--mono</div><div style="font-size:22px;font-weight:600;margin-top:6px;font-family:'JetBrains Mono',monospace">JetBrains Mono</div><div style="font-size:13px;color:#9AA7C7;margin-top:2px">Solo códigos, XP, contadores y datos.</div></div>
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">--r · bordes</div><div style="font-size:22px;font-weight:800;margin-top:6px">12 px · 1 px</div><div style="font-size:13px;color:#9AA7C7;margin-top:2px">Sin sombras grises. El brillo vive en hilos y estrellas.</div></div>
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:14px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">rejilla</div><div style="font-size:22px;font-weight:800;margin-top:6px">280 · 1fr · 320</div><div style="font-size:13px;color:#9AA7C7;margin-top:2px">Gap 16. Se apila bajo 860 px con la galaxia primero.</div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Componentes</div>
+    <div style="display:grid;grid-template-columns:{{ colsComp }};gap:12px;align-items:start">
+
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">Botones</div>
+        <button style="padding:16px 24px;border:0;border-radius:12px;background:#FF6A1A;color:#0A1230;font-size:17px;font-weight:800" style-hover="background:#FF7E3A">Continuar expedición →</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button style="padding:10px 14px;border:1px solid #24335E;border-radius:10px;background:transparent;color:#F3F6FF;font-size:13px;font-weight:700;min-height:40px">Secundario</button>
+          <button style="padding:10px 14px;border:1px solid #24335E;border-radius:10px;background:transparent;color:#9AA7C7;font-size:13px;font-weight:600;min-height:40px">Discreto</button>
+          <button style="padding:10px 14px;border:1px solid #5BD36F;border-radius:10px;background:transparent;color:#5BD36F;font-size:13px;font-weight:700;min-height:40px">Confirmar</button>
+        </div>
+        <div style="font-size:12px;color:#9AA7C7">Un solo botón naranja por pantalla. Foco: anillo naranja 2 px a 2 px.</div>
+      </div>
+
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">Chip · BarraProgreso</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="padding:3px 10px;border-radius:999px;border:1px solid #24335E;font-size:12px;color:#9AA7C7">Nivel 1</span>
+          <span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(255,106,26,.5);font-size:12px;color:#FF6A1A;font-weight:700">Relacionar</span>
+          <span style="padding:3px 10px;border-radius:999px;border:1px solid #24335E;font-size:12px;color:#38B6FF">Reconocida</span>
+          <span style="padding:3px 10px;border-radius:999px;border:1px dashed #9B6CFF;font-size:12px;color:#9B6CFF;font-family:'JetBrains Mono',monospace">matiza</span>
+          <span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(255,90,90,.5);font-size:12px;color:#FF8A8A">Se te resiste</span>
+        </div>
+        <sc-for list="{{ barras }}" as="b" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:90px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:13px"><span style="font-weight:600">{{ b.nombre }}</span><div style="height:6px;background:#24335E;border-radius:3px;overflow:hidden"><div style="width:{{ b.pct }};height:100%;background:{{ b.color }};border-radius:3px"></div></div><span style="font-family:'JetBrains Mono',monospace;text-align:right;color:#9AA7C7">{{ b.pct }}</span></div>
+        </sc-for>
+      </div>
+
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">CartaConcepto · tipos</div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+          <sc-for list="{{ cartas }}" as="c" hint-placeholder-count="5">
+            <div style="flex:0 0 150px;background:#0F1A3C;border:1px solid #24335E;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:130px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:{{ c.color }}">{{ c.tipo }}</span><span style="width:8px;height:8px;border-radius:50%;background:{{ c.color }}"></span></div>
+              <div style="font-weight:800;font-size:13px;line-height:1.25">{{ c.titulo }}</div>
+              <div style="font-size:11px;color:#9AA7C7;line-height:1.4">{{ c.def }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:12px;color:#9AA7C7">Seleccionada: borde naranja y −6 px. La intuición cotidiana usa el mismo tipo «concepto»: el señuelo no se delata por color.</div>
+      </div>
+
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">PanelVeredicto · cinco veredictos</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ veredictos }}" as="v" hint-placeholder-count="5">
+            <span style="padding:3px 10px;border-radius:999px;background:{{ v.fondo }};border:1px solid {{ v.borde }};color:{{ v.color }};font-size:12px;font-weight:700">{{ v.nombre }}</span>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          <div><div style="font-size:11px;color:#9AA7C7">Fichas</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600">2 / 3</div></div>
+          <div><div style="font-size:11px;color:#9AA7C7">Lucidez</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#5BD36F">+6%</div></div>
+          <div><div style="font-size:11px;color:#9AA7C7">Daño</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#FF6A1A">18–24</div></div>
+        </div>
+        <div style="font-size:12px;color:#9AA7C7">«¿Qué falta?» siempre nombra el paso siguiente, nunca solo el error.</div>
+      </div>
+
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">Andy · panel de guía</div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:52px;height:52px;flex:none;border-radius:12px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:#9AA7C7">andy</div>
+          <div><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:4px">Andy</div><p style="margin:0;font-size:14px;line-height:1.45">Cada vínculo que sostienes se queda en tu cielo.</p></div>
+        </div>
+        <div style="font-size:12px;color:#9AA7C7">Una vez por pantalla, 52 px, una frase. Ilustración pendiente: el ajolote llega como sprite o SVG en esta ranura.</div>
+      </div>
+
+      <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9AA7C7">Constelacion · hilos por relación</div>
+        <sc-for list="{{ relaciones }}" as="r" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;font-size:13px"><span style="border-top:{{ r.trazo }}"></span><span><span style="font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px">{{ r.nombre }}</span> <span style="color:#9AA7C7">{{ r.desc }}</span></span></div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { w: window.innerWidth };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  renderVals() {
+    return {
+      colsComp: this.state.w < 860 ? 'minmax(0,1fr)' : 'repeat(2,minmax(0,1fr))',
+      pantallas: [
+        ['01', 'Entrar', 'Entrar.dc.html', 'Nombre y código del campo. Error si no existe.'], ['02', 'Inicio / Expedición', 'Inicio.dc.html', 'La galaxia en el centro, tres columnas.'],
+        ['03', 'Sala / combate', 'Sala.dc.html', 'Cartas, diagrama, veredicto, Monocultivo.'], ['04', 'Sala de síntesis', 'Sintesis.dc.html', 'Tablero libre contra Cadena.'],
+        ['05', 'Cierre', 'Cierre.dc.html', 'Nuevo conocimiento se inscribe en la galaxia.'], ['06', 'Colección', 'Coleccion.dc.html', 'Atlas, edición crítica, logros.'],
+        ['07', 'Galaxia', 'Galaxia.dc.html', 'Componente 2D y especificación.'], ['08', 'Profesor', 'Profesor.dc.html', 'Subir, revisar, publicar. Estudiantes.']
+      ].map(([n, nombre, href, desc]) => ({ n, nombre, href, desc })),
+      tokens: [
+        ['--fondo', '#0A1230', 'Fondo; degradado a #12204A arriba'], ['--panel', '#15224A', 'Paneles'], ['--borde', '#24335E', 'Bordes 1 px, pistas de barra'],
+        ['--texto', '#F3F6FF', 'Texto principal'], ['--texto-2', '#9AA7C7', 'Secundario, etiquetas'], ['--acento', '#FF6A1A', 'Única acción: botón, pestaña, progreso'],
+        ['--descubierto', '#38B6FF', 'Reconocida, hilo firme, Recuperar'], ['--sostenido', '#5BD36F', 'Sostenido, confirmar'], ['--transferir', '#9B6CFF', 'Transferir'],
+        ['--dominar', '#FFC23D', 'Dominar, consolidada, hilos nuevos'], ['--propuesta', '#9B6CFF', 'Propuestas propias, punteado'], ['--resiste', '#FF5A5A', 'Se te resiste, vida del jefe'], ['--insinuado', '#E0A33A', 'Hilo insinuado, veredicto aproximado']
+      ].map(([nombre, valor, uso]) => ({ nombre, valor, uso })),
+      barras: [['Descubrir', '100%', '#5BD36F'], ['Practicar', '72%', '#38B6FF'], ['Relacionar', '58%', '#FF6A1A'], ['Transferir', '36%', '#9B6CFF'], ['Dominar', '12%', '#FFC23D']].map(([nombre, pct, color]) => ({ nombre, pct, color })),
+      cartas: [['concepto', '#38B6FF', 'Crítica social', 'Cuestionamiento de estructuras de poder a través de la obra.'], ['caso', '#5BD36F', 'Saludo de tres dedos', 'Entrevistas y grupos focales sugieren que la trilogía inspiró el activismo juvenil.'], ['tesis', '#FFC23D', 'Herramienta de empoderamiento', 'La trilogía funciona como una herramienta poderosa para el empoderamiento.'], ['criterio', '#E0A33A', 'Criterio de refutación', 'Datos que indiquen que la mayoría no reporta cambios en su percepción.'], ['marco', '#9B6CFF', 'Herramienta de crítica social', 'Lectura de la literatura juvenil como instrumento crítico.']].map(([tipo, color, titulo, def]) => ({ tipo, color, titulo, def })),
+      veredictos: [['Sostenido', '#5BD36F'], ['Aproximado', '#E0A33A'], ['Insinuado', '#E0A33A'], ['Propuesta', '#9B6CFF'], ['Invertido', '#FF5A5A']].map(([nombre, c]) => ({ nombre, color: c, borde: c + '99', fondo: c + '22' })),
+      relaciones: [['apoya', '2px solid #38B6FF', 'flecha'], ['causa', '3px solid #38B6FF', 'gruesa, flecha'], ['requiere', '3px dashed #38B6FF', 'guiones largos, barra'], ['contrasta', '2px double #38B6FF', 'doble, dos puntas'], ['generaliza', '2px solid #38B6FF', 'barra'], ['ejemplifica', '2px dotted #38B6FF', 'punteada'], ['extiende', '2px dashed #38B6FF', 'guión largo-corto'], ['matiza', '1.5px solid #38B6FF', 'ondulada']].map(([nombre, trazo, desc]) => ({ nombre, trazo, desc }))
+    };
+  }
+}
+</script>
+</body>
+</html>

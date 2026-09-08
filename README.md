@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.39
+# LudusCog · El Archivo Infinito — v5.40
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,19 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El sistema visual LudusCog (v5.40)
+
+El sistema salido de Claude Design (`docs/diseno/Sistema.dc.html`) entra por las variables
+CSS que toda la aplicación ya usaba: `--tinta`, `--papel`, `--laton`… quedan remapeadas al
+sistema (`--fondo` #0A1230, `--panel` #15224A, `--borde` #24335E, `--texto` #F3F6FF,
+`--acento` #FF6A1A, `--descubierto` #38B6FF, `--sostenido` #5BD36F, `--transferir` #9B6CFF,
+`--dominar` #FFC23D), con Manrope y JetBrains Mono. Así todas las pantallas cambian de piel
+sin tocar su marcado. Entrar y la barra ya siguen el diseño al detalle (marca con órbita,
+chip de perfil, foco naranja). Los ocho `.dc.html` del diseño y `galaxia.js` (el spec del
+componente de galaxia: modos vivo / cierre / quieto, seis estados de estrella) están en
+`docs/diseno/` como referencia para las pantallas que siguen: Inicio con la galaxia al
+centro, Sala, Síntesis, Cierre, Colección, Profesor.
 
 ## Entrar, la barra y el Atlas que viaja (v5.39)
 

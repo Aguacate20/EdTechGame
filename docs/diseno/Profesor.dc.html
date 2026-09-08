@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(1px 1px at 22px 31px,rgba(243,246,255,.6),transparent),radial-gradient(1px 1px at 140px 88px,rgba(243,246,255,.4),transparent),radial-gradient(1.5px 1.5px at 210px 190px,rgba(243,246,255,.5),transparent),radial-gradient(1px 1px at 70px 230px,rgba(243,246,255,.35),transparent);background-size:280px 280px}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+
+<div data-screen-label="Profesor" style="min-height:100vh;display:flex;flex-direction:column">
+  <header style="display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;padding:12px 20px;border-bottom:1px solid #24335E;background:rgba(21,34,74,.55);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5">
+    <a href="Profesor.dc.html" style="display:flex;align-items:center;gap:10px;color:#F3F6FF">
+      <span style="width:34px;height:34px;border-radius:50%;border:1.5px solid #38B6FF;display:grid;place-items:center;position:relative"><span style="width:10px;height:10px;border-radius:50%;background:#FF6A1A;box-shadow:0 0 12px #FF6A1A"></span><span style="position:absolute;top:-3px;right:4px;width:5px;height:5px;border-radius:50%;background:#FFC23D"></span></span>
+      <span style="display:flex;flex-direction:column;line-height:1"><span style="font-weight:800;font-size:20px">Ludus<span style="color:#FF6A1A">Cog</span></span><span style="font-size:9px;letter-spacing:.18em;color:#9AA7C7;text-transform:uppercase;margin-top:3px">profesor</span></span>
+    </a>
+    <div style="display:flex;gap:4px;padding:4px;border:1px solid #24335E;border-radius:12px;background:#15224A;margin-left:8px">
+      <sc-for list="{{ vistas }}" as="v" hint-placeholder-count="2">
+        <button onClick="{{ v.ir }}" style="padding:8px 14px;border-radius:9px;border:0;background:{{ v.fondo }};color:{{ v.color }};font-size:13px;font-weight:700;min-height:36px">{{ v.nombre }}</button>
+      </sc-for>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border:1px solid #24335E;border-radius:12px;background:#15224A">
+      <div style="width:34px;height:34px;border-radius:10px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E"></div>
+      <div style="line-height:1.15"><div style="font-weight:700;font-size:14px">Prof. Marcela Ríos</div><div style="font-size:11px;color:#9AA7C7">Literatura contemporánea · 2026-2</div></div>
+    </div>
+  </header>
+
+  <main style="padding:20px;max-width:1200px;width:100%;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;flex:1">
+    <div>
+      <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> {{ titulo }}</div>
+      <h1 style="margin:6px 0 0;font-size:26px;font-weight:800;letter-spacing:-.01em">Los Juegos del Hambre — impacto cultural y literatura juvenil</h1>
+    </div>
+
+    <sc-if value="{{ esCampo }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:{{ colsPasos }};gap:12px">
+        <sc-for list="{{ pasos }}" as="p" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid {{ p.borde }};border-radius:12px;background:#15224A">
+            <span style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:{{ p.fondo }};color:{{ p.numColor }};font-weight:800;font-size:13px;font-family:'JetBrains Mono',monospace">{{ p.n }}</span>
+            <div><div style="font-weight:700;font-size:14px">{{ p.nombre }}</div><div style="font-size:12px;color:#9AA7C7">{{ p.estado }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:grid;grid-template-columns:{{ colsSubir }};gap:16px">
+        <div style="border:1.5px dashed #24335E;border-radius:12px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:160px" style-hover="border-color:#9AA7C7">
+          <div style="width:44px;height:44px;border-radius:12px;border:1px solid #24335E;display:grid;place-items:center;color:#38B6FF;font-size:18px;font-weight:800">↑</div>
+          <div style="font-weight:700;font-size:15px">Arrastra tu PDF aquí</div>
+          <div style="font-size:13px;color:#9AA7C7">Un paper, un capítulo o tus diapositivas. Hasta 40 MB.</div>
+          <div style="margin-top:6px;padding:8px 14px;border:1px solid #24335E;border-radius:10px;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#9AA7C7">hunger-games-impacto-cultural.pdf · 2,4 MB</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Extracción por capas</div>
+          <sc-for list="{{ capas }}" as="c" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:110px minmax(0,1fr) 52px;gap:10px;align-items:center;font-size:13px">
+              <span style="font-weight:600">{{ c.nombre }}</span>
+              <div style="height:6px;background:#24335E;border-radius:3px;overflow:hidden"><div style="width:{{ c.pct }};height:100%;background:{{ c.color }};border-radius:3px"></div></div>
+              <span style="font-family:'JetBrains Mono',monospace;color:#9AA7C7;text-align:right">{{ c.n }}</span>
+            </div>
+          </sc-for>
+          <div style="font-size:12px;color:#9AA7C7;margin-top:4px">18 conceptos · 15 relaciones · 6 insinuadas · 1 tesis · 1 caso · 3 intuiciones. Listo para revisar.</div>
+        </div>
+      </section>
+
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">2 · Revisar conceptos <span style="font-family:'JetBrains Mono',monospace;font-weight:500">{{ revisados }}</span></div>
+          <div style="display:flex;gap:6px;font-size:12px;flex-wrap:wrap"><span style="padding:3px 10px;border-radius:999px;border:1px solid rgba(224,163,58,.6);color:#E0A33A">2 con aviso</span><span style="padding:3px 10px;border-radius:999px;border:1px solid #24335E;color:#9AA7C7">Ver los 18</span></div>
+        </div>
+        <sc-for list="{{ conceptos }}" as="c" hint-placeholder-count="4">
+          <div style="border:1px solid #24335E;border-radius:12px;padding:14px;display:grid;grid-template-columns:{{ colsConcepto }};gap:14px;align-items:start;opacity:{{ c.op }}">
+            <div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-weight:800;font-size:15px">{{ c.nombre }}</span><span style="padding:2px 8px;border-radius:999px;border:1px solid #24335E;font-size:11px;color:#9AA7C7">{{ c.tipo }}</span><span style="font-size:11px;color:#9AA7C7;font-family:'JetBrains Mono',monospace">p. {{ c.pagina }}</span></div>
+              <div style="font-size:13px;line-height:1.45">{{ c.def }}</div>
+              <div style="font-size:12px;color:#9AA7C7;line-height:1.45;border-left:2px solid #24335E;padding-left:10px;font-style:italic">«{{ c.evidencia }}»</div>
+              <sc-if value="{{ c.aviso }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#E0A33A;font-weight:600">{{ c.aviso }}</div></sc-if>
+              <sc-if value="{{ c.decidido }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:{{ c.decColor }};font-weight:700">{{ c.decision }}</div></sc-if>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button onClick="{{ c.aceptar }}" style="padding:9px 12px;border-radius:10px;border:1px solid #5BD36F;background:transparent;color:#5BD36F;font-size:13px;font-weight:700;min-height:40px">Aceptar</button>
+              <button onClick="{{ c.rechazar }}" style="padding:9px 12px;border-radius:10px;border:1px solid #24335E;background:transparent;color:#9AA7C7;font-size:13px;font-weight:700;min-height:40px">Rechazar</button>
+              <button style="padding:9px 12px;border-radius:10px;border:1px solid #24335E;background:transparent;color:#F3F6FF;font-size:13px;font-weight:700;min-height:40px">Editar</button>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:16px;display:grid;grid-template-columns:{{ colsSubir }};gap:16px;align-items:center">
+        <div>
+          <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">3 · Publicar</div>
+          <sc-if value="{{ noPublicado }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:8px 0 14px;font-size:14px;color:#9AA7C7;line-height:1.5;text-wrap:pretty">Al publicar se genera el código del campo. Los cambios posteriores en los conceptos llegan a los estudiantes en su próxima expedición.</p>
+            <button onClick="{{ publicar }}" style="padding:16px 28px;border:0;border-radius:12px;background:#FF6A1A;color:#0A1230;font-size:17px;font-weight:800" style-hover="background:#FF7E3A">Publicar campo</button>
+          </sc-if>
+          <sc-if value="{{ publicado }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:8px 0 14px;font-size:14px;line-height:1.5">Comparte este código con tus estudiantes.</p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <span style="padding:12px 20px;border:1px solid #38B6FF;border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:28px;letter-spacing:.3em;font-weight:600;color:#38B6FF">LJH7K2</span>
+              <button style="padding:12px 16px;border-radius:12px;border:1px solid #24335E;background:transparent;color:#F3F6FF;font-size:14px;font-weight:700;min-height:44px">Copiar</button>
+            </div>
+          </sc-if>
+        </div>
+        <div style="border:1px solid #24335E;border-radius:12px;padding:14px;font-size:13px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;justify-content:space-between"><span style="color:#9AA7C7">Conceptos aceptados</span><span style="font-family:'JetBrains Mono',monospace">{{ aceptados }} / 18</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#9AA7C7">Relaciones firmes</span><span style="font-family:'JetBrains Mono',monospace">15</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#9AA7C7">Salas generadas</span><span style="font-family:'JetBrains Mono',monospace">9</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#9AA7C7">Entidades</span><span>Monocultivo · Cadena · Eco</span></div>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ esEstudiantes }}" hint-placeholder-val="{{ false }}">
+      <section style="background:#15224A;border:1px solid #24335E;border-radius:12px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:{{ colsTabla }};gap:12px;padding:12px 16px;border-bottom:1px solid #24335E;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">
+          <span>Estudiante</span><span>Nivel</span><span>Lucidez</span><span>Consolidados</span><span>Se le resiste</span>
+        </div>
+        <sc-for list="{{ estudiantes }}" as="s" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:{{ colsTabla }};gap:12px;padding:12px 16px;border-bottom:1px solid #24335E;font-size:13px;align-items:center">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:30px;height:30px;flex:none;border-radius:8px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E"></span><span style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.nombre }}</span></div>
+            <span style="font-family:'JetBrains Mono',monospace">{{ s.nivel }}</span>
+            <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:#24335E;border-radius:3px;overflow:hidden;max-width:80px"><div style="width:{{ s.lucidez }};height:100%;background:#FF6A1A;border-radius:3px"></div></div><span style="font-family:'JetBrains Mono',monospace;color:#9AA7C7">{{ s.lucidez }}</span></div>
+            <span style="font-family:'JetBrains Mono',monospace"><span style="color:#FFC23D">{{ s.consolidados }}</span> / 18</span>
+            <span style="color:{{ s.resisteColor }};font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.resiste }}</span>
+          </div>
+        </sc-for>
+      </section>
+      <p style="margin:0;font-size:13px;color:#9AA7C7">«Se le resiste» agrupa los conceptos con tres o más diagramas invertidos. Tócalo en clase antes de la siguiente unidad.</p>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;publicado&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Estado&quot;}}">
+const CONCEPTOS = [
+  { nombre: 'Crítica social', tipo: 'concepto', pagina: 3, def: 'Cuestionamiento de las estructuras de poder, desigualdad y violencia mediática a través de la ficción distópica.', evidencia: 'La trilogía articula una crítica social explícita a la desigualdad y al espectáculo de la violencia.' },
+  { nombre: 'Impacto cultural', tipo: 'concepto', pagina: 5, def: 'Huella de la obra en debates públicos, movimientos sociales y consumo cultural juvenil.', evidencia: 'El saludo de tres dedos fue adoptado por manifestantes en Tailandia y Hong Kong.' },
+  { nombre: 'Herramienta de crítica social', tipo: 'marco', pagina: 7, def: 'Lectura de la literatura juvenil como instrumento para cuestionar el orden social.', evidencia: 'La literatura juvenil puede leerse como herramienta de crítica social.', aviso: 'La definición depende de la obra: revisa si vale fuera de Los Juegos del Hambre.' },
+  { nombre: 'Ética del entretenimiento', tipo: 'concepto', pagina: 9, def: 'Tensión entre el consumo de violencia como espectáculo y su denuncia dentro del relato.', evidencia: 'El lector consume el espectáculo que la obra denuncia.', aviso: 'Sin conexiones: ningún vínculo firme lo une al resto del mapa.' }
+];
+const EST = [['Ana Sofía Herrera', 12, 78, 6, 'Conciencia política y activismo'], ['Diego Pardo', 9, 64, 4, 'Simbolismo'], ['Valentina Cruz', 14, 88, 9, '—'], ['Mateo Salazar', 6, 41, 2, 'Crítica social · Impacto cultural'], ['Luciana Ortiz', 11, 72, 5, 'Ética del entretenimiento'], ['Samuel Vega', 8, 55, 3, 'Análisis crítico de discursos']];
+class Component extends DCLogic {
+  state = { w: window.innerWidth, vista: 'campo', dec: {}, publicado: false };
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  renderVals() {
+    const movil = this.state.w < 860, v = this.state.vista, pub = this.state.publicado || (this.props.publicado ?? false);
+    const nAcept = 14 + Object.values(this.state.dec).filter(d => d === 'ok').length;
+    return {
+      esCampo: v === 'campo', esEstudiantes: v === 'estudiantes', titulo: v === 'campo' ? 'Tu campo' : 'Estudiantes · 24 en el campo',
+      vistas: [['campo', 'Campo'], ['estudiantes', 'Estudiantes']].map(([k, n]) => ({ nombre: n, fondo: v === k ? '#FF6A1A' : 'transparent', color: v === k ? '#0A1230' : '#9AA7C7', ir: () => this.setState({ vista: k }) })),
+      colsPasos: movil ? 'minmax(0,1fr)' : 'repeat(3,minmax(0,1fr))', colsSubir: movil ? 'minmax(0,1fr)' : 'minmax(0,1fr) minmax(0,1fr)', colsConcepto: movil ? 'minmax(0,1fr)' : 'minmax(0,1fr) auto', colsTabla: movil ? 'minmax(0,1.4fr) 40px 90px 60px minmax(0,1fr)' : 'minmax(0,1.6fr) 60px 140px 110px minmax(0,1.4fr)',
+      pasos: [{ n: 1, nombre: 'Subir', estado: 'PDF procesado' }, { n: 2, nombre: 'Revisar', estado: `${nAcept} de 18 aceptados` }, { n: 3, nombre: 'Publicar', estado: pub ? 'Código LJH7K2' : 'Pendiente' }].map((p, i) => { const on = i === 1 && !pub || i === 2 && pub; const hecho = i === 0 || (i === 2 && pub); return Object.assign(p, { borde: on ? '#FF6A1A' : '#24335E', fondo: hecho ? '#5BD36F' : on ? '#FF6A1A' : '#24335E', numColor: hecho || on ? '#0A1230' : '#9AA7C7' }); }),
+      capas: [['Conceptos', 18, '#38B6FF'], ['Relaciones', 15, '#FF6A1A'], ['Intuiciones', 3, '#F08AB8'], ['Argumentos', 4, '#FFC23D'], ['Casos', 1, '#5BD36F']].map(([n, k, c]) => ({ nombre: n, n: k, pct: '100%', color: c })),
+      revisados: `${nAcept} / 18`, aceptados: nAcept,
+      conceptos: CONCEPTOS.map((c, i) => { const d = this.state.dec[i]; return Object.assign({}, c, { aviso: c.aviso || false, decidido: !!d, decision: d === 'ok' ? 'Aceptado' : 'Rechazado: no entra en el campo', decColor: d === 'ok' ? '#5BD36F' : '#9AA7C7', op: d === 'no' ? .55 : 1, aceptar: () => this.setState({ dec: Object.assign({}, this.state.dec, { [i]: 'ok' }) }), rechazar: () => this.setState({ dec: Object.assign({}, this.state.dec, { [i]: 'no' }) }) }); }),
+      publicado: pub, noPublicado: !pub, publicar: () => this.setState({ publicado: true }),
+      estudiantes: EST.map(([nombre, nivel, l, c, r]) => ({ nombre, nivel, lucidez: l + '%', consolidados: c, resiste: r, resisteColor: r === '—' ? '#9AA7C7' : '#FF8A8A' }))
+    };
+  }
+}
+</script>
+</body>
+</html>
