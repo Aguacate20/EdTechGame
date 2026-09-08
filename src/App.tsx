@@ -24,7 +24,7 @@ import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
 import { InicioView } from './ui/InicioView'
-import { Galaxia } from './ui/Galaxia'
+import { CierreView } from './ui/CierreView'
 import { cargarPlan } from './net/sesion'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
@@ -32,7 +32,6 @@ import { fijarAmbito, nivelDe, observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
 import { AtlasView, EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
-import { BattleMap } from './ui/BattleMap'
 import { VistazoView } from './ui/VistazoView'
 import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
@@ -862,20 +861,10 @@ export default function App() {
           conceptos: Object.keys(atlas.conceptos).filter((id) => nivelDe(atlas.conceptos[id]) > nivelDe(antes?.conceptos[id]))
         }
         return (
-          <section className="cierre">
-            <div className="cierre-cab">
-              <small>·· · Nuevo conocimiento · ··</small>
-              <b>{nuevos.aristas.length ? `${nuevos.aristas.length} vínculo${nuevos.aristas.length === 1 ? '' : 's'} nuevo${nuevos.aristas.length === 1 ? '' : 's'} en tu cielo` : 'Tu cielo sigue igual: la próxima sala puede encenderlo'}</b>
-            </div>
-            <Galaxia contenido={contenido} atlas={atlas} modo="cierre" alto={340} nuevos={nuevos} />
-          </section>
-        )
-      })()}
-      {fase === 'resumen' && batalla && (
-        <BattleMap
-          contenido={contenido} hallazgos={batalla.hallazgos} atlas={atlas}
+        <CierreView
+          contenido={contenido} atlas={atlas} nuevos={nuevos}
           mejorGolpe={batalla.mejorGolpe} enemigos={batalla.enemigos}
-          latencias={batalla.latencias} descubiertos={batalla.relacionesNuevas}
+          descubiertos={batalla.relacionesNuevas}
           hazanas={hazanasNuevas.map((h) => ({ nombre: h.nombre, lente: h.lenteId }))}
           srl={{
             encargo: batalla.encargo,
@@ -904,7 +893,8 @@ export default function App() {
             setFase('recompensa')
           }}
         />
-      )}
+        )
+      })()}
 
       {fase === 'recompensa' && (
         <RewardView

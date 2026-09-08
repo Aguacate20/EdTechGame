@@ -1731,3 +1731,17 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .cierre-cab small { font-size: 11px; letter-spacing: 0.22em; color: var(--dominar); text-transform: uppercase; }
 .cierre-cab b { font-size: 18px; font-weight: 800; }
 .galaxia.cierre { cursor: default; }
+.cierre-fila { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 6px; }
+.cierre-tarjeta { min-height: 150px; }
+.cierre-num { font-size: 34px; font-weight: 800; color: var(--acento); font-family: var(--mono); line-height: 1; }
+.cierre-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.cierre-lista li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cierre-lista small { color: var(--texto-2); }
+.cierre-lista i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.estrella-oro { background: var(--dominar); box-shadow: 0 0 8px var(--dominar); }
+.estrella-cian { background: var(--descubierto); box-shadow: 0 0 8px var(--descubierto); }
+.cierre-marcas { display: flex; flex-wrap: wrap; gap: 6px; }
+.cierre-tarjeta.marca .marcar.activo { border-color: var(--acento); color: var(--texto); box-shadow: 0 0 0 1px var(--acento) inset; }
+.cierre-pie { display: flex; justify-content: center; padding: 8px 0 20px; }
+@media (max-width: 1080px) { .cierre-fila { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .cierre-fila { grid-template-columns: 1fr; } }

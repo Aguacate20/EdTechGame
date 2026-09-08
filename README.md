@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.45
+# LudusCog · El Archivo Infinito — v5.46
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,17 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El cierre, solo la galaxia (v5.46)
+
+`src/ui/CierreView.tsx` sustituye al mapa conceptual del resumen: la galaxia en modo
+`cierre` arriba (lo ganado se dibuja delante del estudiante) y debajo cuatro tarjetas en
+fila con lo que el mapa contaba: **tu golpe más fuerte** (daño, fichas × multiplicador,
+trazos, entidades derribadas), **lo que se desbloqueó** (estrellas que suben de nivel,
+vínculos aprendidos, hazañas y sus lentes), **tu encargo** (cumplido / pendiente y los
+sellos) y **¿qué te costó más?**, que sigue siendo obligatoria porque es la autorreflexión
+con consecuencia (lo marcado vuelve con prima). `BattleMap` deja de usarse en el cierre;
+queda en el repo para la vista de mapa del combate.
 
 ## El cierre en la galaxia y el Atlas desde cualquier sitio (v5.45)
 
