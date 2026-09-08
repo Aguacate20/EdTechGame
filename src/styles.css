@@ -1724,3 +1724,10 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .inicio-mas summary { cursor: pointer; padding: 8px 12px; border: 1px solid var(--borde); border-radius: 10px; background: var(--panel); color: var(--texto); font-weight: 600; }
 .inicio-mas[open] { grid-column: 1 / -1; width: 100%; }
 .inicio-mas[open] > :not(summary) { margin-top: 12px; }
+
+/* ── Cierre de batalla: la galaxia con lo ganado ── */
+.cierre { max-width: 1100px; margin: 12px auto 0; padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+.cierre-cab { text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.cierre-cab small { font-size: 11px; letter-spacing: 0.22em; color: var(--dominar); text-transform: uppercase; }
+.cierre-cab b { font-size: 18px; font-weight: 800; }
+.galaxia.cierre { cursor: default; }

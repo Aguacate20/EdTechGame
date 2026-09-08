@@ -10,10 +10,12 @@ import { nivelDe, type Atlas } from '../engine/atlas'
 interface Props {
   contenido: Contenido
   atlas: Atlas | null
-  modo?: 'vivo' | 'quieto'
+  modo?: 'vivo' | 'quieto' | 'cierre'
   soloUnidad?: string | null
   alto?: number
   onEstrella?: (conceptId: string) => void
+  /** modo cierre: lo ganado en esta expedición, que se dibuja delante del estudiante */
+  nuevos?: { aristas: string[]; conceptos: string[] }
 }
 
 const C = { desc: '#38B6FF', sost: '#5BD36F', trans: '#9B6CFF', dom: '#FFC23D', texto: '#F3F6FF', t2: '#9AA7C7', rojo: '#FF5A5A', ambar: '#E0A33A' }
@@ -52,7 +54,7 @@ function disponer(c: Contenido, soloUnidad: string | null): Estrella[] {
   })
 }
 
-export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, alto = 420, onEstrella }: Props) {
+export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, alto = 420, onEstrella, nuevos }: Props) {
   const ref = useRef<HTMLCanvasElement>(null)
   const estado = useRef({ rot: 0.6, tilt: 0.35, arrastre: null as null | { x: number; rot: number }, foco: null as string | null, quieto: modo === 'quieto' })
 
@@ -65,6 +67,12 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
     const idx = new Map(estrellas.map((s) => [s.id, s]))
     const firmes = atlas ? Object.values(atlas.aristas).filter((x) => (x.aciertos ?? 0) > 0) : []
     const propuestas = atlas ? Object.values(atlas.propuestas) : []
+    // cierre: qué es nuevo, y en qué orden se revela (700 ms por hilo, tras 500 ms)
+    const nuevasAristas = new Set(nuevos?.aristas ?? [])
+    const nuevosConceptos = new Set(nuevos?.conceptos ?? [])
+    const ordenNuevas = [...firmes.filter((x) => nuevasAristas.has(`${x.from}>${x.to}>${x.tipo}`) || nuevasAristas.has(`${x.from}|${x.to}`) || nuevasAristas.has(`${x.from}>${x.to}`))]
+    const tInicio = performance.now()
+    const revelado = (i: number, t: number) => modo !== 'cierre' ? 1 : Math.max(0, Math.min(1, (t - tInicio - 500 - i * 700) / 600))
     const nombreZona = (z: number) => contenido.clusters[z]?.label ?? ''
     let vivo = true, t0 = performance.now()
     const proyectar = (s: Estrella, w: number, h: number) => {
@@ -99,15 +107,20 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
       }
       // hilos: de atrás hacia adelante
       const P = new Map(pos.map(({ s, p }) => [s.id, p]))
-      const hilo = (a: string, b: string, clase: 'firme' | 'propuesta') => {
-        const pa = P.get(a), pb = P.get(b); if (!pa || !pb) return
+      const hilo = (a: string, b: string, clase: 'firme' | 'propuesta' | 'nuevo', avance = 1) => {
+        const pa = P.get(a), pb = P.get(b); if (!pa || !pb || avance <= 0) return
         g.save()
-        if (clase === 'firme') { g.strokeStyle = `rgba(56,182,255,${0.45 + 0.25 * Math.max(0, (pa.z + pb.z) / 2)})`; g.lineWidth = 1.6 }
+        if (clase === 'nuevo') { g.strokeStyle = C.dom; g.lineWidth = 2.2; g.shadowColor = C.dom; g.shadowBlur = 10 }
+        else if (clase === 'firme') { g.strokeStyle = `rgba(56,182,255,${0.45 + 0.25 * Math.max(0, (pa.z + pb.z) / 2)})`; g.lineWidth = 1.6 }
         else { g.strokeStyle = C.trans; g.lineWidth = 1.4; g.setLineDash([4, 5]) }
-        g.beginPath(); g.moveTo(pa.x, pa.y); g.lineTo(pb.x, pb.y); g.stroke(); g.restore()
+        g.beginPath(); g.moveTo(pa.x, pa.y); g.lineTo(pa.x + (pb.x - pa.x) * avance, pa.y + (pb.y - pa.y) * avance); g.stroke()
+        if (clase === 'nuevo' && avance < 1) { g.fillStyle = '#fff'; g.beginPath(); g.arc(pa.x + (pb.x - pa.x) * avance, pa.y + (pb.y - pa.y) * avance, 3, 0, 7); g.fill() }
+        g.restore()
       }
-      for (const x of firmes) hilo(x.from, x.to, 'firme')
+      const esNueva = (x: { from: string; to: string; tipo: string }) => ordenNuevas.includes(x as never)
+      for (const x of firmes) if (!esNueva(x)) hilo(x.from, x.to, 'firme')
       for (const x of propuestas) hilo(x.from, x.to, 'propuesta')
+      ordenNuevas.forEach((x, i) => hilo(x.from, x.to, 'nuevo', revelado(i, t)))
       // estrellas
       pos.sort((a, b) => a.p.z - b.p.z)
       for (const { s, p } of pos) {
@@ -124,6 +137,11 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
         g.save(); g.globalAlpha = alfa
         if (s.estado === 3) { g.strokeStyle = 'rgba(56,182,255,0.45)'; g.lineWidth = 1; g.beginPath(); g.arc(p.x, p.y, r + 5, 0, 7); g.stroke() }
         if (s.estado === 4) { g.shadowColor = C.dom; g.shadowBlur = st.quieto || reducido ? 10 : 14 + 6 * Math.sin(t / 700 + p.x) }
+        if (nuevosConceptos.has(s.id)) {
+          // subió de estado en esta expedición: destello blanco que se apaga en 2 s
+          const d = modo === 'cierre' ? Math.max(0, 1 - (t - tInicio - 500) / 2000) : 0
+          if (d > 0) { g.shadowColor = '#fff'; g.shadowBlur = 40 * d; r += 6 * d; label = C.texto }
+        }
         if (st.foco === s.id) { g.strokeStyle = '#FF6A1A'; g.lineWidth = 1.5; g.beginPath(); g.arc(p.x, p.y, r + 8, 0, 7); g.stroke(); label = C.texto }
         g.fillStyle = col; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill()
         if (label && w > 360 && (!st.quieto || s.estado >= 2)) {
@@ -152,7 +170,7 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
     cv.addEventListener('pointerdown', abajo); cv.addEventListener('pointermove', mueve); cv.addEventListener('pointerup', arriba)
     void idx
     return () => { vivo = false; cv.removeEventListener('pointerdown', abajo); cv.removeEventListener('pointermove', mueve); cv.removeEventListener('pointerup', arriba) }
-  }, [contenido, atlas, soloUnidad, onEstrella])
+  }, [contenido, atlas, soloUnidad, onEstrella, modo, nuevos])
 
   return <canvas ref={ref} className={`galaxia ${modo}`} style={{ height: alto }} role="img" aria-label="Tu galaxia de conocimiento" />
 }

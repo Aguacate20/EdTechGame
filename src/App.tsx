@@ -20,15 +20,15 @@ import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
 } from './engine/savegame'
 import { contenidoTutorial, SALAS_TUTORIAL } from './content/tutorial'
-import { BundleLoader } from './ui/BundleLoader'
 import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
 import { InicioView } from './ui/InicioView'
+import { Galaxia } from './ui/Galaxia'
 import { cargarPlan } from './net/sesion'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
-import { fijarAmbito, observarAtlas } from './engine/atlas'
+import { fijarAmbito, nivelDe, observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
 import { AtlasView, EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
@@ -89,6 +89,8 @@ export default function App() {
    *  aunque afirmar limpie el tablero y la condición deje de cumplirse */
   const [pasosHechos, setPasosHechos] = useState<string[]>([])
   const previoRef = useRef<{ contenido: Contenido; atlas: Atlas } | null>(null)
+  // foto del Atlas al empezar la batalla, para enseñar lo ganado en el cierre
+  const atlasAlEmpezarRef = useRef<Atlas | null>(null)
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -273,6 +275,7 @@ export default function App() {
       mazoFijo: sala.mazo(c),
       enemigosFijos: sala.enemigos(1)
     }, 'facil', 0, 6))
+    atlasAlEmpezarRef.current = atlas
     setFase('batalla')
   }, [])
 
@@ -353,6 +356,7 @@ export default function App() {
     // planeación: se elige viendo la mano y el frente, no en una pantalla aparte
     if (atlas) e.encargosOfrecidos = proponerEncargos(contenido, nodo.conceptIds, atlas, e.mano, e.herramientas)
     setBatalla(e)
+    atlasAlEmpezarRef.current = atlas
     setFase('batalla')
   }, [contenido, ruta, ctx, actoIdx, progreso, casos, tesis, intuiciones, fusionados,
       manoExtra, aprendizaje, atlas, herramientas, sellos, marcados, archivados, portadaId])
@@ -761,8 +765,17 @@ export default function App() {
       </div>
     )
   }
+  if (fase === 'atlas') {
+    return (
+      <div className="app">
+        {barra('coleccion')}
+        <AtlasView atlas={atlas} contenido={contenido} onVolver={() => setFase(faseAnterior === 'atlas' ? 'inicio' : faseAnterior)} />
+      </div>
+    )
+  }
   if (!ruta && tutorial === null) {
-    return <div className="app"><BundleLoader onListo={(c) => alCargar(c)} /></div>
+    // sin expedición empezada, cualquier otra fase vuelve al inicio (antes caía al cargador de bundles)
+    return <div className="app"><Entrar onListo={alCargar} /></div>
   }
 
   const acto = ruta?.actos[actoIdx] ?? null
@@ -842,6 +855,22 @@ export default function App() {
         />
       )}
 
+      {fase === 'resumen' && batalla && (() => {
+        const antes = atlasAlEmpezarRef.current
+        const nuevos = {
+          aristas: Object.entries(atlas.aristas).filter(([k, v]) => (v.aciertos ?? 0) > 0 && (antes?.aristas[k]?.aciertos ?? 0) === 0).map(([k]) => k),
+          conceptos: Object.keys(atlas.conceptos).filter((id) => nivelDe(atlas.conceptos[id]) > nivelDe(antes?.conceptos[id]))
+        }
+        return (
+          <section className="cierre">
+            <div className="cierre-cab">
+              <small>·· · Nuevo conocimiento · ··</small>
+              <b>{nuevos.aristas.length ? `${nuevos.aristas.length} vínculo${nuevos.aristas.length === 1 ? '' : 's'} nuevo${nuevos.aristas.length === 1 ? '' : 's'} en tu cielo` : 'Tu cielo sigue igual: la próxima sala puede encenderlo'}</b>
+            </div>
+            <Galaxia contenido={contenido} atlas={atlas} modo="cierre" alto={340} nuevos={nuevos} />
+          </section>
+        )
+      })()}
       {fase === 'resumen' && batalla && (
         <BattleMap
           contenido={contenido} hallazgos={batalla.hallazgos} atlas={atlas}
@@ -915,9 +944,7 @@ export default function App() {
         />
       )}
 
-      {fase === 'atlas' && (
-        <AtlasView atlas={atlas} contenido={contenido} onVolver={() => setFase(faseAnterior)} />
-      )}
+
 
       {fase === 'tutorial-fin' && (
         <div className="envoltura pila" style={{ maxWidth: 660 }}>

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.44
+# LudusCog · El Archivo Infinito — v5.45
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,17 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El cierre en la galaxia y el Atlas desde cualquier sitio (v5.45)
+
+- **Bug**: tocar una estrella o abrir Colección/Logros sin expedición empezada caía al
+  cargador de bundles, porque la vista del Atlas vivía dentro del render de expedición (que
+  exige ruta). Ahora el Atlas se renderiza con la barra antes de ese guard, y sin ruta
+  cualquier fase suelta vuelve a Entrar, nunca al cargador.
+- **Cierre de batalla**: sobre el resumen aparece la galaxia en modo `cierre` con lo ganado
+  en esa batalla: los vínculos nuevos se dibujan uno a uno en oro (700 ms cada uno, con una
+  chispa recorriendo el hilo) y las estrellas que subieron de estado destellan. Lo «nuevo» es
+  la diferencia entre la foto del Atlas al empezar la batalla y el Atlas al terminar.
 
 ## El Inicio del diseño, con la galaxia al centro (v5.44)
 
