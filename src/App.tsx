@@ -27,6 +27,7 @@ import { InicioView } from './ui/InicioView'
 import { CierreView } from './ui/CierreView'
 import { ColeccionView } from './ui/ColeccionView'
 import { cargarPlan } from './net/sesion'
+import { iniciarSubidas, marcarAplicada, useSubidas } from './net/subidas'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
 import { fijarAmbito, nivelDe, observarAtlas } from './engine/atlas'
@@ -109,6 +110,7 @@ export default function App() {
   const [inferenciasRun, setInferenciasRun] = useState(0)
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
+  const subidas = useSubidas()
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
 
@@ -138,6 +140,7 @@ export default function App() {
     const ses = s === undefined ? leerSesion() : s
     setSesion(ses)
     fijarAmbito(ses?.studentId ?? null)
+    iniciarSubidas(ses)
     const local = cargarAtlas(c.fuente)
     setContenido(c); setAtlas(local)
     setGuardada(leerExpedicion(c.fuente))
@@ -674,6 +677,15 @@ export default function App() {
     avanzar()
   }
 
+  // una lectura nueva lista → el plan del perfil cambió → se recarga cuando no hay batalla en curso
+  const tranquila = ['inicio', 'atlas', 'logros', 'biblioteca', 'portada'].includes(fase)
+  useEffect(() => {
+    const lista = subidas.find((x) => x.estado === 'lista')
+    if (!lista || !sesion || !tranquila) return
+    marcarAplicada(lista.jobId)
+    void cargarPlan(sesion.api, sesion.studentId).then((plan) => { if (plan) setContenido(adaptarBundle(plan)) })
+  }, [subidas, sesion, tranquila])
+
   /* -------------------------------- render -------------------------------- */
 
   if (fase === 'cargar' || !contenido || !atlas || !progreso) {
@@ -697,10 +709,6 @@ export default function App() {
         <Biblioteca
           sesion={sesion}
           onVolver={() => setFase('inicio')}
-          onActualizado={() => {
-            // un documento nuevo → el plan cambia → se recarga el contenido; el Atlas se conserva
-            void cargarPlan(sesion.api, sesion.studentId).then((plan) => { if (plan) { setContenido(adaptarBundle(plan)); setFase('inicio') } })
-          }}
         />
       </div>
     )

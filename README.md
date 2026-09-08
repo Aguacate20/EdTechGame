@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.47
+# LudusCog · El Archivo Infinito — v5.48
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,20 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Subidas que sobreviven a cualquier pantalla (v5.48)
+
+El seguimiento de una subida vivía dentro de Biblioteca y se perdía al cambiar de menú
+(el extractor seguía trabajando en el servidor, pero el juego perdía el hilo). Ahora
+`src/net/subidas.ts` es un pequeño almacén fuera de React —lista de jobs por perfil en
+`localStorage`, un sondeo cada 3 s mientras haya alguno en marcha— al que se suscriben la
+barra y Biblioteca. Puedes cambiar de pantalla, empezar una expedición o cerrar y volver a
+abrir: la subida sigue y se retoma. **Progreso por capas**: el backend (v3.11) informa cada
+capa terminada mientras corre (`progreso.fraccion`, `progreso.ultima.layer`), y el juego lo
+pinta como anillo en la barra («Relaciones · 44 %») y como barra en Biblioteca. Cuando la
+lectura queda lista, el chip pasa a «Lectura lista ✓» y el plan del perfil se recarga solo
+en cuanto no hay batalla en curso (nunca en mitad de una sala); la primera lectura de un
+perfil vacío entra sola al terminar.
 
 ## Colección, zonas y una galaxia que aguanta 30 documentos (v5.47)
 

@@ -3,6 +3,7 @@ import { adaptarBundle } from '../content/adapter'
 import type { Contenido } from '../content/types'
 import { BundleLoader } from './BundleLoader'
 import { Biblioteca } from './Biblioteca'
+import { iniciarSubidas, useSubidas } from '../net/subidas'
 import {
   API_POR_DEFECTO, cargarPlan, entrar, guardarSesion, leerSesion, listarPerfiles,
   type PerfilResumen, type Sesion
@@ -20,6 +21,13 @@ export function Entrar({ onListo }: Props) {
   const [perfil, setPerfil] = useState<PerfilResumen | 'nuevo' | null>(null)
   const [nombre, setNombre] = useState('')
   const [sinMaterial, setSinMaterial] = useState<Sesion | null>(null)
+  const subidas = useSubidas()
+  const primeraLista = subidas.some((x) => x.estado === 'lista')
+  useEffect(() => {
+    if (!sinMaterial || !primeraLista) return
+    void cargarPlan(base, sinMaterial.studentId).then((plan) => { if (plan) onListo(adaptarBundle(plan), sinMaterial) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [primeraLista])
   const [manual, setManual] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +67,7 @@ export function Entrar({ onListo }: Props) {
       }
       guardarSesion(sesion)
       const plan = await cargarPlan(base, quien.studentId)
-      if (!plan) { setSinMaterial(sesion); setOcupado(false); return }
+      if (!plan) { iniciarSubidas(sesion); setSinMaterial(sesion); setOcupado(false); return }
       onListo(adaptarBundle(plan), sesion)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo entrar.')
@@ -78,7 +86,6 @@ export function Entrar({ onListo }: Props) {
           <h1 className="entrar-titulo">Hola, {sinMaterial.nombre}. Tu galaxia está vacía: sube tu primera lectura.</h1>
           <Biblioteca
             sesion={sinMaterial}
-            onActualizado={() => { void cargarPlan(base, sinMaterial.studentId).then((plan) => { if (plan) onListo(adaptarBundle(plan), sinMaterial) }) }}
             onVolver={() => setSinMaterial(null)}
           />
         </div>
