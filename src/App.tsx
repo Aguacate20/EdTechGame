@@ -24,6 +24,7 @@ import { BundleLoader } from './ui/BundleLoader'
 import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
+import { InicioView } from './ui/InicioView'
 import { cargarPlan } from './net/sesion'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
@@ -710,6 +711,14 @@ export default function App() {
             <button className="btn fantasma" onClick={descargarLog}>Señales</button>
           </>
         ))}
+        <InicioView
+          contenido={contenido} atlas={atlas} sesion={sesion} guardada={guardada}
+          onContinuar={() => (guardada ? retomar() : empezarExpedicion(false))}
+          onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}
+          onEstrella={() => { setFaseAnterior('inicio'); setFase('atlas') }}
+          acciones={(
+            <details className="inicio-mas">
+              <summary>Más opciones</summary>
         <HomeView
           atlas={atlas} contenido={contenido} guardada={guardada}
           onExpedicion={empezarExpedicion}
@@ -734,6 +743,9 @@ export default function App() {
           }}
           onEmpezarTutorial={() => empezarTutorial(0)}
           onCambiarTexto={() => { setContenido(null); setFase('cargar') }}
+        />
+            </details>
+          )}
         />
       </div>
     )

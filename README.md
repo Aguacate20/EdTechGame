@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.43
+# LudusCog · El Archivo Infinito — v5.44
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,22 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El Inicio del diseño, con la galaxia al centro (v5.44)
+
+`src/ui/InicioView.tsx` reproduce `docs/diseno/Inicio.dc.html`: tres columnas (280 · 1fr ·
+320) que se apilan en móvil. Izquierda: Andy con una frase que cambia con el Atlas, Misión
+actual (la unidad en curso y la cobertura), Próximo desafío, Concepto recomendado (el que se
+te resiste o el más importante con menor nivel). Centro: **la galaxia** (`src/ui/Galaxia.tsx`,
+canvas con profundidad, portada de `galaxia.js`: estrellas por concepto con los seis estados
+sacados de `nivelDe` y los fallos, hilos firmes = vínculos sostenidos del Atlas, propuestas
+punteadas en violeta, nebulosas con nombre por zona, órbita lenta, arrastrar gira, tocar una
+estrella abre el Atlas), leyenda y los cinco escalones con porcentaje. Derecha: la
+constelación de la unidad actual (la misma galaxia en modo quieto), Tu progreso (cinco
+barras) y Lucidez. Abajo: «Continuar / Empezar expedición» y, en «Más opciones», la HomeView
+de siempre (con apoyo, tutorial, cambiar texto). La disposición de las estrellas es estable:
+sale del id del concepto y de su zona, así la galaxia no se reordena entre sesiones ni al
+entrar lecturas nuevas.
 
 ## El avance es del perfil (v5.43)
 
