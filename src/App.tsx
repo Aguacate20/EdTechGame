@@ -35,7 +35,6 @@ import { BoardView } from './ui/BoardView'
 import { EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
 import { VistazoView } from './ui/VistazoView'
-import { HomeView } from './ui/HomeView'
 import { Medidor } from './ui/components'
 import { FondoActo } from './ui/assets'
 import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
@@ -731,34 +730,7 @@ export default function App() {
           onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}
           onEstrella={() => { setFaseAnterior('inicio'); setFase('atlas') }}
           acciones={(
-            <details className="inicio-mas">
-              <summary>Más opciones</summary>
-        <HomeView
-          atlas={atlas} contenido={contenido} guardada={guardada}
-          onExpedicion={empezarExpedicion}
-          onRetomar={retomar}
-          enTutorial={tutorial !== null}
-          onTutorial={() => {
-            if (tutorial !== null) {
-              // salir: se devuelve el texto que estaba cargado
-              const prev = previoRef.current
-              setTutorial(null)
-              if (prev) {
-                setContenido(prev.contenido); setAtlas(prev.atlas)
-                setGuardada(leerExpedicion(prev.contenido.fuente))
-              }
-              return
-            }
-            if (contenido && atlas) previoRef.current = { contenido, atlas }
-            const t = contenidoTutorial()
-            setContenido(t); setAtlas(cargarAtlas(t.fuente))
-            setTutorial(0)
-            setGuardada(null)
-          }}
-          onEmpezarTutorial={() => empezarTutorial(0)}
-          onCambiarTexto={() => { setContenido(null); setFase('cargar') }}
-        />
-            </details>
+            <button className="btn fantasma" onClick={() => empezarTutorial(0)} disabled={tutorial !== null}>Tutorial</button>
           )}
         />
       </div>

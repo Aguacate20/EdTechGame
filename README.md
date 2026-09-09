@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.48
+# LudusCog · El Archivo Infinito — v5.49
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,12 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Inicio sin «Más opciones» (v5.49)
+
+Del viejo HomeView solo queda el botón **Tutorial** al pie del inicio. «Cambiar texto» ya es
+Biblioteca; «con apoyo» lo decide la portada de la expedición; «retomar» es el propio
+«Continuar expedición». `HomeView.tsx` sigue en el repo por si hace falta, pero nada lo usa.
 
 ## Subidas que sobreviven a cualquier pantalla (v5.48)
 
