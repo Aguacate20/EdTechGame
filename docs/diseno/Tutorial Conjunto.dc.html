@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#060B1F;color:#F3F6FF;font-family:Manrope,system-ui,sans-serif}a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}</style>
+</helmet>
+<section style="padding:40px;display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;align-items:baseline;gap:14px"><span style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Tutorial de la primera sala</span><span style="font-size:13px;color:#9AA7C7">Cinco estados · velo, recorte, conector y burbuja sobre el tablero real · cada paso es interactivo</span></div>
+  <div style="display:flex;gap:28px;align-items:flex-start">
+    <sc-for list="{{ estados }}" as="e" hint-placeholder-count="5">
+      <div id="{{ e.id }}" style="display:flex;flex-direction:column;gap:10px;flex:none">
+        <div style="display:flex;align-items:center;gap:10px"><a href="#{{ e.id }}" style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border:1px solid #24335E;border-radius:6px;color:#9AA7C7">{{ e.id }}</a><span style="font-weight:800;font-size:14px">{{ e.nombre }}</span><a href="{{ e.href }}" style="font-size:12px;margin-left:auto">abrir →</a></div>
+        <div style="width:1280px;height:900px;border:1px solid #24335E;border-radius:14px;overflow:hidden;position:relative">
+          <dc-import name="Tutorial" paso="{{ e.paso }}" hecho="{{ e.hecho }}" alto="900px" style="width:1280px;height:900px;display:block" hint-size="1280px,900px"></dc-import>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:flex;gap:28px;align-items:flex-start">
+    <sc-for list="{{ moviles }}" as="e" hint-placeholder-count="2">
+      <div id="{{ e.id }}" style="display:flex;flex-direction:column;gap:10px;flex:none">
+        <div style="display:flex;align-items:center;gap:10px"><a href="#{{ e.id }}" style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border:1px solid #24335E;border-radius:6px;color:#9AA7C7">{{ e.id }}</a><span style="font-weight:800;font-size:14px">{{ e.nombre }}</span></div>
+        <div style="width:390px;height:1360px;border:1px solid #24335E;border-radius:14px;overflow:hidden;position:relative">
+          <dc-import name="Tutorial" paso="{{ e.paso }}" hecho="{{ e.hecho }}" alto="1360px" style="width:390px;height:1360px;display:block" hint-size="390px,1360px"></dc-import>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      estados: [
+        { id: '1a', nombre: 'Paso 1 · esperando', paso: '1', hecho: false, href: 'Tutorial 1.dc.html' },
+        { id: '1b', nombre: 'Paso 2 · esperando', paso: '2', hecho: false, href: 'Tutorial 2.dc.html' },
+        { id: '1c', nombre: 'Paso 3 · hecho ✓ (veredicto y golpe)', paso: '3', hecho: true, href: 'Tutorial 3.dc.html' },
+        { id: '1d', nombre: 'Paso 4 · esperando', paso: '4', hecho: false, href: 'Tutorial 4.dc.html' },
+        { id: '1e', nombre: 'Cierre · Ya sabes jugar', paso: '5', hecho: false, href: 'Tutorial Cierre.dc.html' }
+      ],
+      moviles: [
+        { id: '1f', nombre: 'Móvil · Paso 1 (burbuja abajo, pulso en el recorte)', paso: '1', hecho: false },
+        { id: '1g', nombre: 'Móvil · Paso 3 hecho', paso: '3', hecho: true }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -365,19 +365,27 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
       )}
 
+      {guia && <div className="velo-tutorial" aria-hidden="true" />}
       {guia && (
-        <aside className={`guia${
-          guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' ? ' apartada' : ''
-        }`}>
-          <span className="eyebrow">
-            Tutorial · paso {guia.indice + 1} de {guia.total}
-          </span>
-          <strong>{guia.titulo}</strong>
-          <p>{guia.texto}</p>
-          <div className="pasos-puntos">
-            {Array.from({ length: guia.total }, (_, i) => (
-              <i key={i} className={i <= guia.indice ? 'hecho' : ''} />
-            ))}
+        <aside
+          className={`guia${
+            guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' ? ' apartada' : ''
+          }`}
+          role="dialog" aria-live="polite" aria-label={`Tutorial, paso ${guia.indice + 1} de ${guia.total}`}
+        >
+          <div className="guia-andy" aria-hidden="true"><span>✦</span></div>
+          <div className="guia-cuerpo">
+            <span className="eyebrow">Paso {guia.indice + 1} de {guia.total}</span>
+            <strong>{guia.titulo}</strong>
+            <p>{guia.texto}</p>
+            <div className="guia-pie">
+              <div className="pasos-puntos">
+                {Array.from({ length: guia.total }, (_, i) => (
+                  <i key={i} className={i < guia.indice ? 'hecho' : i === guia.indice ? 'activo' : ''} />
+                ))}
+              </div>
+              <small className="guia-espera"><b /> Esperando tu acción</small>
+            </div>
           </div>
         </aside>
       )}

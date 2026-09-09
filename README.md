@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.49
+# LudusCog · El Archivo Infinito — v5.50
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,16 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El tutorial con el diseño (v5.50)
+
+El mecanismo del tutorial ya existía (foco por zona, piezas y herramientas permitidas,
+pasos que avanzan con la acción real y no vuelven atrás). v5.50 le pone la piel de
+`docs/diseno/Tutorial.dc.html`: un **velo** `rgba(10,18,48,0.78)` sobre toda la batalla, la
+zona que toca sube por encima con un **recorte** de borde naranja pulsante, y la **burbuja
+de Andy** (avatar, «Paso 2 de 4», título, texto, puntos hecho/activo/pendiente y «Esperando
+tu acción» con pulso). En móvil la burbuja ocupa el ancho abajo. `prefers-reduced-motion`
+apaga los pulsos.
 
 ## Inicio sin «Más opciones» (v5.49)
 
