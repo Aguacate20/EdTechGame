@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.52
+# LudusCog · El Archivo Infinito — v5.53
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,15 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Sala v2, segunda pasada (v5.53)
+
+- **Cartas oscuras de verdad**: el fondo claro llegaba en línea por clase de carta
+  (`cd.tono` + textura) y ganaba a la hoja de estilos; ahora se pisa y la carta es
+  `#1A2A58` con texto claro, conservando la banda de color por clase en el borde izquierdo.
+- **El carril es un escenario**: fuera las cajas por casilla (solo una línea punteada
+  tenue); las entidades caminan sobre el fondo. El jugador baja al mismo suelo que las
+  entidades (alineación al pie, no al centro).
 
 ## La Sala v2 (v5.52)
 

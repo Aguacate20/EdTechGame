@@ -1843,3 +1843,22 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   .app .renglon { flex: 0 0 160px; min-height: 100px; }
   .app .zona-acciones { padding: 0 8px; }
 }
+
+/* ── Sala v2, segunda pasada: cartas oscuras de verdad, carril sin cajas ── */
+/* el fondo claro venía en línea por clase de carta (cd.tono + textura): se pisa;
+   la banda de color por clase se conserva como borde izquierdo */
+.app .renglon { background: #1A2A58 !important; color: var(--texto) !important; border-left-width: 4px; }
+.app .renglon .nom { color: var(--texto); }
+.app .renglon .desc { color: #B7C2E0; }
+.app .renglon .tt { background: var(--panel-hundido); }
+.app .renglon:hover { transform: none; box-shadow: none; border-color: var(--descubierto); }
+.app .renglon.activa { outline: none; }
+.app .renglon.senalada { outline: 2px dashed var(--resiste); }
+.app .renglon.bloqueada { opacity: .5; }
+/* el carril es un escenario: las entidades caminan sobre él, sin cajas por casilla */
+.app .zona-carril .casilla { background: transparent; border: 0; border-left: 1px dashed rgba(255,255,255,.06); border-radius: 0; }
+.app .zona-carril .casilla .numero { color: rgba(154,167,199,.5); }
+.app .zona-carril .carril-pista { align-items: flex-end; }
+/* el jugador, a la altura de las entidades */
+.app .zona-carril .carril-jugador { align-items: flex-end; align-self: stretch; padding-bottom: 4px; border-right-color: var(--borde); }
+.app .zona-carril .parte-frente { align-items: flex-end; }
