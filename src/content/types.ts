@@ -29,6 +29,8 @@ export interface Concepto {
   subdimensiones: Subdimension[]
   tensiones: string[]
   paginas: number[]
+  /** ids de los documentos de los que sale (plan fusionado); vacío en bundles de un solo texto */
+  fuentes: string[]
   /** cita LITERAL del texto donde el concepto aparece, verificada por el
    *  extractor carácter por carácter. Es el ancla que devuelve al lector al
    *  documento: el juego la muestra, nunca la parafrasea. */

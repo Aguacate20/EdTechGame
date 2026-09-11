@@ -3,6 +3,7 @@ import type { Contenido } from '../content/types'
 import { coberturaAtlas, nivelDe, type Atlas } from '../engine/atlas'
 import { lucidezDe, type Sesion } from '../net/sesion'
 import { Galaxia } from './Galaxia'
+import type { Tema } from '../engine/temas'
 
 /** El Inicio según Inicio.dc.html: tres columnas, la galaxia al centro.
  *  Izquierda: Andy · Misión actual · Próximo desafío · Concepto recomendado.
@@ -18,6 +19,9 @@ interface Props {
   onAtlas: () => void
   onEstrella?: (id: string) => void
   acciones: ReactNode
+  temas?: Tema[]
+  temaActivo?: string | null
+  onTema?: (id: string) => void
 }
 
 const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
@@ -28,7 +32,7 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
   { id: 'dominar', nombre: 'Dominar', color: 'var(--dominar)', nivel: 3 }
 ]
 
-export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, onAtlas, onEstrella, acciones }: Props) {
+export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema }: Props) {
   const [zonaFoco, setZonaFoco] = useState<string | null>(null)
   const ids = contenido.ordenConceptos
   const total = Math.max(1, ids.length)
@@ -147,6 +151,20 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, on
       </aside>
 
       <footer className="inicio-pie">
+        {temas.length > 1 && (
+          <div className="temas" role="radiogroup" aria-label="Tema de la expedición">
+            <small>Explorar</small>
+            {temas.map((t) => {
+              const activo = (temaActivo ?? temas[0].id) === t.id
+              const encendidas = t.conceptIds.filter((id) => nivelDe(atlas.conceptos[id]) >= 1).length
+              return (
+                <button key={t.id} role="radio" aria-checked={activo} className={`tema${activo ? ' activo' : ''}`} onClick={() => onTema?.(t.id)} title={`${t.documentos.length || 1} lectura${t.documentos.length === 1 ? '' : 's'}`}>
+                  <b>{t.nombre}</b><small>{encendidas}/{t.conceptIds.length}</small>
+                </button>
+              )
+            })}
+          </div>
+        )}
         <div className="inicio-acciones">{acciones}</div>
         <button className="btn primario inicio-continuar" onClick={onContinuar}>{guardada ? 'Continuar expedición' : 'Empezar expedición'}</button>
       </footer>

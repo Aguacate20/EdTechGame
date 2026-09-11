@@ -99,6 +99,7 @@ export function adaptarBundle(raw: unknown): Contenido {
       })),
       tensiones: strArr(c?.tensiones),
       paginas: arr(c?.paginas).filter((x) => typeof x === 'number'),
+      fuentes: strArr(c?.fuentes),
       evidencia: str(c?.evidencia_textual, str(c?.evidencia))
     }
   }

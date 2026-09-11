@@ -1909,3 +1909,11 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 
 /* ── quinta pasada ── */
 .app .bicho .rasgo { display: none; }
+
+/* ── temas de la expedición ── */
+.temas { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.temas > small { color: var(--texto-2); font-size: 12px; margin-right: 2px; }
+.tema { display: flex; align-items: baseline; gap: 8px; background: var(--panel); border: 1px solid var(--borde); border-radius: 999px; padding: 6px 14px; color: var(--texto); font: inherit; cursor: pointer; }
+.tema b { font-size: 13px; font-weight: 700; } .tema small { font-family: var(--mono); font-size: 11px; color: var(--texto-2); }
+.tema:hover { border-color: var(--descubierto); }
+.tema.activo { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento) inset; }

@@ -24,6 +24,7 @@ import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
 import { InicioView } from './ui/InicioView'
+import { recortar, temasDe } from './engine/temas'
 import { CierreView } from './ui/CierreView'
 import { ColeccionView } from './ui/ColeccionView'
 import { cargarPlan } from './net/sesion'
@@ -109,6 +110,9 @@ export default function App() {
   const [inferenciasRun, setInferenciasRun] = useState(0)
   const [atlas, setAtlas] = useState<Atlas | null>(null)
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
+  /** el plan entero del perfil (la galaxia lo ve todo); la expedición juega un tema */
+  const completoRef = useRef<Contenido | null>(null)
+  const [temaActivo, setTemaActivo] = useState<string | null>(null)
   const subidas = useSubidas()
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -141,6 +145,7 @@ export default function App() {
     fijarAmbito(ses?.studentId ?? null)
     iniciarSubidas(ses)
     const local = cargarAtlas(c.fuente)
+    completoRef.current = c
     setContenido(c); setAtlas(local)
     setGuardada(leerExpedicion(c.fuente))
     setFase('inicio')
@@ -160,6 +165,14 @@ export default function App() {
     setFase('portada')
   }, [contenido, atlas])
 
+  /** el contenido sobre el que se juega: el tema elegido, o todo si solo hay uno */
+  const contenidoDeExpedicion = useCallback((c: Contenido): Contenido => {
+    const temas = temasDe(c)
+    if (temas.length <= 1) return c
+    const tema = temas.find((t) => t.id === temaActivo) ?? temas[0]
+    return recortar(c, tema)
+  }, [temaActivo])
+
   const lanzarExpedicion = useCallback((portada: Portada) => {
     if (!contenido || !atlas) return
     const conApoyo = pendApoyo
@@ -170,7 +183,9 @@ export default function App() {
     rngRef.current = new Rng(sem)
     runIdRef.current = `${sem}-${Date.now()}`
     let r: Ruta
-    try { r = generarRuta(contenido, sem, conApoyo) }
+    const base = contenidoDeExpedicion(completoRef.current ?? contenido)
+    setContenido(base)
+    try { r = generarRuta(base, sem, conApoyo) }
     catch (err) { alert((err as Error).message); return }
 
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
@@ -220,7 +235,9 @@ export default function App() {
   const retomar = useCallback(() => {
     if (!contenido || !guardada) return
     let r: Ruta
-    try { r = generarRuta(contenido, guardada.semilla, guardada.aprendizaje) } catch { return }
+    const base = contenidoDeExpedicion(completoRef.current ?? contenido)
+    setContenido(base)
+    try { r = generarRuta(base, guardada.semilla, guardada.aprendizaje) } catch { return }
     rngRef.current = new Rng(guardada.semilla)
     runIdRef.current = guardada.runId
     setSemilla(guardada.semilla)
@@ -682,7 +699,7 @@ export default function App() {
     const lista = subidas.find((x) => x.estado === 'lista')
     if (!lista || !sesion || !tranquila) return
     marcarAplicada(lista.jobId)
-    void cargarPlan(sesion.api, sesion.studentId).then((plan) => { if (plan) setContenido(adaptarBundle(plan)) })
+    void cargarPlan(sesion.api, sesion.studentId).then((plan) => { if (plan) { const c = adaptarBundle(plan); completoRef.current = c; setContenido(c) } })
   }, [subidas, sesion, tranquila])
 
   /* -------------------------------- render -------------------------------- */
@@ -725,7 +742,8 @@ export default function App() {
           </>
         ))}
         <InicioView
-          contenido={contenido} atlas={atlas} sesion={sesion} guardada={guardada}
+          contenido={completoRef.current ?? contenido} atlas={atlas} sesion={sesion} guardada={guardada}
+          temas={temasDe(completoRef.current ?? contenido)} temaActivo={temaActivo} onTema={setTemaActivo}
           onContinuar={() => (guardada ? retomar() : empezarExpedicion(false))}
           onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}
           onEstrella={() => { setFaseAnterior('inicio'); setFase('atlas') }}
@@ -753,7 +771,7 @@ export default function App() {
       <div className="app">
         {barra(fase === 'logros' ? 'logros' : 'coleccion')}
         <ColeccionView
-          key={fase} contenido={contenido} atlas={atlas} inicial={fase === 'logros' ? 'logros' : 'estrellas'}
+          key={fase} contenido={completoRef.current ?? contenido} atlas={atlas} inicial={fase === 'logros' ? 'logros' : 'estrellas'}
           onAtlas={(a) => { setAtlas(a); guardarAtlas(a) }} onVolver={volver}
         />
       </div>

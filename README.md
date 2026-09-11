@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.56
+# LudusCog · El Archivo Infinito — v5.57
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,19 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Las expediciones no mezclan temas (v5.57)
+
+El plan de un perfil junta todas sus lecturas, y la expedición repartía cartas sobre todo el
+plan: una sala podía mezclar *Los Juegos del Hambre* con psicología. `src/engine/temas.ts`
+resuelve qué **temas** hay en el plan —dos documentos son el mismo tema si comparten al
+menos un concepto fusionado (`fuentes`); sin fuentes, la componente conexa del grafo; los
+temas de menos de 4 conceptos se pegan al tema con el que más vínculos tienen— y `recortar`
+deja el contenido en un solo tema (conceptos, vínculos, casos, tesis, marcos, repertorios,
+unidades, zonas y ejes). La expedición se lanza sobre el recorte; el inicio, la galaxia y la
+Colección siguen viendo el plan entero, y el Atlas es del perfil. Si hay más de un tema, el
+pie del inicio muestra el selector **Explorar** (nombre del tema = su concepto eje, y
+cuántas estrellas lleva encendidas); con uno solo no aparece nada.
 
 ## Cita literal en la carta, barra sin callejones (v5.56)
 
