@@ -1799,3 +1799,47 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .tres-cosas small { color: var(--texto-2); }
 .tutorial-cierre .marca-lc { margin-bottom: 8px; }
 @media (prefers-reduced-motion: reduce) { .recorte-pulso { animation: none; } }
+
+/* ═════════════════════ Sala v2 (Sala v2.dc.html): rejilla, cartas, herramientas, barra ═════════════════════ */
+.app .batalla {
+  grid-template-columns: 280px minmax(0, 1fr) 320px;
+  grid-template-rows: 104px minmax(0, 1fr) 64px;
+  gap: 12px; height: calc(100dvh - 60px); padding: 12px 20px; overflow: hidden;
+}
+.app .zona-carril { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 8px 12px; min-height: 0; overflow: hidden; }
+.app .zona-carril .carril-pista { min-height: 0; height: 84px; gap: 6px; }
+.app .zona-carril .casilla { background: var(--panel-hundido); border: 1px solid var(--borde); border-radius: 10px; }
+.app .zona-herramientas, .app .zona-mano, .app .zona-lienzo { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 12px; min-height: 0; }
+.app .zona-herramientas { overflow-y: auto; gap: 6px; }
+.app .zona-mano { overflow-y: auto; gap: 8px; }
+.app .zona-lienzo { overflow: hidden; }
+.app .zona-lienzo .lienzo { background: var(--panel-hundido) radial-gradient(ellipse at 50% 30%, rgba(26,42,88,.9), transparent 70%); border: 1px solid var(--borde); border-radius: 12px; min-height: 0; }
+.app .zona-acciones { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 0 12px; margin: 0; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 12px; min-height: 0; }
+.app .zona-acciones .btn.primario.grande { margin-left: auto; min-height: 44px; padding: 0 26px; font-size: 16px; border-radius: 12px; }
+.app .zona-acciones .cuenta { margin: 0 auto; }
+/* herramientas como fichas: glifo grande + nombre en una línea (12 × 40 px caben en 536) */
+.app .herr-v { background: var(--panel-hundido); border: 1px solid var(--borde); border-radius: 10px; padding: 6px 10px; min-height: 40px; color: var(--texto); }
+.app .herr-v .glifo { font-size: 20px; width: 26px; text-align: center; color: var(--descubierto); }
+.app .herr-v.activa { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento) inset; }
+.app .herr-v:disabled, .app .herr-v[aria-disabled="true"] { opacity: .45; }
+/* la carta de la Mano (Carta.dc.html): título, descripción de dos líneas y clase abajo */
+.app .lista-mano { display: flex; flex-direction: column; gap: 8px; }
+.app .renglon { display: flex; flex-direction: column; gap: 4px; background: #1A2A58; border: 1px solid var(--borde); border-radius: 12px; padding: 10px 12px; color: var(--texto); min-height: 72px; text-align: left; }
+.app .renglon:hover { border-color: var(--descubierto); }
+.app .renglon.activa { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento) inset, 0 0 16px rgba(255,106,26,.25); }
+.app .renglon .nom { font-size: 14px; font-weight: 700; line-height: 1.25; }
+.app .renglon .desc { font-size: 12px; line-height: 1.35; color: var(--texto-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.app .renglon .tt { order: 3; align-self: flex-start; font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; background: var(--panel-hundido); border: 1px solid var(--borde); border-radius: 999px; padding: 2px 8px; margin-top: 2px; }
+.app .renglon .marca { font-size: 10px; color: var(--dominar); }
+/* móvil: carril compacto, mesa al centro, herramientas en fila, Mano como bandeja, Afirmar fijo */
+@media (max-width: 720px) {
+  .app .batalla { grid-template-columns: 1fr; grid-template-rows: 72px minmax(0, 1fr) 48px 150px 56px; grid-template-areas: "carril" "lienzo" "herr" "mano" "acc"; padding: 8px; gap: 8px; height: calc(100dvh - 56px); }
+  .app .zona-carril .carril-pista { height: 56px; }
+  .app .zona-herramientas { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding: 4px 8px; }
+  .app .herr-v { flex: 0 0 auto; min-width: 44px; }
+  .app .herr-v .nom, .app .herr-v .tt { display: none; }
+  .app .zona-mano { padding: 8px; }
+  .app .lista-mano { flex-direction: row; overflow-x: auto; }
+  .app .renglon { flex: 0 0 160px; min-height: 100px; }
+  .app .zona-acciones { padding: 0 8px; }
+}

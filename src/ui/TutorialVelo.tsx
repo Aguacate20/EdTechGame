@@ -7,7 +7,9 @@ import { useEffect, useRef, useState } from 'react'
  *  mientras el tutorial está activo (las zonas se mueven al arrastrar). */
 interface Rect { x: number; y: number; w: number; h: number }
 
-export function TutorialVelo({ burbuja }: { burbuja: React.RefObject<HTMLElement | null> }) {
+const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro' }
+
+export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[] } | null }) {
   const [rects, setRects] = useState<Rect[]>([])
   const [bubble, setBubble] = useState<Rect | null>(null)
   const vivo = useRef(true)
@@ -15,7 +17,12 @@ export function TutorialVelo({ burbuja }: { burbuja: React.RefObject<HTMLElement
     vivo.current = true
     const medir = () => {
       if (!vivo.current) return
-      const els = Array.from(document.querySelectorAll<HTMLElement>('.batalla.con-foco .destacada'))
+      // anclas con nombre fijo (data-tutorial / data-uid / data-herramienta); si no hay, la clase de siempre
+      const sel: string[] = []
+      if (foco?.zona && ZONA_A_ANCLA[foco.zona]) sel.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
+      for (const u of foco?.piezas ?? []) sel.push(`[data-uid="${u}"]`)
+      for (const h of foco?.herramientas ?? []) sel.push(`[data-herramienta="${h}"]`)
+      const els = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))
       const nuevos = els.map((el) => { const r = el.getBoundingClientRect(); return { x: r.left - 6, y: r.top - 6, w: r.width + 12, h: r.height + 12 } })
         .filter((r) => r.w > 20 && r.h > 20)
       setRects((prev) => (JSON.stringify(prev) === JSON.stringify(nuevos) ? prev : nuevos))
@@ -26,7 +33,7 @@ export function TutorialVelo({ burbuja }: { burbuja: React.RefObject<HTMLElement
     }
     requestAnimationFrame(medir)
     return () => { vivo.current = false }
-  }, [burbuja])
+  }, [burbuja, foco])
 
   const W = window.innerWidth, H = window.innerHeight
   // conector: del borde de la burbuja al punto más cercano del primer recorte

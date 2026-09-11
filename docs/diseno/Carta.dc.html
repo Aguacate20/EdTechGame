@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#060B1F;color:#F3F6FF;font-family:Manrope,system-ui,sans-serif}a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+@keyframes sala-brasa{0%,100%{box-shadow:0 0 10px rgba(255,106,26,.35)}50%{box-shadow:0 0 22px rgba(255,106,26,.7)}}</style>
+</helmet>
+<section style="padding:40px;display:flex;flex-direction:column;gap:28px">
+  <div><div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Componente · Carta de concepto</div><div style="font-size:13px;color:#9AA7C7;margin-top:4px">Variables: --panel #15224A · --panel-2 #0F1A3C · --borde #24335E · --acento #FF6A1A · --descubierto #38B6FF · --sostenido #5BD36F · --dominar #FFC23D · --resiste #FF5A5A · --texto-2 #9AA7C7 · radio 12 · borde 1,5 px</div></div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <sc-for list="{{ estados }}" as="e" hint-placeholder-count="10">
+      <div style="display:flex;flex-direction:column;gap:8px;width:{{ e.ancho }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9AA7C7">{{ e.id }} · {{ e.nombre }}</div>
+        <div style="position:relative;width:{{ e.ancho }};min-height:{{ e.alto }};background:{{ e.fondo }};border:1.5px {{ e.trazo }} {{ e.borde }};border-radius:12px;padding:{{ e.pad }};display:flex;flex-direction:column;gap:5px;box-sizing:border-box;box-shadow:{{ e.sombra }};opacity:{{ e.op }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span style="font-weight:{{ e.peso }};font-size:{{ e.tam }};line-height:1.2;text-decoration:{{ e.tachado }};color:{{ e.tituloColor }}">{{ e.titulo }}</span><sc-if value="{{ e.lente }}" hint-placeholder-val="{{ false }}"><span title="Favorecida por Lente crítica" style="color:#FFC23D;font-size:12px">✦</span></sc-if></div>
+          <sc-if value="{{ e.desc }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:{{ e.descColor }};line-height:1.35;text-decoration:{{ e.descTachado }}">{{ e.desc }}</div></sc-if>
+          <sc-if value="{{ e.verdad }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#FF8A8A;font-weight:700">↳ descripción de <span style="color:#F3F6FF">Impacto cultural</span></div></sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto"><span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:{{ e.claseColor }};font-weight:700">{{ e.clase }}</span><sc-if value="{{ e.pill }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 7px;border-radius:999px;border:1px solid {{ e.pillColor }};color:{{ e.pillColor }};font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">{{ e.pill }}</span></sc-if></div>
+          <sc-if value="{{ e.acciones }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:4px;margin-top:2px;flex-wrap:wrap">
+              <span style="flex:1;text-align:center;padding:6px 8px;border-radius:7px;border:1px solid #38B6FF;background:rgba(56,182,255,.1);color:#38B6FF;font-size:11px;font-weight:700">Poner en la mesa</span>
+              <span style="padding:6px 8px;border-radius:7px;border:1px solid #24335E;color:#9AA7C7;font-size:11px;font-weight:600">Cambiar</span>
+              <span style="padding:6px 8px;border-radius:7px;border:1px solid rgba(255,106,26,.6);color:#FF6A1A;font-size:11px;font-weight:700">Quemar</span>
+            </div>
+          </sc-if>
+        </div>
+        <div style="font-size:12px;color:#9AA7C7;line-height:1.4">{{ e.nota }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div><div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700"><span style="color:#FF6A1A">·· ·</span> Variantes por clase</div></div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <sc-for list="{{ clases }}" as="e" hint-placeholder-count="6">
+      <div style="display:flex;flex-direction:column;gap:8px;width:{{ e.ancho }}">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9AA7C7">{{ e.id }} · {{ e.nombre }}</div>
+        <div style="width:{{ e.ancho }};min-height:{{ e.alto }};background:#0F1A3C;border:1.5px solid #24335E;border-radius:{{ e.radio }};padding:8px 10px;display:flex;flex-direction:column;gap:5px;box-sizing:border-box">
+          <span style="font-weight:{{ e.peso }};font-size:{{ e.tam }};line-height:1.25">{{ e.titulo }}</span>
+          <sc-if value="{{ e.desc }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#9AA7C7;line-height:1.35">{{ e.desc }}</div></sc-if>
+          <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:{{ e.claseColor }};font-weight:700;margin-top:auto">{{ e.clase }}</span>
+        </div>
+        <div style="font-size:12px;color:#9AA7C7;line-height:1.4">{{ e.nota }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9AA7C7">medias cartas que encajan</div>
+      <div style="display:flex;align-items:stretch">
+        <div style="width:150px;background:#0F1A3C;border:1.5px solid #24335E;border-right:1.5px dashed #38B6FF;border-radius:12px 0 0 12px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;box-sizing:border-box"><span style="font-weight:800;font-size:13px">Literatura juvenil</span><span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#38B6FF;font-weight:700;margin-top:auto">etiqueta</span></div>
+        <div style="width:26px;display:grid;place-items:center;background:#15224A;border-top:1.5px solid #38B6FF;border-bottom:1.5px solid #38B6FF;font-family:'JetBrains Mono',monospace;color:#38B6FF;font-weight:600">=</div>
+        <div style="width:200px;background:#0F1A3C;border:1.5px solid #24335E;border-left:0;border-radius:0 12px 12px 0;padding:8px 10px;display:flex;flex-direction:column;gap:5px;box-sizing:border-box"><span style="font-weight:500;font-size:11px;line-height:1.35;color:#F3F6FF">Género literario dirigido a lectores adolescentes, con protagonistas de su edad y conflictos de identidad</span><span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-top:auto">definición</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#9AA7C7">pozo · brasero</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:10px;border:1px dashed rgba(255,106,26,.5);width:220px;box-sizing:border-box"><span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 50% 70%,#FF6A1A 0 30%,#7A2E0A 60%,#2A1A12 100%);animation:sala-brasa 2.4s ease-in-out infinite"></span><div style="line-height:1.2"><div style="font-size:12px;font-weight:700">Pozo</div><div style="font-size:10px;color:#9AA7C7">Arrastra aquí la carta que sospeches</div></div></div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CS = { titulo: 'Crítica social', desc: 'Análisis y cuestionamiento de estructuras sociales a través de la obra literaria', clase: 'concepto' };
+const base = o => Object.assign({ ancho: '200px', alto: '120px', pad: '8px 10px', fondo: '#0F1A3C', trazo: 'solid', borde: '#24335E', sombra: 'none', op: 1, peso: 800, tam: '13px', tachado: 'none', tituloColor: '#F3F6FF', descColor: '#9AA7C7', descTachado: 'none', claseColor: '#38B6FF', lente: false, pill: false, pillColor: '#38B6FF', acciones: false, verdad: false }, CS, o);
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      estados: [
+        base({ id: '1a', nombre: 'Mano · reposo', nota: '200×~120. Título 13/800, descripción 11 en --texto-2, clase abajo en mayúsculas 9 px.' }),
+        base({ id: '1b', nombre: 'Mano · al pasar', alto: '160px', borde: '#FF6A1A', acciones: true, nota: 'Borde --acento; aparecen Poner en la mesa, Cambiar y Quemar. En móvil, al tocar.' }),
+        base({ id: '1c', nombre: 'Mesa · compacta', ancho: '150px', alto: '64px', fondo: '#15224A', desc: '', nota: '150×~64: solo título (2 líneas máx.) y clase. Se hace más compacta si la mesa se llena.' }),
+        base({ id: '1d', nombre: 'Mesa · seleccionada', ancho: '150px', alto: '64px', fondo: '#15224A', desc: '', borde: '#FF6A1A', sombra: '0 0 14px rgba(255,106,26,.5)', nota: 'Primera carta tocada con una herramienta activa. Brillo naranja 14 px.' }),
+        base({ id: '1e', nombre: 'Mesa · dentro de un trazo', ancho: '150px', alto: '64px', fondo: '#15224A', desc: '', borde: '#38B6FF', pill: '→ apoya', nota: 'Borde --descubierto. La pastilla del glifo va en el punto medio de la línea, no en la carta.' }),
+        base({ id: '1f', nombre: 'Mesa · pendiente de tipo', ancho: '150px', alto: '64px', fondo: '#15224A', desc: '', trazo: 'dashed', borde: '#E0A33A', pill: 'sin tipo', pillColor: '#E0A33A', nota: 'Flecha o Eje sin parámetro: borde y trazo ámbar punteados. Afirmar queda deshabilitado.' }),
+        base({ id: '1g', nombre: 'Apócrifa revelada', alto: '130px', titulo: 'Simbolismo', desc: 'Efectos y repercusiones que una obra genera en la sociedad y en la cultura', borde: '#FF5A5A', descTachado: 'line-through', verdad: true, nota: 'Borde --resiste; descripción tachada y el nombre verdadero al lado. Hasta aquí se veía como concepto.' }),
+        base({ id: '1h', nombre: 'Quemada · ceniza', titulo: 'Simbolismo', desc: 'Efectos y repercusiones que una obra genera en la sociedad y en la cultura', fondo: '#111827', borde: '#2A3142', op: .55, tituloColor: '#9AA7C7', descColor: '#6F7DA3', claseColor: '#6F7DA3', pill: '+1 ventaja', pillColor: '#FF6A1A', nota: 'Gris, 55 % de opacidad. La pastilla dice el efecto: +1 ventaja si era apócrifa, −8 vida si era buena.' }),
+        base({ id: '1i', nombre: 'Favorecida por una lente', lente: true, nota: 'Chispa ✦ en --dominar junto al título. Tooltip: qué lente y cuánto suma.' }),
+        base({ id: '1j', nombre: 'Móvil · bandeja', ancho: '160px', alto: '100px', nota: '160×~100 en la bandeja inferior; descripción a 3 líneas.' })
+      ],
+      clases: [
+        { id: '2a', nombre: 'concepto', titulo: 'Empoderamiento', desc: 'Capacidad de los lectores para actuar sobre su realidad tras la lectura.', clase: 'concepto', claseColor: '#38B6FF', ancho: '200px', alto: '120px', radio: '12px', peso: 800, tam: '13px', nota: 'Nombre + descripción.' },
+        { id: '2b', nombre: 'caso', titulo: 'Saludo de tres dedos en movimientos reales', desc: 'Manifestantes en Tailandia y Hong Kong adoptaron el gesto de la trilogía como símbolo de resistencia.', clase: 'caso', claseColor: '#5BD36F', ancho: '200px', alto: '140px', radio: '12px', peso: 800, tam: '13px', nota: 'Más texto: título a 2 líneas, descripción a 3.' },
+        { id: '2c', nombre: 'tesis', titulo: 'La trilogía funciona como herramienta de empoderamiento y conciencia social', desc: 'Afirmación defendible. Se ancla con casos y se pone en balanza con objeciones.', clase: 'tesis', claseColor: '#FFC23D', ancho: '200px', alto: '140px', radio: '12px', peso: 700, tam: '12px', nota: 'Título largo en 12/700.' },
+        { id: '2d', nombre: 'criterio', titulo: 'Criterio de refutación', desc: 'Datos que indiquen que la mayoría de los lectores no reportan cambios en su percepción social.', clase: 'criterio', claseColor: '#E0A33A', ancho: '200px', alto: '120px', radio: '12px', peso: 800, tam: '13px', nota: '' },
+        { id: '2e', nombre: 'marco', titulo: 'Herramienta de crítica social', desc: 'Lectura de la literatura juvenil como instrumento para cuestionar el orden social.', clase: 'marco', claseColor: '#9B6CFF', ancho: '200px', alto: '120px', radio: '12px', peso: 800, tam: '13px', nota: '' },
+        { id: '2f', nombre: 'intuición cotidiana', titulo: 'Los libros para jóvenes son solo entretenimiento', desc: 'Suena a concepto. Eco de intuición la devuelve como si lo fuera.', clase: 'intuición cotidiana', claseColor: '#F08AB8', ancho: '200px', alto: '120px', radio: '12px', peso: 800, tam: '13px', nota: 'Mismo formato que concepto: el color de clase es la única pista.' },
+        { id: '2g', nombre: 'subdimensión', titulo: 'Protagonista femenina fuerte y compleja', desc: 'Parte de Elementos narrativos.', clase: 'subdimensión', claseColor: '#38B6FF', ancho: '200px', alto: '120px', radio: '12px', peso: 800, tam: '13px', nota: '' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

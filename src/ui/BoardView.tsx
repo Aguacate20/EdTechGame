@@ -367,7 +367,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
       )}
 
-      {guia && <TutorialVelo burbuja={burbujaRef} />}
+      {guia && <TutorialVelo burbuja={burbujaRef} foco={guia.foco ?? null} />}
       {guia && (
         <aside
           ref={burbujaRef}
@@ -401,7 +401,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         >{ayuda.texto}</div>
       )}
       {/* ============================ carril ============================ */}
-      <div className="zona-carril">
+      <div data-tutorial="carril" className="zona-carril">
         <div className="parte-frente">
           <span className="dato silencio">
             El frente aguanta <strong>{vivos(e).reduce((n, x) => n + x.hp, 0)}</strong>
@@ -435,7 +435,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </div>
 
       {/* ========================= herramientas ========================= */}
-      <aside className={`zona-herramientas${zona('herramientas')}`}>
+      <aside data-tutorial="herramientas" className={`zona-herramientas${zona('herramientas')}`}>
         <span className="eyebrow">Herramientas</span>
         {listaHerramientas.map((t) => {
           const quedan = e.herramientas.filter((x) => x === t.id).length -
@@ -445,6 +445,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           return (
             <button
               key={t.id}
+              data-herramienta={t.id}
               className={`herr-v${herramienta === t.id ? ' activa' : ''}${senalada ? ' senala' : ''}`}
               disabled={!disponible}
               onClick={() => { if (herramienta === t.id) reset(); else { setHerramienta(t.id); setParam(null); setPendientes([]) } }}
@@ -491,7 +492,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main className={`zona-lienzo${zona('lienzo')}`}>
+      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}`}>
         {(() => {
           const ol = oleadaActual(e)
           if (!ol) return null
@@ -839,7 +840,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </main>
 
       {/* ============================== mano ============================== */}
-      <aside className={`zona-mano${zona('mano') || zona('pozo')}`}>
+      <aside data-tutorial="mano" className={`zona-mano${zona('mano') || zona('pozo')}`}>
         <div className="fila" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="eyebrow">Mano</span>
           <span className="fila" style={{ gap: 8 }}>
@@ -873,6 +874,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             return (
               <div
                 key={p.uid}
+                data-uid={p.uid}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
@@ -893,6 +895,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               >
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
+                {p.cuerpo && <span className="desc">{recorte(p.cuerpo, 120)}</span>}
                 {cd.canto && <span className="marca">umbral</span>}
               </div>
             )
@@ -925,10 +928,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       )}
 
       {/* ============================ acciones ============================ */}
-      <footer className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
+      <footer data-tutorial="pozo" className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
         {!resuelto ? (
           <>
             <button
+              data-tutorial="afirmar"
               className={`btn primario grande${zona('afirmar') ? ' senala' : ''}`}
               onClick={on.afirmar} disabled={e.trazos.length === 0}
             >

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.51
+# LudusCog · El Archivo Infinito — v5.52
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,20 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## La Sala v2 (v5.52)
+
+Primera pasada de `docs/diseno/Sala v2.dc.html` sobre el tablero real: rejilla 280 · 1fr ·
+320 con el carril arriba (104 px) y la barra de acciones abajo (64 px), todo en una
+pantalla sin desplazamiento de página (solo herramientas y Mano se desplazan por dentro);
+las cartas de la Mano según `Carta.dc.html` (título, descripción de dos líneas, clase como
+pastilla; la seleccionada en naranja); herramientas como fichas de 40 px con glifo grande;
+móvil con el carril compacto, la mesa al centro, las herramientas en fila y la Mano como
+bandeja horizontal. **Anclas fijas del tutorial** (`data-tutorial`: carril, herramientas,
+mesa, mano, pozo, afirmar; `data-uid` en cada carta; `data-herramienta` en cada ficha): el
+velo mide esas anclas y ya no depende de clases ni de la disposición. Queda para la
+siguiente pasada: el veredicto dibujado sobre los trazos de la mesa y la cuenta dentro de
+la barra inferior, el brasero del pozo y la pantalla del encargo como tarjetas.
 
 ## Tutorial que recorta de verdad, y palabras del jugador (v5.51)
 

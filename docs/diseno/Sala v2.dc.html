@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+html,body{height:100%}
+body{margin:0;background:#0A1230 radial-gradient(ellipse 90% 60% at 50% 0%,#12204A,#0A1230 70%);color:#F3F6FF;font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+a{color:#38B6FF;text-decoration:none}a:hover{color:#F3F6FF}
+:focus-visible{outline:2px solid #FF6A1A;outline-offset:2px;border-radius:6px}
+button{font-family:inherit;cursor:pointer}
+@keyframes sala-flota{0%{opacity:0;transform:translate(-50%,6px)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-26px)}}
+@keyframes sala-pulso{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes sala-derriba{to{opacity:0;filter:blur(6px);transform:scale(.9)}}
+@keyframes sala-brasa{0%,100%{box-shadow:0 0 10px rgba(255,106,26,.35)}50%{box-shadow:0 0 22px rgba(255,106,26,.7)}}
+</style>
+</helmet>
+
+<div ref="{{ raiz }}" data-screen-label="Sala · {{ escena }}" style="position:relative;height:{{ alto }};display:grid;grid-template-rows:{{ filas }};overflow:hidden;background:#0A1230;box-sizing:border-box">
+
+  <header style="display:flex;align-items:center;gap:20px;padding:0 20px;border-bottom:1px solid #24335E;background:rgba(21,34,74,.55);min-width:0">
+    <a href="Inicio.dc.html" style="display:flex;align-items:center;gap:10px;color:#F3F6FF;flex:none">
+      <span style="width:30px;height:30px;border-radius:50%;border:1.5px solid #38B6FF;display:grid;place-items:center;position:relative"><span style="width:9px;height:9px;border-radius:50%;background:#FF6A1A;box-shadow:0 0 12px #FF6A1A"></span><span style="position:absolute;top:-3px;right:3px;width:5px;height:5px;border-radius:50%;background:#FFC23D"></span></span>
+      <span style="display:flex;flex-direction:column;line-height:1"><span style="font-weight:800;font-size:18px">Ludus<span style="color:#FF6A1A">Cog</span></span><sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}"><span style="font-size:8px;letter-spacing:.18em;color:#9AA7C7;text-transform:uppercase;margin-top:3px">aprender · entender · avanzar</span></sc-if></span>
+    </a>
+    <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;gap:2px">
+        <a href="Inicio.dc.html" style="padding:6px 12px;color:#9AA7C7;font-weight:600;font-size:13px" style-hover="color:#F3F6FF">Expedición</a>
+        <a href="Sala v2.dc.html" style="padding:6px 12px;color:#F3F6FF;font-weight:700;font-size:13px;border-bottom:2px solid #FF6A1A">Misión</a>
+        <a href="Coleccion.dc.html" style="padding:6px 12px;color:#9AA7C7;font-weight:600;font-size:13px" style-hover="color:#F3F6FF">Colección</a>
+        <a href="Sintesis.dc.html" style="padding:6px 12px;color:#9AA7C7;font-weight:600;font-size:13px" style-hover="color:#F3F6FF">Taller</a>
+        <a href="Coleccion.dc.html" style="padding:6px 12px;color:#9AA7C7;font-weight:600;font-size:13px" style-hover="color:#F3F6FF">Logros</a>
+      </nav>
+    </sc-if>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0">
+      <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid #24335E;border-radius:10px;background:#15224A;font-size:12px"><span style="color:#9AA7C7;font-weight:600">Lucidez</span><span style="width:26px;height:26px;border-radius:50%;background:conic-gradient(#FF6A1A 72%,#24335E 0);display:grid;place-items:center"><span style="width:20px;height:20px;border-radius:50%;background:#15224A;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:600">72</span></span></div>
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid #24335E;border-radius:10px;background:#15224A;font-size:12px"><span style="color:#9AA7C7;font-weight:600">Hallazgos</span><span style="color:#38B6FF">◆</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600">128</span></div>
+      </sc-if>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border:1px solid #24335E;border-radius:10px;background:#15224A">
+        <div style="width:28px;height:28px;border-radius:8px;background:repeating-linear-gradient(45deg,#1B2B5A 0 4px,#15224A 4px 8px);border:1px solid #24335E"></div>
+        <div style="line-height:1.15"><div style="font-weight:700;font-size:13px">Ana Sofía</div><div style="font-size:10px;color:#9AA7C7">Nv 12 · <span style="font-family:'JetBrains Mono',monospace">1250/2000</span></div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Carril -->
+  <section data-tutorial="carril" style="position:relative;display:grid;grid-template-columns:{{ colsCarril }};gap:8px;padding:{{ padCarril }};min-width:0;min-height:0">
+    <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:2px;left:26px;z-index:3;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">carril</span></sc-if>
+    <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:{{ padVida }};display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#9AA7C7"><span>Turno</span><span style="font-family:'JetBrains Mono',monospace;color:#F3F6FF">{{ turno }}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#9AA7C7"><span>Tu vida</span><span style="font-family:'JetBrains Mono',monospace;color:#F3F6FF">{{ vida }}</span></div>
+      <div style="height:5px;background:#24335E;border-radius:3px;overflow:hidden"><div style="width:{{ vida }}%;height:100%;background:#5BD36F;border-radius:3px"></div></div>
+    </div>
+    <div style="background:#15224A;border:1px solid #24335E;border-radius:12px;padding:8px 10px;display:grid;grid-template-columns:repeat(6,minmax({{ minCelda }},1fr));gap:6px;align-items:stretch;overflow-x:auto;overflow-y:hidden;min-width:0">
+      <sc-for list="{{ celdas }}" as="c" hint-placeholder-count="6">
+        <div style="position:relative;border-radius:8px;border:1px {{ c.trazo }} {{ c.borde }};background:{{ c.fondo }};padding:6px 8px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;animation:{{ c.anim }}">
+          <sc-if value="{{ c.vacia }}" hint-placeholder-val="{{ true }}"><span style="font-size:9px;color:#6F7DA3;text-align:center;letter-spacing:.08em;text-transform:uppercase;line-height:1.3">{{ c.nota }}</span></sc-if>
+          <sc-if value="{{ c.entidad }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span style="font-weight:800;font-size:12px;color:#B79BFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.nombre }}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap">{{ c.hp }}/{{ c.max }}</span></div>
+            <div style="height:4px;background:#24335E;border-radius:2px;overflow:hidden"><div style="width:{{ c.pct }};height:100%;background:#FF5A5A;border-radius:2px;transition:width .6s"></div></div>
+            <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}"><div style="font-size:10px;color:#9AA7C7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.patron }}</div></sc-if>
+            <span title="Turnos hasta que golpea" style="position:absolute;top:-7px;right:-5px;width:20px;height:20px;border-radius:50%;background:{{ c.cuentaFondo }};color:{{ c.cuentaColor }};border:1px solid {{ c.cuentaBorde }};font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;display:grid;place-items:center;animation:{{ c.cuentaAnim }}">{{ c.cuenta }}</span>
+            <sc-if value="{{ c.golpe }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:50%;top:-4px;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-weight:600;color:#FFC23D;font-size:15px;animation:sala-flota 1.8s ease-out infinite">−{{ c.golpe }}</span></sc-if>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Cuerpo -->
+  <main style="display:grid;grid-template-columns:{{ cols }};grid-template-rows:{{ filasCuerpo }};gap:{{ gapCuerpo }};padding:{{ padCuerpo }};min-height:0;min-width:0">
+
+    <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+      <aside style="display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:8px;min-height:0;min-width:0">
+        <section data-tutorial="herramientas" style="position:relative;background:#15224A;border:1px solid #24335E;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px;min-height:0;overflow:hidden">
+          <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;left:10px;z-index:2;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">herramientas</span></sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;flex:none"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Herramientas</span><span style="font-size:10px;color:#9AA7C7;font-family:'JetBrains Mono',monospace">3 / 12</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px;overflow-y:auto;min-height:0">
+            <sc-for list="{{ herramientas }}" as="h" hint-placeholder-count="12">
+              <button onClick="{{ h.elegir }}" disabled="{{ h.bloq }}" title="{{ h.tip }}" style="display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:8px;padding:3px 8px 3px 3px;border-radius:9px;border:1px solid {{ h.borde }};background:{{ h.fondo }};color:{{ h.color }};text-align:left;height:40px;flex:none;cursor:{{ h.cursor }};box-sizing:border-box" style-hover="border-color:#9AA7C7">
+                <span style="width:30px;height:30px;border-radius:7px;background:#0F1A3C;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:{{ h.glifoColor }}">{{ h.glifo }}</span>
+                <span style="min-width:0;line-height:1.15"><span style="display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.nombre }}</span><sc-if value="{{ h.bloq }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:9px;color:#6F7DA3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.desbloqueo }}</span></sc-if></span>
+                <sc-if value="{{ h.bloq }}" hint-placeholder-val="{{ false }}"><svg width="10" height="12" viewBox="0 0 10 12" aria-hidden="true"><rect x="1" y="5" width="8" height="6" rx="1.5" fill="#6F7DA3"/><path d="M3 5V3.5a2 2 0 0 1 4 0V5" fill="none" stroke="#6F7DA3" stroke-width="1.3"/></svg></sc-if>
+              </button>
+            </sc-for>
+          </div>
+        </section>
+        <sc-if value="{{ hayParametro }}" hint-placeholder-val="{{ false }}">
+          <section data-tutorial="parametro" style="position:relative;background:#15224A;border:1px solid #24335E;border-radius:12px;padding:8px 10px">
+            <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;left:10px;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">parametro</span></sc-if>
+            <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;margin-bottom:6px">Tipo de vínculo</div>
+            <div style="display:flex;gap:3px;flex-wrap:wrap">
+              <sc-for list="{{ parametros }}" as="p" hint-placeholder-count="8">
+                <button onClick="{{ p.elegir }}" style="padding:3px 8px;border-radius:999px;border:1px solid {{ p.borde }};background:{{ p.fondo }};color:{{ p.color }};font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;min-height:24px">{{ p.nombre }}</button>
+              </sc-for>
+            </div>
+          </section>
+        </sc-if>
+        <section data-tutorial="pasivas" style="position:relative;background:#15224A;border:1px solid #24335E;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:6px">
+          <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;left:10px;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">pasivas</span></sc-if>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;width:48px">Pasivas</span><span title="El Copista: copia un trazo sostenido al turno siguiente" style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;border:1px solid #24335E;font-size:11px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:#9B6CFF"></span>El Copista</span><span title="Lente crítica: las cartas de crítica social valen +2 fichas" style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;border:1px solid #24335E;font-size:11px;font-weight:600"><span style="color:#FFC23D">✦</span>Lente crítica</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700;width:48px">Sellos</span><span title="Apuesta por un trazo: si se sostiene multiplica, si falla penaliza" style="width:22px;height:22px;border-radius:50%;border:1px dashed #24335E;display:grid;place-items:center;font-size:10px;color:#6F7DA3">◎</span><span style="width:22px;height:22px;border-radius:50%;border:1px dashed #24335E"></span><span style="font-size:10px;color:#6F7DA3">2 disponibles</span></div>
+        </section>
+      </aside>
+    </sc-if>
+
+    <!-- Mesa -->
+    <section style="display:grid;grid-template-rows:auto minmax(0,1fr);gap:6px;min-height:0;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px;font-size:11px;min-width:0">
+        <span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Encargo</span>
+        <span style="padding:3px 9px;border-radius:999px;border:1px solid #24335E;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ encargoNombre }}</span>
+        <span style="font-family:'JetBrains Mono',monospace;color:#9AA7C7;white-space:nowrap">{{ encargoProgreso }}</span>
+        <span style="margin-left:auto;color:#9AA7C7;white-space:nowrap">Cumplirlo cura</span>
+      </div>
+      <div data-tutorial="mesa" style="position:relative;min-height:0;background:#1A2A58 radial-gradient(1px 1px at 20% 30%,rgba(243,246,255,.35),transparent),radial-gradient(1px 1px at 70% 60%,rgba(243,246,255,.3),transparent),radial-gradient(1px 1px at 45% 85%,rgba(56,182,255,.35),transparent),radial-gradient(1.5px 1.5px at 85% 20%,rgba(243,246,255,.3),transparent),radial-gradient(1px 1px at 10% 75%,rgba(243,246,255,.25),transparent);border:1px solid #2A3D73;border-radius:12px;overflow:hidden">
+        <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:8px;left:10px;z-index:3;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">mesa</span></sc-if>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" aria-hidden="true">
+          <sc-for list="{{ trazos }}" as="t" hint-placeholder-count="0"><line x1="{{ t.x1 }}" y1="{{ t.y1 }}" x2="{{ t.x2 }}" y2="{{ t.y2 }}" stroke="{{ t.color }}" stroke-width="2" stroke-dasharray="{{ t.dash }}" vector-effect="non-scaling-stroke"/></sc-for>
+        </svg>
+        <sc-for list="{{ trazos }}" as="t" hint-placeholder-count="0">
+          <span style="position:absolute;left:{{ t.mx }}%;top:{{ t.my }}%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:#15224A;border:1px solid {{ t.color }};color:{{ t.color }};font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 0 10px {{ t.color }}44">
+            <span style="font-size:14px">{{ t.glifo }}</span>{{ t.etiqueta }}<sc-if value="{{ t.estado }}" hint-placeholder-val="{{ false }}"><span style="font-family:Manrope,sans-serif;font-weight:700;padding-left:5px;border-left:1px solid {{ t.color }}55">{{ t.estado }}</span></sc-if>
+          </span>
+        </sc-for>
+        <sc-for list="{{ piezas }}" as="p" hint-placeholder-count="0">
+          <button onClick="{{ p.tocar }}" style="position:absolute;left:{{ p.x }}%;top:{{ p.y }}%;transform:translate(-50%,-50%);width:{{ anchoPieza }};min-height:64px;padding:8px 10px;border-radius:10px;background:#15224A;border:1.5px solid {{ p.borde }};color:#F3F6FF;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:4px;box-shadow:{{ p.sombra }};box-sizing:border-box">
+            <span style="font-weight:{{ p.peso }};font-size:{{ p.tam }};line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ p.titulo }}</span>
+            <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:{{ p.claseColor }};font-weight:700">{{ p.clase }}</span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ mesaVacia }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;inset:0;display:grid;place-items:center;color:#6F7DA3;font-size:13px;pointer-events:none">La mesa está vacía</div></sc-if>
+        <sc-if value="{{ pideTipo }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:12px;bottom:12px;padding:5px 10px;border-radius:8px;background:#15224A;border:1px solid #E0A33A;font-size:12px;color:#E0A33A;font-weight:600">Elige el tipo de vínculo {{ dondeParametro }}</div></sc-if>
+        <sc-if value="{{ hayHerramienta }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:12px;top:12px;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:rgba(255,106,26,.12);border:1px solid rgba(255,106,26,.5);color:#FF6A1A;font-size:12px;font-weight:700"><span style="font-family:'JetBrains Mono',monospace">{{ herrGlifo }}</span>{{ herrNombre }}<span style="color:#9AA7C7;font-weight:500">· toca dos cartas</span></div></sc-if>
+        <sc-if value="{{ hayVeredicto }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:4px;pointer-events:none">
+            <sc-for list="{{ veredictos }}" as="v" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;background:rgba(21,34,74,.92);border:1px solid #24335E;font-size:12px;min-width:0">
+                <span style="padding:1px 8px;border-radius:999px;background:{{ v.fondo }};border:1px solid {{ v.color }};color:{{ v.color }};font-size:11px;font-weight:700;white-space:nowrap">{{ v.estado }}</span>
+                <span style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.a }} <span style="font-family:'JetBrains Mono',monospace;color:{{ v.color }};font-weight:600">{{ v.op }}</span> {{ v.b }}</span>
+                <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}"><span style="color:#9AA7C7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">· {{ v.nota }}</span></sc-if>
+                <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;white-space:nowrap">{{ v.fichas }} fichas</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <!-- Mano escritorio -->
+    <sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}">
+      <aside data-tutorial="mano" style="position:relative;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;min-height:0;min-width:0;background:#15224A;border:1px solid #24335E;border-radius:12px;padding:10px;box-sizing:border-box">
+        <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;left:10px;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">mano</span></sc-if>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Mano</span><span style="font-size:10px;color:#9AA7C7;font-family:'JetBrains Mono',monospace">{{ nMano }} cartas · cambios 1/2</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;padding-top:2px">
+          <sc-for list="{{ mano }}" as="c" hint-placeholder-count="6">
+            <div data-tutorial="{{ c.ancla }}" onMouseEnter="{{ c.entrar }}" onMouseLeave="{{ c.salir }}" onClick="{{ c.alternar }}" style="position:relative;flex:none;background:#0F1A3C;border:1.5px solid {{ c.borde }};border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;cursor:pointer;box-sizing:border-box;transition:border-color .15s;opacity:{{ c.op }}">
+              <sc-if value="{{ c.anclaVisible }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;right:10px;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">apocrifa</span></sc-if>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span style="font-weight:800;font-size:13px;line-height:1.2">{{ c.titulo }}</span><sc-if value="{{ c.lente }}" hint-placeholder-val="{{ false }}"><span title="Favorecida por Lente crítica" style="color:#FFC23D;font-size:12px">✦</span></sc-if></div>
+              <sc-if value="{{ c.hayDesc }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#9AA7C7;line-height:1.35;display:-webkit-box;-webkit-line-clamp:{{ c.lineas }};-webkit-box-orient:vertical;overflow:hidden">{{ c.desc }}</div></sc-if>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:{{ c.claseColor }};font-weight:700">{{ c.clase }}</span></div>
+              <sc-if value="{{ c.abierta }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:4px;margin-top:2px;flex-wrap:wrap">
+                  <button onClick="{{ c.sacar }}" style="flex:1;padding:6px 8px;border-radius:7px;border:1px solid #38B6FF;background:rgba(56,182,255,.1);color:#38B6FF;font-size:11px;font-weight:700;min-height:30px;white-space:nowrap">Poner en la mesa</button>
+                  <button onClick="{{ c.cambiar }}" style="padding:6px 8px;border-radius:7px;border:1px solid #24335E;background:transparent;color:#9AA7C7;font-size:11px;font-weight:600;min-height:30px">Cambiar</button>
+                  <button onClick="{{ c.quemar }}" style="padding:6px 8px;border-radius:7px;border:1px solid rgba(255,106,26,.6);background:transparent;color:#FF6A1A;font-size:11px;font-weight:700;min-height:30px">Quemar</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div data-tutorial="pozo" title="Arrastra aquí la carta que sospeches apócrifa" style="position:relative;display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:10px;border:1px dashed {{ pozoBorde }};background:{{ pozoFondo }};min-height:44px;box-sizing:border-box">
+          <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;left:10px;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">pozo</span></sc-if>
+          <span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 50% 70%,#FF6A1A 0 30%,#7A2E0A 60%,#2A1A12 100%);animation:sala-brasa 2.4s ease-in-out infinite;flex:none"></span>
+          <div style="line-height:1.2;min-width:0"><div style="font-size:12px;font-weight:700">Pozo</div><div style="font-size:10px;color:#9AA7C7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pozoTexto }}</div></div>
+        </div>
+      </aside>
+    </sc-if>
+
+    <!-- Móvil: herramientas + bandeja -->
+    <sc-if value="{{ movil }}" hint-placeholder-val="{{ false }}">
+      <div data-tutorial="herramientas" style="position:relative;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;padding:2px 0;min-height:48px;align-items:center">
+        <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-8px;left:0;z-index:2;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">herramientas</span></sc-if>
+        <sc-for list="{{ herramientas }}" as="h" hint-placeholder-count="12">
+          <button onClick="{{ h.elegir }}" disabled="{{ h.bloq }}" aria-label="{{ h.nombre }}" style="flex:none;width:44px;height:44px;border-radius:10px;border:1px solid {{ h.borde }};background:{{ h.fondo }};color:{{ h.glifoColor }};font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;display:grid;place-items:center;position:relative">{{ h.glifo }}<sc-if value="{{ h.sel }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-family:Manrope,sans-serif;font-size:9px;font-weight:700;color:#FF6A1A;white-space:nowrap">{{ h.nombre }}</span></sc-if></button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ hayParametro }}" hint-placeholder-val="{{ false }}">
+        <div data-tutorial="parametro" style="display:flex;gap:4px;overflow-x:auto;min-height:28px;align-items:center">
+          <sc-for list="{{ parametros }}" as="p" hint-placeholder-count="8"><button onClick="{{ p.elegir }}" style="flex:none;padding:3px 9px;border-radius:999px;border:1px solid {{ p.borde }};background:{{ p.fondo }};color:{{ p.color }};font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;min-height:26px">{{ p.nombre }}</button></sc-for>
+        </div>
+      </sc-if>
+      <div data-tutorial="mano" style="position:relative;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;height:150px;align-items:stretch;padding:8px 0 2px">
+        <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:0;left:0;z-index:2;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">mano</span></sc-if>
+        <sc-for list="{{ mano }}" as="c" hint-placeholder-count="6">
+          <div data-tutorial="{{ c.ancla }}" onClick="{{ c.alternar }}" style="position:relative;flex:0 0 160px;background:#0F1A3C;border:1.5px solid {{ c.borde }};border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;box-sizing:border-box;cursor:pointer">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span style="font-weight:800;font-size:13px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.titulo }}</span><sc-if value="{{ c.lente }}" hint-placeholder-val="{{ false }}"><span style="color:#FFC23D;font-size:12px">✦</span></sc-if></div>
+            <sc-if value="{{ c.abierta }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:4px;flex:1;justify-content:center">
+                <button onClick="{{ c.sacar }}" style="padding:6px 8px;border-radius:7px;border:1px solid #38B6FF;background:rgba(56,182,255,.1);color:#38B6FF;font-size:11px;font-weight:700;min-height:30px">Poner en la mesa</button>
+                <div style="display:flex;gap:4px"><button onClick="{{ c.cambiar }}" style="flex:1;padding:5px 8px;border-radius:7px;border:1px solid #24335E;background:transparent;color:#9AA7C7;font-size:11px;font-weight:600;min-height:28px">Cambiar</button><button onClick="{{ c.quemar }}" style="flex:1;padding:5px 8px;border-radius:7px;border:1px solid rgba(255,106,26,.6);background:transparent;color:#FF6A1A;font-size:11px;font-weight:700;min-height:28px">Quemar</button></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ c.cerrada }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ c.hayDesc }}" hint-placeholder-val="{{ true }}"><div style="font-size:11px;color:#9AA7C7;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1">{{ c.desc }}</div></sc-if>
+            </sc-if>
+            <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:{{ c.claseColor }};font-weight:700;margin-top:auto">{{ c.clase }}</span>
+          </div>
+        </sc-for>
+        <div data-tutorial="pozo" style="flex:0 0 64px;border-radius:12px;border:1px dashed rgba(255,106,26,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><span style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 50% 70%,#FF6A1A 0 30%,#7A2E0A 60%,#2A1A12 100%);animation:sala-brasa 2.4s ease-in-out infinite"></span><span style="font-size:10px;color:#FF6A1A;font-weight:700">Pozo</span></div>
+      </div>
+    </sc-if>
+  </main>
+
+  <!-- Barra inferior -->
+  <footer style="display:flex;gap:12px;align-items:center;padding:{{ padPie }};border-top:1px solid #24335E;background:rgba(21,34,74,.55);min-width:0">
+    <button onClick="{{ abandonar }}" style="padding:8px 12px;border:0;border-radius:10px;background:transparent;color:#9AA7C7;font-size:13px;font-weight:600;flex:none">Abandonar</button>
+    <div style="flex:1;min-width:0;text-align:center;font-size:13px;color:#9AA7C7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+      <sc-if value="{{ hayVeredicto }}" hint-placeholder-val="{{ false }}"><span style="font-family:'JetBrains Mono',monospace">puntos <span style="color:#F3F6FF">19</span> × multiplicador <span style="color:#FFC23D">2.4</span> = <span style="color:#FF6A1A;font-weight:600;font-size:18px">46</span></span> <span>sobre Monocultivo</span></sc-if>
+      <sc-if value="{{ sinVeredicto }}" hint-placeholder-val="{{ true }}">{{ resumen }}</sc-if>
+    </div>
+    <div data-tutorial="afirmar" style="position:relative;flex:none">
+      <sc-if value="{{ anclas }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-9px;left:10px;z-index:2;padding:1px 6px;border-radius:4px;background:#FF6A1A;color:#0A1230;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600">afirmar</span></sc-if>
+      <button onClick="{{ afirmar }}" disabled="{{ afirmarOff }}" title="{{ afirmarMotivo }}" style="display:flex;justify-content:center;align-items:center;gap:10px;padding:0 {{ padAfirmar }};height:48px;border:0;border-radius:12px;background:{{ afirmarFondo }};color:{{ afirmarColor }};font-size:17px;font-weight:800;min-width:{{ minAfirmar }};cursor:{{ afirmarCursor }}" style-hover="filter:brightness(1.08)">{{ afirmarTexto }}<sc-if value="{{ afirmarOn }}" hint-placeholder-val="{{ true }}"><span>→</span></sc-if></button>
+      <sc-if value="{{ afirmarOff }}" hint-placeholder-val="{{ false }}"><sc-if value="{{ escritorio }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;right:calc(100% + 12px);top:50%;transform:translateY(-50%);font-size:11px;color:#E0A33A;white-space:nowrap">{{ afirmarMotivo }}</span></sc-if></sc-if>
+    </div>
+  </footer>
+
+  <!-- Encargo -->
+  <sc-if value="{{ esEncargo }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:30;background:rgba(10,18,48,.8);backdrop-filter:blur(3px);display:grid;place-items:center;padding:20px;box-sizing:border-box">
+      <div style="width:100%;max-width:{{ anchoEncargo }};background:#15224A;border:1px solid #24335E;border-radius:12px;padding:22px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;box-shadow:0 12px 40px rgba(0,0,0,.45)">
+        <div><div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA7C7;font-weight:700">Sala 3 · antes de empezar</div><h2 style="margin:4px 0 0;font-size:22px;font-weight:800;line-height:1.2">¿Qué te propones en esta sala?</h2></div>
+        <div style="display:grid;grid-template-columns:{{ colsEncargo }};gap:8px">
+          <sc-for list="{{ encargos }}" as="e" hint-placeholder-count="3">
+            <button onClick="{{ e.elegir }}" style="text-align:left;background:#0F1A3C;border:1.5px solid {{ e.borde }};border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;color:#F3F6FF;min-height:110px" style-hover="border-color:#9AA7C7">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:18px;color:{{ e.glifoColor }}">{{ e.glifo }}</span>
+              <span style="font-weight:800;font-size:14px;line-height:1.25">{{ e.nombre }}</span>
+              <span style="font-size:12px;color:#9AA7C7;line-height:1.4">{{ e.desc }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:12px;color:#9AA7C7">Cumplirlo cura <span style="color:#5BD36F;font-family:'JetBrains Mono',monospace">+15</span>. No cumplirlo no castiga.</span><button onClick="{{ entrar }}" style="padding:12px 22px;border:0;border-radius:10px;background:#FF6A1A;color:#0A1230;font-size:15px;font-weight:800">Entrar a la sala →</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;escena&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;vacia&quot;,&quot;trazos&quot;,&quot;veredicto&quot;,&quot;encargo&quot;],&quot;default&quot;:&quot;vacia&quot;,&quot;tsType&quot;:&quot;'vacia'|'trazos'|'veredicto'|'encargo'&quot;,&quot;section&quot;:&quot;Sala&quot;},&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;'auto'|'escritorio'|'movil'&quot;,&quot;section&quot;:&quot;Sala&quot;},&quot;anclas&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sala&quot;},&quot;alto&quot;:{&quot;editor&quot;:null,&quot;default&quot;:&quot;100vh&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const HERR = [['Identidad', '=', 0], ['Flecha', '→', 0], ['Campo', '∪', 0], ['Jerarquía', '⊂', 'se desbloquea al nivel 3'], ['Eje', '⊢', 'se desbloquea al nivel 4'], ['Secuencia', '⇒', 'se desbloquea al nivel 5'], ['Ancla', '⚓', 'se desbloquea con un caso sostenido'], ['Balanza', '⚖', 'se desbloquea al vencer a Monocultivo'], ['Contraejemplo', '⊘', 'se desbloquea al nivel 7'], ['Analogía', '∷', 'se desbloquea al nivel 8'], ['Alcance', '◇', 'se desbloquea al nivel 9'], ['Descomposición', '⊞', 'se desbloquea al nivel 10']];
+const PARAM = ['apoya', 'causa', 'requiere', 'ejemplifica', 'contrasta', 'extiende', 'matiza', 'generaliza'];
+const CLASE_COLOR = { concepto: '#38B6FF', etiqueta: '#38B6FF', 'definición': '#9AA7C7', caso: '#5BD36F', tesis: '#FFC23D', criterio: '#E0A33A', marco: '#9B6CFF', 'intuición cotidiana': '#F08AB8', 'subdimensión': '#38B6FF' };
+const CARTAS = {
+  cs: { clase: 'concepto', titulo: 'Crítica social', desc: 'Análisis y cuestionamiento de estructuras sociales a través de la obra literaria', lente: true },
+  emp: { clase: 'concepto', titulo: 'Empoderamiento', desc: 'Capacidad de los lectores para actuar sobre su realidad tras la lectura.' },
+  lj: { clase: 'etiqueta', titulo: 'Literatura juvenil', desc: '' },
+  def: { clase: 'definición', titulo: 'Género literario dirigido a lectores adolescentes, con protagonistas de su edad y conflictos de identidad', desc: '' },
+  caso: { clase: 'caso', titulo: 'Saludo de tres dedos en movimientos reales', desc: 'Manifestantes en Tailandia y Hong Kong adoptaron el gesto de la trilogía como símbolo de resistencia.' },
+  apo: { clase: 'concepto', titulo: 'Simbolismo', desc: 'Efectos y repercusiones que una obra genera en la sociedad y en la cultura', apocrifa: true }
+};
+const POS = { cs: [24, 30], emp: [62, 30], lj: [24, 72], def: [62, 72], caso: [82, 52] };
+const ENC = [['◎', 'Sostener tres vínculos', 'Tres trazos que el texto diga o de los que se siga.'], ['⊘', 'No quemar material bueno', 'Cero cartas legítimas al pozo en toda la sala.'], ['∷', 'Usar dos herramientas distintas', 'Al menos dos glifos diferentes en la mesa al afirmar.']];
+const ESCENAS = ['vacia', 'trazos', 'veredicto', 'encargo'];
+
+class Component extends DCLogic {
+  constructor(p) { super(p); this.raiz = React.createRef(); this.state = this.desde(p); this.state.w = window.innerWidth; }
+  desde(p) {
+    const e = ESCENAS.includes(p.escena) ? p.escena : 'vacia';
+    const base = { escena: e, mesa: [], trazos: [], herr: null, param: null, sel: [], abierta: null, quemadas: [], encargo: 0, afirmado: false, hover: false };
+    if (e === 'trazos') Object.assign(base, { mesa: ['cs', 'emp', 'lj', 'def'], herr: 'Flecha', trazos: [{ a: 'lj', b: 'def', h: 'Identidad' }, { a: 'cs', b: 'emp', h: 'Flecha', param: null }], sel: [] });
+    if (e === 'veredicto') Object.assign(base, { mesa: ['cs', 'emp', 'lj', 'def'], trazos: [{ a: 'lj', b: 'def', h: 'Identidad' }, { a: 'cs', b: 'emp', h: 'Flecha', param: 'apoya' }], afirmado: true });
+    return base;
+  }
+  componentDidMount() { this.onR = () => this.setState({ w: window.innerWidth }); window.addEventListener('resize', this.onR); }
+  componentWillUnmount() { window.removeEventListener('resize', this.onR); }
+  componentDidUpdate(pp) { if (pp.escena !== this.props.escena || pp.anclas !== this.props.anclas) this.setState(this.desde(this.props)); }
+  renderVals() {
+    const s = this.state, movil = (this.props.vista ?? 'auto') === 'movil' || ((this.props.vista ?? 'auto') === 'auto' && s.w < 720);
+    const anclas = !!(this.props.anclas ?? false), afirmado = s.afirmado, esEncargo = s.escena === 'encargo';
+    const upd = x => this.setState(x);
+    const herrSel = HERR.find(h => h[0] === s.herr), pideParam = s.herr === 'Flecha' || s.herr === 'Eje';
+    const incompletos = s.trazos.filter(t => (t.h === 'Flecha' || t.h === 'Eje') && !t.param).length;
+    const colorEstado = est => est === 'el texto lo dice' || est === 'se sigue del texto' ? '#5BD36F' : est.startsWith('casi') || est.startsWith('el texto lo insinúa') ? '#E0A33A' : est.startsWith('lo propones') ? '#9B6CFF' : est === 'al revés' || est === 'falso' ? '#FF5A5A' : '#9AA7C7';
+    const trazos = s.trazos.map(t => {
+      const A = POS[t.a], B = POS[t.b], g = HERR.find(h => h[0] === t.h)[1];
+      const estado = afirmado ? 'el texto lo dice' : null, col = afirmado ? colorEstado(estado) : (t.param || t.h !== 'Flecha') ? '#38B6FF' : '#E0A33A';
+      return { x1: A[0], y1: A[1], x2: B[0], y2: B[1], mx: (A[0] + B[0]) / 2, my: (A[1] + B[1]) / 2, color: col, dash: (t.param || t.h !== 'Flecha') ? '0' : '6 5', glifo: g, etiqueta: t.h === 'Flecha' ? (t.param || 'sin tipo') : t.h.toLowerCase(), estado: afirmado ? 'el texto lo dice' : false };
+    });
+    const tocarPieza = id => {
+      if (afirmado) return;
+      if (!s.herr) { upd({ sel: s.sel.includes(id) ? [] : [id] }); return; }
+      const sel = s.sel.includes(id) ? s.sel.filter(x => x !== id) : s.sel.concat(id).slice(-2);
+      if (sel.length === 2) upd({ sel: [], trazos: s.trazos.concat({ a: sel[0], b: sel[1], h: s.herr, param: s.param }) }); else upd({ sel });
+    };
+    const mano = Object.keys(CARTAS).filter(id => !s.mesa.includes(id) && !s.quemadas.includes(id));
+    const primeraCuenta = 3;
+    const ent = [
+      { nombre: 'Eco de intuición', hp: 45, max: 45, cuenta: 2, patron: 'devuelve la intuición como concepto', pos: 2, golpe: 0 },
+      { nombre: 'Monocultivo', hp: afirmado ? 34 : 80, max: 80, cuenta: primeraCuenta, patron: 'repite un solo tipo de vínculo', pos: 4, golpe: afirmado ? 46 : 0 }
+    ];
+    const celdas = [0, 1, 2, 3, 4, 5].map(i => {
+      const e = ent.find(x => x.pos === i);
+      if (!e) return { vacia: true, entidad: false, nota: i === 0 ? 'tú' : i === 5 ? 'entra la confusión' : '', trazo: 'dashed', borde: '#24335E', fondo: 'transparent', anim: 'none' };
+      const rojo = e.cuenta <= 1;
+      return { vacia: false, entidad: true, nombre: e.nombre, hp: e.hp, max: e.max, pct: (e.hp / e.max * 100) + '%', patron: e.patron, cuenta: e.cuenta, golpe: e.golpe, trazo: 'solid', borde: e.golpe ? '#FFC23D' : '#3A2A66', fondo: '#1B1436', anim: 'none', cuentaFondo: rojo ? '#FF5A5A' : '#FF6A1A', cuentaColor: '#0A1230', cuentaBorde: rojo ? '#FF5A5A' : '#FF6A1A', cuentaAnim: rojo ? 'sala-pulso 1s ease-in-out infinite' : 'none' };
+    });
+    const alto = this.props.alto ?? '100vh';
+    return {
+      raiz: this.raiz, escena: s.escena, alto, movil, escritorio: !movil, anclas, esEncargo,
+      filas: movil ? '52px 72px minmax(0,1fr) 64px' : '56px 104px minmax(0,1fr) 64px',
+      colsCarril: movil ? '96px minmax(0,1fr)' : '150px minmax(0,1fr)', padCarril: movil ? '8px 12px 0' : '12px 20px 0', padVida: movil ? '6px 8px' : '8px 12px', minCelda: movil ? '104px' : '0',
+      cols: movil ? 'minmax(0,1fr)' : s.w < 1500 ? '240px minmax(0,1fr) 280px' : '280px minmax(0,1fr) 320px',
+      filasCuerpo: movil ? (pideParam ? 'minmax(0,1fr) 48px 28px 150px' : 'minmax(0,1fr) 48px 150px') : 'minmax(0,1fr)',
+      gapCuerpo: movil ? '6px' : '10px', padCuerpo: movil ? '8px 12px' : '10px 20px', padPie: movil ? '0 12px' : '0 20px', padAfirmar: movil ? '20px' : '32px', minAfirmar: movil ? '0' : '180px',
+      anchoPieza: movil ? '128px' : '150px',
+      turno: 3, vida: 84,
+      celdas,
+      herramientas: HERR.map(([n, g, d]) => { const bloq = !!d, on = s.herr === n; return { nombre: n, glifo: g, bloq, sel: on, desbloqueo: d || '', tip: bloq ? d : n, borde: on ? '#FF6A1A' : bloq ? '#1B2B5A' : '#24335E', fondo: on ? 'rgba(255,106,26,.12)' : 'transparent', color: bloq ? '#6F7DA3' : '#F3F6FF', glifoColor: on ? '#FF6A1A' : bloq ? '#6F7DA3' : '#38B6FF', cursor: bloq ? 'not-allowed' : 'pointer', elegir: () => { if (!bloq && !afirmado) upd({ herr: on ? null : n, sel: [], param: null }); } }; }),
+      hayParametro: pideParam && !afirmado, hayHerramienta: !!s.herr && !afirmado, herrGlifo: herrSel ? herrSel[1] : '', herrNombre: s.herr || '',
+      parametros: PARAM.map(p => { const on = s.param === p; return { nombre: p, borde: on ? '#FF6A1A' : '#24335E', fondo: on ? 'rgba(255,106,26,.12)' : 'transparent', color: on ? '#FF6A1A' : '#9AA7C7', elegir: () => { const trazos = s.trazos.map(t => (t.h === 'Flecha' && !t.param) ? Object.assign({}, t, { param: p }) : t); upd({ param: p, trazos }); } }; }),
+      encargoNombre: ENC[s.encargo][1], encargoProgreso: s.encargo === 0 ? `${afirmado ? 2 : 0} / 3` : s.encargo === 1 ? `${s.quemadas.length ? 1 : 0} quemadas` : `${new Set(s.trazos.map(t => t.h)).size} / 2`,
+      trazos, piezas: s.mesa.map(id => { const k = CARTAS[id], on = s.sel.includes(id), P = POS[id]; return { titulo: k.titulo, clase: k.clase, claseColor: CLASE_COLOR[k.clase], x: P[0], y: P[1], peso: k.clase === 'definición' ? 500 : 700, tam: k.clase === 'definición' ? '11px' : '13px', borde: on ? '#FF6A1A' : '#24335E', sombra: on ? '0 0 14px rgba(255,106,26,.5)' : 'none', tocar: () => tocarPieza(id) }; }),
+      mesaVacia: s.mesa.length === 0 && !esEncargo, pideTipo: incompletos > 0 && !afirmado, dondeParametro: movil ? 'abajo' : 'a la izquierda',
+      hayVeredicto: afirmado, sinVeredicto: !afirmado,
+      veredictos: [{ a: 'Crítica social', op: '—apoya→', b: 'Empoderamiento', estado: 'el texto lo dice', nota: 'la literatura juvenil como herramienta de crítica y empoderamiento', fichas: 12 }, { a: 'Literatura juvenil', op: '=', b: 'Género literario…', estado: 'el texto lo dice', nota: 'definición literal, p. 2', fichas: 7 }].map(v => Object.assign(v, { color: '#5BD36F', fondo: 'rgba(91,211,111,.14)' })),
+      nMano: mano.length,
+      mano: mano.map(id => { const k = CARTAS[id], ab = s.abierta === id, apo = !!k.apocrifa; return { titulo: k.titulo, desc: k.desc, hayDesc: !!k.desc, lineas: k.clase === 'caso' ? 3 : 2, clase: k.clase, claseColor: CLASE_COLOR[k.clase], lente: !!k.lente, ancla: apo ? 'apocrifa' : '', anclaVisible: apo && anclas, abierta: ab, cerrada: !ab, op: 1, borde: ab ? '#FF6A1A' : '#24335E', entrar: () => { if (!movil) upd({ abierta: id }); }, salir: () => { if (!movil) upd({ abierta: null }); }, alternar: () => { if (movil) upd({ abierta: ab ? null : id }); }, sacar: e => { e.stopPropagation(); if (POS[id]) upd({ mesa: s.mesa.concat(id), abierta: null }); }, cambiar: e => { e.stopPropagation(); }, quemar: e => { e.stopPropagation(); upd({ quemadas: s.quemadas.concat(id), abierta: null }); } }; }),
+      pozoBorde: s.quemadas.length ? '#FF6A1A' : 'rgba(255,106,26,.5)', pozoFondo: s.quemadas.length ? 'rgba(255,106,26,.08)' : 'transparent', pozoTexto: s.quemadas.length ? `${CARTAS[s.quemadas[0]].titulo} quemada · ${CARTAS[s.quemadas[0]].apocrifa ? 'apócrifa: +1 ventaja' : 'era buena: −8 vida'}` : 'Arrastra aquí la carta que sospeches',
+      resumen: s.trazos.length === 0 ? (s.mesa.length ? 'Elige una herramienta y toca dos cartas' : 'Saca cartas de la Mano a la mesa') : `${s.trazos.length} trazo${s.trazos.length > 1 ? 's' : ''}${incompletos ? ` · ${incompletos} sin tipo` : ''}`,
+      afirmarOff: afirmado || s.trazos.length === 0 || incompletos > 0, afirmarOn: !(afirmado || s.trazos.length === 0 || incompletos > 0),
+      afirmarMotivo: afirmado ? 'Turno afirmado' : s.trazos.length === 0 ? 'Dibuja al menos un trazo' : incompletos ? 'Un trazo no tiene tipo de vínculo' : 'Comprobar contra el texto',
+      afirmarFondo: (afirmado || s.trazos.length === 0 || incompletos > 0) ? '#24335E' : '#FF6A1A', afirmarColor: (afirmado || s.trazos.length === 0 || incompletos > 0) ? '#6F7DA3' : '#0A1230', afirmarCursor: (afirmado || s.trazos.length === 0 || incompletos > 0) ? 'not-allowed' : 'pointer',
+      afirmarTexto: afirmado ? 'Siguiente turno' : 'Afirmar',
+      afirmar: () => { if (!afirmado && s.trazos.length && !incompletos) upd({ afirmado: true, herr: null, sel: [] }); },
+      abandonar: () => { location.href = 'Inicio.dc.html'; },
+      anchoEncargo: movil ? '100%' : '640px', colsEncargo: movil ? 'minmax(0,1fr)' : 'repeat(3,minmax(0,1fr))',
+      encargos: ENC.map(([g, n, d], i) => ({ glifo: g, nombre: n, desc: d, borde: s.encargo === i ? '#FF6A1A' : '#24335E', glifoColor: s.encargo === i ? '#FF6A1A' : '#38B6FF', elegir: () => upd({ encargo: i }) })),
+      entrar: () => upd({ escena: 'vacia' })
+    };
+  }
+}
+</script>
+</body>
+</html>
