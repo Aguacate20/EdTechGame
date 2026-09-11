@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.53
+# LudusCog · El Archivo Infinito — v5.54
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,19 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Sala v2, tercera pasada (v5.54)
+
+- **Cartas con carácter**: oscuras, pero con el color de su clase como degradado en la
+  esquina, en la pastilla de clase y en el brillo al pasar; el glifo de clase queda como
+  marca de agua. Se distinguen concepto, caso, tesis, criterio, marco e intuición de un
+  vistazo sin volver al papel claro. (`--banda` viaja como variable CSS desde la carta.)
+- **Carril más alto (136 px) y sin la fila de arriba**: «El frente aguanta N · condición»
+  pasa a rótulo flotante en la esquina; la pista usa todo el alto (118 px), sin barra
+  vertical, y el jugador ya no queda cortado.
+- **La cuenta del daño en la barra inferior** tras afirmar (`puntos 19 × multiplicador 2.4 =
+  46`, con el total en naranja y en oro si hubo multiplicador extra), como en el diseño; la
+  cuenta de la mesa se oculta.
 
 ## Sala v2, segunda pasada (v5.53)
 

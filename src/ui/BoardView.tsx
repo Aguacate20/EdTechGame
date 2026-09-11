@@ -879,7 +879,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${foco?.piezas ? (piezaLibre(p.uid) ? ' senala' : ' bloqueada') : ''}`}
-                style={{ borderLeftColor: cd.banda,
+                style={{ borderLeftColor: cd.banda, ['--banda' as string]: cd.banda,
                   background: texturaDe(p.clase) ? `${texturaDe(p.clase)}, ${cd.tono}` : cd.tono }}
                 draggable={!resuelto && piezaLibre(p.uid)}
                 onDragStart={(ev) => {
@@ -993,12 +993,23 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <button className="btn peligro fantasma" onClick={on.huir}>Abandonar</button>
           </>
         ) : (
+          <>
+          <div className="cuenta cuenta-pie" onClick={casc.saltar} title="Toca para saltar la cuenta">
+            <span className="etiqueta-cuenta">puntos</span>
+            <span className="fichas">{casc.fichas}</span>
+            <span className="por">×</span>
+            <span className="etiqueta-cuenta">multiplicador</span>
+            <span className="mult">{casc.mult.toFixed(1)}</span>
+            {casc.xmult > 1 && <><span className="por">×</span><span className="xmult">×{casc.xmult.toFixed(1)}</span></>}
+            {casc.total !== null && <><span className="por">=</span><span className={`total${casc.xmult > 1 ? ' mayor' : ''}`}>{casc.total}</span></>}
+          </div>
           <button className="btn primario grande" disabled={!casc.terminada}
             onClick={() => { setTrazoAbierto(null); on.continuar() }}>
             {e.fase === 'ganado' ? 'El carril queda despejado'
               : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda'
               : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}
           </button>
+          </>
         )}
       </footer>
 

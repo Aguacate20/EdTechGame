@@ -1862,3 +1862,27 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 /* el jugador, a la altura de las entidades */
 .app .zona-carril .carril-jugador { align-items: flex-end; align-self: stretch; padding-bottom: 4px; border-right-color: var(--borde); }
 .app .zona-carril .parte-frente { align-items: flex-end; }
+
+/* ── Sala v2, tercera pasada ── */
+/* cartas con carácter: degradado con el color de su clase, pastilla y brillo del mismo color, glifo de clase como marca de agua */
+.app .renglon { background: linear-gradient(150deg, color-mix(in srgb, var(--banda, #38B6FF) 26%, #1A2A58) 0%, #1A2A58 55%, #15224A 100%) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.06); overflow: hidden; }
+.app .renglon .tt { color: var(--banda, var(--descubierto)); border-color: color-mix(in srgb, var(--banda, #38B6FF) 45%, transparent); background: color-mix(in srgb, var(--banda, #38B6FF) 12%, var(--panel-hundido)); }
+.app .renglon .tt .orn { position: absolute; right: 8px; top: 4px; font-size: 40px; line-height: 1; opacity: .12; color: var(--banda, #38B6FF); pointer-events: none; }
+.app .renglon:hover { border-color: var(--banda, var(--descubierto)); box-shadow: 0 0 18px color-mix(in srgb, var(--banda, #38B6FF) 35%, transparent); }
+.app .renglon.activa { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento) inset, 0 0 18px rgba(255,106,26,.35); }
+/* carril más alto, sin la fila de arriba: el frente y la condición van como rótulo flotante */
+.app .batalla { grid-template-rows: 136px minmax(0, 1fr) 64px; }
+.app .zona-carril { position: relative; padding: 6px 12px 4px; overflow: hidden; }
+.app .zona-carril .parte-frente { position: absolute; top: 4px; right: 10px; padding: 0; gap: 8px; z-index: 2; opacity: .85; font-size: 11px; }
+.app .zona-carril .carril-pista { height: 118px; min-height: 0; overflow-y: hidden; scrollbar-width: thin; }
+.app .zona-carril .carril-jugador { padding-top: 0; padding-bottom: 0; }
+.app .zona-carril .retrato-sprite, .app .zona-carril .retrato { max-height: 112px; }
+/* la cuenta vive en la barra inferior tras afirmar; la de la mesa se oculta */
+.app .zona-lienzo .resolucion .cuenta { display: none; }
+.app .cuenta-pie { display: flex; align-items: baseline; gap: 8px; font-family: var(--mono); cursor: pointer; }
+.app .cuenta-pie .etiqueta-cuenta { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--texto-2); }
+.app .cuenta-pie .fichas, .app .cuenta-pie .mult { font-size: 20px; font-weight: 700; }
+.app .cuenta-pie .xmult { color: var(--dominar); font-weight: 700; }
+.app .cuenta-pie .total { font-size: 26px; font-weight: 800; color: var(--acento); }
+.app .cuenta-pie .total.mayor { color: var(--dominar); text-shadow: 0 0 12px rgba(255,194,61,.5); }
+@media (max-width: 720px) { .app .batalla { grid-template-rows: 88px minmax(0, 1fr) 48px 150px 56px; } .app .zona-carril .carril-pista { height: 72px; } .app .cuenta-pie .fichas, .app .cuenta-pie .mult { font-size: 15px; } .app .cuenta-pie .total { font-size: 20px; } }
