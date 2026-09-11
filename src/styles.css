@@ -1073,7 +1073,7 @@ label.campo > span { display: block; margin-bottom: 5px; }
 /* ================= v5.6 · guía del tutorial ================= */
 
 /* ── Tutorial (Tutorial.dc.html): velo, recorte luminoso, burbuja de Andy ── */
-.velo-tutorial { position: fixed; inset: 0; background: rgba(10, 18, 48, 0.78); z-index: 30; pointer-events: none; animation: entrar .3s ease-out; }
+.velo-tutorial { position: fixed; inset: 0; z-index: 30; pointer-events: none; animation: entrar .3s ease-out; }
 .guia {
   position: fixed; left: 16px; bottom: 84px; z-index: 90; width: min(340px, calc(100vw - 32px));
   background: var(--panel); border: 1px solid var(--borde); border-radius: 12px;
@@ -1791,3 +1791,11 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .chip.subida .subida-anillo { stroke: var(--descubierto); transition: stroke-dasharray 900ms ease; }
 .chip.subida.lista { border-color: var(--sostenido); }
 .chip.subida.lista b { color: var(--sostenido); }
+
+.recorte-pulso { animation: pulso-recorte 1.6s ease-in-out infinite; }
+@keyframes pulso-recorte { 0%, 100% { opacity: .3; } 50% { opacity: .7; } }
+.tres-cosas li { background: var(--panel); border: 1px solid var(--borde); border-radius: 10px; padding: 10px 12px; }
+.tres-cosas li > span { display: flex; flex-direction: column; }
+.tres-cosas small { color: var(--texto-2); }
+.tutorial-cierre .marca-lc { margin-bottom: 8px; }
+@media (prefers-reduced-motion: reduce) { .recorte-pulso { animation: none; } }

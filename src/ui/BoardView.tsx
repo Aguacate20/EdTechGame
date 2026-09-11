@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
+import { TutorialVelo } from './TutorialVelo'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -47,13 +48,13 @@ const COLOR_ESTADO: Record<string, string> = {
   invertido: 'var(--oxido)', error: 'var(--oxido)'
 }
 const ETIQUETA_ESTADO: Record<string, string> = {
-  sostenido: 'sostenido', equivalente: 'lo mismo dicho al revés',
-  compatible: 'también es cierto',
-  derivado: 'se sigue del texto', aproximado: 'vas bien, otro matiz',
-  insinuado: 'lo viste tú: el texto lo insinúa', propuesta: 'propuesta tuya',
-  convive: 'el texto los junta', plausible: 'comparten página, nada más',
-  silencio: 'el texto no lo dice',
-  invertido: 'al revés', error: 'falla'
+  sostenido: 'el texto lo dice', equivalente: 'el texto lo dice (al revés)',
+  compatible: 'cierto, pero con otro vínculo',
+  derivado: 'se sigue del texto', aproximado: 'casi: el vínculo es otro',
+  insinuado: 'el texto lo insinúa', propuesta: 'lo propones tú',
+  convive: 'el texto los junta, no los enlaza', plausible: 'solo comparten página',
+  silencio: 'el mapa no lo registra',
+  invertido: 'al revés', error: 'falso'
 }
 const TONO_NOTA: Record<string, string> = {
   sostenido: 'ok', equivalente: 'ok', compatible: 'ok', derivado: 'ok', aproximado: 'nota',
@@ -252,6 +253,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   const foco = guia?.foco
+  const burbujaRef = useRef<HTMLElement>(null)
   const zona = (z: string) => (foco?.zona === z ? ' destacada' : '')
   const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
   const herrLibre = (id: HerramientaId) => !foco?.herramientas || foco.herramientas.includes(id)
@@ -365,9 +367,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
       )}
 
-      {guia && <div className="velo-tutorial" aria-hidden="true" />}
+      {guia && <TutorialVelo burbuja={burbujaRef} />}
       {guia && (
         <aside
+          ref={burbujaRef}
           className={`guia${
             guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' ? ' apartada' : ''
           }`}
@@ -736,10 +739,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         {resuelto && e.ultima && (
           <div className="resolucion compacta">
             <div className="cuenta" onClick={casc.saltar} title="Toca para saltar la cuenta">
-              <span className="etiqueta-cuenta">cuerpo</span>
+              <span className="etiqueta-cuenta" title="Puntos: cuánto de lo que dijiste lo sostiene el texto. Cada trazo sostenido suma; uno falso resta.">puntos</span>
               <span className="fichas" key={`f${casc.fichas}`}>{casc.fichas}</span>
               <span className="por">×</span>
-              <span className="etiqueta-cuenta">filo</span>
+              <span className="etiqueta-cuenta" title="Multiplicador: cuánto se articula el diagrama. Varios trazos que se tocan multiplican; trazos sueltos, no.">multiplicador</span>
               <span className="mult" key={`m${casc.mult.toFixed(1)}`}>{casc.mult.toFixed(1)}</span>
               {casc.xmult > 1 && (
                 <>
@@ -787,9 +790,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                     ? 'Constelación: cuatro sostenidas sin error. El carril entero recibe el golpe completo.'
                     : e.ultima.patron === 'onda'
                       ? 'Onda: la compra el Cierre o una andanada de tres o más sostenidas. Los primeros del carril reciben el golpe completo.'
-                      : 'Golpe puntual: un objetivo. Lo que sobra al derribarlo desborda al siguiente.'
+                      : 'Golpe a un solo objetivo. Lo que sobra al derribarlo pasa al siguiente.'
                 }>
-                  {e.ultima.patron === 'barrido' ? '☄ barrido' : e.ultima.patron === 'onda' ? '≋ onda' : '→ puntual'}
+                  {e.ultima.patron === 'barrido' ? '☄ a todos' : e.ultima.patron === 'onda' ? '≋ en cadena' : '→ a uno'}
                 </span>
               )}
             </div>

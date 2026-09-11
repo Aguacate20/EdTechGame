@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.50
+# LudusCog · El Archivo Infinito — v5.51
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,25 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Tutorial que recorta de verdad, y palabras del jugador (v5.51)
+
+- **Recorte medido, no por z-index.** El velo es ahora un SVG fijo que mide cada cuadro los
+  rectángulos de las zonas destacadas y los recorta con una máscara (`TutorialVelo.tsx`).
+  El paso 1 iluminaba la burbuja pero no las cartas porque la Mano no podía subir por
+  encima del velo desde su contexto de apilamiento; con la máscara ya no hace falta que
+  suba. Borde naranja pulsante, y un **conector** curvo punteado con una chispa que corre
+  desde la burbuja de Andy hasta el recorte más cercano.
+- **Tarjeta de cierre** «Ya sabes jugar»: las tres cosas que acabas de hacer y la regla del
+  daño en una frase.
+- **Cuenta del daño en palabras del jugador**: «puntos × multiplicador» en vez de «cuerpo ×
+  filo», con explicación al pasar el cursor. Puntos = cuánto de lo que dijiste lo sostiene
+  el texto; multiplicador = cuánto se articula el diagrama.
+- **Veredictos y motivos en claro**: «el texto lo dice», «casi: el vínculo es otro», «el
+  texto los junta, no los enlaza», «el mapa no lo registra», «falso». Las entidades ya no
+  hablan en clave («solo cede ante puentes y contrastes» → «solo le hacen daño los vínculos
+  que unen zonas distintas del texto o que contrastan»). Patrones de golpe: «a uno», «en
+  cadena», «a todos».
 
 ## El tutorial con el diseño (v5.50)
 

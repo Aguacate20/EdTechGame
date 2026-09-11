@@ -65,7 +65,7 @@ export const ROSTER: TipoEnemigo[] = [
   },
   {
     id: 'dogma', nombre: 'El Dogma', rango: 'duro',
-    glosa: 'Blindado contra afirmaciones simples: solo lo hieren cadenas de dos eslabones o más.',
+    glosa: 'Un diagrama de un solo trazo no le hace daño: encadena dos o más.',
     velocidad: 1, alcance: 2, vidaBase: 54, ataque: 6, rasgo: 'blindado_cadena', costo: 4, desdeActo: 1
   },
   {
@@ -90,7 +90,7 @@ export const ROSTER: TipoEnemigo[] = [
   },
   {
     id: 'ortodoxia', nombre: 'La Ortodoxia', rango: 'duro',
-    glosa: 'Solo cede ante puentes y contrastes: no admite que se la relacione de frente.',
+    glosa: 'Solo le hacen daño los vínculos que unen zonas distintas del texto o que contrastan.',
     velocidad: 1, alcance: 2, vidaBase: 48, ataque: 6, rasgo: 'blindado_puente', costo: 5, desdeActo: 2
   },
   {
@@ -206,11 +206,11 @@ export function factorBlindaje(e: Enemigo, f: FormaAfirmacion): { factor: number
     case 'blindado_cadena':
       return f.eslabones >= 2
         ? { factor: 1, motivo: null }
-        : { factor: 0.15, motivo: 'El Dogma no cede ante una afirmación de un solo eslabón.' }
+        : { factor: 0.15, motivo: 'Al Dogma no le hace daño un diagrama de un solo trazo: encadena dos o más.' }
     case 'blindado_puente':
       return f.puente || f.contraste
         ? { factor: 1, motivo: null }
-        : { factor: 0.15, motivo: 'La Ortodoxia solo cede ante puentes y contrastes.' }
+        : { factor: 0.15, motivo: 'A la Ortodoxia solo le hacen daño los vínculos que unen zonas distintas o que contrastan; lo demás le rebota.' }
     case 'fases': {
       const exigida = FASES_JEFE[e.fase % FASES_JEFE.length]
       return f.jugadas.includes(exigida.jugada)

@@ -107,7 +107,7 @@ export const LENTES: Lente[] = [
     costo: 'Ninguno, pero las inferencias no entran al Atlas.',
     mod: { fichasPorInferencia: 18 } },
   { id: 'aproximador', nombre: 'Buen ojo', rareza: 'comun',
-    regla: 'Acertar el vínculo con el matiz equivocado ya multiplica.',
+    regla: 'Acertar el vínculo aunque el tipo no sea exacto ya multiplica.',
     costo: 'Deja de empujarte a afinar la etiqueta.',
     mod: { multPorAproximado: 0.5 } },
   { id: 'intuitivo', nombre: 'Corazonada', rareza: 'comun',
@@ -159,7 +159,7 @@ export const LENTES: Lente[] = [
     mod: { xmults: [{ id: 'aleph', nombre: 'El Aleph', factor: 2.5, cuando: 'mestizaje4' }] } },
   /* ---- las escaladoras: el motor crece por JUGAR bien, no por lootear ---- */
   { id: 'cuaderno_hereje', nombre: 'Cuaderno del hereje', rareza: 'rara',
-    regla: '+0.15 al filo, permanente, por cada falsificación quemada en la expedición.',
+    regla: '+0.15 al multiplicador, permanente, por cada falsificación quemada en la expedición.',
     costo: 'Empieza sin hacer nada: hay que alimentarlo discriminando.',
     mod: {} },
   { id: 'pluma_que_aprende', nombre: 'La pluma que aprende', rareza: 'rara',

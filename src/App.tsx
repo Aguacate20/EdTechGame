@@ -924,18 +924,19 @@ export default function App() {
 
 
       {fase === 'tutorial-fin' && (
-        <div className="envoltura pila" style={{ maxWidth: 660 }}>
+        <div className="envoltura pila tutorial-cierre" style={{ maxWidth: 560 }}>
+          <div className="marca-lc" aria-label="LudusCog"><span className="orbita" aria-hidden="true" /><span className="nombre"><b>Ludus<span>Cog</span></b><small>aprender · entender · avanzar</small></span></div>
           <span className="eyebrow">Tutorial completado</span>
-          <h2 className="display">Ya sabes lo que hace falta</h2>
-          <p className="serif-lectura silencio">
-            Poner piezas, decir algo verdadero sobre ellas y encadenar varias cosas en el
-            mismo diagrama. Eso es todo el juego. Lo demás —las lentes, los sellos, los
-            vínculos que se descubren derribando enemigos— va llegando solo.
-          </p>
-          <p className="serif-lectura">
-            Ahora hazlo con un texto de verdad. Sube tu propio PDF procesado y el mismo
-            carril se llenará con los conceptos de tu materia: los enemigos serán las
-            confusiones de ese texto, y el Atlas que construyas será tuyo.
+          <h2 className="display">Ya sabes jugar</h2>
+          <ul className="cierre-lista tres-cosas">
+            <li><i className="estrella-oro" /><span><b>Sacaste piezas a la mesa</b><small>Un nombre y una descripción, sin que pase nada todavía.</small></span></li>
+            <li><i className="estrella-oro" /><span><b>Afirmaste un vínculo</b><small>Y el juego lo comprobó contra el texto: eso fue tu ataque.</small></span></li>
+            <li><i className="estrella-oro" /><span><b>Detectaste una falsificación</b><small>Un nombre con la descripción de otro. Quemarla da ventaja.</small></span></li>
+          </ul>
+          <p className="silencio">
+            El daño de cada diagrama son <b>puntos</b> (cuánto lo sostiene el texto) por un
+            <b> multiplicador</b> (cuánto se articula). Un montón de trazos sueltos pega poco;
+            pocos trazos verdaderos que se tocan, mucho.
           </p>
           <div className="fila">
             <button className="btn primario grande" onClick={() => {
