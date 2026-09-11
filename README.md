@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.55
+# LudusCog · El Archivo Infinito — v5.56
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,15 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Cita literal en la carta, barra sin callejones (v5.56)
+
+- **La carta enseña el texto**: al pasar el cursor por una carta de la Mano aparece la cita
+  literal de donde sale el concepto («EN EL TEXTO (p. 6) …»), la `evidencia_textual` del
+  extractor. Es el pendiente #4 de v5.36: el juego como compañero de lectura, que devuelve
+  al PDF.
+- Fuera «1 casilla/turno» de las entidades (el carril ya muestra cómo avanzan) y fuera las
+  pestañas Misión y Taller de la barra, que estaban marcadas «pronto» y eran callejones.
 
 ## Sala v2, cuarta pasada (v5.55)
 

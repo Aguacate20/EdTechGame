@@ -17,9 +17,7 @@ interface Props {
 const PESTANAS: { id: Pestana; nombre: string; lista: boolean }[] = [
   { id: 'expedicion', nombre: 'Expedición', lista: true },
   { id: 'biblioteca', nombre: 'Biblioteca', lista: true },
-  { id: 'mision', nombre: 'Misión', lista: false },
   { id: 'coleccion', nombre: 'Colección', lista: true },
-  { id: 'taller', nombre: 'Taller', lista: false },
   { id: 'logros', nombre: 'Logros', lista: true }
 ]
 

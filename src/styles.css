@@ -1906,3 +1906,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .app .zona-acciones .btn.peligro:not(.fantasma) { background: linear-gradient(180deg, #5A1F1A, #3A1412); border: 1px solid #8C3A2E; color: #FFD2C8; border-radius: 10px; }
 .app .zona-acciones .btn.peligro:not(.fantasma)::before { content: '🔥 '; }
 .app .zona-acciones .btn.peligro:not(.fantasma):not(:disabled):hover { box-shadow: 0 0 16px rgba(255, 90, 90, .35); }
+
+/* ── quinta pasada ── */
+.app .bicho .rasgo { display: none; }
