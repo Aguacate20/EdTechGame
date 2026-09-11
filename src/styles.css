@@ -1876,7 +1876,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .app .zona-carril .parte-frente { position: absolute; top: 4px; right: 10px; padding: 0; gap: 8px; z-index: 2; opacity: .85; font-size: 11px; }
 .app .zona-carril .carril-pista { height: 118px; min-height: 0; overflow-y: hidden; scrollbar-width: thin; }
 .app .zona-carril .carril-jugador { padding-top: 0; padding-bottom: 0; }
-.app .zona-carril .retrato-sprite, .app .zona-carril .retrato { max-height: 112px; }
 /* la cuenta vive en la barra inferior tras afirmar; la de la mesa se oculta */
 .app .zona-lienzo .resolucion .cuenta { display: none; }
 .app .cuenta-pie { display: flex; align-items: baseline; gap: 8px; font-family: var(--mono); cursor: pointer; }
@@ -1886,3 +1885,24 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .app .cuenta-pie .total { font-size: 26px; font-weight: 800; color: var(--acento); }
 .app .cuenta-pie .total.mayor { color: var(--dominar); text-shadow: 0 0 12px rgba(255,194,61,.5); }
 @media (max-width: 720px) { .app .batalla { grid-template-rows: 88px minmax(0, 1fr) 48px 150px 56px; } .app .zona-carril .carril-pista { height: 72px; } .app .cuenta-pie .fichas, .app .cuenta-pie .mult { font-size: 15px; } .app .cuenta-pie .total { font-size: 20px; } }
+
+/* ── Sala v2, cuarta pasada: carril limpio, objetivo sin caja, encargo y brasero ── */
+/* la pista usa todo el alto del carril; nada se corta por abajo */
+.app .zona-carril { padding: 4px 12px 0; }
+.app .zona-carril .carril-pista { height: 128px; }
+.app .zona-carril .carril-jugador { align-items: flex-end; padding-bottom: 6px; }
+/* el objetivo en la mira: en vez de caja roja, un halo bajo la entidad y el nombre en rojo claro */
+.app .bicho.en-mira::after { border: 0; inset: auto 6px -3px 6px; height: 3px; border-radius: 3px; background: var(--resiste); box-shadow: 0 0 10px var(--resiste); }
+.app .bicho .nom { font-weight: 700; }
+.app .bicho .rasgo, .app .bicho .fase { color: var(--texto-2); }
+/* el encargo como tarjetas del sistema */
+.app .intro-sala { background: rgba(21, 34, 74, .92); border: 1px solid var(--borde); border-radius: 12px; backdrop-filter: blur(8px); }
+.app .intro-sala .ficha { background: #1A2A58; color: var(--texto); border: 1px solid var(--borde); border-radius: 12px; box-shadow: none; }
+.app .intro-sala .ficha:hover { border-color: var(--acento); box-shadow: 0 0 18px rgba(255, 106, 26, .25); transform: none; }
+.app .intro-sala .ficha .cuerpo { color: var(--texto-2); }
+.app .intro-sala .ficha .tt { color: var(--descubierto); }
+.app .intro-sala .ficha .nom { font-size: 15px; font-weight: 800; color: var(--texto); }
+/* quemar como brasero */
+.app .zona-acciones .btn.peligro:not(.fantasma) { background: linear-gradient(180deg, #5A1F1A, #3A1412); border: 1px solid #8C3A2E; color: #FFD2C8; border-radius: 10px; }
+.app .zona-acciones .btn.peligro:not(.fantasma)::before { content: '🔥 '; }
+.app .zona-acciones .btn.peligro:not(.fantasma):not(:disabled):hover { box-shadow: 0 0 16px rgba(255, 90, 90, .35); }

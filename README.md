@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.54
+# LudusCog · El Archivo Infinito — v5.55
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,17 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Sala v2, cuarta pasada (v5.55)
+
+- **El jugador dejaba de verse bien por mi culpa**: un tope de alto sobre el marco del
+  sprite descuadró la ventana que recorta la tira de animación (salían dos cuadros seguidos)
+  y los pies quedaban bajo el borde. Fuera ese tope; la pista usa todo el alto del carril
+  (128 px) y el jugador se alinea al pie con margen.
+- **Objetivo sin caja**: la entidad en la mira lleva un halo rojo bajo los pies y el nombre
+  en claro, en vez del recuadro.
+- **Encargo como tarjetas** del sistema (oscuras, borde naranja al pasar), y **Quemar como
+  brasero** (botón rojo oscuro con llama).
 
 ## Sala v2, tercera pasada (v5.54)
 
