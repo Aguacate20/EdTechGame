@@ -113,6 +113,7 @@ export default function App() {
   /** el plan entero del perfil (la galaxia lo ve todo); la expedición juega un tema */
   const completoRef = useRef<Contenido | null>(null)
   const [temaActivo, setTemaActivoEstado] = useState<string | null>(null)
+  const [conceptoFoco, setConceptoFoco] = useState<string | null>(null)
   const temaRef = useRef<string | null>(null)
   const setTemaActivo = useCallback((id: string | null) => { temaRef.current = id; setTemaActivoEstado(id) }, [])
   const subidas = useSubidas()
@@ -712,7 +713,7 @@ export default function App() {
   }
   const irA = (p: Pestana) => {
     const suelta = (f: Fase) => (['atlas', 'logros', 'biblioteca'] as Fase[]).includes(f) ? faseAnterior : f
-    if (p === 'coleccion') { setFaseAnterior(suelta(fase)); setFase('atlas') }
+    if (p === 'coleccion') { setConceptoFoco(null); setFaseAnterior(suelta(fase)); setFase('atlas') }
     else if (p === 'logros') { setFaseAnterior(suelta(fase)); setFase('logros') }
     else if (p === 'biblioteca') { setFaseAnterior(suelta(fase)); setFase('biblioteca') }
     else if (p === 'expedicion') setFase('inicio')
@@ -750,7 +751,7 @@ export default function App() {
           temas={temasDe(completoRef.current ?? contenido)} temaActivo={temaActivo} onTema={setTemaActivo}
           onContinuar={() => (guardada ? retomar() : empezarExpedicion(false))}
           onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}
-          onEstrella={() => { setFaseAnterior('inicio'); setFase('atlas') }}
+          onEstrella={(id) => { setConceptoFoco(id); setFaseAnterior('inicio'); setFase('atlas') }}
           acciones={(
             <button className="btn fantasma" onClick={() => empezarTutorial(0)} disabled={tutorial !== null}>Tutorial</button>
           )}
@@ -775,7 +776,7 @@ export default function App() {
       <div className="app">
         {barra(fase === 'logros' ? 'logros' : 'coleccion')}
         <ColeccionView
-          key={fase} contenido={completoRef.current ?? contenido} atlas={atlas} inicial={fase === 'logros' ? 'logros' : 'estrellas'}
+          key={fase} contenido={completoRef.current ?? contenido} atlas={atlas} inicial={fase === 'logros' ? 'logros' : 'estrellas'} conceptoFoco={conceptoFoco}
           onAtlas={(a) => { setAtlas(a); guardarAtlas(a) }} onVolver={volver}
         />
       </div>

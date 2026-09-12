@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Contenido } from '../content/types'
 import { confirmarPropuestas, nivelDe, type Atlas } from '../engine/atlas'
 import { HAZANAS } from '../engine/hazanas'
@@ -9,7 +9,7 @@ type Pestana = 'estrellas' | 'propuestas' | 'logros' | 'atlas'
 /** Colección según Coleccion.dc.html: las estrellas del cielo por zona con
  *  su estado (lo que se te resiste, primero), tus propuestas para confirmar
  *  o descartar, los logros con su progreso, y el Atlas completo de siempre. */
-interface Props { contenido: Contenido; atlas: Atlas; inicial?: Pestana; onAtlas: (a: Atlas) => void; onVolver: () => void }
+interface Props { contenido: Contenido; atlas: Atlas; inicial?: Pestana; conceptoFoco?: string | null; onAtlas: (a: Atlas) => void; onVolver: () => void }
 
 const ESTADO = ['No tocada', 'Vista', 'Reconocida', 'Relacionada', 'Consolidada', 'Se te resiste']
 const COLOR = ['var(--texto-2)', 'var(--texto-2)', 'var(--descubierto)', 'var(--descubierto)', 'var(--dominar)', 'var(--resiste)']
@@ -22,8 +22,11 @@ function estadoDe(atlas: Atlas, id: string): number {
   return n >= 3 ? 4 : n === 2 ? 3 : n === 1 ? 2 : 1
 }
 
-export function ColeccionView({ contenido, atlas, inicial = 'estrellas', onAtlas, onVolver }: Props) {
+export function ColeccionView({ contenido, atlas, inicial = 'estrellas', conceptoFoco = null, onAtlas, onVolver }: Props) {
   const [pestana, setPestana] = useState<Pestana>(inicial)
+  const [abierto, setAbierto] = useState<string | null>(conceptoFoco)
+  const focoRef = useRef<HTMLLIElement>(null)
+  useEffect(() => { if (conceptoFoco) { setAbierto(conceptoFoco); setTimeout(() => focoRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60) } }, [conceptoFoco])
   const t = (id: string) => contenido.conceptos[id]?.titulo ?? id
   const propuestas = Object.entries(atlas.propuestas)
   const resisten = contenido.ordenConceptos.filter((id) => estadoDe(atlas, id) === 5)
@@ -57,10 +60,26 @@ export function ColeccionView({ contenido, atlas, inicial = 'estrellas', onAtlas
               <ul className="estrella-lista">
                 {z.conceptIds.map((id) => {
                   const e = estadoDe(atlas, id)
+                  const k = contenido.conceptos[id]
+                  const open = abierto === id
                   return (
-                    <li key={id}>
-                      <i className="estrella-punto" style={{ background: COLOR[e], boxShadow: e >= 2 ? `0 0 8px ${COLOR[e]}` : 'none', opacity: e === 0 ? 0.45 : 1 }} />
-                      <span className="entrar-item-texto"><b>{t(id)}</b><small>{ESTADO[e]}{e > 0 ? ` · nivel ${nivelDe(atlas.conceptos[id])}` : ''}</small></span>
+                    <li key={id} ref={conceptoFoco === id ? focoRef : undefined} className={`estrella-fila${open ? ' abierta' : ''}${conceptoFoco === id ? ' foco' : ''}`}>
+                      <button className="estrella-cab" onClick={() => setAbierto(open ? null : id)} aria-expanded={open}>
+                        <i className="estrella-punto" style={{ background: COLOR[e], boxShadow: e >= 2 ? `0 0 8px ${COLOR[e]}` : 'none', opacity: e === 0 ? 0.45 : 1 }} />
+                        <span className="entrar-item-texto"><b>{t(id)}</b><small>{ESTADO[e]}{e > 0 ? ` · nivel ${nivelDe(atlas.conceptos[id])}` : ''}</small></span>
+                        <span className="estrella-flecha" aria-hidden="true">{open ? '▾' : '▸'}</span>
+                      </button>
+                      {open && (
+                        <div className="estrella-detalle">
+                          <p className="estrella-def">{k.definicion || k.definicionCorta}</p>
+                          {k.evidencia && (
+                            <blockquote className="estrella-cita">
+                              <small>En el texto{k.paginas?.length ? ` · p. ${k.paginas.join(', ')}` : ''}</small>
+                              «{k.evidencia}»
+                            </blockquote>
+                          )}
+                        </div>
+                      )}
                     </li>
                   )
                 })}

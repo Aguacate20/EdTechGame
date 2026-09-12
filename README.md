@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.58
+# LudusCog · El Archivo Infinito — v5.59
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,18 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## La cita en Colección, el encargo del diseño, las cartas del tutorial encendidas (v5.59)
+
+- La cita literal sale del tooltip de la carta (era un bloque enorme) y entra en
+  **Colección · Estrellas**: cada concepto se abre y muestra su definición y la cita del
+  texto con la página. Tocar una estrella en el inicio lleva a Colección con ese concepto
+  abierto, enfocado y centrado.
+- El **encargo** («¿Qué te propones en esta sala?») según `Sala v2 · encargo`: velo con
+  desenfoque, título grande, opciones como tarjetas, «Cumplirlo cura. No cumplirlo no
+  castiga.»
+- Las **cartas del paso del tutorial** se encienden con borde y latido naranja por encima de
+  la piel de la carta (la regla anterior perdía contra el fondo en línea) y el resto se atenúa.
 
 ## El tema elegido manda (v5.58)
 

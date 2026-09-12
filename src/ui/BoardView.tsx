@@ -253,14 +253,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   const foco = guia?.foco
-  /** la cita literal del texto de la que sale el concepto, con sus páginas */
-  const citaDe = (p: Pieza): string => {
-    const k = p.conceptId ? contenido.conceptos[p.conceptId] : null
-    if (!k?.evidencia) return ''
-    const pags = k.paginas?.length ? ` (p. ${k.paginas.join(', ')})` : ''
-    const cita = k.evidencia.length > 220 ? k.evidencia.slice(0, 218) + '…' : k.evidencia
-    return `\n\nEN EL TEXTO${pags}\n«${cita}»`
-  }
   const burbujaRef = useRef<HTMLElement>(null)
   const zona = (z: string) => (foco?.zona === z ? ' destacada' : '')
   const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
@@ -665,7 +657,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDoubleClick={() => pedirDevolver(p.uid)}
                 onMouseEnter={() => herramienta && !inservible && setPrevisualizada(p.uid)}
                 onMouseLeave={() => setPrevisualizada((x) => (x === p.uid ? null : x))}
-                data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '') + citaDe(p)}
+                data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
                 {marcada && <span className="orden">{orden + 1}</span>}
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
@@ -899,7 +891,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   if (!piezaLibre(p.uid)) return
                   setSeleccion(seleccion === p.uid ? null : p.uid); despertarAudio()
                 }}
-                data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '') + citaDe(p)}
+                data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
@@ -914,7 +906,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       {/* ============================ encargo ============================= */}
       {encargoPendiente && (
         <div className="encargos">
-          <span className="eyebrow">¿Qué te propones en esta sala?</span>
+          <span className="eyebrow">Antes de empezar</span>
+          <h2 className="encargos-titulo">¿Qué te propones en esta sala?</h2>
           <div className="encargos-fila">
             {e.encargosOfrecidos.map((en) => (
               <button key={en.id} className={`encargo n${en.nivel}`}
