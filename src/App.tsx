@@ -212,7 +212,9 @@ export default function App() {
     // el equipo NO se hereda: cada expedición se arma de nuevo, y la portada
     // decide con qué ojos se entra
     setLentes([...portada.lentesIniciales]); setSellos([])
-    setHerramientas([...EQUIPO_INICIAL.herramientas, ...portada.herramientasExtra] as HerramientaId[])
+    // v5.66 · el kit inicial + todo lo desbloqueado en el perfil (una herramienta ganada vale para siempre)
+    const delPerfil = (atlas?.herramientas ?? []) as HerramientaId[]
+    setHerramientas([...new Set([...EQUIPO_INICIAL.herramientas, ...delPerfil, ...portada.herramientasExtra])] as HerramientaId[])
     setManoExtra(portada.manoDelta)
     setBatalla(null); setVictoria(false)
     borrarExpedicion(); setGuardada(null)
@@ -555,6 +557,10 @@ export default function App() {
     // convivencias, propuestas, lo insinuado— no es ni una cosa ni la otra:
     // hasta v5.35 se contaba como fallo, y explorar bajaba un concepto a
     // «se te resiste». Eso era contar la creatividad como error.
+    // v5.66 · la primera vez que una herramienta se sostiene, queda desbloqueada en el perfil
+    for (const v of r.diag.veredictos) {
+      if (esAcierto(v.estado) && !(a.herramientas ?? []).includes(v.trazo.tool)) a.herramientas = [...(a.herramientas ?? []), v.trazo.tool]
+    }
     for (const v of r.diag.veredictos) {
       if (v.estado === 'silencio') continue
       const ok = esAcierto(v.estado)
@@ -721,7 +727,7 @@ export default function App() {
     switch (r.tipo) {
       case 'lente': setLentes((x) => [...x, r.id]); break
       case 'sello': setSellos((x) => [...x, r.id]); break
-      case 'herramienta': setHerramientas((x) => [...x, r.id]); break
+      case 'herramienta': setHerramientas((x) => [...x, r.id]); if (atlas && !(atlas.herramientas ?? []).includes(r.id)) { const a2 = { ...atlas, herramientas: [...(atlas.herramientas ?? []), r.id] }; setAtlas(a2); guardarAtlas(a2) } break
       case 'relacion':
         setAtlas((prev) => {
           if (!prev) return prev

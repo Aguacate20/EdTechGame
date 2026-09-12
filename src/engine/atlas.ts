@@ -63,6 +63,8 @@ export interface Atlas {
   apuestasCalibradas: number
   /** hazañas cumplidas: desbloquean lentes en el botín */
   hazanas: string[]
+  /** v5.66 · herramientas desbloqueadas en el perfil: se ganan una vez y valen para siempre */
+  herramientas?: string[]
   /** autorregulación: lo que se declaró y lo que resultó, por fase del ciclo */
   srl: {
     encargosElegidos: number

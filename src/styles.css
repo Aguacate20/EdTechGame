@@ -1989,3 +1989,9 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .orientacion-siguiente { color: var(--texto-2); }
 .orientacion-siguiente b { color: var(--descubierto); }
 .orientacion-evidencia { color: var(--texto-2); font-style: italic; font-size: 12px; }
+
+/* ── zoom de la mesa ── */
+.zoom-mesa { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 3; }
+.zoom-mesa .btn { min-width: 32px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; }
+.app .zona-lienzo { position: relative; }
+.app .zona-lienzo .lienzo { zoom: var(--zoom, 1); }

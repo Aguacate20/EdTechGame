@@ -39,9 +39,9 @@ const pruebas: Record<HerramientaId, Constructor> = {
     return k ? { piezas: k.conceptIds.slice(0, 3).map(K), param: null, material: `${c.clusters.length} clusters` } : null
   },
   jerarquia: () => {
-    const padre = ids.find((p) => c.aristas.filter((x) => x.tipo === 'ejemplifica' && x.to === p).length >= 1)
+    const padre = ids.find((p) => c.aristas.some((x) => (x.tipo === 'ejemplifica' && x.to === p) || (x.tipo === 'generaliza' && x.from === p)))
     if (!padre) return null
-    const hijos = c.aristas.filter((x) => x.tipo === 'ejemplifica' && x.to === padre).map((x) => x.from)
+    const hijos = [...c.aristas.filter((x) => x.tipo === 'ejemplifica' && x.to === padre).map((x) => x.from), ...c.aristas.filter((x) => x.tipo === 'generaliza' && x.from === padre).map((x) => x.to)]
     return { piezas: [K(padre), ...hijos.slice(0, 2).map(K)], param: null, material: `${c.aristas.filter((x) => x.tipo === 'ejemplifica' || x.tipo === 'generaliza').length} aristas ejemplifica/generaliza` }
   },
   eje: () => {
@@ -80,7 +80,8 @@ const pruebas: Record<HerramientaId, Constructor> = {
   contraejemplo: () => {
     const caso = c.casos.find((k) => k.conceptIds.length >= 1)
     if (!caso) return null
-    const ajeno = ids.find((id) => !caso.conceptIds.includes(id))
+    const vecino = ids.find((id) => !caso.conceptIds.includes(id) && c.aristas.some((x) => (x.from === id && caso.conceptIds.includes(x.to)) || (x.to === id && caso.conceptIds.includes(x.from))))
+    const ajeno = vecino ?? ids.find((id) => !caso.conceptIds.includes(id))
     return ajeno ? { piezas: [piezaCaso(c, caso.id)!, K(ajeno)], param: null, material: `${c.casos.length} casos` } : null
   },
   analogia: () => {

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.65
+# LudusCog · El Archivo Infinito — v5.66
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,21 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Herramientas del perfil, potencial de daño y zoom (v5.66)
+
+- **Las herramientas se desbloquean en el perfil, no en la partida.** La primera vez que un
+  trazo con una herramienta se sostiene (en cualquier expedición) o que se toma del botín,
+  queda en `atlas.herramientas` y toda expedición futura empieza con ella. El kit inicial
+  sigue siendo Identidad + Flecha + Campo; lo demás se gana una vez.
+- **Los enemigos se ajustan al potencial del jugador**: vida × (1 + 0.10 por herramienta
+  distinta más allá del kit + 0.05 por carta más allá de seis). La mano crece una carta por
+  cada tres herramientas más allá del kit, hasta nueve. Los enemigos fijos (tutorial) no
+  se tocan.
+- **Zoom de la mesa** (−, %, +; 50–160 %): mapas más grandes sin perder el conjunto.
+- La auditoría (`npm run herramientas`) construye Jerarquía también por `generaliza` y el
+  Contraejemplo con un concepto que ronda el caso (antes elegía uno lejano y el motor lo
+  llamaba «demasiado fácil», que era correcto).
 
 ## Orientación precisa en cada trazo (v5.65)
 

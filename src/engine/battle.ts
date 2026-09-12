@@ -348,7 +348,14 @@ export function iniciarBatalla(
     apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
-    e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
+    // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
+  // multiplicador) y con la mano. Los enemigos se ajustan a ese potencial, y la mano
+  // crece una carta por cada tres herramientas más allá del kit, hasta nueve.
+  const distintas = new Set(bolsa.herramientas).size
+  const potencia = 1 + 0.10 * Math.max(0, distintas - 3) + 0.05 * Math.max(0, e.manoBase - 6)
+  if (!bolsa.enemigosFijos) for (const en of e.enemigos) { en.hpMax = Math.round(en.hpMax * potencia); en.hp = Math.round(en.hp * potencia) }
+  e.manoBase = Math.min(9, e.manoBase + Math.floor(Math.max(0, distintas - 3) / 3))
+  e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
   // los escenarios de la primera oleada (si los hay) entran ya al mazo
   for (const id of e.oleadas[0]?.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) e.mazo.push(pz) }
     const primera = e.oleadas[0]

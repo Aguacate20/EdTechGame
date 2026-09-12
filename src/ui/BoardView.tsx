@@ -257,6 +257,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   const foco = guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
+  /** v5.66 · zoom de la mesa: mapas más grandes sin perder de vista el conjunto */
+  const [zoom, setZoom] = useState(1)
   const zona = (z: string) => (foco?.zona === z ? ' destacada' : '')
   const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
   const herrLibre = (id: HerramientaId) => !foco?.herramientas || foco.herramientas.includes(id)
@@ -495,7 +497,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}`}>
+      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}`} style={{ ['--zoom' as string]: zoom }}>
+        <div className="zoom-mesa" role="group" aria-label="Zoom de la mesa">
+          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
+          <button className="btn chico fantasma" onClick={() => setZoom(1)} aria-label="Zoom normal">{Math.round(zoom * 100)}%</button>
+          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.min(1.6, +(z + 0.1).toFixed(2)))} aria-label="Acercar">+</button>
+        </div>
         {(() => {
           const ol = oleadaActual(e)
           if (!ol) return null
