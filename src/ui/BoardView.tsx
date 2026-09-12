@@ -500,6 +500,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
       {/* ============================ lienzo ============================ */}
       <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}`} style={{ ['--zoom' as string]: zoom }}>
+        {e.mapa && (
+          <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
+            <small>Mapa de la sala · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length}/${e.mapa.umbral}`}{e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? ' · completo ✦' : ''}</small>
+            <div className="mapa-chips">
+              {[...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))].slice(0, 10).map((id) => <span key={id} className="mapa-chip">{recorte(contenido.conceptos[id]?.titulo ?? id, 18)}</span>)}
+              {e.mapa.trazos.length === 0 && <span className="mapa-vacio">Aún nada sostenido. Lo que sostengas se queda aquí toda la sala.</span>}
+            </div>
+          </div>
+        )}
         <div className="zoom-mesa" role="group" aria-label="Zoom de la mesa">
           <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
           <button className="btn chico fantasma" onClick={() => setZoom(1)} aria-label="Zoom normal">{Math.round(zoom * 100)}%</button>
@@ -978,11 +987,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           <>
             {e.mapa && e.mapa.trazos.length > 0 && (
               <button
-                className={`btn ${e.mapa.trazos.length >= e.mapa.umbral ? 'primario cristalizar listo' : 'fantasma cristalizar'}`}
-                disabled={e.mapa.trazos.length < e.mapa.umbral || !on.cristalizar}
+                className={`btn ${e.mapa.trazos.length >= e.mapa.umbral || (e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta) ? 'primario cristalizar listo' : 'fantasma cristalizar'}`}
+                disabled={!(e.mapa.trazos.length >= e.mapa.umbral || (e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta)) || !on.cristalizar}
                 onClick={on.cristalizar}
                 title="El mapa de la sala golpea entero (×2, ×3 si cruza zonas) y se vacía para empezar otro."
-              >◆ Cristalizar mapa {e.mapa.trazos.length}/{e.mapa.umbral}</button>
+              >◆ Cristalizar mapa {e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? 'completo ×3' : `${e.mapa.trazos.length}/${e.mapa.umbral}`}</button>
             )}
             <button
               data-tutorial="afirmar"

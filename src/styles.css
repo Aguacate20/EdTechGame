@@ -1994,8 +1994,15 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .zoom-mesa { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 3; }
 .zoom-mesa .btn { min-width: 32px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; }
 .app .zona-lienzo { position: relative; }
-.app .zona-lienzo .lienzo { zoom: var(--zoom, 1); }
+.app .zona-lienzo .lienzo { transform: scale(var(--zoom, 1)); transform-origin: center center; transition: transform .2s ease; }
 
 /* ── cristalizar ── */
 .btn.cristalizar { font-family: var(--mono); font-size: 13px; }
 .btn.cristalizar.listo { background: linear-gradient(135deg, var(--dominar), var(--acento)); color: #1A1200; box-shadow: 0 0 22px rgba(255,194,61,.5); animation: latido-naranja 1.4s ease-in-out infinite; }
+
+/* ── mapa de la sala ── */
+.mapa-sala { position: absolute; top: 8px; left: 8px; z-index: 3; max-width: 60%; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+.mapa-sala small { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--dominar); }
+.mapa-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.mapa-chip { font-size: 11px; background: rgba(255,194,61,.12); border: 1px solid rgba(255,194,61,.45); color: var(--texto); border-radius: 999px; padding: 1px 8px; }
+.mapa-vacio { font-size: 11px; color: var(--texto-2); }

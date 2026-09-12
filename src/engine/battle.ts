@@ -78,7 +78,7 @@ export interface PiezaEnTablero { uid: string; x: number; y: number }
 export interface EstadoBatalla {
   /** v5.67 · el mapa de la sala: lo sostenido en turnos anteriores, con sus conceptos.
    *  Un trazo nuevo que toca el mapa multiplica; al llegar al umbral se puede cristalizar. */
-  mapa: { trazos: { tool: string; conceptIds: string[]; fichas: number }[]; umbral: number; cristalizaciones: number }
+  mapa: { trazos: { tool: string; conceptIds: string[]; fichas: number; firma: string }[]; umbral: number; cristalizaciones: number; /** vínculos del texto entre los conceptos de la sala que el jugador puede trazar */ meta: number; /** cuántos de esos ya están en el mapa */ hechos: number }
   /** v5.62 · aciertos y fallos de la oleada en curso (andamio contingente) */
   aciertosOleada: number
   fallosOleada: number
@@ -348,7 +348,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0 }, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
@@ -363,6 +363,7 @@ export function iniciarBatalla(
   if (!bolsa.mazoFijo) e.manoBase = Math.min(9, Math.max(5, e.manoBase - 1) + (tiene('ancla') || tiene('contraejemplo') ? 2 : 0) + (tiene('balanza') ? 1 : 0))
   // el umbral de cristalizar sube con el acto: mapas más grandes en salas más duras
   e.mapa.umbral = acto >= 2 ? 8 : acto === 1 ? 7 : 6
+  e.mapa.meta = vinculosDeLaSala(e, ctx).length
   e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
   // los escenarios de la primera oleada (si los hay) entran ya al mazo
   for (const id of e.oleadas[0]?.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) e.mazo.push(pz) }
@@ -627,8 +628,17 @@ export const nombreSello = (id: SelloId): string => SELLOS[id].nombre
    Afirmar el diagrama completo
    ========================================================================== */
 
+/** v5.69 · los vínculos del texto entre los conceptos de la sala que el jugador puede
+ *  trazar ahora (tipos disponibles): la meta del mapa. */
+export function vinculosDeLaSala(e: EstadoBatalla, ctx: ContextoBatalla): { from: string; to: string; tipo: string }[] {
+  const dentro = new Set(e.conceptIdsCasilla)
+  const tipos = new Set(e.relacionesDisponibles)
+  return ctx.contenido.aristas.filter((a) => dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)))
+}
+const parEnMapa = (e: EstadoBatalla, a: string, b: string) => e.mapa.trazos.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
+
 /** v5.67 · ¿el mapa de la sala llegó al umbral? */
-export function puedeCristalizar(e: EstadoBatalla): boolean { return e.mapa.trazos.length >= e.mapa.umbral && e.fase === 'jugando' }
+export function puedeCristalizar(e: EstadoBatalla): boolean { return (e.mapa.trazos.length >= e.mapa.umbral || (e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta)) && e.fase === 'jugando' }
 
 /** Cristalizar: el mapa entero golpea de una vez (×2; ×3 si cruza zonas) y se vacía
  *  para empezar otro. Es el evento de impacto: la razón para TERMINAR un mapa. */
@@ -636,7 +646,8 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
   const ids = [...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))]
   const zonas = new Set(ids.map((id) => ctx.contenido.conceptos[id]?.clusterId).filter(Boolean)).size
   const base = e.mapa.trazos.reduce((n, x) => n + x.fichas, 0)
-  const factor = zonas >= 2 ? 3 : 2
+  const completo = e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta
+  const factor = completo ? 3 : zonas >= 2 ? 3 : 2
   const dano = Math.round(base * factor)
   const impactos: { nombre: string; dano: number; derribado: boolean }[] = []
   // golpe a todos, repartido de delante hacia atrás con arrastre
@@ -648,7 +659,7 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
     impactos.push({ nombre: en.nombre, dano: d, derribado: en.hp === 0 })
   }
   const trazos = e.mapa.trazos.length
-  e.mapa = { trazos: [], umbral: Math.min(10, e.mapa.umbral + 1), cristalizaciones: e.mapa.cristalizaciones + 1 }
+  e.mapa = { trazos: [], umbral: Math.min(10, e.mapa.umbral + 1), cristalizaciones: e.mapa.cristalizaciones + 1, meta: e.mapa.meta, hechos: completo ? e.mapa.meta : e.mapa.hechos }
   e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: factor, trazos } : e.mejorGolpe
   return { dano, zonas, trazos, impactos }
 }
@@ -666,14 +677,49 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   // (comparte un concepto con lo ya sostenido) suma articulación con lo previo.
   // Un trazo que une dos islas del mapa vale más que uno suelto.
   const enMapa = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
-  const nuevosSostenidos = diag.veredictos.filter((v) => esAcierto(v.estado))
+  const firma = (tool: string, ids: string[], param: string | null) => `${tool}|${[...ids].sort().join(',')}|${param ?? ''}`
+  const yaEnMapa = new Set(e.mapa.trazos.map((x) => x.firma))
+  // v5.68 · repetir un trazo que ya está en el mapa no suma: el mapa convierte la
+  // repetición en un no-movimiento y empuja a explorar
+  const repetidos = diag.veredictos.filter((v) => esAcierto(v.estado) && yaEnMapa.has(firma(v.trazo.tool, v.conceptIds, v.trazo.param)))
+  for (const v of repetidos) {
+    diag.fichas -= v.fichas; diag.mult -= v.mult
+    v.fichas = 0; v.mult = 0; v.nota = `${v.nota} · Ya está en tu mapa de la sala: no suma dos veces.`
+  }
+  if (repetidos.length) { diag.mult = Math.max(0.4, diag.mult); diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult) }
+  const nuevosSostenidos = diag.veredictos.filter((v) => esAcierto(v.estado) && !repetidos.includes(v))
   const conexiones = nuevosSostenidos.filter((v) => v.conceptIds.some((id) => enMapa.has(id))).length
   if (conexiones > 0) {
     diag.mult += 0.5 * conexiones
     diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
     diag.combos.push({ id: 'articulacion', nombre: 'Enlace con el mapa', fichas: 0, mult: 0.5 * conexiones, detalle: `${conexiones} trazo(s) enganchan con lo que ya sostuviste en esta sala.` })
   }
-  for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas })
+  for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
+  // v5.69 · la meta es el mapa completo: cuántos vínculos de la sala ya están sostenidos
+  const vinculos = vinculosDeLaSala(e, ctx)
+  e.mapa.hechos = vinculos.filter((a) => parEnMapa(e, a.from, a.to)).length
+  // v5.69 · las cartas agotadas (su concepto ya no puede aportar ningún vínculo nuevo
+  // al mapa, y ya no le queda identidad por resolver) salen del mazo y del descarte.
+  // Todo se orienta a completar el mapa; la mano solo trae lo que aún suma.
+  {
+    const pendiente = new Set(vinculos.filter((a) => !parEnMapa(e, a.from, a.to)).flatMap((a) => [a.from, a.to]))
+    const agotada = (p: Pieza) => !!p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && !pendiente.has(p.conceptId) && e.fusionados.includes(p.conceptId)
+    e.mazo = e.mazo.filter((p) => !agotada(p))
+    e.descarte = e.descarte.filter((p) => !agotada(p))
+  }
+  // v5.68 · el mazo rota por novedad: primero las cartas cuyos conceptos aún tienen
+  // vínculos por sostener en esta sala; las agotadas van al fondo
+  {
+    const enMapa2 = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
+    const usos = new Map<string, number>()
+    for (const x of e.mapa.trazos) for (const id of x.conceptIds) usos.set(id, (usos.get(id) ?? 0) + 1)
+    const novedad = (p: Pieza) => {
+      if (!p.conceptId) return 1
+      const incidentes = ctx.contenido.aristas.filter((a) => a.from === p.conceptId || a.to === p.conceptId).length
+      return incidentes - (usos.get(p.conceptId) ?? 0) + (enMapa2.has(p.conceptId) ? 0.5 : 0)
+    }
+    e.mazo = [...e.mazo].sort((a, b) => novedad(b) - novedad(a))
+  }
   // no se avanza acumulando, se avanza reusando: si el diagrama no toca nada de
   // las oleadas anteriores, rinde la mitad
   if (e.previos.length && diag.dano > 0) {

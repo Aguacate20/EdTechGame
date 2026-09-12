@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.67
+# LudusCog · El Archivo Infinito — v5.69
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,30 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Todo se orienta al mapa completo (v5.69)
+
+- **La meta de la sala es el mapa del texto**: los vínculos que el texto afirma entre los
+  conceptos de la sala (con los tipos que el jugador ya puede trazar). El rótulo dice «Mapa
+  de la sala · 4/9 vínculos del texto» y, al completarlo, «completo ✦».
+- **Las cartas agotadas salen del mazo**: cuando un concepto ya no puede aportar ningún
+  vínculo nuevo al mapa y ya no le queda identidad por resolver, sus cartas dejan de
+  volver. La mano solo trae lo que todavía suma.
+- **Cristalizar el mapa completo vale ×3** siempre (aunque no cruce zonas) y está
+  disponible en cuanto se completa, sin esperar al umbral.
+
+## El mapa se ve, la repetición no suma, el mazo rota (v5.68)
+
+- **Repetir no suma.** Un trazo que ya está en el mapa de la sala (misma herramienta,
+  mismos conceptos, mismo tipo) vale cero fichas y lo dice: «Ya está en tu mapa de la sala:
+  no suma dos veces». El mapa persistente convierte la repetición en un no-movimiento.
+- **El mazo rota por novedad.** Tras cada afirmación, las cartas cuyos conceptos aún tienen
+  vínculos por sostener en esta sala van primero; las agotadas, al fondo. Salas chicas
+  dejan de devolver las mismas cartas.
+- **El mapa se ve**: en la esquina de la mesa, «Mapa de la sala · n/umbral» con los conceptos
+  ya sostenidos como chips dorados. Lo que se enlaza con esos chips multiplica.
+- **Zoom de cámara**: escala alrededor del centro (las piezas conservan su posición
+  relativa y la vista se aleja), en vez de encoger el tablero hacia la esquina.
 
 ## La mesa es el arma (v5.67)
 
