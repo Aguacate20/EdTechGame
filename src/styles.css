@@ -1981,3 +1981,11 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .porque-botin { max-width: 760px; margin: 12px auto 0; padding: 10px 14px; background: var(--panel); border: 1px solid var(--borde); border-left: 3px solid var(--transferir); border-radius: 0 10px 10px 0; }
 .porque-botin small { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--transferir); margin-bottom: 4px; }
 .porque-botin ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--texto-2); }
+
+/* ── orientación del veredicto ── */
+.orientacion { margin-top: 6px; padding: 8px 10px; border-left: 3px solid var(--descubierto); background: var(--panel-hundido); border-radius: 0 8px 8px 0; display: flex; flex-direction: column; gap: 4px; }
+.orientacion p { margin: 0; font-size: 13px; line-height: 1.4; }
+.orientacion-causa { color: var(--texto); }
+.orientacion-siguiente { color: var(--texto-2); }
+.orientacion-siguiente b { color: var(--descubierto); }
+.orientacion-evidencia { color: var(--texto-2); font-style: italic; font-size: 12px; }

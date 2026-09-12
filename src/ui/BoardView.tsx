@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
+import { orientar } from '../engine/feedback'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -828,6 +829,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               return (
                 <div className="detalle-trazo">
                   <p className={`nota ${TONO_NOTA[ver.estado]}`} style={{ margin: 0 }}>{ver.nota}</p>
+                  {(() => {
+                    // v5.65 · orientación precisa: por qué no se sostuvo y qué probar, con el texto
+                    const o = orientar(contenido, ver, e.mano)
+                    if (!o) return null
+                    return (
+                      <div className="orientacion">
+                        <p className="orientacion-causa">{o.causa}</p>
+                        <p className="orientacion-siguiente"><b>Prueba:</b> {o.siguiente}</p>
+                        {o.evidencia && <p className="orientacion-evidencia">{o.evidencia}</p>}
+                      </div>
+                    )
+                  })()}
                   {e.apoyo && (() => {
                     // v5.62 · si el trazo tocó una intuición cotidiana, se enseña el contraste y dónde sí funciona
                     const tr = ver.trazo

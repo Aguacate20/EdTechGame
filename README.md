@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.64
+# LudusCog · El Archivo Infinito — v5.65
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,18 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Orientación precisa en cada trazo (v5.65)
+
+`src/engine/feedback.ts`: cuando un trazo no se sostiene (o se sostiene a medias), el
+veredicto añade **por qué** y **qué probar**, derivado del grafo y con las palabras del texto:
+dirección al revés (con la dirección correcta y el nombre del vínculo dual), tipo equivocado
+(el que el autor usa, con su descripción literal), vínculo inexistente (qué dice el texto de
+cada concepto y si aparecen juntos en un caso o una tesis), descripción de otro concepto (de
+cuál es, con su evidencia), falsificación, zona equivocada en Campo (qué concepto sobra),
+caso que no ilustra o no contradice, objeción en vez de criterio, plausible y convive. Nunca
+da la respuesta entera: dice hacia dónde. Lo que el grafo no puede explicar es la capa con
+LLM (ver `docs/feedback-llm.md`).
 
 ## El tutorial ya no toca tu Atlas (v5.64)
 
