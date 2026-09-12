@@ -32,7 +32,7 @@ export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, des
   // la pregunta del Vistazo, con tres respuestas: la que usa un vínculo que acabas
   // de sostener, la misma al revés, y la misma con otro tipo de vínculo
   const pregunta = aprendizaje ? vistazoDe(contenido, conceptIdsSala, atlas)?.pregunta ?? null : null
-  const claveNueva = aprendizaje ? nuevos.aristas.find((k) => k.split('>').length === 3) ?? null : null
+  const claveNueva = aprendizaje ? nuevos.aristas.find((k) => { const [f, to, tipo] = k.split('>'); return !!tipo && !!contenido.conceptos[f] && !!contenido.conceptos[to] }) ?? null : null
   const opciones = (() => {
     if (!claveNueva) return null
     const [from, to, tipo] = claveNueva.split('>')

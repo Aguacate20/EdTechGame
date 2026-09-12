@@ -151,7 +151,16 @@ export default function App() {
     setSesion(ses)
     fijarAmbito(ses?.studentId ?? null)
     iniciarSubidas(ses)
-    const local = cargarAtlas(c.fuente)
+    let local = cargarAtlas(c.fuente)
+    if (ses) {
+      // v5.64 · restos de tutorial en el Atlas del perfil (bug de v5.43–v5.63): fuera lo que no es del plan
+      const dentro = (id: string) => !!c.conceptos[id]
+      const conceptos = Object.fromEntries(Object.entries(local.conceptos).filter(([id]) => dentro(id)))
+      const aristas = Object.fromEntries(Object.entries(local.aristas).filter(([, x]) => dentro(x.from) && dentro(x.to)))
+      const propuestas = Object.fromEntries(Object.entries(local.propuestas).filter(([, x]) => dentro(x.from) && dentro(x.to)))
+      const quitados = Object.keys(local.conceptos).length - Object.keys(conceptos).length
+      if (quitados > 0) { local = { ...local, conceptos, aristas, propuestas }; guardarAtlas(local) }
+    }
     completoRef.current = c
     setContenido(c); setAtlas(local)
     setGuardada(leerExpedicion(c.fuente))
@@ -281,6 +290,11 @@ export default function App() {
    *  con mano y frente fijos, para poder guiar paso a paso. */
   const empezarTutorial = useCallback((indice: number) => {
     const c = contenidoTutorial()
+    // v5.64: el tutorial NUNCA toca el Atlas del perfil. Se guarda tu texto y tu
+    // Atlas para volver a ellos, y el tutorial carga el suyo sin ámbito de perfil.
+    if (contenido && atlas && contenido.fuente !== c.fuente) previoRef.current = { contenido: completoRef.current ?? contenido, atlas }
+    observarAtlas(null)
+    fijarAmbito(null)
     const a = cargarAtlas(c.fuente)
     const sala = SALAS_TUTORIAL[indice]
     if (!sala) { setTutorial(null); setFase('inicio'); return }
@@ -1005,7 +1019,11 @@ export default function App() {
               const prev = previoRef.current
               setTutorial(null)
               if (prev) {
-                setContenido(prev.contenido); setAtlas(prev.atlas)
+                // de vuelta al perfil: su ámbito, su Atlas (el de verdad, no el del tutorial)
+                fijarAmbito(sesion?.studentId ?? null)
+                observarAtlas(sesion ? (x) => subirAtlas(sesion, x) : null)
+                const real = cargarAtlas(prev.contenido.fuente)
+                setContenido(prev.contenido); setAtlas(real)
                 setGuardada(leerExpedicion(prev.contenido.fuente))
                 setFase('inicio')
               } else {

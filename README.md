@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.63
+# LudusCog · El Archivo Infinito — v5.64
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,16 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El tutorial ya no toca tu Atlas (v5.64)
+
+Bug desde v5.43: el Atlas se guarda por perfil, y el tutorial cargaba «su» Atlas con la misma
+función, que con perfil activo devuelve el del perfil. El tutorial escribía sus conceptos
+(«Abeja»…) en la galaxia real; de ahí salían preguntas y vínculos cruzados en salas de otro
+texto. Ahora el tutorial suelta el ámbito del perfil (juega en su propio Atlas por texto),
+recuerda tu texto y tu Atlas, y al volver restaura el ámbito y recarga el Atlas real. Al
+entrar a un perfil se limpian del Atlas los conceptos que no son del plan (restos del
+tutorial). El cierre solo construye la pregunta con vínculos del propio texto.
 
 ## Modo aprendizaje: herramientas completas y botín por andamiaje (v5.63)
 
