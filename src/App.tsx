@@ -5,7 +5,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
-  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -363,6 +363,7 @@ export default function App() {
       // la apuesta del vistazo: leerlo señala una falsificación, saltarlo da
       // una herramienta más
       apoyo: aprendizaje,
+      evidenciaPrevia: atlas ? Object.keys(atlas.conceptos) : [],
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       marcados, archivados,
@@ -437,6 +438,19 @@ export default function App() {
     return e
   })
 
+  /** v5.62 · la apuesta metacognitiva de la oleada (modo aprendizaje) */
+  const apostarOleada = (valor: 'si' | 'no') => {
+    setBatalla((prev) => { if (!prev) return prev; const e = { ...prev }; apostarOleadaBatalla(e, valor); return e })
+    registrar({
+      ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+      arquetipo: 'apuesta-oleada', condicion: null, mecanica: 'calibracion',
+      itemId: `apuesta-oleada:${valor}`, conceptIds: [],
+      operacion: 'apostar', improvisado: false, seleccion: [valor],
+      correcto: true, apuesta: valor, calibrado: true,
+      latenciaMs: batalla ? Date.now() - batalla.inicioTurno : 0,
+      ayuda: false, repertorioTocado: null
+    })
+  }
   const elegirEncargo = (en: Encargo | null) => {
     setBatalla((prev) => {
       if (!prev) return prev
@@ -619,6 +633,13 @@ export default function App() {
         asentadas: atlas ? Object.keys(atlas.aristas) : []
       }
       const siguiente = avanzarOleada(e, ctx, bolsa)
+      // v5.62 · las apuestas de oleada resueltas calibran la Lucidez del Atlas
+      if (e.apuestasOleada.length && atlas) {
+        const a = { ...atlas }
+        for (const ap of e.apuestasOleada) { a.apuestasTotales += 1; if (ap.acertada) a.apuestasCalibradas += 1 }
+        e.apuestasOleada = []
+        setAtlas(a); guardarAtlas(a)
+      }
       if (siguiente) { setBatalla(e); return }
       e.fase = 'ganado'
       setBatalla(e)
@@ -858,7 +879,7 @@ export default function App() {
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
-            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo,
+            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada,
             huir: () => {
               guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
               setGuardada(leerExpedicion(contenido.fuente))
@@ -880,6 +901,8 @@ export default function App() {
           mejorGolpe={batalla.mejorGolpe} enemigos={batalla.enemigos}
           descubiertos={batalla.relacionesNuevas}
           hazanas={hazanasNuevas.map((h) => ({ nombre: h.nombre, lente: h.lenteId }))}
+          aprendizaje={batalla.apoyo} conceptIdsSala={batalla.conceptIdsCasilla}
+          onRespuesta={(acierto) => { const a = { ...atlas, apuestasTotales: atlas.apuestasTotales + 1, apuestasCalibradas: atlas.apuestasCalibradas + (acierto ? 1 : 0) }; setAtlas(a); guardarAtlas(a) }}
           srl={{
             encargo: batalla.encargo,
             cumplido: batalla.encargo ? encargoCumplido(batalla.encargo, cuentaDe(batalla)) : false,

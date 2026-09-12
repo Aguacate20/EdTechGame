@@ -30,6 +30,8 @@ export interface Oleada {
   aviso: string
   /** oleada extra por un concepto puerta que sigue sin evidencia */
   esPuerta?: boolean
+  /** v5.62 · transferencia: escenarios (media distancia en la última oleada, lejana en la de puerta) */
+  escenarios?: string[]
 }
 
 const AVISOS: Record<NivelApoyo, string> = {
@@ -43,10 +45,16 @@ const TITULOS = ['Reconocer', 'Relacionar', 'Sostener']
 /** Reparte los conceptos de la sala en tres tandas, dejando los más centrales
  *  para el principio: lo que llega primero es lo que va a tener que reutilizarse. */
 export function componerOleadas(
-  c: Contenido, conceptIds: string[], herramientas: HerramientaId[], acto: number, rng: Rng
+  c: Contenido, conceptIds: string[], herramientas: HerramientaId[], acto: number, rng: Rng,
+  /** v5.62 · anclaje entre sesiones: conceptos con evidencia previa en el Atlas */
+  conEvidencia: string[] = []
 ): Oleada[] {
+  // lo ya visto en sesiones anteriores entra PRIMERO: la sala engancha con la
+  // galaxia que ya existe, y lo nuevo se apoya en ello (aprendizaje significativo)
+  const previo = new Set(conEvidencia)
   const orden = [...conceptIds].sort(
-    (a, b) => (c.conceptos[b]?.importancia ?? 0) - (c.conceptos[a]?.importancia ?? 0)
+    (a, b) => (previo.has(b) ? 1 : 0) - (previo.has(a) ? 1 : 0)
+      || (c.conceptos[b]?.importancia ?? 0) - (c.conceptos[a]?.importancia ?? 0)
   )
   const n = orden.length
   const corte1 = Math.max(2, Math.ceil(n * 0.4))
@@ -81,8 +89,17 @@ export function componerOleadas(
     ),
     apoyo: niveles[Math.min(i, niveles.length - 1)],
     titulo: `${TITULOS[Math.min(i, 2)]} · oleada ${i + 1} de ${tandas.length}`,
-    aviso: AVISOS[niveles[Math.min(i, niveles.length - 1)]]
+    aviso: AVISOS[niveles[Math.min(i, niveles.length - 1)]],
+    // la última oleada trae un escenario de distancia media sobre sus conceptos:
+    // comprender es poder usar el concepto donde no se aprendió
+    escenarios: i === tandas.length - 1 ? escenariosDe(c, tanda, 'media', 1) : []
   }))
+}
+
+export function escenariosDe(c: Contenido, conceptIds: string[], distancia: 'cercana' | 'media' | 'lejana', n: number): string[] {
+  return c.escenarios
+    .filter((e) => e.distancia === distancia && e.conceptIds.some((id) => conceptIds.includes(id)))
+    .slice(0, n).map((e) => e.id)
 }
 
 /** Si el concepto que ordena la unidad sigue sin sostenerse, la sala no está
@@ -109,6 +126,6 @@ export function oleadaDePuerta(
     apoyo: 'parcial',
     titulo: `El nudo · ${c.conceptos[puerta]?.titulo ?? ''}`,
     aviso: 'Este concepto ordena todo lo demás y todavía no lo has sostenido. La sala no se cierra sin él.',
-    esPuerta: true
+    esPuerta: true, escenarios: escenariosDe(c, [puerta], 'lejana', 1)
   }
 }

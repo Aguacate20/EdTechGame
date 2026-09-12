@@ -3,6 +3,7 @@ import type { Contenido } from '../content/types'
 import type { Atlas } from '../engine/atlas'
 import type { Encargo } from '../engine/srl'
 import { tipoPorId } from '../engine/lane'
+import { vistazoDe } from '../engine/objectives'
 import { Galaxia } from './Galaxia'
 
 /** El cierre de sala: la galaxia con lo ganado (arriba) y, debajo, una fila
@@ -19,10 +20,32 @@ interface Props {
   hazanas: { nombre: string; lente: string }[]
   srl: { encargo: Encargo | null; cumplido: boolean; sellosHechos: number; sellosAcertados: number; candidatos: string[] }
   onSeguir: (marcado: string | null) => void
+  /** v5.62 · modo aprendizaje: la pregunta del Vistazo se cierra aquí */
+  aprendizaje?: boolean
+  conceptIdsSala?: string[]
+  onRespuesta?: (acierto: boolean) => void
 }
 
-export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, descubiertos, hazanas, srl, onSeguir }: Props) {
+export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, descubiertos, hazanas, srl, onSeguir, aprendizaje = false, conceptIdsSala = [], onRespuesta }: Props) {
   const [marcado, setMarcado] = useState<string | null | undefined>(undefined)
+  const [respondido, setRespondido] = useState<null | { acierto: boolean }>(null)
+  // la pregunta del Vistazo, con tres respuestas: la que usa un vínculo que acabas
+  // de sostener, la misma al revés, y la misma con otro tipo de vínculo
+  const pregunta = aprendizaje ? vistazoDe(contenido, conceptIdsSala, atlas)?.pregunta ?? null : null
+  const claveNueva = aprendizaje ? nuevos.aristas.find((k) => k.split('>').length === 3) ?? null : null
+  const opciones = (() => {
+    if (!claveNueva) return null
+    const [from, to, tipo] = claveNueva.split('>')
+    const tt = (id: string) => contenido.conceptos[id]?.titulo ?? id
+    const otro = ['apoya', 'causa', 'requiere', 'ejemplifica', 'contrasta', 'extiende'].find((x) => x !== tipo) ?? 'apoya'
+    const base = [
+      { texto: `«${tt(from)}» ${tipo} «${tt(to)}»`, ok: true },
+      { texto: `«${tt(to)}» ${tipo} «${tt(from)}»`, ok: false },
+      { texto: `«${tt(from)}» ${otro} «${tt(to)}»`, ok: false }
+    ]
+    const semilla = claveNueva.length
+    return base.map((o, i) => ({ ...o, orden: (i * 7 + semilla) % 3 })).sort((a, b) => a.orden - b.orden)
+  })()
   const t = (id: string) => contenido.conceptos[id]?.titulo ?? id
   const vencidos = [...new Set(enemigos.map((x) => tipoPorId(x.tipoId).nombre))]
   const nAristas = nuevos.aristas.length, nConceptos = nuevos.conceptos.length
@@ -82,6 +105,27 @@ export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, des
         </article>
       </div>
 
+      {pregunta && (
+        <section className="panel cierre-pregunta">
+          <h3>La pregunta con la que entraste</h3>
+          <p className="cierre-pregunta-texto">{pregunta}</p>
+          {opciones ? (
+            <>
+              <p>Con lo que acabas de sostener, ¿cuál de estas la responde?</p>
+              <div className="cierre-opciones">
+                {opciones.map((o) => (
+                  <button key={o.texto} className={`btn ${respondido ? (o.ok ? 'primario' : 'fantasma') : 'fantasma'} opcion-pregunta`}
+                    disabled={!!respondido}
+                    onClick={() => { setRespondido({ acierto: o.ok }); onRespuesta?.(o.ok) }}>{o.texto}</button>
+                ))}
+              </div>
+              {respondido && <p className={respondido.acierto ? 'nota ok' : 'nota mal'}>{respondido.acierto ? 'Eso es: lo que sostuviste en la mesa es lo que responde la pregunta.' : 'No: fíjate en la dirección y el tipo del vínculo que sostuviste. La respuesta marcada es la que va con el texto.'}</p>}
+            </>
+          ) : (
+            <p>Esta vez no sostuviste ningún vínculo nuevo: la pregunta sigue abierta para la próxima sala.</p>
+          )}
+        </section>
+      )}
       <div className="cierre-pie">
         <button className="btn primario inicio-continuar" disabled={marcado === undefined} onClick={() => onSeguir(marcado ?? null)}>
           {marcado === undefined ? 'Marca algo para seguir' : 'Recoger el hallazgo'}

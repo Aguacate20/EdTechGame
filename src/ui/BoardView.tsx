@@ -24,6 +24,8 @@ import { consejoDeForma, encargoCumplido, previsualizarForma, type Encargo } fro
 import { condicionPorId } from '../engine/hazanas'
 
 export interface AccionesBatalla {
+  /** v5.62 · apuesta metacognitiva al empezar la oleada (modo aprendizaje) */
+  apostarOleada?: (valor: 'si' | 'no') => void
   cambio: (mut: (e: EstadoBatalla) => void) => void
   afirmar: () => void
   continuar: () => void
@@ -500,6 +502,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <div className={`aviso-oleada apoyo-${ol.apoyo}`}>
               <strong>{ol.titulo}</strong>
               <span>{ol.aviso}</span>
+              {on.apostarOleada && e.apuestaOleada === null && e.trazos.length === 0 && (
+                <span className="apuesta-oleada">
+                  <small>Antes de jugar: ¿sostendrás al menos un vínculo en esta oleada?</small>
+                  <button className="btn chico primario" onClick={() => on.apostarOleada!('si')}>Sí</button>
+                  <button className="btn chico fantasma" onClick={() => on.apostarOleada!('no')}>No</button>
+                </span>
+              )}
+              {e.apuestaOleada && <small className="apuesta-hecha">Apostaste: {e.apuestaOleada === 'si' ? 'sí sostendrás' : 'no sostendrás'} un vínculo. Se resuelve al cerrar la oleada.</small>}
               {ol.previos.length > 0 && (
                 <span className="reusar">
                   Apóyate en lo de antes: {ol.previos.slice(0, 4)
@@ -818,6 +828,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               return (
                 <div className="detalle-trazo">
                   <p className={`nota ${TONO_NOTA[ver.estado]}`} style={{ margin: 0 }}>{ver.nota}</p>
+                  {e.apoyo && (() => {
+                    // v5.62 · si el trazo tocó una intuición cotidiana, se enseña el contraste y dónde sí funciona
+                    const tr = ver.trazo
+                    const intu = tr ? e.mano.find((pz) => tr.piezas.includes(pz.uid) && pz.clase === 'intuicion') : null
+                    return intu ? (
+                      <div className="contraste-intuicion">
+                        <small>Intuición cotidiana · qué criterio cambia</small>
+                        <p>{intu.explicacion}</p>
+                        {intu.cierre && <p className="donde-funciona"><b>Dónde sí funciona:</b> {intu.cierre}</p>}
+                      </div>
+                    ) : null
+                  })()}
                   {ver.reserva && <p className="nota nota" style={{ margin: '6px 0 0' }}>{ver.reserva}</p>}
                 </div>
               )

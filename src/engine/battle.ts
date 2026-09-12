@@ -76,6 +76,13 @@ export interface ResultadoTurno {
 export interface PiezaEnTablero { uid: string; x: number; y: number }
 
 export interface EstadoBatalla {
+  /** v5.62 · aciertos y fallos de la oleada en curso (andamio contingente) */
+  aciertosOleada: number
+  fallosOleada: number
+  /** v5.62 · apuesta metacognitiva de la oleada: ¿sostendrás un vínculo? */
+  apuestaOleada: 'si' | 'no' | null
+  /** apuestas resueltas en esta sala (alimentan la Lucidez del Atlas) */
+  apuestasOleada: { acertada: boolean }[]
   /** modo aprendizaje activo en esta sala */
   apoyo: boolean
   /** oleadas de la sala en modo aprendizaje; vacío en modo normal */
@@ -218,6 +225,8 @@ export const TABLERO_ALTO = 100
 /* ---------------------------- montaje del mazo ---------------------------- */
 
 export interface Bolsa {
+  /** v5.62 · conceptos con evidencia previa en el Atlas (anclaje entre sesiones) */
+  evidenciaPrevia?: string[]
   herramientas: HerramientaId[]
   relaciones: string[]
   casos: string[]
@@ -336,10 +345,12 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
-    e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng)
+    e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
+  // los escenarios de la primera oleada (si los hay) entran ya al mazo
+  for (const id of e.oleadas[0]?.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) e.mazo.push(pz) }
     const primera = e.oleadas[0]
     if (primera) {
       e.enemigos = primera.enemigos
@@ -934,6 +945,13 @@ function hayMasOleadas(e: EstadoBatalla, ctx: ContextoBatalla): boolean {
   ) && !e.oleadas.some((o) => o.esPuerta)
 }
 
+const AVISOS_APOYO: Record<NivelApoyo, string> = {
+  total: 'Los conceptos llegan enteros, las falsificaciones vienen marcadas y no puedes caer.',
+  parcial: 'Los conceptos siguen enteros, pero ya no te señalo nada más.',
+  ninguno: 'A partir de aquí, sin ayudas: nombres y descripciones por separado, y la lucidez baja.'
+}
+/** v5.62 · apostar antes de jugar la oleada: ¿sostendrás al menos un vínculo? */
+export function apostarOleada(e: EstadoBatalla, valor: 'si' | 'no'): void { if (!e.apuestaOleada) e.apuestaOleada = valor }
 export const oleadaActual = (e: EstadoBatalla): Oleada | null =>
   e.oleadas[e.oleadaIdx] ?? null
 
@@ -974,6 +992,22 @@ export function avanzarOleada(e: EstadoBatalla, ctx: ContextoBatalla, bolsa: Bol
     siguiente.apoyo === 'ninguno' ? 'media' : 'facil',
     ctx.rng
   )
+  // v5.62 · la apuesta de la oleada se resuelve con lo que pasó de verdad
+  if (e.apuestaOleada) e.apuestasOleada.push({ acertada: (e.apuestaOleada === 'si') === (e.aciertosOleada > 0) })
+  e.apuestaOleada = null
+  // v5.62 · andamio contingente: dos sostenidos sin fallo adelantan la retirada;
+  // dos fallos sin acierto la frenan. Se anuncia, que es la regla del modo.
+  const actual = oleadaActual(e)
+  const niveles: NivelApoyo[] = ['total', 'parcial', 'ninguno']
+  if (e.aciertosOleada >= 2 && e.fallosOleada === 0 && siguiente.apoyo !== 'ninguno') {
+    siguiente.apoyo = niveles[Math.min(2, niveles.indexOf(siguiente.apoyo) + 1)]
+    siguiente.aviso = `Sostuviste dos veces seguidas: el andamio se retira antes. ${AVISOS_APOYO[siguiente.apoyo]}`
+  } else if (e.fallosOleada >= 2 && e.aciertosOleada === 0 && actual && niveles.indexOf(actual.apoyo) < niveles.indexOf(siguiente.apoyo)) {
+    siguiente.apoyo = actual.apoyo
+    siguiente.aviso = `Te costó: el andamio se queda una oleada más. ${AVISOS_APOYO[siguiente.apoyo]}`
+  }
+  e.aciertosOleada = 0; e.fallosOleada = 0
+  for (const id of siguiente.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) nuevas.push(pz) }
   e.mazo = ctx.rng.shuffle([...e.mazo, ...nuevas])
   e.paresFallados = []
   e.tablero = []
@@ -994,6 +1028,10 @@ export function avanzarOleada(e: EstadoBatalla, ctx: ContextoBatalla, bolsa: Bol
  *  un concepto reconocido. Meterlo todo en «pares» fabricaba aristas falsas. */
 function registrarHallazgos(e: EstadoBatalla, diag: Diagnostico): void {
   const h = e.hallazgos
+  for (const v of diag.veredictos) {
+    if (esAcierto(v.estado)) e.aciertosOleada += 1
+    else if (esFallo(v.estado)) e.fallosOleada += 1
+  }
   for (const v of diag.veredictos) {
     // la capa propia: se anota aparte, nunca entre los vínculos sostenidos
     if (esCreacion(v.estado) && v.propuesta) {

@@ -1962,3 +1962,17 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .confirmar-nueva { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--resiste); border-radius: 12px; padding: 6px 10px; }
 .confirmar-nueva small { color: var(--texto-2); }
 .btn.peligro { background: #5A1F1A; border-color: #8C3A2E; color: #FFD2C8; }
+
+/* ── modo aprendizaje v5.62 ── */
+.apuesta-oleada { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.apuesta-oleada small { color: var(--texto); }
+.apuesta-hecha { color: var(--texto-2); font-size: 12px; }
+.contraste-intuicion { margin-top: 6px; padding: 8px 10px; border-left: 3px solid var(--transferir); background: var(--panel-hundido); border-radius: 0 8px 8px 0; }
+.contraste-intuicion small { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--transferir); margin-bottom: 4px; }
+.contraste-intuicion p { margin: 0; font-size: 13px; line-height: 1.4; }
+.contraste-intuicion .donde-funciona { margin-top: 4px; color: var(--texto-2); }
+.cierre-pregunta { max-width: 1100px; }
+.cierre-pregunta-texto { font-size: 15px; font-weight: 700; color: var(--texto); }
+.cierre-opciones { display: flex; flex-direction: column; gap: 6px; }
+.opcion-pregunta { text-align: left; }
+.nota.ok { color: var(--sostenido); } .nota.mal { color: var(--resiste); }
