@@ -2,6 +2,7 @@ import type { Contenido } from '../content/types'
 import type { Dificultad } from './lane'
 import { LENTES, SELLOS, type SelloId } from './powers'
 import { HERRAMIENTAS, type HerramientaId } from './tools'
+import { nivelDe, type Atlas } from './atlas'
 import { Rng } from './rng'
 
 export type TipoNodo = 'oleada' | 'refugio' | 'jefe'
@@ -388,4 +389,101 @@ export function ofrecerRecompensas(
   if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
 
   return { opciones, veta }
+}
+
+
+/* ==========================================================================
+   v5.63 · Recompensas por andamiaje (modo aprendizaje).
+   El botín normal es refuerzo variable. En modo aprendizaje no debe serlo: la
+   siguiente herramienta es la que el estudiante YA PUEDE usar y todavía no
+   tiene —su zona de desarrollo próximo—, y la lente es la que compensa la
+   dimensión donde más flaquea. Determinista salvo la veta rara.
+   ========================================================================== */
+
+/** Un peldaño: la herramienta, qué tiene que haber en el texto para que sirva,
+ *  y qué evidencia previa hace que el estudiante pueda usarla. */
+interface Peldano {
+  id: HerramientaId
+  sirve: (c: Contenido) => boolean
+  listo: (m: MedidaAtlas) => boolean
+  porque: string
+}
+interface MedidaAtlas { reconocidos: number; relacionados: number; aristas: number; conCaso: number; zonasTocadas: number }
+
+function medir(c: Contenido, a: Atlas): MedidaAtlas {
+  const ids = Object.keys(a.conceptos)
+  const zonas = new Set(ids.map((id) => c.conceptos[id]?.clusterId).filter(Boolean))
+  return {
+    reconocidos: ids.filter((id) => nivelDe(a.conceptos[id]) >= 1).length,
+    relacionados: ids.filter((id) => nivelDe(a.conceptos[id]) >= 2).length,
+    aristas: Object.values(a.aristas).filter((x) => (x.aciertos ?? 0) > 0).length,
+    conCaso: ids.filter((id) => (a.conceptos[id]?.mecanicas ?? []).some((m) => /ancla|caso|contraejemplo|analogia/.test(m))).length,
+    zonasTocadas: zonas.size
+  }
+}
+
+const tieneTipo = (c: Contenido, tipos: string[]) => c.aristas.some((x) => tipos.includes(x.tipo))
+
+export const ESCALERA: Peldano[] = [
+  { id: 'identidad', sirve: () => true, listo: () => true, porque: 'reconocer: nombre y descripción' },
+  { id: 'flecha', sirve: () => true, listo: () => true, porque: 'relacionar dos conceptos' },
+  { id: 'campo', sirve: (c) => c.clusters.length >= 2, listo: (m) => m.reconocidos >= 3, porque: 'agrupar lo que va junto' },
+  { id: 'jerarquia', sirve: (c) => tieneTipo(c, ['generaliza', 'ejemplifica', 'requiere']), listo: (m) => m.aristas >= 3, porque: 'ya sostienes vínculos: ahora quién contiene a quién' },
+  { id: 'secuencia', sirve: (c) => tieneTipo(c, ['causa', 'antecede', 'requiere']), listo: (m) => m.aristas >= 3, porque: 'encadenar en orden lo que ya relacionas' },
+  { id: 'ancla', sirve: (c) => c.casos.length + c.escenarios.length >= 1, listo: (m) => m.relacionados >= 2, porque: 'llevar un concepto a un caso: transferir' },
+  { id: 'contraejemplo', sirve: (c) => c.casos.length + c.escenarios.length >= 2, listo: (m) => m.conCaso >= 1, porque: 'ya anclas casos: ahora el que rompe la regla' },
+  { id: 'balanza', sirve: (c) => c.tesis.length >= 1, listo: (m) => m.aristas >= 4, porque: 'pesar una tesis con criterios' },
+  { id: 'analogia', sirve: (c) => c.aristas.length >= 6, listo: (m) => m.aristas >= 6 && m.zonasTocadas >= 2, porque: 'el mismo vínculo en dos zonas del texto' },
+  { id: 'eje', sirve: (c) => c.ejes.length >= 1, listo: (m) => m.aristas >= 4, porque: 'ordenar conceptos sobre un eje del texto' },
+  { id: 'alcance', sirve: (c) => tieneTipo(c, ['matiza']) || Object.values(c.conceptos).some((k) => k.tensiones.length > 0), listo: (m) => m.aristas >= 5, porque: 'hasta dónde llega un concepto' },
+  { id: 'descomposicion', sirve: (c) => Object.values(c.conceptos).some((k) => k.subdimensiones.length >= 2), listo: (m) => m.aristas >= 5, porque: 'abrir un concepto en sus partes' }
+]
+
+/** La dimensión más floja del Atlas decide la lente. */
+function lentePara(m: MedidaAtlas, cartera: string[], vetadas: string[]): string | null {
+  const total = Math.max(1, m.reconocidos)
+  const rel = m.relacionados / total, tra = m.conCaso / total
+  const preferencia = tra < 0.15 && m.relacionados >= 3 ? ['abogado', 'topografo', 'umbral']
+    : rel < 0.4 ? ['traductor', 'causalista', 'taxonomo', 'disidente']
+      : ['lexicografo', 'traductor', 'umbral', 'arquitecto']
+  return preferencia.find((id) => !cartera.includes(id) && !vetadas.includes(id) && LENTES.some((l) => l.id === id)) ?? null
+}
+
+export function ofrecerRecompensasAndamiadas(
+  contenido: Contenido, cartera: { lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[] },
+  atlas: Atlas, rng: Rng, dura: boolean, calidad = 0, vetadas: string[] = []
+): { opciones: Recompensa[]; veta: boolean; porque: string[] } {
+  const m = medir(contenido, atlas)
+  const salida: Recompensa[] = []
+  const porque: string[] = []
+
+  // 1. la siguiente herramienta que YA puedes usar y aún no tienes
+  const siguiente = ESCALERA.find((p) => !cartera.herramientas.includes(p.id) && p.sirve(contenido) && p.listo(m))
+  if (siguiente) { salida.push({ tipo: 'herramienta', id: siguiente.id }); porque.push(`${HERRAMIENTAS[siguiente.id].nombre}: ${siguiente.porque}.`) }
+  else {
+    // todo lo usable está en la cartera: se refuerza la herramienta que más rinde hoy
+    const usada = [...cartera.herramientas].sort((a, b) => cartera.herramientas.filter((x) => x === b).length - cartera.herramientas.filter((x) => x === a).length)[0] ?? 'flecha'
+    salida.push({ tipo: 'herramienta', id: usada }); porque.push(`Otra ${HERRAMIENTAS[usada].nombre}: la que más usas.`)
+  }
+  // 2. la lente que compensa la dimensión más floja
+  const lente = lentePara(m, cartera.lentes, vetadas)
+  if (lente) { salida.push({ tipo: 'lente', id: lente }); porque.push(`${LENTES.find((l) => l.id === lente)?.nombre}: para lo que más te cuesta ahora.`) }
+  // 3. el tipo de vínculo que más falta por sostener en el texto
+  const sostenidas = new Set(Object.keys(atlas.aristas))
+  const faltan = new Map<string, number>()
+  for (const x of contenido.aristas) if (!sostenidas.has(`${x.from}>${x.to}>${x.tipo}`)) faltan.set(x.tipo, (faltan.get(x.tipo) ?? 0) + 1)
+  const rel = [...faltan.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t).find((t) => cartera.relaciones.filter((r) => r === t).length < 2)
+  if (rel && salida.length < 3) { salida.push({ tipo: 'relacion', tipoRelacion: rel }); porque.push(`Vínculo «${rel}»: es el que más queda por sostener en el texto.`) }
+  // 4. sello solo cuando la calibración ya dice algo
+  const sellosLibres = (Object.keys(SELLOS) as SelloId[]).filter((s) => !cartera.sellos.includes(s))
+  if (salida.length < 3 && sellosLibres.length && atlas.apuestasTotales >= 6) salida.push({ tipo: 'sello', id: sellosLibres[0] })
+  while (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: dura ? 18 : 12 })
+
+  // la veta rara sigue siendo el único azar del botín
+  const probabilidad = Math.min(0.55, 0.12 + calidad * 0.4 + (dura ? 0.1 : 0))
+  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id))
+  const veta = raras.length > 0 && rng.next() < probabilidad
+  const opciones = salida.slice(0, 3)
+  if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
+  return { opciones, veta, porque }
 }

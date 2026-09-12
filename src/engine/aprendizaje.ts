@@ -77,10 +77,11 @@ export function componerOleadas(
     indice: i,
     conceptIds: tanda,
     previos: tandas.slice(0, i).flat(),
-    herramientas: [
-      ...(base[i] ?? ['flecha']),
-      ...(i === tandas.length - 1 ? extra : [])
-    ],
+    // v5.63: las mismas herramientas que en una expedición normal, en todas las
+    // oleadas. Empezar solo con Identidad dejaba la segunda oleada sin nada útil
+    // cuando los conceptos llegan enteros. Las herramientas se ganan en el
+    // refugio, con la escalera de andamiaje, no oleada a oleada.
+    herramientas: [...new Set([...herramientas, ...(base[i] ?? []), ...extra])],
     enemigos: Array.from({ length: i === 0 ? 1 : 2 }, (_, k) =>
       crearEnemigo(
         i === 0 ? 'copista' : rng.pick(i === 1 ? ['copista', 'errata'] : ['dogma', 'apocrifo', 'eco']),

@@ -10,7 +10,7 @@ import {
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
 import { esAcierto, esCreacion, esFallo, type HerramientaId } from './engine/tools'
-import { generarRuta, ofrecerRecompensas, type Nodo, type Recompensa, type Ruta } from './engine/route'
+import { generarRuta, ofrecerRecompensas, ofrecerRecompensasAndamiadas, type Nodo, type Recompensa, type Ruta } from './engine/route'
 import { Rng, semillaLegible } from './engine/rng'
 import {
   anotarPropuesta, cargarAtlas, coberturaAtlas, confirmarPropuestas, descargarLog,
@@ -79,6 +79,8 @@ export default function App() {
   const [aprendizaje, setAprendizaje] = useState(false)
   /** lo que el jugador quiere para la PRÓXIMA expedición (el interruptor del inicio) */
   const [quiereApoyo, setQuiereApoyo] = useState(false)
+  /** v5.63 · por qué el botín ofrece lo que ofrece (modo aprendizaje) */
+  const [porqueBotin, setPorqueBotin] = useState<string[]>([])
   const [lentes, setLentes] = useState<string[]>([])
   const [sellos, setSellos] = useState<SelloId[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaId[]>(
@@ -651,10 +653,14 @@ export default function App() {
       const cumplido = batalla.encargo ? encargoCumplido(batalla.encargo, cuentaDe(batalla)) : false
       // el encargo cumplido inclina el botín y cura: lo que te propusiste, logrado
       const calidad = Math.min(1, batalla.mejorGolpe.dano / 420 + primaEncargo(batalla.encargo, cumplido))
-      const r = ofrecerRecompensas(contenido, {
+      // v5.63 · en modo aprendizaje el botín sigue la escalera de andamiaje, no el azar
+      const r = aprendizaje && atlas
+        ? ofrecerRecompensasAndamiadas(contenido, { lentes, sellos, herramientas, relaciones: progreso.relaciones }, atlas, rngRef.current, dura, calidad, lentesVetadas(atlas))
+        : ofrecerRecompensas(contenido, {
         lentes, sellos, herramientas, relaciones: progreso.relaciones
       }, rngRef.current, dura, calidad, atlas ? lentesVetadas(atlas) : [])
       setRecompensas(r.opciones); setVeta(r.veta)
+      setPorqueBotin('porque' in r ? (r as { porque: string[] }).porque : [])
       const cura = lucidezEncargo(batalla.encargo, cumplido)
       if (cura) setLucidez((l) => Math.min(LUCIDEZ_MAX, l + cura))
       if (atlas) {
@@ -933,6 +939,12 @@ export default function App() {
         )
       })()}
 
+      {fase === 'recompensa' && porqueBotin.length > 0 && (
+        <aside className="porque-botin">
+          <small>Por qué estas mejoras</small>
+          <ul>{porqueBotin.map((p, i) => <li key={i}>{p}</li>)}</ul>
+        </aside>
+      )}
       {fase === 'recompensa' && (
         <RewardView
           opciones={recompensas} onElegir={tomarRecompensa} contenido={contenido}

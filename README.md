@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.62
+# LudusCog · El Archivo Infinito — v5.63
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,25 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Modo aprendizaje: herramientas completas y botín por andamiaje (v5.63)
+
+- **Todas las oleadas tienen las herramientas de la expedición.** Antes la oleada 1 solo
+  traía Identidad, la 2 Flecha, la 3 el resto; con los conceptos llegando enteros, la
+  Identidad no servía de nada en la 2. Las herramientas se ganan en el refugio, no oleada a
+  oleada.
+- **El botín sigue una escalera de andamiaje** (`ESCALERA` en `route.ts`): cada peldaño es
+  una herramienta con dos condiciones: qué tiene que haber en el texto para que sirva (sin
+  casos no hay Ancla; sin ejes no hay Eje; sin `matiza` ni tensiones no hay Alcance) y qué
+  evidencia previa hace que el estudiante pueda usarla (Jerarquía y Secuencia con 3
+  vínculos sostenidos; Ancla con 2 conceptos relacionados; Contraejemplo tras anclar un caso;
+  Balanza con 4 vínculos y tesis; Analogía con 6 vínculos en 2 zonas…). Se ofrece **la
+  primera que ya puedes usar y aún no tienes**: la zona de desarrollo próximo. La lente
+  compensa la dimensión más floja del Atlas (relación floja → Traductor / Causalista /
+  Taxónomo / Disidente; transferencia floja → Abogado / Topógrafo; si no, Lexicógrafo /
+  Umbral / Arquitecto). El tipo de vínculo ofrecido es el que más queda por sostener en el
+  texto. Los sellos solo aparecen cuando la calibración ya dice algo (≥ 6 apuestas). La veta
+  rara sigue siendo el único azar. El refugio explica **por qué** ofrece cada cosa.
 
 ## Modo aprendizaje: las seis mejoras (v5.62)
 

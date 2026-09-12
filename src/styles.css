@@ -1976,3 +1976,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .cierre-opciones { display: flex; flex-direction: column; gap: 6px; }
 .opcion-pregunta { text-align: left; }
 .nota.ok { color: var(--sostenido); } .nota.mal { color: var(--resiste); }
+
+/* ── por qué el botín (modo aprendizaje) ── */
+.porque-botin { max-width: 760px; margin: 12px auto 0; padding: 10px 14px; background: var(--panel); border: 1px solid var(--borde); border-left: 3px solid var(--transferir); border-radius: 0 10px 10px 0; }
+.porque-botin small { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--transferir); margin-bottom: 4px; }
+.porque-botin ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--texto-2); }
