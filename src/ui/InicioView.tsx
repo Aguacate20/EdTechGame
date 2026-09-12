@@ -14,8 +14,10 @@ interface Props {
   contenido: Contenido
   atlas: Atlas
   sesion: Sesion | null
-  guardada: { actoIdx: number } | null
+  guardada: { actoIdx: number; aprendizaje?: boolean } | null
   onContinuar: () => void
+  aprendizaje: boolean
+  onAprendizaje: (v: boolean) => void
   onAtlas: () => void
   onEstrella?: (id: string) => void
   acciones: ReactNode
@@ -32,7 +34,7 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
   { id: 'dominar', nombre: 'Dominar', color: 'var(--dominar)', nivel: 3 }
 ]
 
-export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema }: Props) {
+export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema }: Props) {
   const [zonaFoco, setZonaFoco] = useState<string | null>(null)
   const ids = contenido.ordenConceptos
   const total = Math.max(1, ids.length)
@@ -166,7 +168,12 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, on
           </div>
         )}
         <div className="inicio-acciones">{acciones}</div>
-        <button className="btn primario inicio-continuar" onClick={onContinuar}>{guardada ? 'Continuar expedición' : 'Empezar expedición'}</button>
+        <label className={`interruptor${aprendizaje ? ' on' : ''}`} title="Con apoyo: cada sala son tres oleadas cortas, los conceptos llegan enteros al principio, las falsificaciones vienen marcadas y no puedes caer; el andamio se retira en orden y avisando. Sin apoyo: la expedición normal.">
+          <input type="checkbox" checked={aprendizaje} onChange={(e) => onAprendizaje(e.target.checked)} disabled={!!guardada} />
+          <span className="interruptor-pista" aria-hidden="true" />
+          <span className="interruptor-texto"><b>Modo aprendizaje</b><small>{aprendizaje ? 'con apoyo: oleadas cortas y andamio que se retira' : 'expedición normal'}</small></span>
+        </label>
+        <button className="btn primario inicio-continuar" onClick={onContinuar}>{guardada ? `Continuar expedición${guardada.aprendizaje ? ' · aprendizaje' : ''}` : 'Empezar expedición'}</button>
       </footer>
     </div>
   )

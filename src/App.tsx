@@ -77,6 +77,8 @@ export default function App() {
   const [intuiciones, setIntuiciones] = useState<string[]>([])
   const [manoExtra, setManoExtra] = useState(0)
   const [aprendizaje, setAprendizaje] = useState(false)
+  /** lo que el jugador quiere para la PRÓXIMA expedición (el interruptor del inicio) */
+  const [quiereApoyo, setQuiereApoyo] = useState(false)
   const [lentes, setLentes] = useState<string[]>([])
   const [sellos, setSellos] = useState<SelloId[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaId[]>(
@@ -749,7 +751,8 @@ export default function App() {
           contenido={completoRef.current ?? contenido} atlas={atlas} sesion={sesion}
           guardada={guardada && (!guardada.tema || !temaActivo || guardada.tema === temaActivo) ? guardada : null}
           temas={temasDe(completoRef.current ?? contenido)} temaActivo={temaActivo} onTema={setTemaActivo}
-          onContinuar={() => (guardada ? retomar() : empezarExpedicion(false))}
+          onContinuar={() => (guardada ? retomar() : empezarExpedicion(quiereApoyo))}
+          aprendizaje={guardada ? guardada.aprendizaje : quiereApoyo} onAprendizaje={setQuiereApoyo}
           onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}
           onEstrella={(id) => { setConceptoFoco(id); setFaseAnterior('inicio'); setFase('atlas') }}
           acciones={(
