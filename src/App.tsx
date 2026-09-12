@@ -112,7 +112,9 @@ export default function App() {
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
   /** el plan entero del perfil (la galaxia lo ve todo); la expedición juega un tema */
   const completoRef = useRef<Contenido | null>(null)
-  const [temaActivo, setTemaActivo] = useState<string | null>(null)
+  const [temaActivo, setTemaActivoEstado] = useState<string | null>(null)
+  const temaRef = useRef<string | null>(null)
+  const setTemaActivo = useCallback((id: string | null) => { temaRef.current = id; setTemaActivoEstado(id) }, [])
   const subidas = useSubidas()
   const [victoria, setVictoria] = useState(false)
   const [mudo, setMudo] = useState(estaSilenciado())
@@ -169,9 +171,9 @@ export default function App() {
   const contenidoDeExpedicion = useCallback((c: Contenido): Contenido => {
     const temas = temasDe(c)
     if (temas.length <= 1) return c
-    const tema = temas.find((t) => t.id === temaActivo) ?? temas[0]
+    const tema = temas.find((t) => t.id === temaRef.current) ?? temas[0]
     return recortar(c, tema)
-  }, [temaActivo])
+  }, [])
 
   const lanzarExpedicion = useCallback((portada: Portada) => {
     if (!contenido || !atlas) return
@@ -222,6 +224,7 @@ export default function App() {
   const guardarAqui = useCallback((acto: number, alc: string[], vis: string[], nodo: string | null) => {
     if (!contenido || !ruta) return
     guardarExpedicion({
+      tema: temaRef.current ?? undefined,
       fuente: contenido.fuente, semilla, runId: runIdRef.current,
       actoIdx: acto, alcanzables: alc, visitados: vis, nodoActual: nodo,
       lucidez, aprendizaje, lentes, sellos, herramientas, manoExtra,
@@ -742,7 +745,8 @@ export default function App() {
           </>
         ))}
         <InicioView
-          contenido={completoRef.current ?? contenido} atlas={atlas} sesion={sesion} guardada={guardada}
+          contenido={completoRef.current ?? contenido} atlas={atlas} sesion={sesion}
+          guardada={guardada && (!guardada.tema || !temaActivo || guardada.tema === temaActivo) ? guardada : null}
           temas={temasDe(completoRef.current ?? contenido)} temaActivo={temaActivo} onTema={setTemaActivo}
           onContinuar={() => (guardada ? retomar() : empezarExpedicion(false))}
           onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}

@@ -18,6 +18,8 @@ const clave = () => { const a = ambitoActual(); return a ? `${CLAVE_BASE}:perfil
 
 export interface ExpedicionGuardada {
   fuente: string
+  /** tema del plan sobre el que se juega (v5.58); sin él, la expedición es del plan entero */
+  tema?: string
   semilla: string
   runId: string
   actoIdx: number

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.57
+# LudusCog · El Archivo Infinito — v5.58
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,15 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El tema elegido manda (v5.58)
+
+Dos fallos de v5.57. (1) Los callbacks que lanzan y retoman la expedición leían el tema
+desde una clausura vieja: eligieras lo que eligieras, jugabas el primer tema. Ahora el tema
+vive en un ref que esos callbacks leen al momento. (2) Una expedición guardada de un tema
+seguía ofreciéndose como «Continuar» tras cambiar de tema, y al retomarla traía la sala con
+las cartas del otro. La expedición guardada recuerda su tema; si eliges otro, el inicio
+ofrece «Empezar» y no la retoma (la guardada del tema original sigue ahí si vuelves a él).
 
 ## Las expediciones no mezclan temas (v5.57)
 
