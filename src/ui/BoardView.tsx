@@ -27,6 +27,8 @@ import { condicionPorId } from '../engine/hazanas'
 export interface AccionesBatalla {
   /** v5.62 · apuesta metacognitiva al empezar la oleada (modo aprendizaje) */
   apostarOleada?: (valor: 'si' | 'no') => void
+  /** v5.67 · el mapa de la sala golpea entero */
+  cristalizar?: () => void
   cambio: (mut: (e: EstadoBatalla) => void) => void
   afirmar: () => void
   continuar: () => void
@@ -974,6 +976,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       <footer data-tutorial="pozo" className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
         {!resuelto ? (
           <>
+            {e.mapa && e.mapa.trazos.length > 0 && (
+              <button
+                className={`btn ${e.mapa.trazos.length >= e.mapa.umbral ? 'primario cristalizar listo' : 'fantasma cristalizar'}`}
+                disabled={e.mapa.trazos.length < e.mapa.umbral || !on.cristalizar}
+                onClick={on.cristalizar}
+                title="El mapa de la sala golpea entero (×2, ×3 si cruza zonas) y se vacía para empezar otro."
+              >◆ Cristalizar mapa {e.mapa.trazos.length}/{e.mapa.umbral}</button>
+            )}
             <button
               data-tutorial="afirmar"
               className={`btn primario grande${zona('afirmar') ? ' senala' : ''}`}

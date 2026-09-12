@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.66
+# LudusCog · El Archivo Infinito — v5.67
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,21 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## La mesa es el arma (v5.67)
+
+- **El mapa de la sala persiste**: cada trazo sostenido queda en `e.mapa` con sus conceptos.
+  Un trazo nuevo que **toca el mapa** (comparte concepto con lo ya sostenido) suma +0.5 al
+  multiplicador por conexión («Enlace con el mapa»). Un trazo que une dos islas vale más que
+  uno suelto: mapa grande = golpes grandes, sin que la mano tenga que crecer.
+- **Cristalizar**: al llegar al umbral (6 trazos; 7 en el acto 2; 8 en adelante; sube uno
+  por cada cristalización) el botón «◆ Cristalizar mapa n/umbral» late en oro: el mapa
+  entero golpea de una vez (fichas × 2, × 3 si cruza zonas), a todos los enemigos de delante
+  hacia atrás con arrastre, y la mesa se vacía para empezar otro. Es la razón para terminar
+  un mapa en vez de acumular, y el zoom es para el camino, no para vivir ahí.
+- **La mano crece por función** (sustituye la escala de v5.66): Conceptos (base 5–7) ·
+  Mundo +2 con Ancla o Contraejemplo · Argumento +1 con Balanza. Tope 9. Las bolsas como
+  agrupación visual del Repartidor quedan para la siguiente entrega.
 
 ## Herramientas del perfil, potencial de daño y zoom (v5.66)
 

@@ -5,7 +5,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
-  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -469,6 +469,22 @@ export default function App() {
       ayuda: false, repertorioTocado: null
     })
   }
+  /** v5.67 · el mapa de la sala golpea entero y se vacía */
+  const cristalizar = () => {
+    if (!batalla || !contenido || !puedeCristalizar(batalla)) return
+    const e = { ...batalla, enemigos: batalla.enemigos.map((x) => ({ ...x })) }
+    const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
+    const r = cristalizarBatalla(e, ctx)
+    setBatalla(e)
+    registrar({
+      ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+      arquetipo: 'cristalizar', condicion: null, mecanica: 'articulacion',
+      itemId: `cristalizar:${r.trazos}:${r.zonas}`, conceptIds: [],
+      operacion: 'cristalizar', improvisado: false, seleccion: [], correcto: true,
+      apuesta: '0', calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+    })
+    sfx.trazar()
+  }
   const elegirEncargo = (en: Encargo | null) => {
     setBatalla((prev) => {
       if (!prev) return prev
@@ -905,7 +921,7 @@ export default function App() {
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
-            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada,
+            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar,
             huir: () => {
               guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
               setGuardada(leerExpedicion(contenido.fuente))

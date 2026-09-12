@@ -1995,3 +1995,7 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .zoom-mesa .btn { min-width: 32px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; }
 .app .zona-lienzo { position: relative; }
 .app .zona-lienzo .lienzo { zoom: var(--zoom, 1); }
+
+/* ── cristalizar ── */
+.btn.cristalizar { font-family: var(--mono); font-size: 13px; }
+.btn.cristalizar.listo { background: linear-gradient(135deg, var(--dominar), var(--acento)); color: #1A1200; box-shadow: 0 0 22px rgba(255,194,61,.5); animation: latido-naranja 1.4s ease-in-out infinite; }
