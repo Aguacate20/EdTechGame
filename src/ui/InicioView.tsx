@@ -18,6 +18,8 @@ interface Props {
   onContinuar: () => void
   aprendizaje: boolean
   onAprendizaje: (v: boolean) => void
+  /** descarta la expedición guardada y empieza otra con el modo del interruptor */
+  onNueva: () => void
   onAtlas: () => void
   onEstrella?: (id: string) => void
   acciones: ReactNode
@@ -34,8 +36,9 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
   { id: 'dominar', nombre: 'Dominar', color: 'var(--dominar)', nivel: 3 }
 ]
 
-export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema }: Props) {
+export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onNueva, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema }: Props) {
   const [zonaFoco, setZonaFoco] = useState<string | null>(null)
+  const [confirmarNueva, setConfirmarNueva] = useState(false)
   const ids = contenido.ordenConceptos
   const total = Math.max(1, ids.length)
   const niveles = ids.map((id) => nivelDe(atlas.conceptos[id]))
@@ -169,11 +172,26 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
         )}
         <div className="inicio-acciones">{acciones}</div>
         <label className={`interruptor${aprendizaje ? ' on' : ''}`} title="Con apoyo: cada sala son tres oleadas cortas, los conceptos llegan enteros al principio, las falsificaciones vienen marcadas y no puedes caer; el andamio se retira en orden y avisando. Sin apoyo: la expedición normal.">
-          <input type="checkbox" checked={aprendizaje} onChange={(e) => onAprendizaje(e.target.checked)} disabled={!!guardada} />
+          <input type="checkbox" checked={aprendizaje} onChange={(e) => onAprendizaje(e.target.checked)} />
           <span className="interruptor-pista" aria-hidden="true" />
-          <span className="interruptor-texto"><b>Modo aprendizaje</b><small>{aprendizaje ? 'con apoyo: oleadas cortas y andamio que se retira' : 'expedición normal'}</small></span>
+          <span className="interruptor-texto"><b>Modo aprendizaje</b><small>{guardada ? 'para la próxima expedición' : aprendizaje ? 'con apoyo: oleadas cortas y andamio que se retira' : 'expedición normal'}</small></span>
         </label>
-        <button className="btn primario inicio-continuar" onClick={onContinuar}>{guardada ? `Continuar expedición${guardada.aprendizaje ? ' · aprendizaje' : ''}` : 'Empezar expedición'}</button>
+        {guardada ? (
+          <div className="inicio-botones">
+            {confirmarNueva ? (
+              <span className="confirmar-nueva">
+                <small>¿Descartar la expedición en curso (acto {guardada.actoIdx + 1})?</small>
+                <button className="btn fantasma" onClick={() => setConfirmarNueva(false)}>No</button>
+                <button className="btn peligro" onClick={() => { setConfirmarNueva(false); onNueva() }}>Sí, empezar de nuevo{aprendizaje ? ' · aprendizaje' : ''}</button>
+              </span>
+            ) : (
+              <button className="btn fantasma" onClick={() => setConfirmarNueva(true)}>Nueva expedición</button>
+            )}
+            <button className="btn primario inicio-continuar" onClick={onContinuar}>Continuar expedición{guardada.aprendizaje ? ' · aprendizaje' : ''}</button>
+          </div>
+        ) : (
+          <button className="btn primario inicio-continuar" onClick={onContinuar}>Empezar expedición{aprendizaje ? ' · aprendizaje' : ''}</button>
+        )}
       </footer>
     </div>
   )

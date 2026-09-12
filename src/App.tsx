@@ -752,7 +752,8 @@ export default function App() {
           guardada={guardada && (!guardada.tema || !temaActivo || guardada.tema === temaActivo) ? guardada : null}
           temas={temasDe(completoRef.current ?? contenido)} temaActivo={temaActivo} onTema={setTemaActivo}
           onContinuar={() => (guardada ? retomar() : empezarExpedicion(quiereApoyo))}
-          aprendizaje={guardada ? guardada.aprendizaje : quiereApoyo} onAprendizaje={setQuiereApoyo}
+          aprendizaje={quiereApoyo} onAprendizaje={setQuiereApoyo}
+          onNueva={() => { borrarExpedicion(); setGuardada(null); empezarExpedicion(quiereApoyo) }}
           onAtlas={() => { setFaseAnterior('inicio'); setFase('atlas') }}
           onEstrella={(id) => { setConceptoFoco(id); setFaseAnterior('inicio'); setFase('atlas') }}
           acciones={(

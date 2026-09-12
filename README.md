@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.60
+# LudusCog · El Archivo Infinito — v5.61
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,14 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Nueva expedición (v5.61)
+
+El interruptor de modo aprendizaje ya no se bloquea con una expedición guardada: vale para
+la próxima. Con una guardada, el pie ofrece «Continuar expedición» (con el modo con el que
+empezó) y **«Nueva expedición»**, que pide confirmación («¿Descartar la expedición en curso
+(acto 2)?») y empieza otra con el modo del interruptor. Empezar de nuevo no toca el Atlas:
+lo aprendido es del perfil.
 
 ## El modo aprendizaje vuelve como interruptor (v5.60)
 
