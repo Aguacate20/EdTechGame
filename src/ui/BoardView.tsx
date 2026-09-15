@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
 import { orientar } from '../engine/feedback'
+import { pistasDelSubmapa, submapaCompleto } from '../engine/battle'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -511,6 +512,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               })}
               {e.mapa.trazos.length === 0 && <span className="mapa-vacio">Aún nada sostenido. Lo que sostengas se queda aquí toda la sala.</span>}
             </div>
+            {(() => {
+              const pistas = pistasDelSubmapa(e, { contenido, rng: { next: () => 0 } as never, lentes })
+              const faltan = pistas.faltan.filter((f) => f.n > 0)
+              if (!faltan.length && !pistas.admite.length) return null
+              return (
+                <div className="mapa-pistas">
+                  {faltan.length > 0 && <span>Faltan: {faltan.map((f) => `${f.n} ${f.tipo}`).join(' · ')}</span>}
+                  {pistas.admite.length > 0 && <span>Este mapa admite: {pistas.admite.join(', ')}</span>}
+                </div>
+              )
+            })()}
           </div>
         )}
         <div className="zoom-mesa" role="group" aria-label="Zoom de la mesa">
@@ -991,13 +1003,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       <footer data-tutorial="pozo" className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
         {!resuelto ? (
           <>
-            {e.mapa && e.mapa.trazos.length > 0 && (
-              <button
-                className={`btn ${e.mapa.trazos.length >= e.mapa.umbral || (e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta) ? 'primario cristalizar listo' : 'fantasma cristalizar'}`}
-                disabled={!(e.mapa.trazos.length >= e.mapa.umbral || (e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta)) || !on.cristalizar}
-                onClick={on.cristalizar}
-                title="El mapa de la sala golpea entero (×2, ×3 si cruza zonas) y se vacía para empezar otro."
-              >◆ Cristalizar mapa {e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? 'completo ×3' : `${e.mapa.trazos.length}/${e.mapa.umbral}`}</button>
+            {e.mapa && submapaCompleto(e) && (
+              <button className="btn primario cristalizar listo" disabled={!on.cristalizar} onClick={on.cristalizar}
+                title="El ataque final: tu submapa está completo. Derrota a todo lo que queda.">✦ ATAQUE FINAL · Cristalizar el mapa</button>
             )}
             <button
               data-tutorial="afirmar"

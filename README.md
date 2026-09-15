@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.76
+# LudusCog · El Archivo Infinito — v5.77
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,21 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El ataque final (v5.77)
+
+- **Cristalizar es solo el ataque final.** Aparece únicamente cuando el submapa está completo:
+  todos sus vínculos sostenidos y todos sus conceptos armados en la mesa (no quedan conceptos
+  del submapa por jugar). Fuera la cristalización por umbral, que vaciaba el mapa dorado a
+  mitad de sala. Botón: «✦ ATAQUE FINAL · Cristalizar el mapa».
+- **Estallido** a pantalla completa con tres variantes por tamaño: Constelación (< 6 vínculos),
+  Nebulosa (6–9), Supernova (10+ o dos zonas). Anillos, chispas, «Mapa completo». Respeta
+  `prefers-reduced-motion`.
+- **Contra las puras identidades**: rinden cada vez menos en la misma sala (3.ª y 4.ª al 60 %,
+  desde la 5.ª al 40 %); el **primer vínculo de cada tipo** en la sala lleva +6 fichas
+  («Vínculo nuevo: causa»); y el mapa muestra **pistas** sin dar la respuesta: «Faltan: 1
+  causa · 2 apoya» y «Este mapa admite: Jerarquía, Ancla» (según las herramientas que tienes
+  y el material del submapa).
 
 ## El submapa se descubre por frontera; completo = victoria (v5.76)
 

@@ -645,10 +645,35 @@ export function vinculosDeLaSala(e: EstadoBatalla, ctx: ContextoBatalla): { from
   const tipos = new Set(e.relacionesDisponibles)
   return ctx.contenido.aristas.filter((a) => dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)))
 }
+/** v5.77 · pistas del submapa: qué tipos de vínculo faltan y qué herramientas admite. Nunca
+ *  dice entre quiénes: orienta hacia lo raro sin dar la respuesta. */
+export function pistasDelSubmapa(e: EstadoBatalla, ctx: ContextoBatalla): { faltan: { tipo: string; n: number }[]; admite: string[] } {
+  const vinc = vinculosDeLaSala(e, ctx)
+  const faltan = new Map<string, number>()
+  for (const a of vinc) if (!parEnMapa(e, a.from, a.to)) faltan.set(a.tipo, (faltan.get(a.tipo) ?? 0) + 1)
+  const dentro = new Set(e.conceptIdsCasilla)
+  const tipos = new Set(vinc.map((a) => a.tipo))
+  const admite: string[] = []
+  if (e.herramientas.includes('jerarquia') && (tipos.has('generaliza') || tipos.has('ejemplifica') || tipos.has('requiere'))) admite.push('Jerarquía')
+  if (e.herramientas.includes('secuencia') && (tipos.has('causa') || tipos.has('antecede'))) admite.push('Secuencia')
+  if (e.herramientas.includes('ancla') && ctx.contenido.casos.some((k) => k.conceptIds.some((id) => dentro.has(id)))) admite.push('Ancla')
+  if (e.herramientas.includes('balanza') && ctx.contenido.tesis.some((k) => k.conceptIds.some((id) => dentro.has(id)))) admite.push('Balanza')
+  if (e.herramientas.includes('analogia') && vinc.length >= 4 && new Set(vinc.map((a) => a.tipo)).size < vinc.length) admite.push('Analogía')
+  if (e.herramientas.includes('campo') && new Set([...dentro].map((id) => ctx.contenido.conceptos[id]?.clusterId)).size >= 1) admite.push('Campo')
+  return { faltan: [...faltan.entries()].map(([tipo, n]) => ({ tipo, n })).sort((a, b) => a.n - b.n), admite }
+}
+
 const parEnMapa = (e: EstadoBatalla, a: string, b: string) => e.mapa.trazos.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
 
 /** v5.67 · ¿el mapa de la sala llegó al umbral? */
-export function puedeCristalizar(e: EstadoBatalla): boolean { return (e.mapa.trazos.length >= e.mapa.umbral || (e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta)) && e.fase === 'jugando' }
+/** v5.77 · el submapa está completo cuando TODOS sus vínculos están sostenidos y TODOS sus
+ *  conceptos están armados en la mesa (ya no quedan conceptos del submapa por jugar). */
+export function submapaCompleto(e: EstadoBatalla): boolean {
+  if (e.mapa.meta <= 0 || e.mapa.hechos < e.mapa.meta) return false
+  const armados = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
+  return e.conceptIdsCasilla.every((id) => armados.has(id))
+}
+export function puedeCristalizar(e: EstadoBatalla): boolean { return submapaCompleto(e) && e.fase === 'jugando' }
 
 /** Cristalizar: el mapa entero golpea de una vez (×2; ×3 si cruza zonas) y se vacía
  *  para empezar otro. Es el evento de impacto: la razón para TERMINAR un mapa. */
@@ -656,7 +681,7 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
   const ids = [...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))]
   const zonas = new Set(ids.map((id) => ctx.contenido.conceptos[id]?.clusterId).filter(Boolean)).size
   const base = e.mapa.trazos.reduce((n, x) => n + x.fichas, 0)
-  const completo = e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta
+  const completo = submapaCompleto(e)
   const factor = completo ? 3 : zonas >= 2 ? 3 : 2
   const dano = Math.round(base * factor)
   const impactos: { nombre: string; dano: number; derribado: boolean }[] = []
@@ -718,6 +743,25 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     diag.mult += 0.5 * conexiones
     diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
     diag.combos.push({ id: 'articulacion', nombre: 'Enlace con el mapa', fichas: 0, mult: 0.5 * conexiones, detalle: `${conexiones} trazo(s) enganchan con lo que ya sostuviste en esta sala.` })
+  }
+  // v5.77 · las identidades rinden cada vez menos en la misma sala (la tercera, al 60 %; la
+  // quinta, al 40 %): son preparación, no ataque. Y el PRIMER vínculo de cada tipo en la
+  // sala lleva prima: encontrar una relación rara vale más que repetir la común.
+  {
+    let identidadesPrevias = e.mapa.trazos.filter((x) => x.tool === 'identidad').length
+    const tiposPrevios = new Set(e.mapa.trazos.filter((x) => x.tool === 'flecha').map((x) => x.firma.split('|')[2]))
+    for (const v of nuevosSostenidos) {
+      if (v.trazo.tool === 'identidad') {
+        identidadesPrevias += 1
+        const factor = identidadesPrevias <= 2 ? 1 : identidadesPrevias <= 4 ? 0.6 : 0.4
+        if (factor < 1) { const antes = v.fichas; v.fichas = Math.round(v.fichas * factor); diag.fichas -= antes - v.fichas; v.nota = `${v.nota} · Otra identidad en la misma sala: rinde al ${Math.round(factor * 100)} %.` }
+      } else if (v.trazo.tool === 'flecha' && v.trazo.param && !tiposPrevios.has(v.trazo.param)) {
+        tiposPrevios.add(v.trazo.param)
+        v.fichas += 6; diag.fichas += 6
+        diag.combos.push({ id: 'articulacion', nombre: `Vínculo nuevo: ${v.trazo.param}`, fichas: 6, mult: 0, detalle: 'Primera vez que sostienes este tipo de vínculo en la sala.' })
+      }
+    }
+    diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
   }
   for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
   // v5.76 · el submapa se descubre por frontera: los vecinos (en el mapa ideal del texto)

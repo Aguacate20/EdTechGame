@@ -81,6 +81,8 @@ export default function App() {
   const [quiereApoyo, setQuiereApoyo] = useState(false)
   /** v5.63 · por qué el botín ofrece lo que ofrece (modo aprendizaje) */
   const [porqueBotin, setPorqueBotin] = useState<string[]>([])
+  /** v5.77 · el estallido del ataque final: variante por tamaño del mapa */
+  const [estallido, setEstallido] = useState<{ variante: 'constelacion' | 'nebulosa' | 'supernova'; trazos: number; zonas: number; dano: number } | null>(null)
   const [lentes, setLentes] = useState<string[]>([])
   const [sellos, setSellos] = useState<SelloId[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaId[]>(
@@ -480,6 +482,10 @@ export default function App() {
     const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
     const r = cristalizarBatalla(e, ctx)
     setBatalla(e)
+    const trazosMapa = batalla.mapa.trazos.length
+    const variante = r.zonas >= 2 || trazosMapa >= 10 ? 'supernova' : trazosMapa >= 6 ? 'nebulosa' : 'constelacion'
+    setEstallido({ variante, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
+    window.setTimeout(() => setEstallido(null), 3200)
     registrar({
       ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
       arquetipo: 'cristalizar', condicion: null, mecanica: 'articulacion',
@@ -937,6 +943,17 @@ export default function App() {
         />
       )}
 
+      {estallido && (
+        <div className={`estallido ${estallido.variante}`} role="status" aria-live="assertive">
+          <div className="estallido-anillo" /><div className="estallido-anillo t2" /><div className="estallido-anillo t3" />
+          {[...Array(estallido.variante === 'supernova' ? 28 : estallido.variante === 'nebulosa' ? 16 : 10)].map((_, i) => <i key={i} className="estallido-chispa" style={{ ['--i' as string]: i }} />)}
+          <div className="estallido-texto">
+            <small>ATAQUE FINAL · {estallido.variante === 'supernova' ? 'SUPERNOVA' : estallido.variante === 'nebulosa' ? 'NEBULOSA' : 'CONSTELACIÓN'}</small>
+            <b>Mapa completo</b>
+            <span>{estallido.trazos} vínculos{estallido.zonas >= 2 ? ` · ${estallido.zonas} zonas` : ''} · todo cae</span>
+          </div>
+        </div>
+      )}
       {fase === 'resumen' && batalla && (() => {
         const antes = atlasAlEmpezarRef.current
         const nuevos = {
