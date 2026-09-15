@@ -221,7 +221,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const enTablero = foto
     ? foto.tablero.map((t) => ({ t, p: foto.piezas.find((x) => x.uid === t.uid) }))
         .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
-    : e.tablero.map((t) => ({ t, p: e.mano.find((x) => x.uid === t.uid) }))
+    : e.tablero.map((t) => ({ t, p: e.mano.find((x) => x.uid === t.uid) ?? e.descarte.find((x) => x.uid === t.uid) }))
         .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
   const trazosVisibles = foto ? foto.trazos : [...(e.armados ?? []), ...e.trazos]
   const esArmado = (uid: string) => uid.startsWith('armado:')

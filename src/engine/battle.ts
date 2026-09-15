@@ -1127,7 +1127,8 @@ export function avanzarOleada(e: EstadoBatalla, ctx: ContextoBatalla, bolsa: Bol
   for (const id of siguiente.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) nuevas.push(pz) }
   e.mazo = ctx.rng.shuffle([...e.mazo, ...nuevas])
   e.paresFallados = []
-  e.tablero = []
+  // v5.73 · la oleada nueva conserva el mapa armado en la mesa (solo se van las piezas sueltas)
+  { const armadas = new Set(e.armados.flatMap((x) => x.piezas)); e.tablero = e.tablero.filter((x) => armadas.has(x.uid)) }
   e.trazos = []
   e.turno += 1
   e.fase = 'jugando'
@@ -1243,8 +1244,10 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
     }
     if (en.posicion <= t.alcance) {
       if (t.rasgo === 'roba') {
-        if (e.mano.length) {
-          const i = ctx.rng.int(e.mano.length)
+        const armadasR = new Set(e.armados.flatMap((x) => x.piezas))
+        const robables = e.mano.map((p, i) => ({ p, i })).filter(({ p }) => !armadasR.has(p.uid))
+        if (robables.length) {
+          const { i } = robables[ctx.rng.int(robables.length)]
           e.descarte.push(e.mano[i])
           e.mano.splice(i, 1)
           r.cartasPerdidas += 1
@@ -1291,7 +1294,8 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
   // el turno sería un callejón. Tras un turno vacío (o dos secos) el Archivo
   // se apiada y devuelve un cambio. Toca la economía de la mano, jamás un
   // veredicto.
-  if ((e.turnosVacios >= 1 || e.secos >= 2) && e.cambiosRestantes <= 0 && e.mano.length >= e.manoBase) {
+  const armadasP = new Set(e.armados.flatMap((x) => x.piezas))
+  if ((e.turnosVacios >= 1 || e.secos >= 2) && e.cambiosRestantes <= 0 && e.mano.filter((p) => !armadasP.has(p.uid)).length >= e.manoBase) {
     e.cambiosRestantes = 1
     e.avisoPiedad = 'El Archivo se apiada: un cambio más. Nadie se queda bloqueado con la mano llena.'
   }
