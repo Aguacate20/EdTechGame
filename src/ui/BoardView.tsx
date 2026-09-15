@@ -571,7 +571,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 .filter((x): x is NonNullable<typeof x> => !!x)
               if (pts.length < 1) return null
               const ver = veredictos.find((v) => v.trazo.uid === t.uid)
-              const color = COLOR_ESTADO[ver?.estado ?? 'silencio']
+              const armado = esArmado(t.uid)
+              const color = armado ? 'var(--dominar)' : COLOR_ESTADO[ver?.estado ?? 'silencio']
               const tool = HERRAMIENTAS[t.tool]
               if (t.tool === 'campo' || t.tool === 'eje') {
                 const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y)
@@ -593,7 +594,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   {pts.slice(0, -1).map((a, i) => {
                     const b = pts[i + 1]
                     const est = t.tool === 'flecha' ? estiloRelacion(t.param) : null
-                    if (est?.ondulada) return null
+                    if (est?.ondulada && !armado) return null
                     const dash = est?.dash ?? (t.tool === 'identidad' ? '3 3'
                       : ver?.estado === 'derivado' ? '9 4'
                       : ver?.estado === 'insinuado' || ver?.estado === 'propuesta' ? '4 5'
@@ -650,7 +651,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
           <svg className="trazos ondas" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
             {trazosVisibles
-              .filter((t) => t.tool === 'flecha' && estiloRelacion(t.param).ondulada)
+              .filter((t) => t.tool === 'flecha' && estiloRelacion(t.param).ondulada && !esArmado(t.uid))
               .map((t) => {
                 const pts = t.piezas.map((u) => posiciones.find((x) => x.uid === u))
                   .filter((x): x is NonNullable<typeof x> => !!x)
@@ -660,7 +661,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 return (
                   <path key={t.uid} d={ondaEntre(pts[0].x, pts[0].y, pts[1].x, pts[1].y)}
                     fill="none" strokeWidth={1.8}
-                    stroke={COLOR_ESTADO[ver?.estado ?? 'silencio']} vectorEffect="non-scaling-stroke" />
+                    stroke={esArmado(t.uid) ? 'var(--dominar)' : COLOR_ESTADO[ver?.estado ?? 'silencio']} vectorEffect="non-scaling-stroke" />
                 )
               })}
           </svg>

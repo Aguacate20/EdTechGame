@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.71
+# LudusCog · El Archivo Infinito — v5.72
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,14 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Los armados se ven (v5.72)
+
+El motor conservaba los trazos armados (comprobado con una simulación: tras afirmar y pasar
+de turno, `armados: 1`, `tablero: 2`), pero la mesa no los dibujaba: sin veredicto de
+previsualización tomaban el color de «silencio» y, si su tipo de vínculo se dibuja ondulado,
+el pase recto los omitía. Ahora todo trazo armado se dibuja en oro y recto, y las piezas
+armadas no ocupan sitio en la mano: se roba hasta llenarla de cartas jugables.
 
 ## Armados en la mesa, expediciones por zona, no-vínculos (v5.71)
 

@@ -1295,7 +1295,9 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
     e.cambiosRestantes = 1
     e.avisoPiedad = 'El Archivo se apiada: un cambio más. Nadie se queda bloqueado con la mano llena.'
   }
-  const faltan = Math.max(0, e.manoBase - e.mano.length)
+  // v5.72 · las piezas armadas en la mesa no ocupan sitio en la mano: se roba hasta llenarla de cartas jugables
+  const armadas = new Set(e.armados.flatMap((x) => x.piezas))
+  const faltan = Math.max(0, e.manoBase - e.mano.filter((p) => !armadas.has(p.uid)).length)
   if (ctx) {
     // el Repartidor: robo ponderado por tiers, con piedad y vetos.
     // Si el mazo se agota a medio robo, se recicla como siempre.
