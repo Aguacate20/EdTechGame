@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.74
+# LudusCog · El Archivo Infinito — v5.75
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,12 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## La identidad armada entera (v5.75)
+
+Una identidad sostenida deja en la mesa las dos piezas —nombre y descripción— doradas y con
+su vínculo (=) dibujado en oro. Como quedan en la mesa, no vuelven al mazo; el algoritmo de
+novedad y el de cartas agotadas ya no las ven.
 
 ## Cartas doradas (v5.74)
 
