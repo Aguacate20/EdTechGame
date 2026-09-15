@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.80
+# LudusCog · El Archivo Infinito — v5.81
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,20 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Morir no borra el mapa; escalera de pistas; mesa compacta (v5.81)
+
+- **El submapa pendiente se guarda en cada afirmación**, no solo al ganar la sala: morir no
+  lo borra. Decisión: el mapa dorado es conocimiento en construcción, no un recurso de la
+  partida; lo que la muerte cuesta son las lentes, los sellos y el camino, como siempre.
+- **Escalera de pistas (andamiaje contingente)**: nivel 0, «Faltan: 1 causa · 2 apoya» y
+  «admite» (siempre); nivel 2, tras dos turnos sin sostener nada nuevo, **dos cartas se
+  iluminan en cian** (una armada y una de la mano, o dos de la mano) con el vínculo pendiente
+  de más confianza, sin decir cuál; nivel 3, al tercer turno, también el tipo. El trazo
+  hecho con pista rinde al 70 % y la pista se apaga. En modo aprendizaje y normal por igual.
+- **Mesa compacta**: una identidad armada se funde en UNA carta (el concepto completo) en el
+  sitio del nombre, y las cartas armadas se dibujan al 80 % solo con el título: el mapa
+  construido ocupa menos y deja el centro libre para lo que sigue.
 
 ## Resonancia del mapa (v5.80)
 

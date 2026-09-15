@@ -539,6 +539,8 @@ export default function App() {
     const e = { ...batalla }
     const r = afirmarDiagrama(e, ctx)
     turnoDelCarril(e, ctx, r)
+    // v5.81 · el submapa pendiente se guarda en cada afirmación: morir no lo borra
+    guardarPendiente(mapaPendienteDe(e))
 
     const inf = r.diag.veredictos.filter((v) => v.inferencia).length
     if (inf) setInferenciasRun((n) => n + inf)

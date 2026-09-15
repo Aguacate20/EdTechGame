@@ -519,6 +519,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               return (
                 <div className="mapa-pistas">
                   {faltan.length > 0 && <span>Faltan: {faltan.map((f) => `${f.n} ${f.tipo}`).join(' · ')}</span>}
+                  {e.pista && <span className="pista-activa">Pista: las dos cartas iluminadas se relacionan{e.pista.revelarTipo ? ` por «${e.pista.tipo}»` : ''}. (Con pista rinde al 70 %.)</span>}
                   {pistas.admite.length > 0 && <span>Este mapa admite: {pistas.admite.join(', ')}</span>}
                 </div>
               )
@@ -690,6 +691,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
+                data-pista={e.pista && p.conceptId && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
                 className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
@@ -946,6 +948,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-uid={p.uid}
+                data-pista={e.pista && p.conceptId && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
