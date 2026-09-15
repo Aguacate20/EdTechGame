@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.75
+# LudusCog · El Archivo Infinito — v5.76
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,16 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El submapa se descubre por frontera; completo = victoria (v5.76)
+
+- **Frontera**: tras cada afirmación, los vecinos (en el mapa ideal del texto) de lo que ya
+  está armado entran al mazo, hasta un tope de submapa por sala (10 conceptos o los que la
+  sala trajera). La mano siempre trae lo que sigue; la meta del mapa crece con el submapa.
+  En modo aprendizaje entran como concepto entero; en normal, nombre y descripción aparte.
+- **Cristalizar el submapa completo derrota al instante** a todos los enemigos que queden y
+  gana la sala: el mapa es la victoria, los enemigos son el reloj. Con el mapa incompleto,
+  cristalizar sigue siendo el golpe grande de siempre (×2, ×3 si cruza zonas).
 
 ## La identidad armada entera (v5.75)
 

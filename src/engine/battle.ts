@@ -660,6 +660,18 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
   const factor = completo ? 3 : zonas >= 2 ? 3 : 2
   const dano = Math.round(base * factor)
   const impactos: { nombre: string; dano: number; derribado: boolean }[] = []
+  // v5.76 · el submapa completo cristalizado derrota al instante a todo lo que queda:
+  // el mapa es la victoria; los enemigos, el reloj
+  if (completo) {
+    for (const en of vivos(e)) { impactos.push({ nombre: en.nombre, dano: en.hp, derribado: true }); en.hp = 0; en.gesto = 'cae'; en.tocadoEsteTurno = true }
+    e.mapa = { trazos: [], umbral: Math.min(10, e.mapa.umbral + 1), cristalizaciones: e.mapa.cristalizaciones + 1, meta: e.mapa.meta, hechos: e.mapa.meta }
+    e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: factor, trazos: e.armados.length } : e.mejorGolpe
+    for (const uid of new Set(e.armados.flatMap((x) => x.piezas))) { const p = e.mano.find((x) => x.uid === uid); if (p) { e.mano = e.mano.filter((x) => x.uid !== uid); e.descarte.push(p) } }
+    e.tablero = e.tablero.filter((x) => !e.armados.some((a) => a.piezas.includes(x.uid)))
+    e.armados = []
+    e.fase = 'ganado'
+    return { dano, zonas, trazos: 0, impactos }
+  }
   // golpe a todos, repartido de delante hacia atrás con arrastre
   let resto = dano
   for (const en of vivos(e).sort((a, b) => a.posicion - b.posicion)) {
@@ -708,8 +720,28 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     diag.combos.push({ id: 'articulacion', nombre: 'Enlace con el mapa', fichas: 0, mult: 0.5 * conexiones, detalle: `${conexiones} trazo(s) enganchan con lo que ya sostuviste en esta sala.` })
   }
   for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
+  // v5.76 · el submapa se descubre por frontera: los vecinos (en el mapa ideal del texto)
+  // de lo que ya está armado entran al mazo, hasta el tope de la sala. La mano siempre
+  // trae lo que sigue; la meta crece con el submapa.
+  {
+    const TOPE = Math.max(e.conceptIdsCasilla.length, 10)
+    const enMapaIds = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
+    const dentro = new Set(e.conceptIdsCasilla)
+    if (dentro.size < TOPE && enMapaIds.size > 0) {
+      const frontera = [...new Set(ctx.contenido.aristas
+        .filter((a) => (enMapaIds.has(a.from) && !dentro.has(a.to)) || (enMapaIds.has(a.to) && !dentro.has(a.from)))
+        .map((a) => (enMapaIds.has(a.from) ? a.to : a.from))
+        .filter((id) => !!ctx.contenido.conceptos[id]))]
+      for (const id of frontera.slice(0, Math.min(2, TOPE - dentro.size))) {
+        e.conceptIdsCasilla = [...e.conceptIdsCasilla, id]
+        const nuevas = e.apoyo ? [piezaConcepto(ctx.contenido, id)] : [piezaEtiqueta(ctx.contenido, id), piezaDefinicion(ctx.contenido, id)]
+        for (const p of nuevas) if (p && !e.mano.some((x) => x.conceptId === id && x.clase === p.clase) && !e.mazo.some((x) => x.conceptId === id && x.clase === p.clase)) e.mazo.unshift(p)
+      }
+    }
+  }
   // v5.69 · la meta es el mapa completo: cuántos vínculos de la sala ya están sostenidos
   const vinculos = vinculosDeLaSala(e, ctx)
+  e.mapa.meta = vinculos.length
   e.mapa.hechos = vinculos.filter((a) => parEnMapa(e, a.from, a.to)).length
   // v5.69 · las cartas agotadas (su concepto ya no puede aportar ningún vínculo nuevo
   // al mapa, y ya no le queda identidad por resolver) salen del mazo y del descarte.
