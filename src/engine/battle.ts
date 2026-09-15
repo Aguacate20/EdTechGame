@@ -78,7 +78,7 @@ export interface PiezaEnTablero { uid: string; x: number; y: number }
 export interface EstadoBatalla {
   /** v5.67 · el mapa de la sala: lo sostenido en turnos anteriores, con sus conceptos.
    *  Un trazo nuevo que toca el mapa multiplica; al llegar al umbral se puede cristalizar. */
-  mapa: { trazos: { tool: string; conceptIds: string[]; fichas: number; firma: string }[]; umbral: number; cristalizaciones: number; /** vínculos del texto entre los conceptos de la sala que el jugador puede trazar */ meta: number; /** cuántos de esos ya están en el mapa */ hechos: number }
+  mapa: { trazos: { tool: string; conceptIds: string[]; fichas: number; firma: string; /** v5.70 · viene de una sala anterior: ya está armado, en oro */ heredado?: boolean }[]; umbral: number; cristalizaciones: number; /** vínculos del texto entre los conceptos de la sala que el jugador puede trazar */ meta: number; /** cuántos de esos ya están en el mapa */ hechos: number }
   /** v5.62 · aciertos y fallos de la oleada en curso (andamio contingente) */
   aciertosOleada: number
   fallosOleada: number
@@ -228,6 +228,8 @@ export const TABLERO_ALTO = 100
 /* ---------------------------- montaje del mazo ---------------------------- */
 
 export interface Bolsa {
+  /** v5.70 · el mapa de la expedición hasta ahora: los vínculos sostenidos en salas anteriores */
+  mapaPrevio?: { tool: string; conceptIds: string[]; fichas: number; firma: string }[]
   /** v5.62 · conceptos con evidencia previa en el Atlas (anclaje entre sesiones) */
   evidenciaPrevia?: string[]
   herramientas: HerramientaId[]
@@ -363,7 +365,13 @@ export function iniciarBatalla(
   if (!bolsa.mazoFijo) e.manoBase = Math.min(9, Math.max(5, e.manoBase - 1) + (tiene('ancla') || tiene('contraejemplo') ? 2 : 0) + (tiene('balanza') ? 1 : 0))
   // el umbral de cristalizar sube con el acto: mapas más grandes en salas más duras
   e.mapa.umbral = acto >= 2 ? 8 : acto === 1 ? 7 : 6
-  e.mapa.meta = vinculosDeLaSala(e, ctx).length
+  // v5.70 · lo sostenido en salas anteriores llega ya armado (en oro) si toca a esta sala:
+  // no vuelve a puntuar, pero multiplica lo nuevo que lo enlace y cuenta para cristalizar
+  const dentroSala = new Set(e.conceptIdsCasilla)
+  for (const x of bolsa.mapaPrevio ?? []) if (x.conceptIds.some((id) => dentroSala.has(id))) e.mapa.trazos.push({ ...x, heredado: true })
+  const vinc0 = vinculosDeLaSala(e, ctx)
+  e.mapa.meta = vinc0.length
+  e.mapa.hechos = vinc0.filter((a) => parEnMapa(e, a.from, a.to)).length
   e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
   // los escenarios de la primera oleada (si los hay) entran ya al mazo
   for (const id of e.oleadas[0]?.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) e.mazo.push(pz) }

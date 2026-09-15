@@ -504,7 +504,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
             <small>Mapa de la sala · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length}/${e.mapa.umbral}`}{e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? ' · completo ✦' : ''}</small>
             <div className="mapa-chips">
-              {[...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))].slice(0, 10).map((id) => <span key={id} className="mapa-chip">{recorte(contenido.conceptos[id]?.titulo ?? id, 18)}</span>)}
+              {[...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))].slice(0, 12).map((id) => {
+                const heredado = e.mapa.trazos.filter((x) => x.conceptIds.includes(id)).every((x) => x.heredado)
+                return <span key={id} className={`mapa-chip${heredado ? ' heredado' : ''}`} title={heredado ? 'De una sala anterior: ya armado' : 'Sostenido en esta sala'}>{recorte(contenido.conceptos[id]?.titulo ?? id, 18)}</span>
+              })}
               {e.mapa.trazos.length === 0 && <span className="mapa-vacio">Aún nada sostenido. Lo que sostengas se queda aquí toda la sala.</span>}
             </div>
           </div>

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.69
+# LudusCog · El Archivo Infinito — v5.70
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,15 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El mapa de la expedición (v5.70)
+
+- **Lo sostenido se hereda entre salas.** Al ganar una sala, su mapa se suma al de la
+  expedición; en la sala siguiente, los vínculos que tocan a sus conceptos llegan ya
+  armados, en oro (`heredado`): no vuelven a puntuar (repetir no suma), pero multiplican lo
+  nuevo que los enlace y cuentan para cristalizar. Empezar una expedición nueva vacía el mapa.
+- **El zoom abre espacio de verdad**: al alejar, el mundo de la mesa crece (100 % / zoom) y
+  las piezas caben más pequeñas en más sitio; los límites de colocación crecen con él.
 
 ## Todo se orienta al mapa completo (v5.69)
 

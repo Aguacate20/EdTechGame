@@ -96,6 +96,8 @@ export default function App() {
   const previoRef = useRef<{ contenido: Contenido; atlas: Atlas } | null>(null)
   // foto del Atlas al empezar la batalla, para enseñar lo ganado en el cierre
   const atlasAlEmpezarRef = useRef<Atlas | null>(null)
+  /** v5.70 · el mapa de la expedición: lo sostenido en las salas ya ganadas */
+  const mapaExpedicionRef = useRef<{ tool: string; conceptIds: string[]; fichas: number; firma: string }[]>([])
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -190,6 +192,7 @@ export default function App() {
   }, [])
 
   const lanzarExpedicion = useCallback((portada: Portada) => {
+    mapaExpedicionRef.current = []
     if (!contenido || !atlas) return
     const conApoyo = pendApoyo
     setPortadaId(portada.id)
@@ -381,6 +384,7 @@ export default function App() {
       // la apuesta del vistazo: leerlo señala una falsificación, saltarlo da
       // una herramienta más
       apoyo: aprendizaje,
+      mapaPrevio: mapaExpedicionRef.current,
       evidenciaPrevia: atlas ? Object.keys(atlas.conceptos) : [],
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
@@ -683,6 +687,8 @@ export default function App() {
       setBatalla(e)
     }
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
+      // v5.70 · el mapa de esta sala se suma al de la expedición
+      mapaExpedicionRef.current = batalla.mapa.trazos.map(({ tool, conceptIds, fichas, firma }) => ({ tool, conceptIds, fichas, firma }))
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
       // la calidad del mejor diagrama inclina la suerte, sin garantizarla
