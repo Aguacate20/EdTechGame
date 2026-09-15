@@ -238,6 +238,10 @@ export function juzgarVinculo(
   c: Contenido, from: string, to: string, tipo: string, opciones: OpcionesJuicio = {}
 ): Hallazgo {
   const T = (id: string) => c.conceptos[id]?.titulo ?? id
+  // v5.71 · no-vínculos: pares que el texto distingue a propósito. Trazarlos es un error
+  // con causa, no un silencio.
+  const nv = (c.noVinculos ?? []).find((n) => (n.a === from && n.b === to) || (n.a === to && n.b === from))
+  if (nv) return { estado: 'invertida', tipoReal: null, camino: null, nota: `El texto los distingue a propósito: ${nv.motivo}` }
   const directa = c.aristas.filter((x) => x.from === from && x.to === to)
   const inversa = c.aristas.filter((x) => x.from === to && x.to === from)
   const disponibles = opciones.tiposDisponibles

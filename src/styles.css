@@ -1993,7 +1993,7 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 /* ── zoom de la mesa ── */
 .zoom-mesa { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 3; }
 .zoom-mesa .btn { min-width: 32px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; }
-.app .zona-lienzo { position: relative; }
+.app .zona-lienzo { position: relative; display: grid; grid-template-rows: minmax(0, 1fr); }
 .app .zona-lienzo .lienzo { width: calc(100% / var(--zoom, 1)); height: calc(100% / var(--zoom, 1)); transform: scale(var(--zoom, 1)); transform-origin: top left; transition: transform .2s ease, width .2s ease, height .2s ease; }
 
 /* ── cristalizar ── */
@@ -2007,3 +2007,7 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .mapa-chip { font-size: 11px; background: rgba(56,182,255,.12); border: 1px solid rgba(56,182,255,.45); color: var(--texto); border-radius: 999px; padding: 1px 8px; }
 .mapa-chip.heredado { background: rgba(255,194,61,.14); border-color: rgba(255,194,61,.6); box-shadow: 0 0 8px rgba(255,194,61,.25); }
 .mapa-vacio { font-size: 11px; color: var(--texto-2); }
+
+/* ── trazos armados (oro) ── */
+.lienzo [data-armado='true'] line, .lienzo [data-armado='true'] path { stroke: var(--dominar) !important; filter: drop-shadow(0 0 6px rgba(255,194,61,.6)); }
+.lienzo [data-armado='true'] text { fill: var(--dominar) !important; }

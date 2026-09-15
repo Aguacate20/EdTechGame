@@ -76,6 +76,8 @@ export interface ResultadoTurno {
 export interface PiezaEnTablero { uid: string; x: number; y: number }
 
 export interface EstadoBatalla {
+  /** v5.71 · trazos sostenidos que se quedan armados en la mesa (en oro) para enlazar el siguiente ataque */
+  armados: Trazo[]
   /** v5.67 · el mapa de la sala: lo sostenido en turnos anteriores, con sus conceptos.
    *  Un trazo nuevo que toca el mapa multiplica; al llegar al umbral se puede cristalizar. */
   mapa: { trazos: { tool: string; conceptIds: string[]; fichas: number; firma: string; /** v5.70 · viene de una sala anterior: ya está armado, en oro */ heredado?: boolean }[]; umbral: number; cristalizaciones: number; /** vínculos del texto entre los conceptos de la sala que el jugador puede trazar */ meta: number; /** cuántos de esos ya están en el mapa */ hechos: number }
@@ -350,7 +352,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
@@ -667,6 +669,9 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
     impactos.push({ nombre: en.nombre, dano: d, derribado: en.hp === 0 })
   }
   const trazos = e.mapa.trazos.length
+  for (const uid of new Set(e.armados.flatMap((x) => x.piezas))) { const p = e.mano.find((x) => x.uid === uid); if (p) { e.mano = e.mano.filter((x) => x.uid !== uid); e.descarte.push(p) } }
+  e.tablero = e.tablero.filter((x) => !e.armados.some((a) => a.piezas.includes(x.uid)))
+  e.armados = []
   e.mapa = { trazos: [], umbral: Math.min(10, e.mapa.umbral + 1), cristalizaciones: e.mapa.cristalizaciones + 1, meta: e.mapa.meta, hechos: completo ? e.mapa.meta : e.mapa.hechos }
   e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: factor, trazos } : e.mejorGolpe
   return { dano, zonas, trazos, impactos }
@@ -959,10 +964,15 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   }
 
   const nTrazos = e.trazos.length
-  // limpiar el tablero: lo usado va al descarte, lo reubicado sale de la run
+  // v5.71 · lo sostenido se queda armado en la mesa (piezas + trazo, en oro): el siguiente
+  // ataque puede engancharse a ello. Solo lo no sostenido va al descarte.
+  const sostenidosAhora = diag.veredictos.filter((v) => esAcierto(v.estado) && v.fichas > 0).map((v) => v.trazo)
+  const piezasArmadas = new Set([...e.armados.flatMap((x) => x.piezas), ...sostenidosAhora.flatMap((x) => x.piezas)])
+  e.armados = [...e.armados, ...sostenidosAhora.map((x) => ({ ...x, uid: `armado:${x.uid}` }))]
   for (const t of e.tablero) {
     const p = e.mano.find((x) => x.uid === t.uid)
     if (!p) continue
+    if (piezasArmadas.has(p.uid) && !diag.fusiona.includes(p.conceptId ?? '')) continue
     e.mano = e.mano.filter((x) => x.uid !== p.uid)
     const reubicada = p.clase === 'intuicion' && p.refId && diag.repertoriosReubicados.includes(p.refId)
     if (reubicada && p.refId) {
@@ -974,7 +984,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     } else e.descarte.push(p)
   }
   e.fusionados = [...new Set([...e.fusionados, ...diag.fusiona])]
-  e.tablero = []
+  e.tablero = e.tablero.filter((x) => piezasArmadas.has(x.uid) && e.mano.some((p) => p.uid === x.uid))
   e.trazos = []
   e.usadas = []
   e.bonusMult = 0

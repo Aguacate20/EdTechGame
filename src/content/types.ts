@@ -205,6 +205,8 @@ export interface Contenido {
   tesis: Tesis[]
   marcos: Marco[]
   ejes: Eje[]
+  /** v5.71 · pares que el texto DISTINGUE explícitamente (no-vínculos); trazarlos es un error con causa */
+  noVinculos: { a: string; b: string; motivo: string }[]
   /** por concepto: con qué se confunde según el propio extractor */
   distractores: Record<string, Distractor[]>
   /** dominios de aplicación que aparecen en casos y escenarios */

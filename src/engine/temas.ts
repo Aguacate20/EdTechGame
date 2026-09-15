@@ -35,7 +35,7 @@ export function temasDe(c: Contenido): Tema[] {
     const raiz = conFuentes ? (fs.length ? uf.find(fs[0]) : '__sin_fuente') : uf.find(id)
     grupos.set(raiz, [...(grupos.get(raiz) ?? []), id])
   }
-  let temas = [...grupos.entries()].map(([raiz, cids]) => ({ raiz, cids }))
+  let temas: { raiz: string; cids: string[]; nombre?: string }[] = [...grupos.entries()].map(([raiz, cids]) => ({ raiz, cids }))
   // las migajas se pegan al tema con el que más vínculos tienen
   const grandes = temas.filter((t) => t.cids.length >= 4)
   if (grandes.length) {
@@ -46,6 +46,26 @@ export function temasDe(c: Contenido): Tema[] {
     }
     temas = grandes
   }
+  // v5.71 · expediciones por zona: un tema grande (> 16 conceptos) se parte por sus
+  // zonas (clusters de 4+). Cada expedición consolida UNA constelación; la sala no
+  // mezcla y el largo se ajusta a lo que hay: un paper corto son pocas salas.
+  const partidos: { raiz: string; cids: string[]; nombre?: string }[] = []
+  for (const t of temas) {
+    if (t.cids.length <= 16) { partidos.push(t); continue }
+    const dentro = new Set(t.cids)
+    const zonas = c.clusters.map((k) => ({ k, ids: k.conceptIds.filter((id) => dentro.has(id)) })).filter((z) => z.ids.length >= 4)
+    if (zonas.length < 2) { partidos.push(t); continue }
+    const asignados = new Set(zonas.flatMap((z) => z.ids))
+    const sueltos = t.cids.filter((id) => !asignados.has(id))
+    for (const z of zonas) {
+      // cada zona lleva además sus vecinos directos de fuera, para que los puentes existan
+      const vecinos = c.aristas.filter((a) => (z.ids.includes(a.from) && !z.ids.includes(a.to) && dentro.has(a.to)) || (z.ids.includes(a.to) && !z.ids.includes(a.from) && dentro.has(a.from)))
+        .map((a) => (z.ids.includes(a.from) ? a.to : a.from))
+      partidos.push({ raiz: `${t.raiz}#${z.k.id}`, cids: [...new Set([...z.ids, ...vecinos.slice(0, 3)])], nombre: z.k.label.replace(/^Zona de /, '') })
+    }
+    if (sueltos.length) partidos[partidos.length - 1].cids.push(...sueltos)
+  }
+  temas = partidos
   return temas
     .sort((a, b) => b.cids.length - a.cids.length)
     .map((t, i) => {
@@ -53,7 +73,7 @@ export function temasDe(c: Contenido): Tema[] {
       // el nombre del tema: su concepto más conectado
       const grado = (id: string) => c.aristas.filter((x) => x.from === id || x.to === id).length
       const eje = [...t.cids].sort((a, b) => grado(b) - grado(a) || c.conceptos[b].importancia - c.conceptos[a].importancia)[0]
-      return { id: `tema_${i + 1}`, nombre: c.conceptos[eje]?.titulo ?? `Tema ${i + 1}`, conceptIds: t.cids, documentos: docs }
+      return { id: `tema_${i + 1}`, nombre: t.nombre ?? c.conceptos[eje]?.titulo ?? `Tema ${i + 1}`, conceptIds: t.cids, documentos: docs }
     })
 }
 

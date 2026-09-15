@@ -150,6 +150,7 @@ export function adaptarBundle(raw: unknown): Contenido {
     if (confianza < UMBRAL_AFIRMADA) insinuadas.push(arista)
     else aristas.push(arista)
   }
+  const noVinculos = arr(b.graph?.no_vinculos).map((n) => ({ a: str(n?.a), b: str(n?.b), motivo: str(n?.motivo) })).filter((n) => n.a && n.b)
   const porTipo = b.graph?.por_tipo
   if (porTipo && typeof porTipo === 'object') {
     for (const lista of Object.values(porTipo as Record<string, unknown>)) arr(lista).forEach(empujar)
@@ -510,7 +511,7 @@ export function adaptarBundle(raw: unknown): Contenido {
     bundleVersion: str(b.bundle_version, '—'),
     schema: str(b.compiled_from_schema, '—'),
     conceptos, ordenConceptos, aristas, insinuadas, frecuenciaRelacion, unidades, clusters,
-    items, repertorios, casos, escenarios, tesis, marcos, ejes,
+    items, repertorios, casos, escenarios, tesis, marcos, ejes, noVinculos,
     distractores, dominios, condicionesDisponibles, diagnostico: diag
   }
 }

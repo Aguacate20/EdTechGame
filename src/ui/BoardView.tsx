@@ -223,7 +223,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
     : e.tablero.map((t) => ({ t, p: e.mano.find((x) => x.uid === t.uid) }))
         .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
-  const trazosVisibles = foto ? foto.trazos : e.trazos
+  const trazosVisibles = foto ? foto.trazos : [...(e.armados ?? []), ...e.trazos]
+  const esArmado = (uid: string) => uid.startsWith('armado:')
   const posiciones = foto ? foto.tablero : e.tablero
   const veredictos = resuelto && e.ultima ? e.ultima.diag.veredictos : previa.veredictos
 
@@ -585,7 +586,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 )
               }
               return (
-                <g key={t.uid} className={
+                <g key={t.uid} data-armado={esArmado(t.uid) ? 'true' : undefined} className={
                   (resuelto && !casc.trazosRevelados.has(t.uid) ? 'oculto' : 'trazo-vivo') +
                   (trazoAbierto === t.uid ? ' resaltado' : trazoAbierto ? ' atenuado' : '')
                 }>

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.70
+# LudusCog · El Archivo Infinito — v5.71
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,21 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Armados en la mesa, expediciones por zona, no-vínculos (v5.71)
+
+- **Los trazos sostenidos se quedan armados en la mesa**, en oro, con sus piezas: el
+  siguiente ataque puede engancharse a ellos (enlace con el mapa) en la misma sala, no solo
+  en la siguiente. No vuelven a puntuar. Cristalizar los recoge y vacía la mesa.
+- **El zoom crece también en vertical**: la mesa es una celda de rejilla y el mundo se
+  calcula sobre su alto real.
+- **Expediciones por zona**: un tema de más de 16 conceptos se parte por sus zonas (4+
+  conceptos); cada zona lleva hasta tres vecinos de fuera para que existan los puentes. El
+  selector «Explorar» muestra las constelaciones; una expedición consolida una. El largo se
+  ajusta solo: un paper corto son pocas salas.
+- **No-vínculos**: el juego lee `graph.no_vinculos` (pares que el texto distingue a propósito,
+  con motivo) y trazarlos es un error con causa: «El texto los distingue a propósito: …».
+  Falta que el extractor los emita (capa 2, prompt + modelo + compilador).
 
 ## El mapa de la expedición (v5.70)
 
