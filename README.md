@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.77
+# LudusCog · El Archivo Infinito — v5.78
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,15 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## El submapa pendiente es tuyo hasta que lo cristalices (v5.78)
+
+Si la sala termina (los enemigos caen) sin haber cristalizado, el submapa viaja **entero** a la
+siguiente sala: sus conceptos, las piezas doradas con su posición en la mesa y los vínculos en
+oro. La sala nueva suma sus conceptos a los pendientes y retira del mazo las cartas que
+duplican piezas armadas. También sobrevive a la expedición: se guarda por perfil
+(`ludus:mapa-pendiente:<perfil>`) y la siguiente expedición lo carga; solo se limpia al
+cristalizar. Antes solo viajaban los chips del registro, no la mesa.
 
 ## El ataque final (v5.77)
 

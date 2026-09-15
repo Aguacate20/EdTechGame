@@ -229,9 +229,18 @@ export const TABLERO_ALTO = 100
 
 /* ---------------------------- montaje del mazo ---------------------------- */
 
+export interface MapaPendiente {
+  trazos: { tool: string; conceptIds: string[]; fichas: number; firma: string }[]
+  armados: Trazo[]
+  piezas: Pieza[]
+  tablero: PiezaEnTablero[]
+  conceptIds: string[]
+}
+
 export interface Bolsa {
-  /** v5.70 · el mapa de la expedición hasta ahora: los vínculos sostenidos en salas anteriores */
-  mapaPrevio?: { tool: string; conceptIds: string[]; fichas: number; firma: string }[]
+  /** v5.78 · el submapa pendiente (no cristalizado): viaja entero entre salas y expediciones —
+   *  vínculos, trazos armados, las piezas con su posición en la mesa y los conceptos del submapa */
+  mapaPrevio?: MapaPendiente
   /** v5.62 · conceptos con evidencia previa en el Atlas (anclaje entre sesiones) */
   evidenciaPrevia?: string[]
   herramientas: HerramientaId[]
@@ -369,8 +378,19 @@ export function iniciarBatalla(
   e.mapa.umbral = acto >= 2 ? 8 : acto === 1 ? 7 : 6
   // v5.70 · lo sostenido en salas anteriores llega ya armado (en oro) si toca a esta sala:
   // no vuelve a puntuar, pero multiplica lo nuevo que lo enlace y cuenta para cristalizar
-  const dentroSala = new Set(e.conceptIdsCasilla)
-  for (const x of bolsa.mapaPrevio ?? []) if (x.conceptIds.some((id) => dentroSala.has(id))) e.mapa.trazos.push({ ...x, heredado: true })
+  const previo = bolsa.mapaPrevio
+  if (previo && previo.trazos.length) {
+    // el submapa pendiente sigue: mismos conceptos (más los de esta sala), mismas piezas en la
+    // mesa, mismos trazos en oro. Las cartas del mazo que duplican piezas armadas se retiran.
+    e.conceptIdsCasilla = [...new Set([...previo.conceptIds, ...e.conceptIdsCasilla])]
+    for (const x of previo.trazos) e.mapa.trazos.push({ ...x, heredado: true })
+    e.armados = previo.armados.map((a) => ({ ...a }))
+    const uids = new Set(previo.piezas.map((p) => p.uid))
+    const armadasClase = new Set(previo.piezas.map((p) => `${p.conceptId}|${p.clase}`))
+    e.mazo = e.mazo.filter((p) => !uids.has(p.uid) && !armadasClase.has(`${p.conceptId}|${p.clase}`))
+    e.mano = [...e.mano.filter((p) => !uids.has(p.uid) && !armadasClase.has(`${p.conceptId}|${p.clase}`)), ...previo.piezas]
+    e.tablero = [...e.tablero.filter((x) => !uids.has(x.uid)), ...previo.tablero.map((x) => ({ ...x }))]
+  }
   const vinc0 = vinculosDeLaSala(e, ctx)
   e.mapa.meta = vinc0.length
   e.mapa.hechos = vinc0.filter((a) => parEnMapa(e, a.from, a.to)).length
@@ -664,6 +684,19 @@ export function pistasDelSubmapa(e: EstadoBatalla, ctx: ContextoBatalla): { falt
 }
 
 const parEnMapa = (e: EstadoBatalla, a: string, b: string) => e.mapa.trazos.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
+
+/** v5.78 · la foto del submapa pendiente al terminar la sala (vacía si se cristalizó) */
+export function mapaPendienteDe(e: EstadoBatalla): MapaPendiente | null {
+  if (!e.mapa.trazos.length) return null
+  const uids = new Set(e.armados.flatMap((x) => x.piezas))
+  return {
+    trazos: e.mapa.trazos.map(({ tool, conceptIds, fichas, firma }) => ({ tool, conceptIds, fichas, firma })),
+    armados: e.armados.map((a) => ({ ...a })),
+    piezas: e.mano.filter((p) => uids.has(p.uid)),
+    tablero: e.tablero.filter((x) => uids.has(x.uid)).map((x) => ({ ...x })),
+    conceptIds: [...e.conceptIdsCasilla]
+  }
+}
 
 /** v5.67 · ¿el mapa de la sala llegó al umbral? */
 /** v5.77 · el submapa está completo cuando TODOS sus vínculos están sostenidos y TODOS sus

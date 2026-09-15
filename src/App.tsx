@@ -5,7 +5,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
-  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -31,7 +31,7 @@ import { cargarPlan } from './net/sesion'
 import { iniciarSubidas, marcarAplicada, useSubidas } from './net/subidas'
 import { adaptarBundle } from './content/adapter'
 import { bajarAtlas, cerrarSesion, leerSesion, masAvanzado, subirAtlas, type Sesion } from './net/sesion'
-import { fijarAmbito, nivelDe, observarAtlas } from './engine/atlas'
+import { ambitoActual, fijarAmbito, nivelDe, observarAtlas } from './engine/atlas'
 import { BoardView } from './ui/BoardView'
 import { EndView, MapView, PortadaView, RewardView } from './ui/Screens'
 import { RefugioView } from './ui/RefugioView'
@@ -99,7 +99,10 @@ export default function App() {
   // foto del Atlas al empezar la batalla, para enseñar lo ganado en el cierre
   const atlasAlEmpezarRef = useRef<Atlas | null>(null)
   /** v5.70 · el mapa de la expedición: lo sostenido en las salas ya ganadas */
-  const mapaExpedicionRef = useRef<{ tool: string; conceptIds: string[]; fichas: number; firma: string }[]>([])
+  const mapaExpedicionRef = useRef<MapaPendiente | null>(null)
+  const clavePendiente = () => `ludus:mapa-pendiente:${ambitoActual() ?? 'local'}`
+  const guardarPendiente = (m: MapaPendiente | null) => { mapaExpedicionRef.current = m; try { m ? localStorage.setItem(clavePendiente(), JSON.stringify(m)) : localStorage.removeItem(clavePendiente()) } catch { /* sin almacenamiento */ } }
+  const leerPendiente = (): MapaPendiente | null => { try { const raw = localStorage.getItem(clavePendiente()); return raw ? (JSON.parse(raw) as MapaPendiente) : null } catch { return null } }
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -194,7 +197,8 @@ export default function App() {
   }, [])
 
   const lanzarExpedicion = useCallback((portada: Portada) => {
-    mapaExpedicionRef.current = []
+    // v5.78 · el submapa pendiente sobrevive a la expedición hasta que se cristaliza
+    mapaExpedicionRef.current = leerPendiente()
     if (!contenido || !atlas) return
     const conApoyo = pendApoyo
     setPortadaId(portada.id)
@@ -386,7 +390,7 @@ export default function App() {
       // la apuesta del vistazo: leerlo señala una falsificación, saltarlo da
       // una herramienta más
       apoyo: aprendizaje,
-      mapaPrevio: mapaExpedicionRef.current,
+      mapaPrevio: mapaExpedicionRef.current ?? undefined,
       evidenciaPrevia: atlas ? Object.keys(atlas.conceptos) : [],
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
@@ -693,8 +697,8 @@ export default function App() {
       setBatalla(e)
     }
     if (batalla.fase === 'ganado' || vivos(batalla).length === 0) {
-      // v5.70 · el mapa de esta sala se suma al de la expedición
-      mapaExpedicionRef.current = batalla.mapa.trazos.map(({ tool, conceptIds, fichas, firma }) => ({ tool, conceptIds, fichas, firma }))
+      // v5.78 · el submapa pendiente (no cristalizado) viaja entero a la siguiente sala; si se cristalizó, queda limpio
+      guardarPendiente(mapaPendienteDe(batalla))
       const nodo = nodoRef.current
       const dura = nodo?.dificultad === 'dura' || nodo?.dificultad === 'jefe'
       // la calidad del mejor diagrama inclina la suerte, sin garantizarla
