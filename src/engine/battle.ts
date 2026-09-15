@@ -972,7 +972,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   for (const t of e.tablero) {
     const p = e.mano.find((x) => x.uid === t.uid)
     if (!p) continue
-    if (piezasArmadas.has(p.uid) && !diag.fusiona.includes(p.conceptId ?? '')) continue
+    if (piezasArmadas.has(p.uid) && (!diag.fusiona.includes(p.conceptId ?? '') || p.clase !== 'definicion')) continue
     e.mano = e.mano.filter((x) => x.uid !== p.uid)
     const reubicada = p.clase === 'intuicion' && p.refId && diag.repertoriosReubicados.includes(p.refId)
     if (reubicada && p.refId) {

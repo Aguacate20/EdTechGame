@@ -2011,3 +2011,7 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 /* ── trazos armados (oro) ── */
 .lienzo [data-armado='true'] line, .lienzo [data-armado='true'] path { stroke: var(--dominar) !important; filter: drop-shadow(0 0 6px rgba(255,194,61,.6)); }
 .lienzo [data-armado='true'] text { fill: var(--dominar) !important; }
+
+/* ── cartas armadas en la mesa: doradas ── */
+.naipe.en-tablero[data-armada='true'] { outline: 2px solid var(--dominar); outline-offset: 1px; box-shadow: 0 0 0 1px rgba(255,194,61,.5) inset, 0 0 18px rgba(255,194,61,.45) !important; filter: saturate(1.1); }
+.naipe.en-tablero[data-armada='true']::after { content: '✦'; position: absolute; top: -8px; right: -6px; color: var(--dominar); font-size: 14px; text-shadow: 0 0 8px rgba(255,194,61,.8); }

@@ -677,6 +677,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             return (
               <div
                 key={p.uid}
+                data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
                 className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
