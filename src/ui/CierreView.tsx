@@ -56,6 +56,17 @@ export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, des
 
   return (
     <section className="cierre">
+      {(() => {
+        const ultima = (atlas.constelaciones ?? []).slice(-1)[0]
+        const reciente = ultima && Date.now() - ultima.fecha < 10 * 60 * 1000
+        return reciente ? (
+          <div className="cierre-constelacion">
+            <small>✦ CONSTELACIÓN CRISTALIZADA ✦</small>
+            <b>{ultima.nombre}</b>
+            <span>{ultima.conceptIds.length} estrellas · {ultima.aristas.length} vínculos, en oro para siempre en tu galaxia</span>
+          </div>
+        ) : null
+      })()}
       <div className="cierre-cab">
         <small>·· · Nuevo conocimiento · ··</small>
         <b>{nAristas ? `${nAristas} vínculo${nAristas === 1 ? '' : 's'} nuevo${nAristas === 1 ? '' : 's'} en tu cielo${nConceptos ? ` · ${nConceptos} estrella${nConceptos === 1 ? '' : 's'} más brillante${nConceptos === 1 ? '' : 's'}` : ''}` : 'Tu cielo sigue igual: la próxima sala puede encenderlo'}</b>

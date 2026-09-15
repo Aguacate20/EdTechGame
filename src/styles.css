@@ -2035,3 +2035,9 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .estallido.supernova .estallido-texto b { color: #fff; } .estallido.supernova { animation-duration: 3.6s; }
 .estallido.nebulosa .estallido-anillo { border-color: var(--transferir); }
 @media (prefers-reduced-motion: reduce) { .estallido-anillo, .estallido-chispa { animation: none; display: none; } .estallido { animation: none; background: rgba(10,18,48,.7); } }
+
+/* ── constelación cristalizada en el cierre ── */
+.cierre-constelacion { text-align: center; display: flex; flex-direction: column; gap: 4px; padding: 14px; border: 1px solid rgba(255,194,61,.6); border-radius: 12px; background: rgba(255,194,61,.08); box-shadow: 0 0 30px rgba(255,194,61,.25); animation: entrar .4s ease-out; }
+.cierre-constelacion small { font-family: var(--mono); letter-spacing: .25em; color: var(--dominar); font-size: 11px; }
+.cierre-constelacion b { font-size: 24px; font-weight: 800; }
+.cierre-constelacion span { color: var(--texto-2); font-size: 13px; }

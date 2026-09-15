@@ -65,6 +65,8 @@ export interface Atlas {
   hazanas: string[]
   /** v5.66 · herramientas desbloqueadas en el perfil: se ganan una vez y valen para siempre */
   herramientas?: string[]
+  /** v5.79 · constelaciones cristalizadas: submapas consolidados, en oro para siempre */
+  constelaciones?: { id: string; nombre: string; conceptIds: string[]; aristas: string[]; fecha: number }[]
   /** autorregulación: lo que se declaró y lo que resultó, por fase del ciclo */
   srl: {
     encargosElegidos: number

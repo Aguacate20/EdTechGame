@@ -81,9 +81,19 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
     const g = cv.getContext('2d'); if (!g) return
     const reducido = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
     const estrellas = disponer(contenido, soloUnidad)
+    // v5.79 · lo cristalizado: pares de conceptos de constelaciones consolidadas (oro permanente)
+    const cristalizadas = new Set<string>()
+    const estrellasCristalizadas = new Set<string>()
+    for (const k of atlas?.constelaciones ?? []) {
+      for (const id of k.conceptIds) estrellasCristalizadas.add(id)
+      for (const f of k.aristas) { const [tool, ids] = f.split('|'); if (tool && ids) cristalizadas.add(ids) }
+    }
+    const parCristalizado = (a: string, b: string) => cristalizadas.has([a, b].sort().join(','))
     for (const s of estrellas) s.estado = estadoDe(atlas, s.id)
+    for (const s of estrellas) if (estrellasCristalizadas.has(s.id) && s.estado < 4) s.estado = 4
     const idx = new Map(estrellas.map((s) => [s.id, s]))
     const firmes = atlas ? Object.values(atlas.aristas).filter((x) => (x.aciertos ?? 0) > 0) : []
+
     const propuestas = atlas ? Object.values(atlas.propuestas) : []
     // cierre: qué es nuevo, y en qué orden se revela (700 ms por hilo, tras 500 ms)
     const nuevasAristas = new Set(nuevos?.aristas ?? [])
@@ -144,6 +154,7 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
         const pa = P.get(a), pb = P.get(b); if (!pa || !pb || avance <= 0) return
         g.save()
         if (clase === 'nuevo') { g.strokeStyle = C.dom; g.lineWidth = 2.2; g.shadowColor = C.dom; g.shadowBlur = 10 }
+        else if (clase === 'firme' && parCristalizado(a, b)) { g.strokeStyle = C.dom; g.lineWidth = 2; g.shadowColor = C.dom; g.shadowBlur = 8 }
         else if (clase === 'firme') { g.strokeStyle = `rgba(56,182,255,${0.45 + 0.25 * Math.max(0, (pa.z + pb.z) / 2)})`; g.lineWidth = 1.6 }
         else { g.strokeStyle = C.trans; g.lineWidth = 1.4; g.setLineDash([4, 5]) }
         g.beginPath(); g.moveTo(pa.x, pa.y); g.lineTo(pa.x + (pb.x - pa.x) * avance, pa.y + (pb.y - pa.y) * avance); g.stroke()

@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.78
+# LudusCog · El Archivo Infinito — v5.80
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,22 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Resonancia del mapa (v5.80)
+
+Lo armado en la mesa (incluido lo heredado) suma fichas cada turno en que **le añades algo
+sostenido**: `0.12 × (Σ fichas del mapa)^0.8 × (1 + 0.08 × trazos que se tocan)`, con tope
+en las fichas propias del turno. Sublineal para que un mapa grande pese sin romper; crece
+con la articulación; y no dispara con turnos vacíos ni con repeticiones (valen 0): el mapa
+acompaña, no sustituye. Aparece en la cuenta como combo «Resonancia del mapa».
+
+## La constelación cristalizada queda en la galaxia (v5.79)
+
+Cristalizar deja marca: el submapa consolidado entra al Atlas como **constelación**
+(`atlas.constelaciones`: nombre por su concepto eje, estrellas, vínculos, fecha). En la
+galaxia, sus hilos se dibujan en oro con brillo para siempre y sus estrellas pasan a
+«consolidada» (bloom) aunque su nivel individual sea menor. El cierre de la sala celebra la
+constelación («✦ CONSTELACIÓN CRISTALIZADA ✦ · Crítica social · 7 estrellas · 9 vínculos»).
 
 ## El submapa pendiente es tuyo hasta que lo cristalices (v5.78)
 

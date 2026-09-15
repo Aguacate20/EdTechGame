@@ -796,6 +796,23 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     }
     diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
   }
+  // v5.80 · resonancia del mapa: lo que ya está armado (incluido lo heredado) suma fichas
+  // cada vez que le añades algo sostenido. Sublineal (potencia 0.8) para que un mapa
+  // grande pese sin romper; crece con la articulación interna (trazos que se tocan) y
+  // nunca supera las fichas propias del turno: el mapa acompaña, no sustituye.
+  if (nuevosSostenidos.some((v) => v.fichas > 0) && e.mapa.trazos.length > 0) {
+    const suma = e.mapa.trazos.reduce((n, x) => n + x.fichas, 0)
+    let conexiones = 0
+    for (let i = 0; i < e.mapa.trazos.length; i++) for (let j = i + 1; j < e.mapa.trazos.length; j++)
+      if (e.mapa.trazos[i].conceptIds.some((id) => e.mapa.trazos[j].conceptIds.includes(id))) conexiones += 1
+    const bruto = Math.round(0.12 * Math.pow(suma, 0.8) * (1 + 0.08 * Math.min(10, conexiones)))
+    const resonancia = Math.min(bruto, Math.max(0, diag.fichas))
+    if (resonancia > 0) {
+      diag.fichas += resonancia
+      diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
+      diag.combos.push({ id: 'articulacion', nombre: 'Resonancia del mapa', fichas: resonancia, mult: 0, detalle: `${e.mapa.trazos.length} trazos armados (${conexiones} se tocan) resuenan con lo que añadiste.` })
+    }
+  }
   for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
   // v5.76 · el submapa se descubre por frontera: los vecinos (en el mapa ideal del texto)
   // de lo que ya está armado entran al mazo, hasta el tope de la sala. La mano siempre

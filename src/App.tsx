@@ -484,8 +484,18 @@ export default function App() {
     if (!batalla || !contenido || !puedeCristalizar(batalla)) return
     const e = { ...batalla, enemigos: batalla.enemigos.map((x) => ({ ...x })) }
     const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
+    const conceptIdsMapa = [...new Set(batalla.mapa.trazos.flatMap((x) => x.conceptIds))]
+    const aristasMapa = batalla.mapa.trazos.filter((x) => x.tool !== 'identidad').map((x) => x.firma)
     const r = cristalizarBatalla(e, ctx)
     setBatalla(e)
+    // v5.79 · el submapa consolidado queda en el Atlas como constelación: oro para siempre en la galaxia
+    if (e.fase === 'ganado' && atlas && conceptIdsMapa.length) {
+      const grado = (id: string) => contenido.aristas.filter((x) => x.from === id || x.to === id).length
+      const eje = [...conceptIdsMapa].sort((x, y) => grado(y) - grado(x))[0]
+      const nombre = contenido.conceptos[eje]?.titulo ?? 'Constelación'
+      const a2 = { ...atlas, constelaciones: [...(atlas.constelaciones ?? []), { id: `const:${Date.now()}`, nombre, conceptIds: conceptIdsMapa, aristas: aristasMapa, fecha: Date.now() }] }
+      setAtlas(a2); guardarAtlas(a2)
+    }
     const trazosMapa = batalla.mapa.trazos.length
     const variante = r.zonas >= 2 || trazosMapa >= 10 ? 'supernova' : trazosMapa >= 6 ? 'nebulosa' : 'constelacion'
     setEstallido({ variante, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
