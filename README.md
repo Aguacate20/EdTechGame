@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.84
+# LudusCog · El Archivo Infinito — v5.85
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -664,6 +664,22 @@ propia imagen (ancho ÷ alto: frames cuadrados en una fila), avisa si una tira e
 formada, y con `--aplicar` escribe el manifest con lo presente, conservando lo provisional
 para lo que falta. Fondos y proyectiles se verifican pero aún se dibujan por código: conectarlos
 es una entrega aparte.
+
+## El mapa armado es un mapa conceptual (v5.85)
+
+- **Nodos**: una pieza armada deja de ser carta y se dibuja como nodo dorado (46 px) con el
+  nombre debajo; la descripción vuelve al pasar el cursor. Ocupa un tercio del espacio y se
+  lee como estructura, no como pila de cartas.
+- **Enlaces rotulados**: cada vínculo armado lleva el verbo del texto en una pastilla en su
+  punto medio (*causa*, *apoya*, *jerarquía*…): el estudiante lee «Crítica social —causa→
+  Conciencia política», la frase que tiene que poder decir.
+- **Soltar sobre un nodo**: arrastrar una carta de la Mano sobre un nodo la deja al lado y
+  abre el vínculo con los dos extremos ya puestos; solo falta elegir el tipo.
+- **Ordenar**: reacomoda cada grupo del mapa armado arriba de la mesa en un pequeño círculo,
+  conservando su forma, y deja el centro libre.
+- **Compactar solo lo terminado**: un grupo se funde en constelación únicamente cuando todos
+  los vínculos del texto entre sus conceptos ya están sostenidos. Lo incompleto nunca se
+  esconde.
 
 ## Lo armado no se toca (v5.84)
 

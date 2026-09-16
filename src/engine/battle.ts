@@ -747,6 +747,30 @@ export function pedirPista(e: EstadoBatalla, ctx: ContextoBatalla): string {
   return 'Pista mostrada: dos cartas y el tipo de vínculo. Te costó un cambio, y el trazo rendirá al 70 %.'
 }
 
+/** v5.85 · ordenar: cada grupo conectado de trazos armados se reacomoda arriba de la mesa,
+ *  en un pequeño círculo por grupo, conservando la topología; el centro queda libre. */
+export function ordenarMapa(e: EstadoBatalla): void {
+  const restantes = [...e.armados]
+  const grupos: Trazo[][] = []
+  while (restantes.length) {
+    const grupo = [restantes.shift()!]
+    let cambio = true
+    while (cambio) { cambio = false; for (let i = restantes.length - 1; i >= 0; i--) if (restantes[i].piezas.some((u) => grupo.some((g) => g.piezas.includes(u)))) { grupo.push(restantes.splice(i, 1)[0]); cambio = true } }
+    grupos.push(grupo)
+  }
+  const n = Math.max(1, grupos.length)
+  grupos.forEach((grupo, gi) => {
+    const uids = [...new Set(grupo.flatMap((g) => g.piezas))]
+    const cx = ((gi + 0.5) / n) * 88 + 6, cy = 22
+    const radio = Math.min(16, 5 + uids.length * 2.2)
+    uids.forEach((u, i) => {
+      const ang = (i / uids.length) * Math.PI * 2 - Math.PI / 2
+      const pos = e.tablero.find((x) => x.uid === u)
+      if (pos) { pos.x = Math.max(6, Math.min(94, cx + Math.cos(ang) * radio)); pos.y = Math.max(8, Math.min(90, cy + Math.sin(ang) * radio * 0.8)) }
+    })
+  })
+}
+
 /** v5.82 · cristalizar por partes: un grupo conectado de trazos armados (3+) se compacta en
  *  UNA carta-constelación con el nombre de su concepto eje. Los trazos que salen del grupo
  *  siguen a la constelación; una flecha hacia ella se juzga como hacia su eje. */
@@ -766,11 +790,17 @@ export function compactarMapa(e: EstadoBatalla, ctx: ContextoBatalla): number {
     grupos.push(grupo)
   }
   let compactados = 0
+  const dentro = new Set(e.conceptIdsCasilla)
+  const tipos = new Set(e.relacionesDisponibles)
   for (const grupo of grupos.filter((g) => g.length >= 3)) {
     const uids = [...new Set(grupo.flatMap((g) => g.piezas))]
     const piezas = uids.map((u) => e.mano.find((p) => p.uid === u)).filter((p): p is Pieza => !!p && !!p.conceptId)
     if (piezas.length < 2) continue
     const ids = [...new Set(piezas.map((p) => p.conceptId!))]
+    // v5.85 · solo lo TERMINADO se colapsa: si entre estos conceptos queda algún vínculo del
+    // texto por sostener, el grupo sigue a la vista
+    const pendiente = ctx.contenido.aristas.some((a) => ids.includes(a.from) && ids.includes(a.to) && dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to)))
+    if (pendiente) continue
     const grado = (id: string) => ctx.contenido.aristas.filter((a) => a.from === id || a.to === id).length
     const eje = [...ids].sort((x, y) => grado(y) - grado(x))[0]
     const base = piezaConcepto(ctx.contenido, eje)

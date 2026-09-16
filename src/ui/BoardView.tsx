@@ -33,6 +33,8 @@ export interface AccionesBatalla {
   /** v5.82 */
   pedirPista?: () => void
   compactar?: () => void
+  /** v5.85 */
+  ordenar?: () => void
   cambio: (mut: (e: EstadoBatalla) => void) => void
   afirmar: () => void
   continuar: () => void
@@ -518,7 +520,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             </div>
             <div className="mapa-acciones">
               {on.pedirPista && !resuelto && <button className="btn chico fantasma" onClick={on.pedirPista} title="Cuesta un cambio; el trazo rinde al 70 %">Pista (−1 cambio)</button>}
-              {on.compactar && !resuelto && (e.armados?.length ?? 0) >= 3 && <button className="btn chico fantasma" onClick={on.compactar} title="Un grupo de trazos armados que se toquen se compacta en una carta-constelación">Compactar</button>}
+              {on.ordenar && !resuelto && (e.armados?.length ?? 0) >= 2 && <button className="btn chico fantasma" onClick={on.ordenar} title="Reacomoda el mapa armado arriba, conservando su forma, y deja el centro libre">Ordenar</button>}
+              {on.compactar && !resuelto && (e.armados?.length ?? 0) >= 3 && <button className="btn chico fantasma" onClick={on.compactar} title="Solo un grupo TERMINADO (todos sus vínculos sostenidos) se funde en una constelación">Compactar lo terminado</button>}
             </div>
             {(() => {
               const pistas = pistasDelSubmapa(e, { contenido, rng: { next: () => 0 } as never, lentes })
@@ -687,6 +690,21 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               })}
           </svg>
 
+          <svg className="trazos rotulos" aria-hidden>
+            {trazosVisibles.filter((t) => esArmado(t.uid)).map((t) => {
+              const pts = t.piezas.map((u) => posiciones.find((x) => x.uid === u)).filter((x): x is NonNullable<typeof x> => !!x)
+              if (pts.length < 2) return null
+              const cx = pts.reduce((n, q) => n + q.x, 0) / pts.length, cy = pts.reduce((n, q) => n + q.y, 0) / pts.length
+              const texto = t.tool === 'flecha' ? (t.param ?? '') : HERRAMIENTAS[t.tool].nombre.toLowerCase()
+              if (!texto) return null
+              return (
+                <g key={`r-${t.uid}`} transform={`translate(${cx} ${cy})`}>
+                  <rect x={-texto.length * 1.6 - 2} y={-2.4} width={texto.length * 3.2 + 4} height={4.8} rx={2.4} className="rotulo-fondo" />
+                  <text textAnchor="middle" dominantBaseline="middle" className="rotulo-texto">{texto}</text>
+                </g>
+              )
+            })}
+          </svg>
           {enTablero.map(({ t, p }) => {
             const marcada = pendientes.includes(p.uid)
             const orden = pendientes.indexOf(p.uid)
@@ -712,6 +730,21 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => tocarPieza(p.uid)}
                 onDoubleClick={() => { if (!(e.armados ?? []).some((a) => a.piezas.includes(p.uid))) pedirDevolver(p.uid) }}
+                onDragOver={(ev) => { if ((e.armados ?? []).some((a) => a.piezas.includes(p.uid))) ev.preventDefault() }}
+                onDrop={(ev) => {
+                  // v5.85 · soltar una carta sobre un nodo armado: cae al lado y el vínculo queda
+                  // abierto con los dos extremos; solo falta elegir el tipo
+                  if (!(e.armados ?? []).some((a) => a.piezas.includes(p.uid))) return
+                  ev.preventDefault(); ev.stopPropagation()
+                  const uid = arrastrando ?? ev.dataTransfer.getData('text/plain')
+                  if (!uid || resuelto || uid === p.uid) return
+                  const dx = t.x < 50 ? 14 : -14
+                  sfx.soltar()
+                  on.cambio((st) => soltar(st, uid, Math.max(6, Math.min(94, t.x + dx)), Math.max(8, Math.min(90, t.y + 10))))
+                  setArrastrando(null)
+                  if (!herramienta && libres.includes('flecha')) setHerramienta('flecha')
+                  setPendientes([p.uid, uid])
+                }}
                 onMouseEnter={() => herramienta && !inservible && setPrevisualizada(p.uid)}
                 onMouseLeave={() => setPrevisualizada((x) => (x === p.uid ? null : x))}
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
