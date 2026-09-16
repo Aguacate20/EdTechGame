@@ -83,6 +83,8 @@ export interface EstadoBatalla {
   pista: { a: string; b: string; tipo: string; revelarTipo: boolean } | null
   /** nivel 1: una carta armada que aún tiene vínculos por hacer */
   pistaSuave: string | null
+  /** v5.83 · el golpe del mapa en el último turno (para la onda) */
+  ultimoGolpeMapa: { dano: number; objetivo: string; trazos: number; conexiones: number } | null
   /** v5.71 · trazos sostenidos que se quedan armados en la mesa (en oro) para enlazar el siguiente ataque */
   armados: Trazo[]
   /** v5.67 · el mapa de la sala: lo sostenido en turnos anteriores, con sus conceptos.
@@ -368,7 +370,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
@@ -692,6 +694,35 @@ export function pistasDelSubmapa(e: EstadoBatalla, ctx: ContextoBatalla): { falt
 
 const parEnMapa = (e: EstadoBatalla, a: string, b: string) => e.mapa.trazos.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
 
+/** v5.83 · el mapa ataca por su cuenta, tercer paso del turno (jugador → enemigos → mapa).
+ *  Cada vez más duro cuantos más trazos armados y cuanto más se tocan entre sí:
+ *  0.35 × (Σ fichas del mapa)^0.8 × (1 + 0.12 × conexiones). Golpea al enemigo del frente
+ *  y el sobrante pasa al siguiente. Solo si este turno atacaste tú: el mapa acompaña. */
+export function golpeDelMapa(e: EstadoBatalla, r: ResultadoTurno): void {
+  e.ultimoGolpeMapa = null
+  if (!e.mapa.trazos.length || r.diag.dano <= 0) return
+  if (e.fase !== 'jugando' && e.fase !== 'resuelto') return
+  const objetivos = vivos(e).sort((a, b) => a.posicion - b.posicion)
+  if (!objetivos.length) return
+  const suma = e.mapa.trazos.reduce((n, x) => n + x.fichas, 0)
+  let conexiones = 0
+  for (let i = 0; i < e.mapa.trazos.length; i++) for (let j = i + 1; j < e.mapa.trazos.length; j++)
+    if (e.mapa.trazos[i].conceptIds.some((id) => e.mapa.trazos[j].conceptIds.includes(id))) conexiones += 1
+  const dano = Math.round(0.35 * Math.pow(suma, 0.8) * (1 + 0.12 * Math.min(20, conexiones)))
+  if (dano <= 0) return
+  let resto = dano
+  const nombres: string[] = []
+  for (const en of objetivos) {
+    if (resto <= 0) break
+    const d = Math.min(resto, en.hp); en.hp -= d; resto -= d
+    en.gesto = en.hp === 0 ? 'cae' : 'critico'; en.tocadoEsteTurno = true
+    nombres.push(`${en.nombre} −${d}`)
+  }
+  e.ultimoGolpeMapa = { dano, objetivo: objetivos[0].nombre, trazos: e.mapa.trazos.length, conexiones }
+  r.parteEnemiga.push({ texto: `✦ Tu mapa resuena (${e.mapa.trazos.length} trazos, ${conexiones} se tocan): ${nombres.join(', ')}.`, dano: 0 })
+  if (vivos(e).length === 0) e.fase = 'ganado'
+}
+
 /** v5.82 · pedir pista a voluntad (nivel 4): cuesta un cambio; muestra las dos cartas y el tipo */
 export function pedirPista(e: EstadoBatalla, ctx: ContextoBatalla): string {
   if (e.cambiosRestantes <= 0) return 'Sin cambios no hay pista: cada pista cuesta un cambio.'
@@ -857,37 +888,6 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
       }
     }
     diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
-  }
-  // v5.80 · resonancia del mapa: lo que ya está armado (incluido lo heredado) suma fichas
-  // cada vez que le añades algo sostenido. Sublineal (potencia 0.8) para que un mapa
-  // grande pese sin romper; crece con la articulación interna (trazos que se tocan) y
-  // nunca supera las fichas propias del turno: el mapa acompaña, no sustituye.
-  if (nuevosSostenidos.some((v) => v.fichas > 0) && e.mapa.trazos.length > 0) {
-    const suma = e.mapa.trazos.reduce((n, x) => n + x.fichas, 0)
-    let conexiones = 0
-    for (let i = 0; i < e.mapa.trazos.length; i++) for (let j = i + 1; j < e.mapa.trazos.length; j++)
-      if (e.mapa.trazos[i].conceptIds.some((id) => e.mapa.trazos[j].conceptIds.includes(id))) conexiones += 1
-    // v5.82 · más fuerza: 0.25 × Σ^0.85 × (1 + 0.1 × conexiones), tope 1.5 × las fichas propias
-    const bruto = Math.round(0.25 * Math.pow(suma, 0.85) * (1 + 0.1 * Math.min(12, conexiones)))
-    const resonancia = Math.min(bruto, Math.round(Math.max(0, diag.fichas) * 1.5))
-    if (resonancia > 0) {
-      diag.fichas += resonancia
-      diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
-      diag.combos.push({ id: 'articulacion', nombre: 'Resonancia del mapa', fichas: resonancia, mult: 0, detalle: `${e.mapa.trazos.length} trazos armados (${conexiones} se tocan) resuenan con lo que añadiste.` })
-    }
-  }
-  // v5.82 · avanzar es sostener un vínculo NUEVO que no sea identidad (la identidad prepara, no avanza)
-  if (nuevosSostenidos.some((v) => v.fichas > 0 && v.trazo.tool !== 'identidad')) e.avanzoEsteTurno = true
-  // v5.81 · si el trazo sostenido es el que la pista señalaba, rinde al 70 % (ayuda con costo)
-  if (e.pista) {
-    for (const v of nuevosSostenidos) {
-      if (v.conceptIds.includes(e.pista.a) && v.conceptIds.includes(e.pista.b) && v.fichas > 0) {
-        const antes = v.fichas; v.fichas = Math.round(v.fichas * 0.7); diag.fichas -= antes - v.fichas
-        v.nota = `${v.nota} · Con pista: rinde al 70 %.`
-        diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
-      }
-    }
-    e.pista = null
   }
   for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
   // v5.76 · el submapa se descubre por frontera: los vecinos (en el mapa ideal del texto)

@@ -504,8 +504,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultima?.diag.combos.some((k) => k.nombre === 'Resonancia del mapa') ? ' resonando' : ''}`} style={{ ['--zoom' as string]: zoom }}>
-        {resuelto && (() => { const k = e.ultima?.diag.combos.find((x) => x.nombre === 'Resonancia del mapa'); return k ? <div className="resonancia-aviso">✦ EL MAPA RESUENA · +{k.fichas} fichas</div> : null })()}
+      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultimoGolpeMapa ? ' resonando' : ''}`} style={{ ['--zoom' as string]: zoom }}>
+        {resuelto && e.ultimoGolpeMapa && <div className="resonancia-aviso">✦ TU MAPA ATACA · −{e.ultimoGolpeMapa.dano} a {e.ultimoGolpeMapa.objetivo} · {e.ultimoGolpeMapa.trazos} trazos, {e.ultimoGolpeMapa.conexiones} se tocan</div>}
         {e.mapa && (
           <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
             <small>Mapa de la sala · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length}/${e.mapa.umbral}`}{e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? ' · completo ✦' : ''}</small>

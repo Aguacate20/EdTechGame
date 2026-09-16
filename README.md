@@ -665,6 +665,16 @@ formada, y con `--aplicar` escribe el manifest con lo presente, conservando lo p
 para lo que falta. Fondos y proyectiles se verifican pero aún se dibujan por código: conectarlos
 es una entrega aparte.
 
+## El mapa ataca por su cuenta (v5.83)
+
+Orden del turno: **1. atacas tú → 2. atacan los enemigos que puedan → 3. ataca tu mapa.**
+El golpe del mapa es aparte, no un multiplicador: `0.35 × (Σ fichas del mapa)^0.8 ×
+(1 + 0.12 × trazos que se tocan)`, al enemigo del frente con arrastre al siguiente. Un mapa de
+6 trazos que se tocan 5 veces pega ~18; uno de 15 trazos con 20 conexiones, ~90. Solo dispara
+si ese turno tu ataque hizo daño (el mapa acompaña; no sustituye). Se ve como onda dorada
+desde la mesa y «✦ TU MAPA ATACA · −N a Monocultivo · 9 trazos, 7 se tocan», y queda en el
+parte del turno. La resonancia como fichas de v5.80 desaparece.
+
 ## Escalera completa, compactar, y el mapa que apoya (v5.82)
 
 - **Bug de v5.81**: la carta compacta perdía sus líneas porque `transform: scale` pisaba el

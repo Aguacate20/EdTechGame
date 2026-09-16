@@ -5,7 +5,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
-  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente, pedirPista as pedirPistaBatalla, compactarMapa,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente, pedirPista as pedirPistaBatalla, compactarMapa, golpeDelMapa,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -555,6 +555,8 @@ export default function App() {
     const e = { ...batalla }
     const r = afirmarDiagrama(e, ctx)
     turnoDelCarril(e, ctx, r)
+    // v5.83 · tercer paso del turno: el mapa ataca por su cuenta
+    golpeDelMapa(e, r)
     // v5.81 · el submapa pendiente se guarda en cada afirmación: morir no lo borra
     guardarPendiente(mapaPendienteDe(e))
 
