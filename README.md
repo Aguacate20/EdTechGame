@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.86
+# LudusCog · El Archivo Infinito — v5.87
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -664,6 +664,14 @@ propia imagen (ancho ÷ alto: frames cuadrados en una fila), avisa si una tira e
 formada, y con `--aplicar` escribe el manifest con lo presente, conservando lo provisional
 para lo que falta. Fondos y proyectiles se verifican pero aún se dibujan por código: conectarlos
 es una entrega aparte.
+
+## Cámara de verdad (v5.87)
+
+La mesa es un mundo **fijo** de 150 % × 150 % de la ventana, centrado, y el zoom escala el
+mundo entero: cartas y distancias a la vez. Antes el mundo crecía al alejar y, como las
+posiciones son porcentajes del mundo, las distancias en pantalla no cambiaban (solo las
+cartas se encogían). Ahora al 100 % (botón central) se ve todo el mundo; acercar amplía el
+centro; alejar deja margen. Las posiciones guardadas no cambian.
 
 ## La posición enseña la relación (v5.86)
 

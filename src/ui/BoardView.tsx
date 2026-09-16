@@ -266,8 +266,22 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   const foco = guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
-  /** v5.66 · zoom de la mesa: mapas más grandes sin perder de vista el conjunto */
+  /** v5.87 · cámara de la mesa: el mundo es uno; la vista lo escala entero y se desplaza
+   *  (arrastrar el fondo, dos dedos en el trackpad, Ctrl+rueda para zoom) */
   const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const panRef = useRef<{ x0: number; y0: number; px: number; py: number } | null>(null)
+  useEffect(() => {
+    const el = lienzo.current
+    if (!el) return
+    const onWheel = (ev: WheelEvent) => {
+      ev.preventDefault()
+      if (ev.ctrlKey || ev.metaKey) setZoom((z) => Math.max(0.4, Math.min(2, +(z - ev.deltaY * 0.0025).toFixed(3))))
+      else setPan((q) => ({ x: q.x - ev.deltaX, y: q.y - ev.deltaY }))
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
   const zona = (z: string) => (foco?.zona === z ? ' destacada' : '')
   const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
   const herrLibre = (id: HerramientaId) => !foco?.herramientas || foco.herramientas.includes(id)
@@ -506,7 +520,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultimoGolpeMapa ? ' resonando' : ''}`} style={{ ['--zoom' as string]: zoom }}>
+      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultimoGolpeMapa ? ' resonando' : ''}`}>
         {resuelto && e.ultimoGolpeMapa && <div className="resonancia-aviso">✦ TU MAPA ATACA · −{e.ultimoGolpeMapa.dano} a {e.ultimoGolpeMapa.objetivo} · {e.ultimoGolpeMapa.trazos} trazos, {e.ultimoGolpeMapa.conexiones} se tocan</div>}
         {e.mapa && (
           <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
@@ -538,9 +552,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           </div>
         )}
         <div className="zoom-mesa" role="group" aria-label="Zoom de la mesa">
-          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
-          <button className="btn chico fantasma" onClick={() => setZoom(1)} aria-label="Zoom normal">{Math.round(zoom * 100)}%</button>
-          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.min(1.6, +(z + 0.1).toFixed(2)))} aria-label="Acercar">+</button>
+          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
+          <button className="btn chico fantasma" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} aria-label="Centrar y zoom normal" title="Centrar">{Math.round(zoom * 100)}%</button>
+          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.min(2, +(z + 0.1).toFixed(2)))} aria-label="Acercar">+</button>
         </div>
         {(() => {
           const ol = oleadaActual(e)
@@ -568,6 +582,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         })()}
         <div
           className="lienzo" ref={lienzo}
+          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+          onPointerDown={(ev) => {
+            if (ev.target !== lienzo.current || ev.button !== 0) return
+            panRef.current = { x0: ev.clientX, y0: ev.clientY, px: pan.x, py: pan.y }
+            ;(ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId)
+          }}
+          onPointerMove={(ev) => { const s = panRef.current; if (s) setPan({ x: s.px + (ev.clientX - s.x0), y: s.py + (ev.clientY - s.y0) }) }}
+          onPointerUp={() => { panRef.current = null }}
+          onPointerCancel={() => { panRef.current = null }}
           onMouseEnter={() => setSobreTablero(true)}
           onMouseLeave={() => { setSobreTablero(false); setPrevisualizada(null) }}
           onDragOver={(ev) => ev.preventDefault()}

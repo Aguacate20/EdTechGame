@@ -1994,7 +1994,10 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .zoom-mesa { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 3; }
 .zoom-mesa .btn { min-width: 32px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; }
 .app .zona-lienzo { position: relative; display: grid; grid-template-rows: minmax(0, 1fr); }
-.app .zona-lienzo .lienzo { width: calc(100% / var(--zoom, 1)); height: calc(100% / var(--zoom, 1)); transform: scale(var(--zoom, 1)); transform-origin: top left; transition: transform .2s ease, width .2s ease, height .2s ease; }
+/* v5.87 · cámara de verdad: la mesa es un mundo FIJO de 150 % × 150 % de la ventana, centrado,
+   y el zoom escala el mundo entero (cartas y distancias). Al 100 % se ve el centro; al 67 %,
+   todo el mundo; al 50 % queda margen. Las posiciones (porcentajes del mundo) no cambian. */
+.app .zona-lienzo .lienzo { position: absolute; left: 50%; top: 50%; width: 150%; height: 150%; transform: translate(-50%, -50%) scale(var(--zoom, 1)); transform-origin: center center; transition: transform .25s ease; }
 
 /* ── cristalizar ── */
 .btn.cristalizar { font-family: var(--mono); font-size: 13px; }
