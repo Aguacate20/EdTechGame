@@ -81,6 +81,8 @@ export interface EstadoBatalla {
   avanzoEsteTurno: boolean
   /** v5.81 · pista activa: dos conceptos que se relacionan (nivel 2) y, si toca, el tipo (nivel 3) */
   pista: { a: string; b: string; tipo: string; revelarTipo: boolean } | null
+  /** nivel 1: una carta armada que aún tiene vínculos por hacer */
+  pistaSuave: string | null
   /** v5.71 · trazos sostenidos que se quedan armados en la mesa (en oro) para enlazar el siguiente ataque */
   armados: Trazo[]
   /** v5.67 · el mapa de la sala: lo sostenido en turnos anteriores, con sus conceptos.
@@ -366,7 +368,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, creacionesTotales: 0
   }
   if (bolsa.apoyo && !bolsa.mazoFijo) {
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
@@ -690,6 +692,61 @@ export function pistasDelSubmapa(e: EstadoBatalla, ctx: ContextoBatalla): { falt
 
 const parEnMapa = (e: EstadoBatalla, a: string, b: string) => e.mapa.trazos.some((x) => x.conceptIds.includes(a) && x.conceptIds.includes(b))
 
+/** v5.82 · pedir pista a voluntad (nivel 4): cuesta un cambio; muestra las dos cartas y el tipo */
+export function pedirPista(e: EstadoBatalla, ctx: ContextoBatalla): string {
+  if (e.cambiosRestantes <= 0) return 'Sin cambios no hay pista: cada pista cuesta un cambio.'
+  const dentro = new Set(e.conceptIdsCasilla)
+  const jugable = (p: Pieza) => p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion'
+  const ids = new Set(e.mano.filter(jugable).map((p) => p.conceptId).filter((x): x is string => !!x))
+  const tipos = new Set(e.relacionesDisponibles)
+  const mejor = ctx.contenido.aristas
+    .filter((a) => dentro.has(a.from) && dentro.has(a.to) && ids.has(a.from) && ids.has(a.to) && tipos.has(a.tipo) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to)))
+    .sort((x, y) => (y.confianza ?? 0) - (x.confianza ?? 0))[0]
+  if (!mejor) return 'No hay vínculo pendiente entre las cartas que tienes ahora: cambia alguna.'
+  e.cambiosRestantes -= 1
+  e.pista = { a: mejor.from, b: mejor.to, tipo: mejor.tipo, revelarTipo: true }
+  return 'Pista mostrada: dos cartas y el tipo de vínculo. Te costó un cambio, y el trazo rendirá al 70 %.'
+}
+
+/** v5.82 · cristalizar por partes: un grupo conectado de trazos armados (3+) se compacta en
+ *  UNA carta-constelación con el nombre de su concepto eje. Los trazos que salen del grupo
+ *  siguen a la constelación; una flecha hacia ella se juzga como hacia su eje. */
+export function compactarMapa(e: EstadoBatalla, ctx: ContextoBatalla): number {
+  // componentes conexas de los armados por piezas compartidas
+  const restantes = [...e.armados]
+  const grupos: Trazo[][] = []
+  while (restantes.length) {
+    const grupo = [restantes.shift()!]
+    let cambio = true
+    while (cambio) {
+      cambio = false
+      for (let i = restantes.length - 1; i >= 0; i--) {
+        if (restantes[i].piezas.some((u) => grupo.some((g) => g.piezas.includes(u)))) { grupo.push(restantes.splice(i, 1)[0]); cambio = true }
+      }
+    }
+    grupos.push(grupo)
+  }
+  let compactados = 0
+  for (const grupo of grupos.filter((g) => g.length >= 3)) {
+    const uids = [...new Set(grupo.flatMap((g) => g.piezas))]
+    const piezas = uids.map((u) => e.mano.find((p) => p.uid === u)).filter((p): p is Pieza => !!p && !!p.conceptId)
+    if (piezas.length < 2) continue
+    const ids = [...new Set(piezas.map((p) => p.conceptId!))]
+    const grado = (id: string) => ctx.contenido.aristas.filter((a) => a.from === id || a.to === id).length
+    const eje = [...ids].sort((x, y) => grado(y) - grado(x))[0]
+    const base = piezaConcepto(ctx.contenido, eje)
+    if (!base) continue
+    const pos = e.tablero.filter((x) => uids.includes(x.uid))
+    const cx = pos.reduce((n, x) => n + x.x, 0) / Math.max(1, pos.length), cy = pos.reduce((n, x) => n + x.y, 0) / Math.max(1, pos.length)
+    const constelacion: Pieza = { ...base, uid: `const:${eje}:${Date.now()}`, titulo: `${base.titulo} +${ids.length - 1}`, conceptIds: ids, cuerpo: `Constelación de ${ids.length} conceptos: ${ids.map((id) => ctx.contenido.conceptos[id]?.titulo ?? id).join(', ')}.` }
+    e.mano = [...e.mano.filter((p) => !uids.includes(p.uid)), constelacion]
+    e.tablero = [...e.tablero.filter((x) => !uids.includes(x.uid)), { uid: constelacion.uid, x: cx, y: cy }]
+    for (const g of grupo) g.piezas = [constelacion.uid]
+    compactados += 1
+  }
+  return compactados
+}
+
 /** v5.78 · la foto del submapa pendiente al terminar la sala (vacía si se cristalizó) */
 export function mapaPendienteDe(e: EstadoBatalla): MapaPendiente | null {
   if (!e.mapa.trazos.length) return null
@@ -810,15 +867,17 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     let conexiones = 0
     for (let i = 0; i < e.mapa.trazos.length; i++) for (let j = i + 1; j < e.mapa.trazos.length; j++)
       if (e.mapa.trazos[i].conceptIds.some((id) => e.mapa.trazos[j].conceptIds.includes(id))) conexiones += 1
-    const bruto = Math.round(0.12 * Math.pow(suma, 0.8) * (1 + 0.08 * Math.min(10, conexiones)))
-    const resonancia = Math.min(bruto, Math.max(0, diag.fichas))
+    // v5.82 · más fuerza: 0.25 × Σ^0.85 × (1 + 0.1 × conexiones), tope 1.5 × las fichas propias
+    const bruto = Math.round(0.25 * Math.pow(suma, 0.85) * (1 + 0.1 * Math.min(12, conexiones)))
+    const resonancia = Math.min(bruto, Math.round(Math.max(0, diag.fichas) * 1.5))
     if (resonancia > 0) {
       diag.fichas += resonancia
       diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
       diag.combos.push({ id: 'articulacion', nombre: 'Resonancia del mapa', fichas: resonancia, mult: 0, detalle: `${e.mapa.trazos.length} trazos armados (${conexiones} se tocan) resuenan con lo que añadiste.` })
     }
   }
-  if (nuevosSostenidos.some((v) => v.fichas > 0)) e.avanzoEsteTurno = true
+  // v5.82 · avanzar es sostener un vínculo NUEVO que no sea identidad (la identidad prepara, no avanza)
+  if (nuevosSostenidos.some((v) => v.fichas > 0 && v.trazo.tool !== 'identidad')) e.avanzoEsteTurno = true
   // v5.81 · si el trazo sostenido es el que la pista señalaba, rinde al 70 % (ayuda con costo)
   if (e.pista) {
     for (const v of nuevosSostenidos) {
@@ -1141,6 +1200,8 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     e.mano = [...e.mano.filter((p) => p.uid !== u1 && p.uid !== u2), entero]
     e.tablero = [...e.tablero.filter((x) => x.uid !== u1 && x.uid !== u2), { uid: entero.uid, x: pos.x, y: pos.y }]
     a.piezas = [entero.uid]
+    // los demás trazos armados (flechas, jerarquías…) que tocaban el nombre o la descripción siguen a la carta compacta
+    for (const otro of e.armados) if (otro !== a) otro.piezas = [...new Set(otro.piezas.map((u) => (u === u1 || u === u2 ? entero.uid : u)))]
   }
   e.trazos = []
   e.usadas = []
@@ -1447,7 +1508,8 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
   if (ctx && e.turnosSinAvance >= 2) {
     const dentro = new Set(e.conceptIdsCasilla)
     const armadosIds = new Set(e.armados.flatMap((x) => x.piezas).map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))
-    const enManoIds = new Set(e.mano.filter((p) => !e.tablero.some((x) => x.uid === p.uid)).map((p) => p.conceptId).filter((x): x is string => !!x))
+    const jugable = (p: Pieza) => p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion'
+    const enManoIds = new Set(e.mano.filter((p) => jugable(p) && !e.tablero.some((x) => x.uid === p.uid)).map((p) => p.conceptId).filter((x): x is string => !!x))
     const tipos = new Set(e.relacionesDisponibles)
     const pendientes = ctx.contenido.aristas
       .filter((a) => dentro.has(a.from) && dentro.has(a.to) && tipos.has(a.tipo) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to)))
@@ -1456,6 +1518,15 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
     const mejor = pendientes[0]
     e.pista = mejor ? { a: mejor.from, b: mejor.to, tipo: mejor.tipo, revelarTipo: e.turnosSinAvance >= 3 } : null
   } else e.pista = null
+  // nivel 1: un turno sin avance → la carta armada con más vínculos pendientes late suave
+  e.pistaSuave = null
+  if (ctx && e.turnosSinAvance === 1) {
+    const dentro = new Set(e.conceptIdsCasilla)
+    const armadosIds = [...new Set(e.armados.flatMap((x) => x.piezas).map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
+    const pendientesDe = (id: string) => ctx.contenido.aristas.filter((a) => (a.from === id || a.to === id) && dentro.has(a.from) && dentro.has(a.to) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to))).length
+    const mejor = armadosIds.sort((x, y) => pendientesDe(y) - pendientesDe(x))[0]
+    if (mejor && pendientesDe(mejor) > 0) e.pistaSuave = mejor
+  }
   e.turno += 1
   e.inicioTurno = Date.now()
   e.fase = 'jugando'

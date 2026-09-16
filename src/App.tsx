@@ -5,7 +5,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
-  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente, pedirPista as pedirPistaBatalla, compactarMapa,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -509,6 +509,22 @@ export default function App() {
     })
     sfx.trazar()
   }
+  /** v5.82 · pista a petición (nivel 4) y compactar el mapa (cristalizar por partes) */
+  const pedirPista = () => {
+    if (!batalla || !contenido) return
+    const e = { ...batalla }
+    const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
+    e.avisoPiedad = pedirPistaBatalla(e, ctx)
+    setBatalla(e)
+  }
+  const compactar = () => {
+    if (!batalla || !contenido) return
+    const e = { ...batalla, armados: batalla.armados.map((x) => ({ ...x })) }
+    const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
+    const n = compactarMapa(e, ctx)
+    e.avisoPiedad = n ? `${n} constelación${n === 1 ? '' : 'es'} compactada${n === 1 ? '' : 's'}: la mesa respira; los trazos siguen ahí.` : 'Nada que compactar: hace falta un grupo de tres trazos armados que se toquen.'
+    setBatalla(e)
+  }
   const elegirEncargo = (en: Encargo | null) => {
     setBatalla((prev) => {
       if (!prev) return prev
@@ -949,7 +965,7 @@ export default function App() {
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
-            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar,
+            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar, pedirPista, compactar,
             huir: () => {
               guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
               setGuardada(leerExpedicion(contenido.fuente))

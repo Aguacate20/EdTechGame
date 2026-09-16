@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.81
+# LudusCog · El Archivo Infinito — v5.83
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -641,6 +641,46 @@ Sobre ese bundle, criterio/objeción ↔ concepto pasa de 0 a **1.7× la identid
 objeción ↔ marco de su tesis, de 0 a 32 de daño. El gradiente queda: lectura crítica
 (rival↔marco 1.8×, criterio↔concepto 1.7×) > flecha firme (1.5×) > identidad (1.0) >
 creación con apoyo (0.4–0.6×) > silencio.
+
+## Hojas de varias filas (v5.83)
+
+El juego lee una fila por archivo. Si el artista entrega cada enemigo como UNA hoja con las
+cinco animaciones en filas (idle, walk, attack, hit, death, de arriba abajo), `python
+arte_hojas.py` la corta en las cinco tiras: divide el alto entre filas, detecta el ancho de
+cuadro (cuadrado, o anchos conocidos), y recorta por transparencia los cuadros vacíos del
+final de cada fila (así conviven 6 cuadros en idle y 8 en attack). La hoja va en
+`public/art/luduscog/<clave>/<clave>-sheet.png` (o `<clave>.png`); otro orden de filas se
+declara con `--orden`. Después, `npm run arte -- --aplicar`. Probado con una hoja sintética
+512×320 (6/6/8/4/6 cuadros): las cinco tiras entran en sus ranuras.
+
+## El enchufe del arte (v5.82)
+
+La *Lista maestra de arte v1.1* está escrita para las ranuras que el juego ya tiene
+(`public/art/manifest.json`: `jugador/copista · quieto / golpea / golpea_onda / herido / cae…`,
+`enemigos/<clave> · quieto / avanza / golpea / herido / cae`). `npm run arte` verifica qué
+tiras del manual están en `public/art/luduscog/<andy|clave del enemigo|fondos|proyectiles>/`
+con los nombres del manual (`andy-idle.png`, `dogma-attack.png`…), calcula los frames de la
+propia imagen (ancho ÷ alto: frames cuadrados en una fila), avisa si una tira está mal
+formada, y con `--aplicar` escribe el manifest con lo presente, conservando lo provisional
+para lo que falta. Fondos y proyectiles se verifican pero aún se dibujan por código: conectarlos
+es una entrega aparte.
+
+## Escalera completa, compactar, y el mapa que apoya (v5.82)
+
+- **Bug de v5.81**: la carta compacta perdía sus líneas porque `transform: scale` pisaba el
+  `translate(-50%,-50%)` que la centra; y al fundir una identidad, los demás trazos armados que
+  tocaban el nombre seguían apuntando a una pieza que ya no existía. Corregidos los dos.
+- **Las pistas nunca iluminan apócrifas ni intuiciones**: solo cartas jugables.
+- **Nivel 1**: un turno sin avance → la carta armada con más vínculos pendientes late suave.
+  **Nivel 4**: «Pista (−1 cambio)» a voluntad: dos cartas y el tipo; el trazo rinde al 70 %.
+- **Avanzar es sostener un vínculo nuevo que no sea identidad**; los fallos no reinician la
+  cuenta. La identidad prepara, no avanza.
+- **Compactar (cristalizar por partes)**: un grupo de 3+ trazos armados que se toquen se funde
+  en una carta-constelación («Crítica social +4») en su centroide; los trazos que salen del
+  grupo la siguen; una flecha hacia ella se juzga como hacia su concepto eje.
+- **El mapa apoya**: resonancia con más fuerza (0.25 × Σ^0.85 × (1 + 0.1 × conexiones), tope
+  1.5 × fichas propias) y visible: al resolver, las cartas armadas laten en oro, una onda
+  dorada sube hacia el frente y se lee «✦ EL MAPA RESUENA · +N fichas».
 
 ## Morir no borra el mapa; escalera de pistas; mesa compacta (v5.81)
 

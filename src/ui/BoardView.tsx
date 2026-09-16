@@ -30,6 +30,9 @@ export interface AccionesBatalla {
   apostarOleada?: (valor: 'si' | 'no') => void
   /** v5.67 · el mapa de la sala golpea entero */
   cristalizar?: () => void
+  /** v5.82 */
+  pedirPista?: () => void
+  compactar?: () => void
   cambio: (mut: (e: EstadoBatalla) => void) => void
   afirmar: () => void
   continuar: () => void
@@ -501,7 +504,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}`} style={{ ['--zoom' as string]: zoom }}>
+      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultima?.diag.combos.some((k) => k.nombre === 'Resonancia del mapa') ? ' resonando' : ''}`} style={{ ['--zoom' as string]: zoom }}>
+        {resuelto && (() => { const k = e.ultima?.diag.combos.find((x) => x.nombre === 'Resonancia del mapa'); return k ? <div className="resonancia-aviso">✦ EL MAPA RESUENA · +{k.fichas} fichas</div> : null })()}
         {e.mapa && (
           <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
             <small>Mapa de la sala · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length}/${e.mapa.umbral}`}{e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? ' · completo ✦' : ''}</small>
@@ -511,6 +515,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 return <span key={id} className={`mapa-chip${heredado ? ' heredado' : ''}`} title={heredado ? 'De una sala anterior: ya armado' : 'Sostenido en esta sala'}>{recorte(contenido.conceptos[id]?.titulo ?? id, 18)}</span>
               })}
               {e.mapa.trazos.length === 0 && <span className="mapa-vacio">Aún nada sostenido. Lo que sostengas se queda aquí toda la sala.</span>}
+            </div>
+            <div className="mapa-acciones">
+              {on.pedirPista && !resuelto && <button className="btn chico fantasma" onClick={on.pedirPista} title="Cuesta un cambio; el trazo rinde al 70 %">Pista (−1 cambio)</button>}
+              {on.compactar && !resuelto && (e.armados?.length ?? 0) >= 3 && <button className="btn chico fantasma" onClick={on.compactar} title="Un grupo de trazos armados que se toquen se compacta en una carta-constelación">Compactar</button>}
             </div>
             {(() => {
               const pistas = pistasDelSubmapa(e, { contenido, rng: { next: () => 0 } as never, lentes })
@@ -691,8 +699,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
-                data-pista={e.pista && p.conceptId && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
-                className={`naipe en-tablero naipe-${p.clase}${marcada ? ' marcada' : ''}` +
+                data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : e.pistaSuave && p.conceptId === e.pistaSuave ? 'suave' : undefined}
+                className={`naipe en-tablero${p.uid.startsWith('const:') ? ' constelacion' : ''} naipe-${p.clase}${marcada ? ' marcada' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}` +
@@ -948,7 +956,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-uid={p.uid}
-                data-pista={e.pista && p.conceptId && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
+                data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
