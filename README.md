@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.85
+# LudusCog · El Archivo Infinito — v5.86
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -664,6 +664,18 @@ propia imagen (ancho ÷ alto: frames cuadrados en una fila), avisa si una tira e
 formada, y con `--aplicar` escribe el manifest con lo presente, conservando lo provisional
 para lo que falta. Fondos y proyectiles se verifican pero aún se dibujan por código: conectarlos
 es una entrega aparte.
+
+## La posición enseña la relación (v5.86)
+
+`ordenarMapa` es ahora un layout de fuerzas **semántico** que corre solo tras cada afirmación
+(y con el botón Ordenar): generaliza/requiere ponen el general ARRIBA del particular
+(ejemplifica, al revés); causa/antecede/secuencia ponen la causa a la IZQUIERDA del efecto;
+apoya/extiende acercan; contrasta/matiza ponen los dos ENFRENTE a la misma altura; campo,
+eje y analogía juntan a sus miembros. Repulsión entre nodos (mayor entre zonas distintas) y
+gravedad suave hacia la franja superior para dejar el centro libre. Determinista, 80
+iteraciones, y los nodos se deslizan a su sitio (transición de 0.6 s). Los nodos armados se
+pueden **arrastrar** para moverlos si estorban; el motor sigue impidiendo que vuelvan a la
+mano.
 
 ## El mapa armado es un mapa conceptual (v5.85)
 

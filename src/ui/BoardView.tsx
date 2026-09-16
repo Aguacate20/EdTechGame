@@ -725,7 +725,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${inservible ? ' inservible' : ''}`}
                 style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd),
                   ...(texturaDe(p.clase) ? { background: `${texturaDe(p.clase)}, ${cd.tono}` } : {}) }}
-                draggable={!resuelto && !(e.armados ?? []).some((a) => a.piezas.includes(p.uid))}
+                draggable={!resuelto}
                 onDragStart={() => setArrastrando(p.uid)}
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => tocarPieza(p.uid)}

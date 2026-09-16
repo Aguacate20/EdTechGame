@@ -2064,7 +2064,7 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .mapa-acciones { display: flex; gap: 6px; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { .zona-lienzo.resonando .naipe.en-tablero[data-armada='true'], .zona-lienzo.resonando::before { animation: none; } }
 
-.naipe.en-tablero[data-armada='true'] { cursor: default; }
+.naipe.en-tablero[data-armada='true'] { cursor: grab; transition: left .6s cubic-bezier(.2,.8,.2,1), top .6s cubic-bezier(.2,.8,.2,1); }
 
 /* ═════ v5.85 · el mapa armado es un mapa conceptual: nodos dorados con enlaces rotulados ═════ */
 .naipe.en-tablero[data-armada='true'] { width: 46px !important; height: 46px; min-height: 0 !important; padding: 0 !important; border-radius: 50% !important; transform: translate(-50%, -50%) !important; display: grid !important; place-items: center; background: radial-gradient(circle at 35% 30%, #FFE9A6, #FFC23D 55%, #B57F0E) !important; border: 2px solid #FFF1C2 !important; outline: none !important; box-shadow: 0 0 18px rgba(255,194,61,.6) !important; overflow: visible !important; }
@@ -2076,3 +2076,5 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .trazos.rotulos { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
 .rotulo-fondo { fill: #0F1A3C; stroke: rgba(255,194,61,.6); stroke-width: .25; }
 .rotulo-texto { fill: #FFE9A6; font-family: var(--mono); font-size: 2.6px; letter-spacing: .05em; }
+
+@media (prefers-reduced-motion: reduce) { .naipe.en-tablero[data-armada='true'] { transition: none; } }

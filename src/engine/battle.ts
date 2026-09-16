@@ -482,7 +482,8 @@ export function piezasDelTablero(e: EstadoBatalla): Pieza[] {
 /* ------------------------------ tablero ---------------------------------- */
 
 export function soltar(e: EstadoBatalla, uid: string, x: number, y: number): void {
-  if (estaArmada(e, uid)) return
+  // v5.86 · una pieza armada se puede mover (por si estorba), pero no vuelve a la mano
+  if (estaArmada(e, uid)) { const pos = e.tablero.find((x2) => x2.uid === uid); if (pos) { pos.x = x; pos.y = y } return }
   const ya = e.tablero.find((t) => t.uid === uid)
   if (ya) { ya.x = x; ya.y = y; return }
   if (!e.mano.some((p) => p.uid === uid)) return
@@ -747,28 +748,56 @@ export function pedirPista(e: EstadoBatalla, ctx: ContextoBatalla): string {
   return 'Pista mostrada: dos cartas y el tipo de vínculo. Te costó un cambio, y el trazo rendirá al 70 %.'
 }
 
-/** v5.85 · ordenar: cada grupo conectado de trazos armados se reacomoda arriba de la mesa,
- *  en un pequeño círculo por grupo, conservando la topología; el centro queda libre. */
-export function ordenarMapa(e: EstadoBatalla): void {
-  const restantes = [...e.armados]
-  const grupos: Trazo[][] = []
-  while (restantes.length) {
-    const grupo = [restantes.shift()!]
-    let cambio = true
-    while (cambio) { cambio = false; for (let i = restantes.length - 1; i >= 0; i--) if (restantes[i].piezas.some((u) => grupo.some((g) => g.piezas.includes(u)))) { grupo.push(restantes.splice(i, 1)[0]); cambio = true } }
-    grupos.push(grupo)
+/** v5.86 · orden semántico: la posición enseña la relación. Fuerzas por tipo de vínculo:
+ *  generaliza / requiere → el general ARRIBA del particular (ejemplifica, al revés);
+ *  causa / antecede / secuencia → la causa a la IZQUIERDA del efecto;
+ *  apoya / extiende → cerca; contrasta / matiza → ENFRENTE, a la misma altura;
+ *  campo → los miembros se juntan. Repulsión entre nodos y una gravedad suave hacia la
+ *  franja superior, para dejar el centro libre. Determinista; corre tras cada afirmación. */
+export function ordenarMapa(e: EstadoBatalla, ctx?: ContextoBatalla): void {
+  const uids = [...new Set(e.armados.flatMap((a) => a.piezas))]
+  if (uids.length < 2) return
+  const pos = new Map<string, { x: number; y: number }>()
+  for (const u of uids) { const p = e.tablero.find((x) => x.uid === u); if (p) pos.set(u, { x: p.x, y: p.y }) }
+  const clusterDe = (u: string) => { const p = e.mano.find((q) => q.uid === u); return p?.conceptId ? ctx?.contenido.conceptos[p.conceptId]?.clusterId ?? null : null }
+  type Fuerza = { a: string; b: string; dx: number; dy: number; k: number }
+  const fuerzas: Fuerza[] = []
+  for (const a of e.armados) {
+    const ps = a.piezas.filter((u) => pos.has(u))
+    if (ps.length < 2) continue
+    const [p0, p1] = ps
+    const tipo = a.param ?? ''
+    if (a.tool === 'flecha') {
+      if (tipo === 'generaliza' || tipo === 'requiere') fuerzas.push({ a: p0, b: p1, dx: 0, dy: 14, k: .18 })
+      else if (tipo === 'ejemplifica') fuerzas.push({ a: p0, b: p1, dx: 0, dy: -14, k: .18 })
+      else if (tipo === 'causa' || tipo === 'antecede') fuerzas.push({ a: p0, b: p1, dx: 18, dy: 0, k: .18 })
+      else if (tipo === 'contrasta' || tipo === 'matiza') fuerzas.push({ a: p0, b: p1, dx: 24, dy: 0, k: .12 })
+      else fuerzas.push({ a: p0, b: p1, dx: 13, dy: 4, k: .1 })
+    } else if (a.tool === 'jerarquia') { for (const h of ps.slice(1)) fuerzas.push({ a: p0, b: h, dx: 0, dy: 14, k: .16 }) }
+    else if (a.tool === 'secuencia') { for (let k = 1; k < ps.length; k++) fuerzas.push({ a: ps[k - 1], b: ps[k], dx: 16, dy: 0, k: .18 }) }
+    else if (a.tool === 'campo' || a.tool === 'eje' || a.tool === 'analogia') { for (const h of ps.slice(1)) fuerzas.push({ a: p0, b: h, dx: 9, dy: 6, k: .08 }) }
+    else { for (const h of ps.slice(1)) fuerzas.push({ a: p0, b: h, dx: 12, dy: 5, k: .1 }) }
   }
-  const n = Math.max(1, grupos.length)
-  grupos.forEach((grupo, gi) => {
-    const uids = [...new Set(grupo.flatMap((g) => g.piezas))]
-    const cx = ((gi + 0.5) / n) * 88 + 6, cy = 22
-    const radio = Math.min(16, 5 + uids.length * 2.2)
-    uids.forEach((u, i) => {
-      const ang = (i / uids.length) * Math.PI * 2 - Math.PI / 2
-      const pos = e.tablero.find((x) => x.uid === u)
-      if (pos) { pos.x = Math.max(6, Math.min(94, cx + Math.cos(ang) * radio)); pos.y = Math.max(8, Math.min(90, cy + Math.sin(ang) * radio * 0.8)) }
-    })
-  })
+  for (let it = 0; it < 80; it++) {
+    // muelles direccionales
+    for (const f of fuerzas) {
+      const A = pos.get(f.a)!, B = pos.get(f.b)!
+      const tx = A.x + f.dx, ty = A.y + f.dy
+      const ex = (tx - B.x) * f.k, ey = (ty - B.y) * f.k
+      B.x += ex; B.y += ey; A.x -= ex * .6; A.y -= ey * .6
+    }
+    // repulsión (más entre zonas distintas)
+    for (let i2 = 0; i2 < uids.length; i2++) for (let j2 = i2 + 1; j2 < uids.length; j2++) {
+      const A = pos.get(uids[i2]), B = pos.get(uids[j2]); if (!A || !B) continue
+      let dx = B.x - A.x, dy = B.y - A.y
+      const d = Math.hypot(dx, dy) || .01
+      const minimo = clusterDe(uids[i2]) !== clusterDe(uids[j2]) ? 16 : 11
+      if (d < minimo) { const f = (minimo - d) / d * .3; dx *= f; dy *= f; A.x -= dx; A.y -= dy; B.x += dx; B.y += dy }
+    }
+    // gravedad suave hacia la franja superior y límites
+    for (const P of pos.values()) { P.y += (26 - P.y) * .02; P.x = Math.max(6, Math.min(94, P.x)); P.y = Math.max(8, Math.min(72, P.y)) }
+  }
+  for (const [u, P] of pos) { const p = e.tablero.find((x) => x.uid === u); if (p) { p.x = Math.round(P.x * 10) / 10; p.y = Math.round(P.y * 10) / 10 } }
 }
 
 /** v5.82 · cristalizar por partes: un grupo conectado de trazos armados (3+) se compacta en
@@ -1241,6 +1270,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     // los demás trazos armados (flechas, jerarquías…) que tocaban el nombre o la descripción siguen a la carta compacta
     for (const otro of e.armados) if (otro !== a) otro.piezas = [...new Set(otro.piezas.map((u) => (u === u1 || u === u2 ? entero.uid : u)))]
   }
+  if (e.armados.length >= 2) ordenarMapa(e, ctx)
   e.trazos = []
   e.usadas = []
   e.bonusMult = 0

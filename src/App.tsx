@@ -520,7 +520,7 @@ export default function App() {
   const ordenar = () => {
     if (!batalla) return
     const e = { ...batalla, tablero: batalla.tablero.map((x) => ({ ...x })) }
-    ordenarMapa(e)
+    ordenarMapa(e, contenido ? { contenido, rng: rngRef.current, lentes: mods } : undefined)
     setBatalla(e)
   }
   const compactar = () => {
