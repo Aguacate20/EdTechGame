@@ -707,11 +707,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${inservible ? ' inservible' : ''}`}
                 style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd),
                   ...(texturaDe(p.clase) ? { background: `${texturaDe(p.clase)}, ${cd.tono}` } : {}) }}
-                draggable={!resuelto}
+                draggable={!resuelto && !(e.armados ?? []).some((a) => a.piezas.includes(p.uid))}
                 onDragStart={() => setArrastrando(p.uid)}
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => tocarPieza(p.uid)}
-                onDoubleClick={() => pedirDevolver(p.uid)}
+                onDoubleClick={() => { if (!(e.armados ?? []).some((a) => a.piezas.includes(p.uid))) pedirDevolver(p.uid) }}
                 onMouseEnter={() => herramienta && !inservible && setPrevisualizada(p.uid)}
                 onMouseLeave={() => setPrevisualizada((x) => (x === p.uid ? null : x))}
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}

@@ -2063,3 +2063,5 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .naipe.en-tablero.constelacion .nom::before { content: '✦ '; color: var(--dominar); }
 .mapa-acciones { display: flex; gap: 6px; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { .zona-lienzo.resonando .naipe.en-tablero[data-armada='true'], .zona-lienzo.resonando::before { animation: none; } }
+
+.naipe.en-tablero[data-armada='true'] { cursor: default; }

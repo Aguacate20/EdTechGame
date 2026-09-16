@@ -482,6 +482,7 @@ export function piezasDelTablero(e: EstadoBatalla): Pieza[] {
 /* ------------------------------ tablero ---------------------------------- */
 
 export function soltar(e: EstadoBatalla, uid: string, x: number, y: number): void {
+  if (estaArmada(e, uid)) return
   const ya = e.tablero.find((t) => t.uid === uid)
   if (ya) { ya.x = x; ya.y = y; return }
   if (!e.mano.some((p) => p.uid === uid)) return
@@ -493,7 +494,12 @@ export function trazosQueUsan(e: EstadoBatalla, uid: string): Trazo[] {
   return e.trazos.filter((t) => t.piezas.includes(uid))
 }
 
+/** v5.84 · una pieza armada (con vínculo sostenido en la mesa) ya se está construyendo: no
+ *  se devuelve a la mano, no se cambia y no se quema. Solo cristalizar la recoge. */
+export const estaArmada = (e: EstadoBatalla, uid: string): boolean => e.armados.some((a) => a.piezas.includes(uid))
+
 export function devolverAMano(e: EstadoBatalla, uid: string): void {
+  if (estaArmada(e, uid)) return
   // al deshacer un trazo hay que devolver su herramienta al cinturón, o el
   // jugador la pierde por mover una carta de sitio
   for (const t of trazosQueUsan(e, uid)) borrarTrazo(e, t.uid)
@@ -537,6 +543,7 @@ export function herramientasLibres(e: EstadoBatalla): HerramientaId[] {
 
 export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
   if (e.quemasRestantes <= 0) return null
+  if (estaArmada(e, uid)) return null
   const p = e.mano.find((x) => x.uid === uid)
   if (!p) return null
   const apocrifa = p.clase === 'apocrifa' || (p.clase === 'criterio' && p.sentido !== 'refuta')
@@ -571,6 +578,7 @@ export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): Eve
 
 export function cambiar(e: EstadoBatalla, uid: string, ctx?: ContextoBatalla): EventoPozo | null {
   if (e.cambiosRestantes <= 0) return null
+  if (estaArmada(e, uid)) return null
   const p = e.mano.find((x) => x.uid === uid)
   if (!p) return null
   const apocrifa = p.clase === 'apocrifa' || (p.clase === 'criterio' && p.sentido !== 'refuta')

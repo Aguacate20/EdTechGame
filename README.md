@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.83
+# LudusCog · El Archivo Infinito — v5.84
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el
@@ -664,6 +664,12 @@ propia imagen (ancho ÷ alto: frames cuadrados en una fila), avisa si una tira e
 formada, y con `--aplicar` escribe el manifest con lo presente, conservando lo provisional
 para lo que falta. Fondos y proyectiles se verifican pero aún se dibujan por código: conectarlos
 es una entrega aparte.
+
+## Lo armado no se toca (v5.84)
+
+Una pieza armada (con vínculo sostenido en la mesa) ya se está construyendo: no se devuelve a
+la mano (ni arrastrando ni con doble clic), no se cambia, no se quema y no se mueve de sitio.
+Guardas en el motor (`estaArmada`) y en la mesa. Solo cristalizar la recoge.
 
 ## El mapa ataca por su cuenta (v5.83)
 
