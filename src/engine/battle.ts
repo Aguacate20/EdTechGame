@@ -372,7 +372,6 @@ export function iniciarBatalla(
     secos: 0, vetadasReparto: [],
     apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, creacionesTotales: 0
   }
-  if (bolsa.apoyo && !bolsa.mazoFijo) {
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
   // multiplicador) y con la mano. Los enemigos se ajustan a ese potencial, y la mano
   // crece una carta por cada tres herramientas más allá del kit, hasta nueve.
@@ -403,6 +402,7 @@ export function iniciarBatalla(
   const vinc0 = vinculosDeLaSala(e, ctx)
   e.mapa.meta = vinc0.length
   e.mapa.hechos = vinc0.filter((a) => parEnMapa(e, a.from, a.to)).length
+  if (bolsa.apoyo && !bolsa.mazoFijo) {
   e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
   // los escenarios de la primera oleada (si los hay) entran ya al mazo
   for (const id of e.oleadas[0]?.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) e.mazo.push(pz) }
@@ -543,6 +543,12 @@ export function herramientasLibres(e: EstadoBatalla): HerramientaId[] {
    ========================================================================== */
 
 export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
+  const ev = quemarSinReponer(e, ctx, uid)
+  // v5.88 · quemar repone: entra una carta del mazo en el sitio de la quemada
+  if (ev) robar(e, 1)
+  return ev
+}
+function quemarSinReponer(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
   if (e.quemasRestantes <= 0) return null
   if (estaArmada(e, uid)) return null
   const p = e.mano.find((x) => x.uid === uid)
@@ -964,12 +970,13 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     const TOPE = Math.max(e.conceptIdsCasilla.length, 10)
     const enMapaIds = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
     const dentro = new Set(e.conceptIdsCasilla)
-    if (dentro.size < TOPE && enMapaIds.size > 0) {
+    const mazoSeco = e.mazo.length + e.descarte.length < 3
+    if ((dentro.size < TOPE || mazoSeco) && enMapaIds.size > 0) {
       const frontera = [...new Set(ctx.contenido.aristas
         .filter((a) => (enMapaIds.has(a.from) && !dentro.has(a.to)) || (enMapaIds.has(a.to) && !dentro.has(a.from)))
         .map((a) => (enMapaIds.has(a.from) ? a.to : a.from))
         .filter((id) => !!ctx.contenido.conceptos[id]))]
-      for (const id of frontera.slice(0, Math.min(2, TOPE - dentro.size))) {
+      for (const id of frontera.slice(0, mazoSeco ? 3 : Math.min(2, TOPE - dentro.size))) {
         e.conceptIdsCasilla = [...e.conceptIdsCasilla, id]
         const nuevas = e.apoyo ? [piezaConcepto(ctx.contenido, id)] : [piezaEtiqueta(ctx.contenido, id), piezaDefinicion(ctx.contenido, id)]
         for (const p of nuevas) if (p && !e.mano.some((x) => x.conceptId === id && x.clase === p.clase) && !e.mazo.some((x) => x.conceptId === id && x.clase === p.clase)) e.mazo.unshift(p)
