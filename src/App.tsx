@@ -391,6 +391,7 @@ export default function App() {
       // una herramienta más
       apoyo: aprendizaje,
       mapaPrevio: mapaExpedicionRef.current ?? undefined,
+      cristalizados: [...new Set((atlas?.constelaciones ?? []).flatMap((k) => k.conceptIds))],
       evidenciaPrevia: atlas ? Object.keys(atlas.conceptos) : [],
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),

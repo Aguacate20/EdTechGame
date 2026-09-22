@@ -83,6 +83,8 @@ export interface EstadoBatalla {
   pista: { a: string; b: string; tipo: string; revelarTipo: boolean } | null
   /** nivel 1: una carta armada que aún tiene vínculos por hacer */
   pistaSuave: string | null
+  /** v5.90 · conceptos cristalizados en esta sala: no vuelven al mazo */
+  cristalizadosSala: string[]
   /** v5.83 · el golpe del mapa en el último turno (para la onda) */
   ultimoGolpeMapa: { dano: number; objetivo: string; trazos: number; conexiones: number } | null
   /** v5.71 · trazos sostenidos que se quedan armados en la mesa (en oro) para enlazar el siguiente ataque */
@@ -238,6 +240,8 @@ export const TABLERO_ALTO = 100
 
 /* ---------------------------- montaje del mazo ---------------------------- */
 
+const esCartaDeConcepto = (p: Pieza) => p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion'
+
 export interface MapaPendiente {
   trazos: { tool: string; conceptIds: string[]; fichas: number; firma: string }[]
   armados: Trazo[]
@@ -247,6 +251,8 @@ export interface MapaPendiente {
 }
 
 export interface Bolsa {
+  /** v5.90 · conceptos ya cristalizados (constelaciones del Atlas): no se reparten otra vez */
+  cristalizados?: string[]
   /** v5.78 · el submapa pendiente (no cristalizado): viaja entero entre salas y expediciones —
    *  vínculos, trazos armados, las piezas con su posición en la mesa y los conceptos del submapa */
   mapaPrevio?: MapaPendiente
@@ -370,7 +376,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [], creacionesTotales: 0
   }
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
   // multiplicador) y con la mano. Los enemigos se ajustan a ese potencial, y la mano
@@ -386,6 +392,12 @@ export function iniciarBatalla(
   e.mapa.umbral = acto >= 2 ? 8 : acto === 1 ? 7 : 6
   // v5.70 · lo sostenido en salas anteriores llega ya armado (en oro) si toca a esta sala:
   // no vuelve a puntuar, pero multiplica lo nuevo que lo enlace y cuenta para cristalizar
+  // v5.90 · lo ya cristalizado en el Atlas no se reparte de nuevo
+  if (bolsa.cristalizados?.length) {
+    const fuera = new Set(bolsa.cristalizados)
+    e.mazo = e.mazo.filter((p) => !(esCartaDeConcepto(p) && p.conceptId && fuera.has(p.conceptId)))
+    e.mano = e.mano.filter((p) => !(esCartaDeConcepto(p) && p.conceptId && fuera.has(p.conceptId)))
+  }
   const previo = bolsa.mapaPrevio
   if (previo && previo.trazos.length) {
     // el submapa pendiente sigue: mismos conceptos (más los de esta sala), mismas piezas en la
@@ -394,9 +406,11 @@ export function iniciarBatalla(
     for (const x of previo.trazos) e.mapa.trazos.push({ ...x, heredado: true })
     e.armados = previo.armados.map((a) => ({ ...a }))
     const uids = new Set(previo.piezas.map((p) => p.uid))
-    const armadasClase = new Set(previo.piezas.map((p) => `${p.conceptId}|${p.clase}`))
-    e.mazo = e.mazo.filter((p) => !uids.has(p.uid) && !armadasClase.has(`${p.conceptId}|${p.clase}`))
-    e.mano = [...e.mano.filter((p) => !uids.has(p.uid) && !armadasClase.has(`${p.conceptId}|${p.clase}`)), ...previo.piezas]
+    const armadosIds = new Set(previo.piezas.map((p) => p.conceptId).filter((x): x is string => !!x))
+    const duplica = (p: Pieza) => uids.has(p.uid) || (esCartaDeConcepto(p) && !!p.conceptId && armadosIds.has(p.conceptId))
+    e.mazo = e.mazo.filter((p) => !duplica(p))
+    e.descarte = e.descarte.filter((p) => !duplica(p))
+    e.mano = [...e.mano.filter((p) => !duplica(p)), ...previo.piezas]
     e.tablero = [...e.tablero.filter((x) => !uids.has(x.uid)), ...previo.tablero.map((x) => ({ ...x }))]
   }
   const vinc0 = vinculosDeLaSala(e, ctx)
@@ -544,8 +558,8 @@ export function herramientasLibres(e: EstadoBatalla): HerramientaId[] {
 
 export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
   const ev = quemarSinReponer(e, ctx, uid)
-  // v5.88 · quemar repone: entra una carta del mazo en el sitio de la quemada
-  if (ev) robar(e, 1)
+  // v5.88/90 · quemar repone: si el mazo está seco, la frontera trae vecinos; luego se roba
+  if (ev) { if (!e.mazo.length && !e.descarte.length) reponerFrontera(e, ctx, 3); robar(e, 1) }
   return ev
 }
 function quemarSinReponer(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
@@ -851,6 +865,32 @@ export function compactarMapa(e: EstadoBatalla, ctx: ContextoBatalla): number {
   return compactados
 }
 
+/** v5.90 · la frontera: los vecinos (en el mapa ideal del texto) de lo que ya está armado —o de
+ *  los conceptos de la sala si aún no hay mapa— entran al mazo. La mano nunca se seca: se
+ *  llama tras afirmar, al quemar y al pasar de turno cuando faltan cartas. Lo cristalizado no vuelve. */
+export function reponerFrontera(e: EstadoBatalla, ctx: ContextoBatalla, n: number): number {
+  const TOPE = Math.max(e.conceptIdsCasilla.length, 10)
+  const seco = e.mazo.length + e.descarte.length < 3
+  const dentro = new Set(e.conceptIdsCasilla)
+  if (dentro.size >= TOPE && !seco) return 0
+  const base = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
+  // la frontera nace de lo armado; sin mapa aún, solo si el mazo está seco del todo
+  if (!base.size && !seco) return 0
+  const semilla = base.size ? base : dentro
+  const fuera = new Set(e.cristalizadosSala)
+  const frontera = [...new Set(ctx.contenido.aristas
+    .filter((a) => (semilla.has(a.from) && !dentro.has(a.to)) || (semilla.has(a.to) && !dentro.has(a.from)))
+    .map((a) => (semilla.has(a.from) ? a.to : a.from))
+    .filter((id) => !!ctx.contenido.conceptos[id] && !fuera.has(id)))]
+  let anadidos = 0
+  for (const id of frontera.slice(0, seco ? Math.max(n, 3) : Math.min(n, TOPE - dentro.size))) {
+    e.conceptIdsCasilla = [...e.conceptIdsCasilla, id]
+    const nuevas = e.apoyo ? [piezaConcepto(ctx.contenido, id)] : [piezaEtiqueta(ctx.contenido, id), piezaDefinicion(ctx.contenido, id)]
+    for (const p of nuevas) if (p && !e.mano.some((x) => x.conceptId === id && esCartaDeConcepto(x)) && !e.mazo.some((x) => x.conceptId === id && x.clase === p.clase)) { e.mazo.unshift(p); anadidos += 1 }
+  }
+  return anadidos
+}
+
 /** v5.78 · la foto del submapa pendiente al terminar la sala (vacía si se cristalizó) */
 export function mapaPendienteDe(e: EstadoBatalla): MapaPendiente | null {
   if (!e.mapa.trazos.length) return null
@@ -906,7 +946,11 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
   // el ataque definitivo: todo lo que queda cae
   for (const en of vivos(e)) { impactos.push({ nombre: en.nombre, dano: en.hp, derribado: true }); en.hp = 0; en.gesto = 'cae'; en.tocadoEsteTurno = true }
   // el grupo cristalizado sale de la mesa (queda en el Atlas como constelación); el resto del mapa sigue
-  for (const u of comp.uids) { const p = e.mano.find((x) => x.uid === u); if (p) { e.mano = e.mano.filter((x) => x.uid !== u); e.descarte.push(p) } }
+  e.mano = e.mano.filter((p) => !comp.uids.includes(p.uid))
+  e.cristalizadosSala = [...new Set([...e.cristalizadosSala, ...comp.ids])]
+  const fueraIds = new Set(comp.ids)
+  e.mazo = e.mazo.filter((p) => !(esCartaDeConcepto(p) && p.conceptId && fueraIds.has(p.conceptId)))
+  e.descarte = e.descarte.filter((p) => !(esCartaDeConcepto(p) && p.conceptId && fueraIds.has(p.conceptId)))
   e.tablero = e.tablero.filter((x) => !comp.uids.includes(x.uid))
   e.armados = e.armados.filter((a) => !comp.trazos.includes(a))
   e.mapa.trazos = e.mapa.trazos.filter((x) => !enMapa.includes(x))
@@ -966,26 +1010,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
   }
   for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
-  // v5.76 · el submapa se descubre por frontera: los vecinos (en el mapa ideal del texto)
-  // de lo que ya está armado entran al mazo, hasta el tope de la sala. La mano siempre
-  // trae lo que sigue; la meta crece con el submapa.
-  {
-    const TOPE = Math.max(e.conceptIdsCasilla.length, 10)
-    const enMapaIds = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
-    const dentro = new Set(e.conceptIdsCasilla)
-    const mazoSeco = e.mazo.length + e.descarte.length < 3
-    if ((dentro.size < TOPE || mazoSeco) && enMapaIds.size > 0) {
-      const frontera = [...new Set(ctx.contenido.aristas
-        .filter((a) => (enMapaIds.has(a.from) && !dentro.has(a.to)) || (enMapaIds.has(a.to) && !dentro.has(a.from)))
-        .map((a) => (enMapaIds.has(a.from) ? a.to : a.from))
-        .filter((id) => !!ctx.contenido.conceptos[id]))]
-      for (const id of frontera.slice(0, mazoSeco ? 3 : Math.min(2, TOPE - dentro.size))) {
-        e.conceptIdsCasilla = [...e.conceptIdsCasilla, id]
-        const nuevas = e.apoyo ? [piezaConcepto(ctx.contenido, id)] : [piezaEtiqueta(ctx.contenido, id), piezaDefinicion(ctx.contenido, id)]
-        for (const p of nuevas) if (p && !e.mano.some((x) => x.conceptId === id && x.clase === p.clase) && !e.mazo.some((x) => x.conceptId === id && x.clase === p.clase)) e.mazo.unshift(p)
-      }
-    }
-  }
+  reponerFrontera(e, ctx, e.mazo.length + e.descarte.length < 3 ? 3 : 2)
   // v5.69 · la meta es el mapa completo: cuántos vínculos de la sala ya están sostenidos
   const vinculos = vinculosDeLaSala(e, ctx)
   e.mapa.meta = vinculos.length
