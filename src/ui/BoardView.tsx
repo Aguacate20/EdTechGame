@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
 import { orientar } from '../engine/feedback'
-import { pistasDelSubmapa, puedeCristalizar } from '../engine/battle'
+import { pistasDelSubmapa, puedeCristalizar, estadoCristalizacion } from '../engine/battle'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -524,6 +524,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         {e.mapa && (
           <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
             <small>Mapa · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length} trazos`}</small>
+            {(() => {
+              const ec = estadoCristalizacion(e, { contenido, rng: { next: () => 0 } as never, lentes })
+              if (!ec) return null
+              const listo = ec.trazos >= 4 && ec.pendientes === 0
+              return <small className={listo ? 'cristal-listo' : 'cristal-falta'}>{listo ? '✦ Grupo listo para cristalizar' : `Cristalizar: grupo de 4+ vínculos sin nada pendiente · mejor grupo ${ec.trazos}/4${ec.pendientes ? `, ${ec.pendientes} pendiente${ec.pendientes === 1 ? '' : 's'} entre sus conceptos` : ''}`}</small>
+            })()}
             <div className="mapa-chips">
               {[...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))].slice(0, 12).map((id) => {
                 const heredado = e.mapa.trazos.filter((x) => x.conceptIds.includes(id)).every((x) => x.heredado)

@@ -402,7 +402,8 @@ export function iniciarBatalla(
   if (previo && previo.trazos.length) {
     // el submapa pendiente sigue: mismos conceptos (más los de esta sala), mismas piezas en la
     // mesa, mismos trazos en oro. Las cartas del mazo que duplican piezas armadas se retiran.
-    e.conceptIdsCasilla = [...new Set([...previo.conceptIds, ...e.conceptIdsCasilla])]
+    const armadosHeredados = [...new Set(previo.piezas.map((p) => p.conceptId).filter((x): x is string => !!x))]
+    e.conceptIdsCasilla = [...new Set([...armadosHeredados, ...e.conceptIdsCasilla])]
     for (const x of previo.trazos) e.mapa.trazos.push({ ...x, heredado: true })
     e.armados = previo.armados.map((a) => ({ ...a }))
     const uids = new Set(previo.piezas.map((p) => p.uid))
@@ -413,6 +414,7 @@ export function iniciarBatalla(
     e.mano = [...e.mano.filter((p) => !duplica(p)), ...previo.piezas]
     e.tablero = [...e.tablero.filter((x) => !uids.has(x.uid)), ...previo.tablero.map((x) => ({ ...x }))]
   }
+  if (e.mazo.length + e.mano.length < e.manoBase) reponerFrontera(e, ctx, 3)
   const vinc0 = vinculosDeLaSala(e, ctx)
   e.mapa.meta = vinc0.length
   e.mapa.hechos = vinc0.filter((a) => parEnMapa(e, a.from, a.to)).length
@@ -873,16 +875,27 @@ export function reponerFrontera(e: EstadoBatalla, ctx: ContextoBatalla, n: numbe
   const seco = e.mazo.length + e.descarte.length < 3
   const dentro = new Set(e.conceptIdsCasilla)
   if (dentro.size >= TOPE && !seco) return 0
+  // v5.91 · huecos: conceptos de la sala sin ninguna carta en juego (ni armados ni cristalizados)
+  let anadidos = 0
+  {
+    const armadosIds = new Set(e.armados.flatMap((x) => x.piezas).map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))
+    const cristal = new Set(e.cristalizadosSala)
+    const enJuego = new Set([...e.mano, ...e.mazo, ...e.descarte].filter(esCartaDeConcepto).map((p) => p.conceptId).filter((x): x is string => !!x))
+    for (const id of e.conceptIdsCasilla) {
+      if (armadosIds.has(id) || cristal.has(id) || enJuego.has(id) || !ctx.contenido.conceptos[id]) continue
+      const nuevas = e.apoyo ? [piezaConcepto(ctx.contenido, id)] : [piezaEtiqueta(ctx.contenido, id), piezaDefinicion(ctx.contenido, id)]
+      for (const p of nuevas) if (p) { e.mazo.unshift(p); anadidos += 1 }
+    }
+  }
   const base = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
   // la frontera nace de lo armado; sin mapa aún, solo si el mazo está seco del todo
-  if (!base.size && !seco) return 0
+  if (!base.size && !seco) return anadidos
   const semilla = base.size ? base : dentro
   const fuera = new Set(e.cristalizadosSala)
   const frontera = [...new Set(ctx.contenido.aristas
     .filter((a) => (semilla.has(a.from) && !dentro.has(a.to)) || (semilla.has(a.to) && !dentro.has(a.from)))
     .map((a) => (semilla.has(a.from) ? a.to : a.from))
     .filter((id) => !!ctx.contenido.conceptos[id] && !fuera.has(id)))]
-  let anadidos = 0
   for (const id of frontera.slice(0, seco ? Math.max(n, 3) : Math.min(n, TOPE - dentro.size))) {
     e.conceptIdsCasilla = [...e.conceptIdsCasilla, id]
     const nuevas = e.apoyo ? [piezaConcepto(ctx.contenido, id)] : [piezaEtiqueta(ctx.contenido, id), piezaDefinicion(ctx.contenido, id)]
@@ -900,7 +913,7 @@ export function mapaPendienteDe(e: EstadoBatalla): MapaPendiente | null {
     armados: e.armados.map((a) => ({ ...a })),
     piezas: e.mano.filter((p) => uids.has(p.uid)),
     tablero: e.tablero.filter((x) => uids.has(x.uid)).map((x) => ({ ...x })),
-    conceptIds: [...e.conceptIdsCasilla]
+    conceptIds: [...new Set(e.mano.filter((p) => uids.has(p.uid)).map((p) => p.conceptId).filter((x): x is string => !!x))]
   }
 }
 
@@ -932,6 +945,23 @@ export function componenteCristalizable(e: EstadoBatalla, ctx: ContextoBatalla):
   return null
 }
 export function puedeCristalizar(e: EstadoBatalla, ctx: ContextoBatalla): boolean { return e.fase === 'jugando' && !!componenteCristalizable(e, ctx) }
+
+/** v5.91 · qué le falta al mejor grupo para cristalizar (se muestra en el rótulo del mapa) */
+export function estadoCristalizacion(e: EstadoBatalla, ctx: ContextoBatalla): { trazos: number; pendientes: number } | null {
+  const restantes = [...e.armados]
+  const dentro = new Set(e.conceptIdsCasilla)
+  const tipos = new Set(e.relacionesDisponibles)
+  let mejor: { trazos: number; pendientes: number } | null = null
+  while (restantes.length) {
+    const grupo = [restantes.shift()!]
+    let cambio = true
+    while (cambio) { cambio = false; for (let i = restantes.length - 1; i >= 0; i--) if (restantes[i].piezas.some((u) => grupo.some((g) => g.piezas.includes(u)))) { grupo.push(restantes.splice(i, 1)[0]); cambio = true } }
+    const ids = [...new Set(grupo.flatMap((g) => g.piezas).map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
+    const pendientes = ctx.contenido.aristas.filter((a) => ids.includes(a.from) && ids.includes(a.to) && dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to))).length
+    if (!mejor || grupo.length > mejor.trazos) mejor = { trazos: grupo.length, pendientes }
+  }
+  return mejor
+}
 
 /** Cristalizar: el mapa entero golpea de una vez (×2; ×3 si cruza zonas) y se vacía
  *  para empezar otro. Es el evento de impacto: la razón para TERMINAR un mapa. */

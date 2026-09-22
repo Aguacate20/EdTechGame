@@ -2102,3 +2102,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .naipe.en-tablero[data-armada='true'] > *:not(.nom) { display: none !important; }
 .naipe.en-tablero[data-armada='true'] .nom { position: static; transform: none; margin: 0; font-size: 13px; font-weight: 800; color: var(--texto); text-shadow: none; white-space: normal; max-width: none; }
 .naipe.en-tablero[data-armada='true']::after { top: 4px; right: 6px; font-size: 12px; }
+
+.cristal-falta { color: var(--texto-2) !important; text-transform: none !important; letter-spacing: 0 !important; font-family: var(--sans) !important; }
+.cristal-listo { color: var(--dominar) !important; }
