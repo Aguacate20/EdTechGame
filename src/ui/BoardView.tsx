@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
 import { orientar } from '../engine/feedback'
-import { pistasDelSubmapa, submapaCompleto } from '../engine/battle'
+import { pistasDelSubmapa, puedeCristalizar } from '../engine/battle'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -32,7 +32,6 @@ export interface AccionesBatalla {
   cristalizar?: () => void
   /** v5.82 */
   pedirPista?: () => void
-  compactar?: () => void
   /** v5.85 */
   ordenar?: () => void
   cambio: (mut: (e: EstadoBatalla) => void) => void
@@ -524,7 +523,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         {resuelto && e.ultimoGolpeMapa && <div className="resonancia-aviso">✦ TU MAPA ATACA · −{e.ultimoGolpeMapa.dano} a {e.ultimoGolpeMapa.objetivo} · {e.ultimoGolpeMapa.trazos} trazos, {e.ultimoGolpeMapa.conexiones} se tocan</div>}
         {e.mapa && (
           <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
-            <small>Mapa de la sala · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length}/${e.mapa.umbral}`}{e.mapa.meta > 0 && e.mapa.hechos >= e.mapa.meta ? ' · completo ✦' : ''}</small>
+            <small>Mapa · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length} trazos`}</small>
             <div className="mapa-chips">
               {[...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))].slice(0, 12).map((id) => {
                 const heredado = e.mapa.trazos.filter((x) => x.conceptIds.includes(id)).every((x) => x.heredado)
@@ -535,7 +534,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <div className="mapa-acciones">
               {on.pedirPista && !resuelto && <button className="btn chico fantasma" onClick={on.pedirPista} title="Cuesta un cambio; el trazo rinde al 70 %">Pista (−1 cambio)</button>}
               {on.ordenar && !resuelto && (e.armados?.length ?? 0) >= 2 && <button className="btn chico fantasma" onClick={on.ordenar} title="Reacomoda el mapa armado arriba, conservando su forma, y deja el centro libre">Ordenar</button>}
-              {on.compactar && !resuelto && (e.armados?.length ?? 0) >= 3 && <button className="btn chico fantasma" onClick={on.compactar} title="Solo un grupo TERMINADO (todos sus vínculos sostenidos) se funde en una constelación">Compactar lo terminado</button>}
             </div>
             {(() => {
               const pistas = pistasDelSubmapa(e, { contenido, rng: { next: () => 0 } as never, lentes })
@@ -1070,9 +1068,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       <footer data-tutorial="pozo" className={`zona-acciones${zona('afirmar') || zona('pozo')}`}>
         {!resuelto ? (
           <>
-            {e.mapa && submapaCompleto(e) && (
+            {e.mapa && puedeCristalizar(e, { contenido, rng: { next: () => 0 } as never, lentes }) && (
               <button className="btn primario cristalizar listo" disabled={!on.cristalizar} onClick={on.cristalizar}
-                title="El ataque final: tu submapa está completo. Derrota a todo lo que queda.">✦ ATAQUE FINAL · Cristalizar el mapa</button>
+                title="Ataque definitivo: un grupo de tu mapa está grande y completo. Cristalízalo y todo lo que queda cae.">✦ ATAQUE FINAL · Cristalizar</button>
             )}
             <button
               data-tutorial="afirmar"

@@ -872,45 +872,48 @@ export function submapaCompleto(e: EstadoBatalla): boolean {
   const armados = new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))
   return e.conceptIdsCasilla.every((id) => armados.has(id))
 }
-export function puedeCristalizar(e: EstadoBatalla): boolean { return submapaCompleto(e) && e.fase === 'jugando' }
+/** v5.89 · cristalizar por partes. Un grupo conectado de trazos armados es cristalizable cuando
+ *  es grande (4+ trazos) y semánticamente completo: entre sus conceptos no queda ningún vínculo
+ *  del texto por sostener. Se devuelve el primero que cumpla. */
+export function componenteCristalizable(e: EstadoBatalla, ctx: ContextoBatalla): { trazos: Trazo[]; uids: string[]; ids: string[] } | null {
+  const restantes = [...e.armados]
+  const dentro = new Set(e.conceptIdsCasilla)
+  const tipos = new Set(e.relacionesDisponibles)
+  while (restantes.length) {
+    const grupo = [restantes.shift()!]
+    let cambio = true
+    while (cambio) { cambio = false; for (let i = restantes.length - 1; i >= 0; i--) if (restantes[i].piezas.some((u) => grupo.some((g) => g.piezas.includes(u)))) { grupo.push(restantes.splice(i, 1)[0]); cambio = true } }
+    if (grupo.length < 4) continue
+    const uids = [...new Set(grupo.flatMap((g) => g.piezas))]
+    const ids = [...new Set(uids.map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
+    const pendiente = ctx.contenido.aristas.some((a) => ids.includes(a.from) && ids.includes(a.to) && dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to)))
+    if (!pendiente) return { trazos: grupo, uids, ids }
+  }
+  return null
+}
+export function puedeCristalizar(e: EstadoBatalla, ctx: ContextoBatalla): boolean { return e.fase === 'jugando' && !!componenteCristalizable(e, ctx) }
 
 /** Cristalizar: el mapa entero golpea de una vez (×2; ×3 si cruza zonas) y se vacía
  *  para empezar otro. Es el evento de impacto: la razón para TERMINAR un mapa. */
-export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: number; zonas: number; trazos: number; impactos: { nombre: string; dano: number; derribado: boolean }[] } {
-  const ids = [...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))]
-  const zonas = new Set(ids.map((id) => ctx.contenido.conceptos[id]?.clusterId).filter(Boolean)).size
-  const base = e.mapa.trazos.reduce((n, x) => n + x.fichas, 0)
-  const completo = submapaCompleto(e)
-  const factor = completo ? 3 : zonas >= 2 ? 3 : 2
-  const dano = Math.round(base * factor)
+export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: number; zonas: number; trazos: number; impactos: { nombre: string; dano: number; derribado: boolean }[]; conceptIds: string[]; aristas: string[] } {
+  const comp = componenteCristalizable(e, ctx)
+  if (!comp) return { dano: 0, zonas: 0, trazos: 0, impactos: [], conceptIds: [], aristas: [] }
+  const enMapa = e.mapa.trazos.filter((x) => x.conceptIds.every((id) => comp.ids.includes(id)))
+  const base = enMapa.reduce((n, x) => n + x.fichas, 0)
+  const zonas = new Set(comp.ids.map((id) => ctx.contenido.conceptos[id]?.clusterId).filter(Boolean)).size
+  const dano = Math.round(base * 3)
   const impactos: { nombre: string; dano: number; derribado: boolean }[] = []
-  // v5.76 · el submapa completo cristalizado derrota al instante a todo lo que queda:
-  // el mapa es la victoria; los enemigos, el reloj
-  if (completo) {
-    for (const en of vivos(e)) { impactos.push({ nombre: en.nombre, dano: en.hp, derribado: true }); en.hp = 0; en.gesto = 'cae'; en.tocadoEsteTurno = true }
-    e.mapa = { trazos: [], umbral: Math.min(10, e.mapa.umbral + 1), cristalizaciones: e.mapa.cristalizaciones + 1, meta: e.mapa.meta, hechos: e.mapa.meta }
-    e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: factor, trazos: e.armados.length } : e.mejorGolpe
-    for (const uid of new Set(e.armados.flatMap((x) => x.piezas))) { const p = e.mano.find((x) => x.uid === uid); if (p) { e.mano = e.mano.filter((x) => x.uid !== uid); e.descarte.push(p) } }
-    e.tablero = e.tablero.filter((x) => !e.armados.some((a) => a.piezas.includes(x.uid)))
-    e.armados = []
-    e.fase = 'ganado'
-    return { dano, zonas, trazos: 0, impactos }
-  }
-  // golpe a todos, repartido de delante hacia atrás con arrastre
-  let resto = dano
-  for (const en of vivos(e).sort((a, b) => a.posicion - b.posicion)) {
-    if (resto <= 0) break
-    const d = Math.min(resto, en.hp); en.hp -= d; resto -= d
-    en.gesto = en.hp === 0 ? 'cae' : 'critico'; en.tocadoEsteTurno = true
-    impactos.push({ nombre: en.nombre, dano: d, derribado: en.hp === 0 })
-  }
-  const trazos = e.mapa.trazos.length
-  for (const uid of new Set(e.armados.flatMap((x) => x.piezas))) { const p = e.mano.find((x) => x.uid === uid); if (p) { e.mano = e.mano.filter((x) => x.uid !== uid); e.descarte.push(p) } }
-  e.tablero = e.tablero.filter((x) => !e.armados.some((a) => a.piezas.includes(x.uid)))
-  e.armados = []
-  e.mapa = { trazos: [], umbral: Math.min(10, e.mapa.umbral + 1), cristalizaciones: e.mapa.cristalizaciones + 1, meta: e.mapa.meta, hechos: completo ? e.mapa.meta : e.mapa.hechos }
-  e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: factor, trazos } : e.mejorGolpe
-  return { dano, zonas, trazos, impactos }
+  // el ataque definitivo: todo lo que queda cae
+  for (const en of vivos(e)) { impactos.push({ nombre: en.nombre, dano: en.hp, derribado: true }); en.hp = 0; en.gesto = 'cae'; en.tocadoEsteTurno = true }
+  // el grupo cristalizado sale de la mesa (queda en el Atlas como constelación); el resto del mapa sigue
+  for (const u of comp.uids) { const p = e.mano.find((x) => x.uid === u); if (p) { e.mano = e.mano.filter((x) => x.uid !== u); e.descarte.push(p) } }
+  e.tablero = e.tablero.filter((x) => !comp.uids.includes(x.uid))
+  e.armados = e.armados.filter((a) => !comp.trazos.includes(a))
+  e.mapa.trazos = e.mapa.trazos.filter((x) => !enMapa.includes(x))
+  e.mapa.cristalizaciones += 1
+  e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: 3, trazos: comp.trazos.length } : e.mejorGolpe
+  e.fase = 'ganado'
+  return { dano, zonas, trazos: comp.trazos.length, impactos, conceptIds: comp.ids, aristas: enMapa.filter((x) => x.tool !== 'identidad').map((x) => x.firma) }
 }
 
 export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno {
@@ -1277,7 +1280,6 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     // los demás trazos armados (flechas, jerarquías…) que tocaban el nombre o la descripción siguen a la carta compacta
     for (const otro of e.armados) if (otro !== a) otro.piezas = [...new Set(otro.piezas.map((u) => (u === u1 || u === u2 ? entero.uid : u)))]
   }
-  if (e.armados.length >= 2) ordenarMapa(e, ctx)
   e.trazos = []
   e.usadas = []
   e.bonusMult = 0

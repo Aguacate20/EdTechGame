@@ -5,7 +5,7 @@ import {
   afirmar as afirmarDiagrama, avanzarOleada, cambiar as cambiarPieza, iniciarBatalla,
   quemar as quemarPieza,
   siguienteTurno, turnoDelCarril, usarSello, vivos,
-  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente, pedirPista as pedirPistaBatalla, compactarMapa, golpeDelMapa, ordenarMapa,
+  sellar as sellarDiagrama, elegirEncargo as elegirEncargoBatalla, apostarOleada as apostarOleadaBatalla, cristalizar as cristalizarBatalla, puedeCristalizar, mapaPendienteDe, type MapaPendiente, pedirPista as pedirPistaBatalla, golpeDelMapa, ordenarMapa,
   type Bolsa, type ContextoBatalla, type EstadoBatalla
 } from './engine/battle'
 import { combinarLentes, type SelloId } from './engine/powers'
@@ -481,13 +481,15 @@ export default function App() {
   }
   /** v5.67 · el mapa de la sala golpea entero y se vacía */
   const cristalizar = () => {
-    if (!batalla || !contenido || !puedeCristalizar(batalla)) return
-    const e = { ...batalla, enemigos: batalla.enemigos.map((x) => ({ ...x })) }
+    if (!batalla || !contenido) return
     const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
-    const conceptIdsMapa = [...new Set(batalla.mapa.trazos.flatMap((x) => x.conceptIds))]
-    const aristasMapa = batalla.mapa.trazos.filter((x) => x.tool !== 'identidad').map((x) => x.firma)
+    if (!puedeCristalizar(batalla, ctx)) return
+    const e = { ...batalla, enemigos: batalla.enemigos.map((x) => ({ ...x })), armados: batalla.armados.map((x) => ({ ...x })) }
     const r = cristalizarBatalla(e, ctx)
+    const conceptIdsMapa = r.conceptIds
+    const aristasMapa = r.aristas
     setBatalla(e)
+    guardarPendiente(mapaPendienteDe(e))
     // v5.79 · el submapa consolidado queda en el Atlas como constelación: oro para siempre en la galaxia
     if (e.fase === 'ganado' && atlas && conceptIdsMapa.length) {
       const grado = (id: string) => contenido.aristas.filter((x) => x.from === id || x.to === id).length
@@ -496,7 +498,7 @@ export default function App() {
       const a2 = { ...atlas, constelaciones: [...(atlas.constelaciones ?? []), { id: `const:${Date.now()}`, nombre, conceptIds: conceptIdsMapa, aristas: aristasMapa, fecha: Date.now() }] }
       setAtlas(a2); guardarAtlas(a2)
     }
-    const trazosMapa = batalla.mapa.trazos.length
+    const trazosMapa = r.trazos
     const variante = r.zonas >= 2 || trazosMapa >= 10 ? 'supernova' : trazosMapa >= 6 ? 'nebulosa' : 'constelacion'
     setEstallido({ variante, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
     window.setTimeout(() => setEstallido(null), 3200)
@@ -521,14 +523,6 @@ export default function App() {
     if (!batalla) return
     const e = { ...batalla, tablero: batalla.tablero.map((x) => ({ ...x })) }
     ordenarMapa(e, contenido ? { contenido, rng: rngRef.current, lentes: mods } : undefined)
-    setBatalla(e)
-  }
-  const compactar = () => {
-    if (!batalla || !contenido) return
-    const e = { ...batalla, armados: batalla.armados.map((x) => ({ ...x })) }
-    const ctx: ContextoBatalla = { contenido, rng: rngRef.current, lentes: mods }
-    const n = compactarMapa(e, ctx)
-    e.avisoPiedad = n ? `${n} constelación${n === 1 ? '' : 'es'} compactada${n === 1 ? '' : 's'}: la mesa respira; los trazos siguen ahí.` : 'Nada terminado que compactar: un grupo se funde solo cuando todos sus vínculos están sostenidos.'
     setBatalla(e)
   }
   const elegirEncargo = (en: Encargo | null) => {
@@ -973,7 +967,7 @@ export default function App() {
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
-            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar, pedirPista, compactar, ordenar,
+            cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar, pedirPista, ordenar,
             huir: () => {
               guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
               setGuardada(leerExpedicion(contenido.fuente))

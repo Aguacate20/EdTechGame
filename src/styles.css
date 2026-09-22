@@ -2096,3 +2096,9 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .apuesta-hecha { display: none; }
 .aviso-oleada span { font-size: 12px; }
 .resonancia-aviso { animation: acuse-breve 3s ease-out forwards; }
+
+/* ═════ v5.89 · de vuelta a lo sencillo: la carta armada es una carta dorada compacta ═════ */
+.naipe.en-tablero[data-armada='true'] { width: 152px !important; height: auto !important; min-height: 0 !important; padding: 8px 10px !important; border-radius: 12px !important; display: flex !important; flex-direction: column; place-items: initial; transform: translate(-50%, -50%) scale(.82) !important; background: linear-gradient(150deg, rgba(255,194,61,.32), #1A2A58 55%) !important; border: 2px solid var(--dominar) !important; box-shadow: 0 0 16px rgba(255,194,61,.45) !important; overflow: hidden !important; }
+.naipe.en-tablero[data-armada='true'] > *:not(.nom) { display: none !important; }
+.naipe.en-tablero[data-armada='true'] .nom { position: static; transform: none; margin: 0; font-size: 13px; font-weight: 800; color: var(--texto); text-shadow: none; white-space: normal; max-width: none; }
+.naipe.en-tablero[data-armada='true']::after { top: 4px; right: 6px; font-size: 12px; }
