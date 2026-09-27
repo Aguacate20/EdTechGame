@@ -3,7 +3,7 @@ import type { Contenido } from '../content/types'
 import { coberturaAtlas, nivelDe, type Atlas } from '../engine/atlas'
 import { lucidezDe, type Sesion } from '../net/sesion'
 import { Galaxia } from './Galaxia'
-import type { Tema } from '../engine/temas'
+import { esDiamante, type Tema } from '../engine/temas'
 
 /** El Inicio según Inicio.dc.html: tres columnas, la galaxia al centro.
  *  Izquierda: Andy · Misión actual · Próximo desafío · Concepto recomendado.
@@ -26,6 +26,8 @@ interface Props {
   temas?: Tema[]
   temaActivo?: string | null
   onTema?: (id: string) => void
+  /** v5.95 · el tema activo ya está cristalizado (≥ 95 %): se repasa, no se empieza */
+  diamante?: boolean
 }
 
 const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
@@ -36,7 +38,7 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
   { id: 'dominar', nombre: 'Dominar', color: 'var(--dominar)', nivel: 3 }
 ]
 
-export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onNueva, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema }: Props) {
+export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onNueva, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema, diamante = false }: Props) {
   const [zonaFoco, setZonaFoco] = useState<string | null>(null)
   const [confirmarNueva, setConfirmarNueva] = useState(false)
   const ids = contenido.ordenConceptos
@@ -163,8 +165,8 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
               const activo = (temaActivo ?? temas[0].id) === t.id
               const encendidas = t.conceptIds.filter((id) => nivelDe(atlas.conceptos[id]) >= 1).length
               return (
-                <button key={t.id} role="radio" aria-checked={activo} className={`tema${activo ? ' activo' : ''}`} onClick={() => onTema?.(t.id)} title={`${t.documentos.length || 1} lectura${t.documentos.length === 1 ? '' : 's'}`}>
-                  <b>{t.nombre}</b><small>{encendidas}/{t.conceptIds.length}</small>
+                <button key={t.id} role="radio" aria-checked={activo} className={`tema${activo ? ' activo' : ''}${esDiamante(t, atlas.constelaciones) ? ' diamante' : ''}`} onClick={() => onTema?.(t.id)} title={`${t.documentos.length || 1} lectura${t.documentos.length === 1 ? '' : 's'}`}>
+                  <b>{esDiamante(t, atlas.constelaciones) ? '◆ ' : ''}{t.nombre}</b><small>{esDiamante(t, atlas.constelaciones) ? 'cristalizado' : `${encendidas}/${t.conceptIds.length}`}</small>
                 </button>
               )
             })}
@@ -190,7 +192,7 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
             <button className="btn primario inicio-continuar" onClick={onContinuar}>Continuar expedición{guardada.aprendizaje ? ' · aprendizaje' : ''}</button>
           </div>
         ) : (
-          <button className="btn primario inicio-continuar" onClick={onContinuar}>Empezar expedición{aprendizaje ? ' · aprendizaje' : ''}</button>
+          <button className={`btn primario inicio-continuar${diamante ? ' diamante' : ''}`} onClick={onContinuar}>{diamante ? '◆ Repasar el texto' : `Empezar expedición${aprendizaje ? ' · aprendizaje' : ''}`}</button>
         )}
       </footer>
     </div>

@@ -107,3 +107,11 @@ export function recortar(c: Contenido, tema: Tema): Contenido {
     ejes: c.ejes.map((e) => ({ ...e, valores: Object.fromEntries(Object.entries(e.valores).filter(([id]) => dentro.has(id))) })).filter((e) => Object.keys(e.valores).length >= 2)
   }
 }
+
+
+/** v5.95 · cuánto del tema está cristalizado en el Atlas (0..1) y si ya es «diamante» (≥ 95 %) */
+export function coberturaCristalizada(tema: Tema, constelaciones: { conceptIds: string[] }[] | undefined): number {
+  const listos = new Set((constelaciones ?? []).flatMap((k) => k.conceptIds))
+  return tema.conceptIds.length ? tema.conceptIds.filter((id) => listos.has(id)).length / tema.conceptIds.length : 0
+}
+export const esDiamante = (tema: Tema, constelaciones: { conceptIds: string[] }[] | undefined): boolean => coberturaCristalizada(tema, constelaciones) >= 0.95

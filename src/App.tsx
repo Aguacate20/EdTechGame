@@ -24,7 +24,7 @@ import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
 import { InicioView } from './ui/InicioView'
-import { recortar, temasDe } from './engine/temas'
+import { recortar, temasDe, coberturaCristalizada, esDiamante } from './engine/temas'
 import { CierreView } from './ui/CierreView'
 import { ColeccionView } from './ui/ColeccionView'
 import { cargarPlan } from './net/sesion'
@@ -400,6 +400,7 @@ export default function App() {
       apoyo: aprendizaje,
       mapaPrevio: mapaExpedicionRef.current ?? undefined,
       cristalizados: [...new Set((atlas?.constelaciones ?? []).flatMap((k) => k.conceptIds))],
+      temaCasiCompleto: (() => { const ts = temasDe(completoRef.current ?? contenido); const tm = ts.find((x) => x.id === temaRef.current) ?? ts[0]; return !!tm && coberturaCristalizada(tm, atlas?.constelaciones) >= 0.95 })(),
       evidenciaPrevia: atlas ? Object.keys(atlas.conceptos) : [],
       sinTocar: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
       sinEvidencia: nodo.conceptIds.filter((id) => !atlas?.conceptos[id]),
@@ -495,8 +496,13 @@ export default function App() {
     if (!puedeCristalizar(batalla, ctx)) return
     const e = { ...batalla, enemigos: batalla.enemigos.map((x) => ({ ...x })), armados: batalla.armados.map((x) => ({ ...x })) }
     const r = cristalizarBatalla(e, ctx)
-    const conceptIdsMapa = r.conceptIds
+    let conceptIdsMapa = r.conceptIds
     const aristasMapa = r.aristas
+    if (r.finalDeTema) {
+      // v5.95 · el texto se consolida entero: todo lo que faltaba del tema entra a la constelación final
+      const ts = temasDe(completoRef.current ?? contenido); const tm = ts.find((x) => x.id === temaRef.current) ?? ts[0]
+      if (tm) conceptIdsMapa = [...new Set([...conceptIdsMapa, ...tm.conceptIds])]
+    }
     setBatalla(e)
     guardarPendiente(mapaPendienteDe(e))
     // v5.79 · el submapa consolidado queda en el Atlas como constelación: oro para siempre en la galaxia
@@ -871,6 +877,7 @@ export default function App() {
           contenido={completoRef.current ?? contenido} atlas={atlas} sesion={sesion}
           guardada={guardada && (!guardada.tema || !temaActivo || guardada.tema === temaActivo) ? guardada : null}
           temas={temasDe(completoRef.current ?? contenido)} temaActivo={temaActivo} onTema={setTemaActivo}
+          diamante={(() => { const ts = temasDe(completoRef.current ?? contenido); const tm = ts.find((x) => x.id === temaActivo) ?? ts[0]; return !!tm && esDiamante(tm, atlas.constelaciones) })()}
           onContinuar={() => (guardada ? retomar() : empezarExpedicion(quiereApoyo))}
           aprendizaje={quiereApoyo} onAprendizaje={setQuiereApoyo}
           onNueva={() => { borrarExpedicion(); setGuardada(null); empezarExpedicion(quiereApoyo) }}

@@ -2135,3 +2135,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .estallido.enjambre .estallido-chispa { width: 4px; height: 4px; box-shadow: 0 0 8px var(--dominar); }
 .estallido.trueno { animation-name: estallido-trueno; } @keyframes estallido-trueno { 0%, 8%, 16% { background: rgba(255,255,255,0); } 4%, 12%, 20% { background: rgba(255,255,255,.95); } 100% { background: rgba(10,18,48,0); } }
 .estallido.amanecer { animation-name: estallido-amanecer; } @keyframes estallido-amanecer { 0% { background: linear-gradient(180deg, rgba(10,18,48,0), rgba(255,106,26,0)); } 40% { background: linear-gradient(180deg, rgba(255,194,61,.35), rgba(255,106,26,.55)); } 100% { background: rgba(10,18,48,0); } }
+
+/* ═════ v5.95 · temas diamante ═════ */
+.tema.diamante { border-color: #BFEFFF; background: linear-gradient(135deg, rgba(191,239,255,.18), rgba(155,108,255,.14)); box-shadow: 0 0 14px rgba(191,239,255,.35); }
+.tema.diamante b { color: #E8FAFF; }
+.btn.inicio-continuar.diamante { background: linear-gradient(135deg, #BFEFFF, #9B6CFF); color: #0A1230; box-shadow: 0 0 18px rgba(191,239,255,.45); }

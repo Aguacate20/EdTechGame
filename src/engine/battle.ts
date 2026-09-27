@@ -85,6 +85,8 @@ export interface EstadoBatalla {
   pistaSuave: string | null
   /** v5.90 · conceptos cristalizados en esta sala: no vuelven al mazo */
   cristalizadosSala: string[]
+  /** v5.95 */
+  temaCasiCompleto: boolean
   /** v5.83 · el golpe del mapa en el último turno (para la onda) */
   ultimoGolpeMapa: { dano: number; objetivo: string; trazos: number; conexiones: number } | null
   /** v5.71 · trazos sostenidos que se quedan armados en la mesa (en oro) para enlazar el siguiente ataque */
@@ -251,6 +253,8 @@ export interface MapaPendiente {
 }
 
 export interface Bolsa {
+  /** v5.95 · el tema va al 95 % o más: cualquier grupo armado permite el ataque final que lo cierra */
+  temaCasiCompleto?: boolean
   /** v5.90 · conceptos ya cristalizados (constelaciones del Atlas): no se reparten otra vez */
   cristalizados?: string[]
   /** v5.78 · el submapa pendiente (no cristalizado): viaja entero entre salas y expediciones —
@@ -376,7 +380,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [...(bolsa.cristalizados ?? [])], creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [...(bolsa.cristalizados ?? [])], temaCasiCompleto: !!bolsa.temaCasiCompleto, creacionesTotales: 0
   }
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
   // multiplicador) y con la mano. Los enemigos se ajustan a ese potencial, y la mano
@@ -940,7 +944,7 @@ export function componenteCristalizable(e: EstadoBatalla, ctx: ContextoBatalla):
   }
   return null
 }
-export function puedeCristalizar(e: EstadoBatalla, ctx: ContextoBatalla): boolean { return e.fase === 'jugando' && !!componenteCristalizable(e, ctx) }
+export function puedeCristalizar(e: EstadoBatalla, ctx: ContextoBatalla): boolean { return e.fase === 'jugando' && (!!componenteCristalizable(e, ctx) || (e.temaCasiCompleto && e.armados.length >= 1)) }
 
 /** v5.93 · progreso hacia el ataque final, 0..1: el mejor grupo sobre 4 trazos, y al 100 % solo sin pendientes */
 export function progresoCristal(e: EstadoBatalla, ctx: ContextoBatalla): number {
@@ -969,9 +973,17 @@ export function estadoCristalizacion(e: EstadoBatalla, ctx: ContextoBatalla): { 
 
 /** Cristalizar: el mapa entero golpea de una vez (×2; ×3 si cruza zonas) y se vacía
  *  para empezar otro. Es el evento de impacto: la razón para TERMINAR un mapa. */
-export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: number; zonas: number; trazos: number; impactos: { nombre: string; dano: number; derribado: boolean }[]; conceptIds: string[]; aristas: string[] } {
-  const comp = componenteCristalizable(e, ctx)
-  if (!comp) return { dano: 0, zonas: 0, trazos: 0, impactos: [], conceptIds: [], aristas: [] }
+export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: number; zonas: number; trazos: number; impactos: { nombre: string; dano: number; derribado: boolean }[]; conceptIds: string[]; aristas: string[]; finalDeTema: boolean } {
+  let comp = componenteCristalizable(e, ctx)
+  let finalDeTema = false
+  if (!comp && e.temaCasiCompleto && e.armados.length >= 1) {
+    // v5.95 · el texto está al 95 %+: lo que quede armado cierra el tema entero
+    const uids = [...new Set(e.armados.flatMap((g) => g.piezas))]
+    const ids = [...new Set(uids.map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
+    comp = { trazos: [...e.armados], uids, ids }
+    finalDeTema = true
+  }
+  if (!comp) return { dano: 0, zonas: 0, trazos: 0, impactos: [], conceptIds: [], aristas: [], finalDeTema: false }
   const enMapa = e.mapa.trazos.filter((x) => x.conceptIds.every((id) => comp.ids.includes(id)))
   const base = enMapa.reduce((n, x) => n + x.fichas, 0)
   const zonas = new Set(comp.ids.map((id) => ctx.contenido.conceptos[id]?.clusterId).filter(Boolean)).size
@@ -991,7 +1003,7 @@ export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: num
   e.mapa.cristalizaciones += 1
   e.mejorGolpe = dano > e.mejorGolpe.dano ? { dano, fichas: base, mult: 3, trazos: comp.trazos.length } : e.mejorGolpe
   e.fase = 'ganado'
-  return { dano, zonas, trazos: comp.trazos.length, impactos, conceptIds: comp.ids, aristas: enMapa.filter((x) => x.tool !== 'identidad').map((x) => x.firma) }
+  return { dano, zonas, trazos: comp.trazos.length, impactos, conceptIds: comp.ids, aristas: enMapa.filter((x) => x.tool !== 'identidad').map((x) => x.firma), finalDeTema }
 }
 
 export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno {
