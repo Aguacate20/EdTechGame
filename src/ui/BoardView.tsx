@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
 import { orientar } from '../engine/feedback'
-import { pistasDelSubmapa, puedeCristalizar, estadoCristalizacion } from '../engine/battle'
+import { puedeCristalizar, estadoCristalizacion, progresoCristal } from '../engine/battle'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -519,42 +519,25 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </aside>
 
       {/* ============================ lienzo ============================ */}
-      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultimoGolpeMapa ? ' resonando' : ''}`}>
+      <main data-tutorial="mesa" className={`zona-lienzo${zona('lienzo')}${resuelto && e.ultimoGolpeMapa ? ' resonando' : ''}`} style={{ ['--brillo' as string]: e.mapa ? progresoCristal(e, { contenido, rng: { next: () => 0 } as never, lentes }) : 0 }}>
         {resuelto && e.ultimoGolpeMapa && <div className="resonancia-aviso">✦ TU MAPA ATACA · −{e.ultimoGolpeMapa.dano} a {e.ultimoGolpeMapa.objetivo} · {e.ultimoGolpeMapa.trazos} trazos, {e.ultimoGolpeMapa.conexiones} se tocan</div>}
-        {e.mapa && (
-          <div className="mapa-sala" title="Lo sostenido en esta sala. Un trazo nuevo que toque estos conceptos multiplica; al llegar al umbral puedes cristalizar.">
-            <small>Mapa · {e.mapa.meta > 0 ? `${e.mapa.hechos}/${e.mapa.meta} vínculos del texto` : `${e.mapa.trazos.length} trazos`}</small>
-            {(() => {
-              const ec = estadoCristalizacion(e, { contenido, rng: { next: () => 0 } as never, lentes })
-              if (!ec) return null
-              const listo = ec.trazos >= 4 && ec.pendientes === 0
-              return <small className={listo ? 'cristal-listo' : 'cristal-falta'}>{listo ? '✦ Grupo listo para cristalizar' : `Cristalizar: grupo de 4+ vínculos sin nada pendiente · mejor grupo ${ec.trazos}/4${ec.pendientes ? `, ${ec.pendientes} pendiente${ec.pendientes === 1 ? '' : 's'} entre sus conceptos` : ''}`}</small>
-            })()}
-            <div className="mapa-chips">
-              {[...new Set(e.mapa.trazos.flatMap((x) => x.conceptIds))].slice(0, 12).map((id) => {
-                const heredado = e.mapa.trazos.filter((x) => x.conceptIds.includes(id)).every((x) => x.heredado)
-                return <span key={id} className={`mapa-chip${heredado ? ' heredado' : ''}`} title={heredado ? 'De una sala anterior: ya armado' : 'Sostenido en esta sala'}>{recorte(contenido.conceptos[id]?.titulo ?? id, 18)}</span>
-              })}
-              {e.mapa.trazos.length === 0 && <span className="mapa-vacio">Aún nada sostenido. Lo que sostengas se queda aquí toda la sala.</span>}
+        {e.mapa && (() => {
+          const ctx0 = { contenido, rng: { next: () => 0 } as never, lentes }
+          const ec = estadoCristalizacion(e, ctx0)
+          const listo = !!ec && ec.trazos >= 4 && ec.pendientes === 0
+          return (
+            <div className="mapa-sala" title="Tu mapa: cuando un grupo de cartas doradas unidas llega a 4 vínculos sin nada pendiente entre ellas, se desbloquea el ataque final.">
+              {ec ? (
+                <small className={listo ? 'cristal-listo' : 'cristal-falta'}>{listo ? '✦ Ataque final listo' : `Ataque final · ${Math.min(ec.trazos, 4)}/4${ec.pendientes ? ` · ${ec.pendientes} pendiente${ec.pendientes === 1 ? '' : 's'}` : ''}`}</small>
+              ) : (
+                <small className="cristal-falta">Une cartas: 4 vínculos seguidos desbloquean el ataque final</small>
+              )}
+              <div className="mapa-acciones">
+                {on.pedirPista && !resuelto && <button className="btn chico fantasma" onClick={on.pedirPista} title="Cuesta un cambio; el trazo rinde al 70 %">Pista</button>}
+              </div>
             </div>
-            <div className="mapa-acciones">
-              {on.pedirPista && !resuelto && <button className="btn chico fantasma" onClick={on.pedirPista} title="Cuesta un cambio; el trazo rinde al 70 %">Pista (−1 cambio)</button>}
-              {on.ordenar && !resuelto && (e.armados?.length ?? 0) >= 2 && <button className="btn chico fantasma" onClick={on.ordenar} title="Reacomoda el mapa armado arriba, conservando su forma, y deja el centro libre">Ordenar</button>}
-            </div>
-            {(() => {
-              const pistas = pistasDelSubmapa(e, { contenido, rng: { next: () => 0 } as never, lentes })
-              const faltan = pistas.faltan.filter((f) => f.n > 0)
-              if (!faltan.length && !pistas.admite.length) return null
-              return (
-                <div className="mapa-pistas">
-                  {faltan.length > 0 && <span>Faltan: {faltan.map((f) => `${f.n} ${f.tipo}`).join(' · ')}</span>}
-                  {e.pista && <span className="pista-activa">Pista: las dos cartas iluminadas se relacionan{e.pista.revelarTipo ? ` por «${e.pista.tipo}»` : ''}. (Con pista rinde al 70 %.)</span>}
-                  {pistas.admite.length > 0 && <span>Este mapa admite: {pistas.admite.join(', ')}</span>}
-                </div>
-              )
-            })()}
-          </div>
-        )}
+          )
+        })()}
         <div className="zoom-mesa" role="group" aria-label="Zoom de la mesa">
           <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
           <button className="btn chico fantasma" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} aria-label="Centrar y zoom normal" title="Centrar">{Math.round(zoom * 100)}%</button>

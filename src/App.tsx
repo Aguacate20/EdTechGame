@@ -42,7 +42,7 @@ import { despertarAudio, estaSilenciado, silenciar, sfx } from './ui/sfx'
 import {
   encargoCumplido, juzgarReflexion, lucidezEncargo, primaEncargo, proponerEncargos, type Encargo
 } from './engine/srl'
-import { portadaPorId, type Portada } from './engine/portadas'
+import { portadaPorId, type Portada, PORTADAS } from './engine/portadas'
 import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
 type Fase =
@@ -102,7 +102,6 @@ export default function App() {
   const mapaExpedicionRef = useRef<MapaPendiente | null>(null)
   const clavePendiente = () => `ludus:mapa-pendiente:${ambitoActual() ?? 'local'}`
   const guardarPendiente = (m: MapaPendiente | null) => { mapaExpedicionRef.current = m; try { m ? localStorage.setItem(clavePendiente(), JSON.stringify(m)) : localStorage.removeItem(clavePendiente()) } catch { /* sin almacenamiento */ } }
-  const leerPendiente = (): MapaPendiente | null => { try { const raw = localStorage.getItem(clavePendiente()); return raw ? (JSON.parse(raw) as MapaPendiente) : null } catch { return null } }
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -197,8 +196,8 @@ export default function App() {
   }, [])
 
   const lanzarExpedicion = useCallback((portada: Portada) => {
-    // v5.78 · el submapa pendiente sobrevive a la expedición hasta que se cristaliza
-    mapaExpedicionRef.current = leerPendiente()
+    // v5.93 · una expedición nueva empieza con la mesa limpia: el mapa dorado se reinicia solo aquí
+    guardarPendiente(null)
     if (!contenido || !atlas) return
     const conApoyo = pendApoyo
     setPortadaId(portada.id)
@@ -242,6 +241,8 @@ export default function App() {
     })
     setFase('mapa')
   }, [contenido, atlas, pendApoyo])
+  // v5.93 · sin «¿con qué ojos entras?»: siempre la portada estándar
+  useEffect(() => { if (fase === 'portada') lanzarExpedicion(PORTADAS[0]) }, [fase, lanzarExpedicion])
 
   /* -------------------------------- avanzar -------------------------------- */
 
@@ -873,7 +874,7 @@ export default function App() {
       </div>
     )
   }
-  if (fase === 'portada') {
+  if (fase === 'portada' && false) {
     return (
       <div className="app">
         <PortadaView

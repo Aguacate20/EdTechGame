@@ -2105,3 +2105,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 
 .cristal-falta { color: var(--texto-2) !important; text-transform: none !important; letter-spacing: 0 !important; font-family: var(--sans) !important; }
 .cristal-listo { color: var(--dominar) !important; }
+
+/* ═════ v5.93 · menos es más: un rótulo, y el brillo que crece hacia el ataque final ═════ */
+.mapa-sala { max-width: 46%; }
+.naipe.en-tablero[data-armada='true'] { box-shadow: 0 0 calc(8px + 26px * var(--brillo, 0)) rgba(255, 194, 61, calc(.3 + .55 * var(--brillo, 0))) !important; }
+.zona-lienzo[style*="--brillo: 1"] .naipe.en-tablero[data-armada='true'] { animation: latido-naranja 1.4s ease-in-out infinite; }

@@ -408,7 +408,7 @@ export function iniciarBatalla(
     e.armados = previo.armados.map((a) => ({ ...a }))
     const uids = new Set(previo.piezas.map((p) => p.uid))
     const armadosIds = new Set(previo.piezas.map((p) => p.conceptId).filter((x): x is string => !!x))
-    const duplica = (p: Pieza) => uids.has(p.uid) || (esCartaDeConcepto(p) && !!p.conceptId && armadosIds.has(p.conceptId))
+    const duplica = (p: Pieza) => uids.has(p.uid) || ((esCartaDeConcepto(p) || p.clase === 'apocrifa') && !!p.conceptId && armadosIds.has(p.conceptId))
     e.mazo = e.mazo.filter((p) => !duplica(p))
     e.descarte = e.descarte.filter((p) => !duplica(p))
     e.mano = [...e.mano.filter((p) => !duplica(p)), ...previo.piezas]
@@ -529,7 +529,7 @@ export function trazar(
 ): Trazo | null {
   const h = HERRAMIENTAS[tool]
   if (piezas.length < h.aridad[0] || piezas.length > h.aridad[1]) return null
-  if (!e.herramientas.includes(tool)) return null
+  if (!e.herramientas.includes(tool)) return null // desbloqueada o no; el uso es ilimitado (v5.93)
   const t: Trazo = { uid: `t${nt++}`, tool, piezas, param }
   e.trazos.push(t)
   e.usadas.push(tool)
@@ -545,12 +545,8 @@ export function borrarTrazo(e: EstadoBatalla, uid: string): void {
 }
 
 export function herramientasLibres(e: EstadoBatalla): HerramientaId[] {
-  const restantes = [...e.herramientas]
-  for (const u of e.usadas) {
-    const i = restantes.indexOf(u)
-    if (i >= 0) restantes.splice(i, 1)
-  }
-  return restantes
+  // v5.93 · una herramienta desbloqueada se usa cuantas veces se quiera: nada de «dos identidades»
+  return [...new Set(e.herramientas)]
 }
 
 /* ==========================================================================
@@ -945,6 +941,14 @@ export function componenteCristalizable(e: EstadoBatalla, ctx: ContextoBatalla):
   return null
 }
 export function puedeCristalizar(e: EstadoBatalla, ctx: ContextoBatalla): boolean { return e.fase === 'jugando' && !!componenteCristalizable(e, ctx) }
+
+/** v5.93 · progreso hacia el ataque final, 0..1: el mejor grupo sobre 4 trazos, y al 100 % solo sin pendientes */
+export function progresoCristal(e: EstadoBatalla, ctx: ContextoBatalla): number {
+  const ec = estadoCristalizacion(e, ctx)
+  if (!ec) return 0
+  const tam = Math.min(1, ec.trazos / 4)
+  return ec.pendientes === 0 ? tam : Math.min(0.85, tam)
+}
 
 /** v5.91 · qué le falta al mejor grupo para cristalizar (se muestra en el rótulo del mapa) */
 export function estadoCristalizacion(e: EstadoBatalla, ctx: ContextoBatalla): { trazos: number; pendientes: number } | null {
@@ -1608,7 +1612,9 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
         en.gesto = 'golpea'
         let extra = ''
         if (t.rasgo === 'apocrifo') {
-          const p = piezaApocrifa(ctx.contenido, ctx.rng.pick(e.conceptIdsCasilla), ctx.rng)
+          const armadosAp = new Set(e.armados.flatMap((x) => x.piezas).map((u) => e.mano.find((q) => q.uid === u)?.conceptId))
+          const candidatos = e.conceptIdsCasilla.filter((id) => !armadosAp.has(id) && !e.cristalizadosSala.includes(id))
+          const p = candidatos.length ? piezaApocrifa(ctx.contenido, ctx.rng.pick(candidatos), ctx.rng) : null
           if (p) { e.descarte.push(p); r.apocrifasNuevas += 1; extra = ' Deja una falsificación en tu mazo.' }
         }
         if (t.rasgo === 'retrocede') {
