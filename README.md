@@ -1,4 +1,4 @@
-# LudusCog · El Archivo Infinito — v5.96
+# LudusCog · El Archivo Infinito — v5.97
 
 Roguelike de **diagramas**. No hay preguntas: hay materiales y herramientas.
 Consume el `bundle.json` del extractor y lo convierte en un tablero libre donde el

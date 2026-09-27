@@ -157,6 +157,12 @@ export default function App() {
 
   const alCargar = useCallback((c: Contenido, s?: Sesion | null) => {
     const ses = s === undefined ? leerSesion() : s
+    // v5.97 · cambio de perfil: nada del perfil anterior sobrevive en memoria (el plan completo,
+    // el mapa pendiente, el tema elegido). Era la causa de que un texto «apareciera» en todos.
+    completoRef.current = null
+    mapaExpedicionRef.current = null
+    temaRef.current = null; setTemaActivoEstado(null)
+    setGuardada(null)
     setSesion(ses)
     fijarAmbito(ses?.studentId ?? null)
     iniciarSubidas(ses)
@@ -846,7 +852,7 @@ export default function App() {
     else if (p === 'biblioteca') { setFaseAnterior(suelta(fase)); setFase('biblioteca') }
     else if (p === 'expedicion') setFase('inicio')
   }
-  const salir = () => { cerrarSesion(); observarAtlas(null); fijarAmbito(null); setSesion(null); setContenido(null); setFase('cargar') }
+  const salir = () => { completoRef.current = null; mapaExpedicionRef.current = null; temaRef.current = null; setTemaActivoEstado(null); cerrarSesion(); observarAtlas(null); fijarAmbito(null); setSesion(null); setContenido(null); setFase('cargar') }
   const barra = (activa: Pestana, extra?: React.ReactNode) => (
     <Shell sesion={sesion} atlas={atlas} activa={activa} onPestana={irA} onSalir={salir}>{extra}</Shell>
   )
