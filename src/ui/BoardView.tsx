@@ -163,6 +163,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       if (ayuda) setAyuda(null)
       return
     }
+    // v5.96 · una carta dorada no muestra globo (estorba al moverla), y mientras se arrastra, ninguno
+    if (arrastrando || destino?.dataset.armada === 'true') { if (ayuda) setAyuda(null); return }
     const texto = destino?.dataset.ayuda
     if (!texto) { if (ayuda) setAyuda(null); return }
     const ancho = 330
@@ -228,7 +230,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
     : e.tablero.map((t) => ({ t, p: e.mano.find((x) => x.uid === t.uid) ?? e.descarte.find((x) => x.uid === t.uid) }))
         .filter((x): x is { t: typeof x.t; p: Pieza } => !!x.p)
-  const trazosVisibles = foto ? foto.trazos : [...(e.armados ?? []), ...e.trazos]
+  // v5.96 · las flechas doradas se ven también en la fase resuelta (la foto solo trae las del turno)
+  const trazosVisibles = foto ? [...(e.armados ?? []).filter((a) => !foto.trazos.some((t) => `armado:${t.uid}` === a.uid)), ...foto.trazos] : [...(e.armados ?? []), ...e.trazos]
   const esArmado = (uid: string) => uid.startsWith('armado:')
   const posiciones = foto ? foto.tablero : e.tablero
   const veredictos = resuelto && e.ultima ? e.ultima.diag.veredictos : previa.veredictos
@@ -267,7 +270,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const burbujaRef = useRef<HTMLElement>(null)
   /** v5.87 · cámara de la mesa: el mundo es uno; la vista lo escala entero y se desplaza
    *  (arrastrar el fondo, dos dedos en el trackpad, Ctrl+rueda para zoom) */
-  const [zoom, setZoom] = useState(1)
+  const [zoom, setZoom] = useState(0.75)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const panRef = useRef<{ x0: number; y0: number; px: number; py: number } | null>(null)
   useEffect(() => {
@@ -275,7 +278,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     if (!el) return
     const onWheel = (ev: WheelEvent) => {
       ev.preventDefault()
-      if (ev.ctrlKey || ev.metaKey) setZoom((z) => Math.max(0.4, Math.min(2, +(z - ev.deltaY * 0.0025).toFixed(3))))
+      if (ev.ctrlKey || ev.metaKey) setZoom((z) => Math.max(0.35, Math.min(2, +(z - ev.deltaY * 0.0025).toFixed(3))))
       else setPan((q) => ({ x: q.x - ev.deltaX, y: q.y - ev.deltaY }))
     }
     el.addEventListener('wheel', onWheel, { passive: false })
@@ -537,8 +540,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           )
         })()}
         <div className="zoom-mesa" role="group" aria-label="Zoom de la mesa">
-          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.4, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
-          <button className="btn chico fantasma" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }) }} aria-label="Centrar y zoom normal" title="Centrar">{Math.round(zoom * 100)}%</button>
+          <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.max(0.35, +(z - 0.1).toFixed(2)))} aria-label="Alejar">−</button>
+          <button className="btn chico fantasma" onClick={() => { setZoom(0.75); setPan({ x: 0, y: 0 }) }} aria-label="Centrar y zoom normal" title="Centrar">{Math.round(zoom * 100)}%</button>
           <button className="btn chico fantasma" onClick={() => setZoom((z) => Math.min(2, +(z + 0.1).toFixed(2)))} aria-label="Acercar">+</button>
         </div>
         {(() => {
