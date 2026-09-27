@@ -69,6 +69,16 @@ function disponer(c: Contenido, soloUnidad: string | null): Estrella[] {
   })
   const lejos = Math.max(0.001, ...estrellas.map((s) => Math.hypot(s.x, s.y, s.z)))
   for (const s of estrellas) { s.x = (s.x / lejos) * 0.92; s.y = (s.y / lejos) * 0.92; s.z = (s.z / lejos) * 0.92 }
+  // v5.94 · nada encimado: relajación en el plano (x,y) hasta una distancia mínima
+  const minimo = Math.max(0.05, 0.16 / Math.sqrt(Math.max(1, estrellas.length / 12)))
+  for (let it = 0; it < 40; it++) {
+    for (let i = 0; i < estrellas.length; i++) for (let j = i + 1; j < estrellas.length; j++) {
+      const A = estrellas[i], B = estrellas[j]
+      let dx = B.x - A.x, dy = B.y - A.y
+      const d = Math.hypot(dx, dy) || 1e-4
+      if (d < minimo) { const f = ((minimo - d) / d) * 0.5; dx *= f; dy *= f; A.x -= dx; A.y -= dy; B.x += dx; B.y += dy }
+    }
+  }
   return estrellas
 }
 

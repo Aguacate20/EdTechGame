@@ -2110,3 +2110,28 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .mapa-sala { max-width: 46%; }
 .naipe.en-tablero[data-armada='true'] { box-shadow: 0 0 calc(8px + 26px * var(--brillo, 0)) rgba(255, 194, 61, calc(.3 + .55 * var(--brillo, 0))) !important; }
 .zona-lienzo[style*="--brillo: 1"] .naipe.en-tablero[data-armada='true'] { animation: latido-naranja 1.4s ease-in-out infinite; }
+
+/* ═════ v5.94 · el ataque final se toma su tiempo (var(--dur)); rayos; variantes ═════ */
+.estallido { animation-duration: var(--dur, 5s) !important; }
+.estallido-anillo { animation-duration: calc(var(--dur, 5s) * .55) !important; }
+.estallido-anillo.t4 { animation-delay: .8s; border-color: #fff; }
+.estallido-chispa { animation-duration: calc(var(--dur, 5s) * .5) !important; }
+.estallido-texto { animation-duration: var(--dur, 5s) !important; }
+.estallido-rayo { position: absolute; left: 50%; top: 50%; width: 140vmax; height: 6px; margin-left: -70vmax; background: linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent); transform-origin: center; animation: rayo calc(var(--dur, 5s) * .6) ease-out forwards; opacity: 0; }
+.estallido-rayo.r2 { transform: rotate(60deg); animation-delay: .15s; } .estallido-rayo.r3 { transform: rotate(120deg); animation-delay: .3s; }
+@keyframes rayo { 0% { opacity: 0; transform: scaleX(0) rotate(var(--rot, 0deg)); } 20% { opacity: 1; } 100% { opacity: 0; transform: scaleX(1.2); } }
+.estallido-rayo.r2 { --rot: 60deg; } .estallido-rayo.r3 { --rot: 120deg; }
+.estallido.aurora .estallido-anillo { border-color: var(--sostenido); } .estallido.aurora .estallido-chispa { box-shadow: 0 0 12px var(--sostenido); background: #C9FFD8; } .estallido.aurora .estallido-texto b { text-shadow: 0 0 30px rgba(91,211,111,.9); }
+.estallido.eclipse { animation-name: estallido-eclipse; } @keyframes estallido-eclipse { 0% { background: rgba(0,0,0,0); } 15% { background: rgba(0,0,0,.95); } 40% { background: rgba(0,0,0,.95); } 55% { background: rgba(255,255,255,.9); } 100% { background: rgba(10,18,48,0); } }
+.estallido.lluvia .estallido-chispa { width: 3px; height: 40px; border-radius: 2px; animation-name: lluvia-chispa; } @keyframes lluvia-chispa { 0% { opacity: 0; transform: translate(calc(var(--i) * 4vw - 120vw), -60vh) rotate(-30deg); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(var(--i) * 4vw - 60vw), 70vh) rotate(-30deg); } }
+.estallido.pulsar .estallido-anillo { animation-iteration-count: 3; animation-duration: calc(var(--dur, 5s) * .3) !important; }
+.estallido.nebulosa .estallido-anillo { border-color: var(--transferir); } .estallido.nebulosa .estallido-chispa { background: #E8D7FF; box-shadow: 0 0 14px var(--transferir); }
+.estallido.cometa .estallido-rayo { height: 14px; background: linear-gradient(90deg, transparent, var(--descubierto), #fff); }
+.estallido.corona .estallido-anillo { border-width: 10px; border-color: var(--acento); }
+.estallido.vortice .estallido-chispa { animation-name: vortice-chispa; } @keyframes vortice-chispa { 0% { opacity: 1; transform: rotate(calc(var(--i) * 37deg)) translateX(60vmin) scale(.3); } 100% { opacity: 0; transform: rotate(calc(var(--i) * 37deg + 540deg)) translateX(0) scale(1.4); } }
+.estallido.cristal .estallido-anillo { border-radius: 8px; transform: rotate(45deg); } .estallido.cristal .estallido-chispa { border-radius: 0; transform: rotate(45deg); }
+.estallido.marea { animation-name: estallido-marea; } @keyframes estallido-marea { 0% { background: rgba(56,182,255,0); } 30% { background: rgba(56,182,255,.55); } 100% { background: rgba(10,18,48,0); } }
+.estallido.faro .estallido-rayo { height: 40px; animation-iteration-count: 2; }
+.estallido.enjambre .estallido-chispa { width: 4px; height: 4px; box-shadow: 0 0 8px var(--dominar); }
+.estallido.trueno { animation-name: estallido-trueno; } @keyframes estallido-trueno { 0%, 8%, 16% { background: rgba(255,255,255,0); } 4%, 12%, 20% { background: rgba(255,255,255,.95); } 100% { background: rgba(10,18,48,0); } }
+.estallido.amanecer { animation-name: estallido-amanecer; } @keyframes estallido-amanecer { 0% { background: linear-gradient(180deg, rgba(10,18,48,0), rgba(255,106,26,0)); } 40% { background: linear-gradient(180deg, rgba(255,194,61,.35), rgba(255,106,26,.55)); } 100% { background: rgba(10,18,48,0); } }

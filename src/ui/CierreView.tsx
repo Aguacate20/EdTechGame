@@ -29,6 +29,7 @@ interface Props {
 export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, descubiertos, hazanas, srl, onSeguir, aprendizaje = false, conceptIdsSala = [], onRespuesta }: Props) {
   const [marcado, setMarcado] = useState<string | null | undefined>(undefined)
   const [respondido, setRespondido] = useState<null | { acierto: boolean }>(null)
+  const reciente = (atlas.constelaciones ?? []).some((k) => Date.now() - k.fecha < 10 * 60 * 1000)
   // la pregunta del Vistazo, con tres respuestas: la que usa un vínculo que acabas
   // de sostener, la misma al revés, y la misma con otro tipo de vínculo
   const pregunta = aprendizaje ? vistazoDe(contenido, conceptIdsSala, atlas)?.pregunta ?? null : null
@@ -68,8 +69,8 @@ export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, des
         ) : null
       })()}
       <div className="cierre-cab">
-        <small>·· · Nuevo conocimiento · ··</small>
-        <b>{nAristas ? `${nAristas} vínculo${nAristas === 1 ? '' : 's'} nuevo${nAristas === 1 ? '' : 's'} en tu cielo${nConceptos ? ` · ${nConceptos} estrella${nConceptos === 1 ? '' : 's'} más brillante${nConceptos === 1 ? '' : 's'}` : ''}` : 'Tu cielo sigue igual: la próxima sala puede encenderlo'}</b>
+        <small>·· · {reciente ? 'Tu cielo cambió' : 'Nuevo conocimiento'} · ··</small>
+        <b>{reciente && !nAristas ? 'Una constelación entera quedó en oro' : (nAristas ? `${nAristas} vínculo${nAristas === 1 ? '' : 's'} nuevo${nAristas === 1 ? '' : 's'} en tu cielo${nConceptos ? ` · ${nConceptos} estrella${nConceptos === 1 ? '' : 's'} más brillante${nConceptos === 1 ? '' : 's'}` : ''}` : 'Tu cielo sigue igual: la próxima sala puede encenderlo')}</b>
       </div>
       <Galaxia contenido={contenido} atlas={atlas} modo="cierre" alto={360} nuevos={nuevos} />
 

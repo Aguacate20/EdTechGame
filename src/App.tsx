@@ -43,6 +43,7 @@ import {
   encargoCumplido, juzgarReflexion, lucidezEncargo, primaEncargo, proponerEncargos, type Encargo
 } from './engine/srl'
 import { portadaPorId, type Portada, PORTADAS } from './engine/portadas'
+import { ESTALLIDOS } from './ui/estallidos'
 import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
 type Fase =
@@ -82,7 +83,7 @@ export default function App() {
   /** v5.63 · por qué el botín ofrece lo que ofrece (modo aprendizaje) */
   const [porqueBotin, setPorqueBotin] = useState<string[]>([])
   /** v5.77 · el estallido del ataque final: variante por tamaño del mapa */
-  const [estallido, setEstallido] = useState<{ variante: 'constelacion' | 'nebulosa' | 'supernova'; trazos: number; zonas: number; dano: number } | null>(null)
+  const [estallido, setEstallido] = useState<{ variante: string; trazos: number; zonas: number; dano: number } | null>(null)
   const [lentes, setLentes] = useState<string[]>([])
   const [sellos, setSellos] = useState<SelloId[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaId[]>(
@@ -119,6 +120,8 @@ export default function App() {
   const [quemasRun, setQuemasRun] = useState(0)
   const [inferenciasRun, setInferenciasRun] = useState(0)
   const [atlas, setAtlas] = useState<Atlas | null>(null)
+  const atlasRef = useRef<Atlas | null>(null)
+  atlasRef.current = atlas
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
   /** el plan entero del perfil (la galaxia lo ve todo); la expedición juega un tema */
   const completoRef = useRef<Contenido | null>(null)
@@ -192,7 +195,11 @@ export default function App() {
     const temas = temasDe(c)
     if (temas.length <= 1) return c
     const tema = temas.find((t) => t.id === temaRef.current) ?? temas[0]
-    return recortar(c, tema)
+    // v5.94 · lo ya cristalizado está aprendido: sale de la expedición. Si el tema queda con
+    // menos de 4 conceptos por aprender, se juega entero (está a punto de terminar).
+    const listos = new Set((atlasRef.current?.constelaciones ?? []).flatMap((k) => k.conceptIds))
+    const porAprender = tema.conceptIds.filter((id) => !listos.has(id))
+    return recortar(c, porAprender.length >= 4 ? { ...tema, conceptIds: porAprender } : tema)
   }, [])
 
   const lanzarExpedicion = useCallback((portada: Portada) => {
@@ -501,9 +508,11 @@ export default function App() {
       setAtlas(a2); guardarAtlas(a2)
     }
     const trazosMapa = r.trazos
-    const variante = r.zonas >= 2 || trazosMapa >= 10 ? 'supernova' : trazosMapa >= 6 ? 'nebulosa' : 'constelacion'
-    setEstallido({ variante, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
-    window.setTimeout(() => setEstallido(null), 3200)
+    // v5.94 · una animación distinta cada vez: rotan por el número de constelaciones del perfil
+    const idx = (atlas?.constelaciones?.length ?? 0) % ESTALLIDOS.length
+    const est = ESTALLIDOS[idx]
+    setEstallido({ variante: est.id, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
+    window.setTimeout(() => setEstallido(null), est.duracion)
     registrar({
       ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
       arquetipo: 'cristalizar', condicion: null, mecanica: 'articulacion',
@@ -980,11 +989,12 @@ export default function App() {
       )}
 
       {estallido && (
-        <div className={`estallido ${estallido.variante}`} role="status" aria-live="assertive">
-          <div className="estallido-anillo" /><div className="estallido-anillo t2" /><div className="estallido-anillo t3" />
-          {[...Array(estallido.variante === 'supernova' ? 28 : estallido.variante === 'nebulosa' ? 16 : 10)].map((_, i) => <i key={i} className="estallido-chispa" style={{ ['--i' as string]: i }} />)}
+        <div className={`estallido ${estallido.variante}`} role="status" aria-live="assertive" style={{ ['--dur' as string]: `${(ESTALLIDOS.find((x) => x.id === estallido.variante)?.duracion ?? 5000)}ms` }}>
+          <div className="estallido-anillo" /><div className="estallido-anillo t2" /><div className="estallido-anillo t3" /><div className="estallido-anillo t4" />
+          {[...Array(ESTALLIDOS.find((x) => x.id === estallido.variante)?.chispas ?? 24)].map((_, i) => <i key={i} className="estallido-chispa" style={{ ['--i' as string]: i }} />)}
+          <div className="estallido-rayo" /><div className="estallido-rayo r2" /><div className="estallido-rayo r3" />
           <div className="estallido-texto">
-            <small>ATAQUE FINAL · {estallido.variante === 'supernova' ? 'SUPERNOVA' : estallido.variante === 'nebulosa' ? 'NEBULOSA' : 'CONSTELACIÓN'}</small>
+            <small>ATAQUE FINAL · {ESTALLIDOS.find((x) => x.id === estallido.variante)?.nombre.toUpperCase()}</small>
             <b>Mapa completo</b>
             <span>{estallido.trazos} vínculos{estallido.zonas >= 2 ? ` · ${estallido.zonas} zonas` : ''} · todo cae</span>
           </div>

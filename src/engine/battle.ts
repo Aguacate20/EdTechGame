@@ -376,7 +376,7 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [], creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [...(bolsa.cristalizados ?? [])], creacionesTotales: 0
   }
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
   // multiplicador) y con la mano. Los enemigos se ajustan a ese potencial, y la mano
@@ -1017,7 +1017,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     v.fichas = 0; v.mult = 0; v.nota = `${v.nota} · Ya está en tu mapa de la sala: no suma dos veces.`
   }
   if (repetidos.length) { diag.mult = Math.max(0.4, diag.mult); diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult) }
-  const nuevosSostenidos = diag.veredictos.filter((v) => esAcierto(v.estado) && !repetidos.includes(v))
+  const nuevosSostenidos = diag.veredictos.filter((v) => ['sostenido', 'equivalente', 'derivado'].includes(v.estado) && !repetidos.includes(v))
   const conexiones = nuevosSostenidos.filter((v) => v.conceptIds.some((id) => enMapa.has(id))).length
   if (conexiones > 0) {
     diag.mult += 0.5 * conexiones
@@ -1304,7 +1304,9 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   const nTrazos = e.trazos.length
   // v5.71 · lo sostenido se queda armado en la mesa (piezas + trazo, en oro): el siguiente
   // ataque puede engancharse a ello. Solo lo no sostenido va al descarte.
-  const sostenidosAhora = diag.veredictos.filter((v) => esAcierto(v.estado) && v.fichas > 0).map((v) => v.trazo)
+  // v5.94 · se arma en oro solo lo sostenido de verdad: aproximado o compatible dan crédito, no mapa
+  const ARMABLE = new Set(['sostenido', 'equivalente', 'derivado'])
+  const sostenidosAhora = diag.veredictos.filter((v) => ARMABLE.has(v.estado) && v.fichas > 0).map((v) => v.trazo)
   const piezasArmadas = new Set([...e.armados.flatMap((x) => x.piezas), ...sostenidosAhora.flatMap((x) => x.piezas)])
   e.armados = [...e.armados, ...sostenidosAhora.map((x) => ({ ...x, uid: `armado:${x.uid}` }))]
   for (const t of e.tablero) {

@@ -465,7 +465,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       <aside data-tutorial="herramientas" className={`zona-herramientas${zona('herramientas')}`}>
         <span className="eyebrow">Herramientas</span>
         {listaHerramientas.map((t) => {
-          const quedan = e.herramientas.filter((x) => x === t.id).length -
             e.usadas.filter((x) => x === t.id).length
           const disponible = libres.includes(t.id) && !resuelto && herrLibre(t.id)
           const senalada = !!foco?.herramientas?.includes(t.id)
@@ -480,7 +479,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             >
               <span className="glifo">{t.glifo}</span>
               <span className="nom">{t.nombre}</span>
-              <span className="cuantas">{quedan}</span>
             </button>
           )
         })}
