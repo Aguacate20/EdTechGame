@@ -58,10 +58,16 @@ export function temasDe(c: Contenido): Tema[] {
     const asignados = new Set(zonas.flatMap((z) => z.ids))
     const sueltos = t.cids.filter((id) => !asignados.has(id))
     for (const z of zonas) {
-      // cada zona lleva además sus vecinos directos de fuera, para que los puentes existan
-      const vecinos = c.aristas.filter((a) => (z.ids.includes(a.from) && !z.ids.includes(a.to) && dentro.has(a.to)) || (z.ids.includes(a.to) && !z.ids.includes(a.from) && dentro.has(a.from)))
-        .map((a) => (z.ids.includes(a.from) ? a.to : a.from))
-      partidos.push({ raiz: `${t.raiz}#${z.k.id}`, cids: [...new Set([...z.ids, ...vecinos.slice(0, 3)])], nombre: z.k.label.replace(/^Zona de /, '') })
+      // v5.92 · la zona es el punto de partida, no las paredes: la expedición lleva la zona,
+      // TODOS sus vecinos directos y una segunda corona (hasta 8), para que la frontera del
+      // mapa pueda crecer hacia conceptos más avanzados de la misma lectura
+      const nucleo = new Set(z.ids)
+      const corona1 = [...new Set(c.aristas.filter((a) => (nucleo.has(a.from) && !nucleo.has(a.to) && dentro.has(a.to)) || (nucleo.has(a.to) && !nucleo.has(a.from) && dentro.has(a.from)))
+        .map((a) => (nucleo.has(a.from) ? a.to : a.from)))]
+      const c1 = new Set([...nucleo, ...corona1])
+      const corona2 = [...new Set(c.aristas.filter((a) => (c1.has(a.from) && !c1.has(a.to) && dentro.has(a.to)) || (c1.has(a.to) && !c1.has(a.from) && dentro.has(a.from)))
+        .map((a) => (c1.has(a.from) ? a.to : a.from)))].slice(0, 8)
+      partidos.push({ raiz: `${t.raiz}#${z.k.id}`, cids: [...new Set([...z.ids, ...corona1, ...corona2])], nombre: z.k.label.replace(/^Zona de /, '') })
     }
     if (sueltos.length) partidos[partidos.length - 1].cids.push(...sueltos)
   }

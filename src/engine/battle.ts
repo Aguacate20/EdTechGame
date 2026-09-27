@@ -871,7 +871,7 @@ export function compactarMapa(e: EstadoBatalla, ctx: ContextoBatalla): number {
  *  los conceptos de la sala si aún no hay mapa— entran al mazo. La mano nunca se seca: se
  *  llama tras afirmar, al quemar y al pasar de turno cuando faltan cartas. Lo cristalizado no vuelve. */
 export function reponerFrontera(e: EstadoBatalla, ctx: ContextoBatalla, n: number): number {
-  const TOPE = Math.max(e.conceptIdsCasilla.length, 10)
+  const TOPE = Math.max(e.conceptIdsCasilla.length, 14)
   const seco = e.mazo.length + e.descarte.length < 3
   const dentro = new Set(e.conceptIdsCasilla)
   if (dentro.size >= TOPE && !seco) return 0
@@ -1040,7 +1040,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult)
   }
   for (const v of nuevosSostenidos) e.mapa.trazos.push({ tool: v.trazo.tool, conceptIds: v.conceptIds, fichas: v.fichas, firma: firma(v.trazo.tool, v.conceptIds, v.trazo.param) })
-  reponerFrontera(e, ctx, e.mazo.length + e.descarte.length < 3 ? 3 : 2)
+  reponerFrontera(e, ctx, e.mazo.length + e.descarte.length < 4 ? 4 : 3)
   // v5.69 · la meta es el mapa completo: cuántos vínculos de la sala ya están sostenidos
   const vinculos = vinculosDeLaSala(e, ctx)
   e.mapa.meta = vinculos.length
