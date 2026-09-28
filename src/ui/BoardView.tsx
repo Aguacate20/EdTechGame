@@ -273,6 +273,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [zoom, setZoom] = useState(0.75)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const panRef = useRef<{ x0: number; y0: number; px: number; py: number } | null>(null)
+  /** v5.99 · arrastre en vivo de cartas doradas (por puntero, sin HTML5 drag) */
+  const moviendoRef = useRef<{ uid: string; raf: number | null } | null>(null)
   useEffect(() => {
     const el = lienzo.current
     if (!el) return
@@ -736,7 +738,22 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${inservible ? ' inservible' : ''}`}
                 style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd),
                   ...(texturaDe(p.clase) ? { background: `${texturaDe(p.clase)}, ${cd.tono}` } : {}) }}
-                draggable={!resuelto}
+                draggable={!resuelto && !(e.armados ?? []).some((a) => a.piezas.includes(p.uid))}
+                onPointerDown={(ev) => {
+                  if (resuelto || !(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) || ev.button !== 0) return
+                  ev.stopPropagation(); ev.preventDefault()
+                  moviendoRef.current = { uid: p.uid, raf: null }
+                  ;(ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId)
+                }}
+                onPointerMove={(ev) => {
+                  const mv = moviendoRef.current
+                  if (!mv || mv.uid !== p.uid) return
+                  const { x, y } = posicionEnLienzo(ev)
+                  if (mv.raf !== null) cancelAnimationFrame(mv.raf)
+                  mv.raf = requestAnimationFrame(() => { on.cambio((st) => soltar(st, p.uid, x, y)); mv.raf = null })
+                }}
+                onPointerUp={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null }}
+                onPointerCancel={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null }}
                 onDragStart={() => setArrastrando(p.uid)}
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => tocarPieza(p.uid)}

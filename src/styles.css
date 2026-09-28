@@ -2140,3 +2140,10 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .tema.diamante { border-color: #BFEFFF; background: linear-gradient(135deg, rgba(191,239,255,.18), rgba(155,108,255,.14)); box-shadow: 0 0 14px rgba(191,239,255,.35); }
 .tema.diamante b { color: #E8FAFF; }
 .btn.inicio-continuar.diamante { background: linear-gradient(135deg, #BFEFFF, #9B6CFF); color: #0A1230; box-shadow: 0 0 18px rgba(191,239,255,.45); }
+
+/* ═════ v5.99 · cartas doradas: arrastre en vivo; flechas encima del fondo y bajo las cartas ═════ */
+.naipe.en-tablero[data-armada='true'] { touch-action: none; user-select: none; }
+.naipe.en-tablero[data-armada='true']:active { cursor: grabbing; box-shadow: 0 0 26px rgba(255,194,61,.8) !important; }
+.lienzo svg.trazos { z-index: 1; }
+.lienzo svg.trazos.rotulos { z-index: 3; }
+.naipe.en-tablero { z-index: 2; }

@@ -1,3 +1,4 @@
+import { flexibilizar } from './flexibilidad'
 import type { Contenido } from '../content/types'
 import type { Pieza, Rol } from './pieces'
 import { admisibleComoPropuesta, distanciaPropuesta, gemelosDe, juzgarVinculo, type OpcionesJuicio } from './graph'
@@ -1193,6 +1194,8 @@ export function evaluarDiagrama(
     }
   }
 
+  // v5.99 · flexibilidad por grafo: lo que quedó sin crédito se mide por distancia al texto
+  flexibilizar(c, veredictos, piezas)
   const sostenidos = veredictos.filter((v) => esAcierto(v.estado))
   const aproximados = veredictos.filter((v) => v.estado === 'aproximado')
   const errores = veredictos.filter((v) => v.estado === 'error')
