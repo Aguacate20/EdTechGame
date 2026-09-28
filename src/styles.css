@@ -2149,7 +2149,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .naipe.en-tablero { z-index: 2; }
 
 /* ═════ v6.0 ═════ */
-.rotulo-html { font-family: var(--mono); font-size: 11px; line-height: 1; color: #FFE9A6; background: #0F1A3C; border: 1px solid rgba(255,194,61,.6); border-radius: 999px; padding: 2px 8px; white-space: nowrap; display: inline-block; transform: translate(-50%, 0); position: relative; left: 50%; }
+.rotulos-capa { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.rotulo-html { position: absolute; transform: translate(-50%, -50%); font-family: var(--mono); font-size: 11px; line-height: 1; color: #FFE9A6; background: #0F1A3C; border: 1px solid rgba(255,194,61,.6); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
 .globo.fija { pointer-events: auto; cursor: pointer; border-color: var(--dominar); }
 .globo.fija .cerrar { display: block; margin-top: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--texto-2); }
 .naipe.en-tablero[data-cristal='si'] { outline: 3px solid #BFEFFF !important; outline-offset: 3px; box-shadow: 0 0 30px rgba(191,239,255,.8) !important; animation: latido-pista 1s ease-in-out infinite; }

@@ -418,6 +418,7 @@ export function iniciarBatalla(
     e.mano = [...e.mano.filter((p) => !duplica(p)), ...previo.piezas]
     e.tablero = [...e.tablero.filter((x) => !uids.has(x.uid)), ...previo.tablero.map((x) => ({ ...x }))]
   }
+  sanearArmados(e)
   if (e.mazo.length + e.mano.length < e.manoBase) reponerFrontera(e, ctx, 3)
   const vinc0 = vinculosDeLaSala(e, ctx)
   e.mapa.meta = vinc0.length
@@ -903,6 +904,30 @@ export function reponerFrontera(e: EstadoBatalla, ctx: ContextoBatalla, n: numbe
   return anadidos
 }
 
+/** v6.2 · saneamiento: toda pieza armada debe estar en la mano y en la mesa. Si se fue al
+ *  descarte o al mazo por cualquier camino, vuelve; si no existe en ningún sitio, los trazos
+ *  que la referencian se retiran (nunca una flecha sin su carta). */
+export function sanearArmados(e: EstadoBatalla): void {
+  const uids = [...new Set(e.armados.flatMap((a) => a.piezas))]
+  const perdidas: string[] = []
+  for (const u of uids) {
+    if (e.mano.some((p) => p.uid === u)) continue
+    const enDescarte = e.descarte.find((p) => p.uid === u)
+    const enMazo = e.mazo.find((p) => p.uid === u)
+    const p = enDescarte ?? enMazo
+    if (p) {
+      e.descarte = e.descarte.filter((x) => x.uid !== u)
+      e.mazo = e.mazo.filter((x) => x.uid !== u)
+      e.mano = [...e.mano, p]
+    } else perdidas.push(u)
+  }
+  for (const u of uids) if (!e.tablero.some((x) => x.uid === u) && !perdidas.includes(u)) {
+    const otro = e.tablero.find((x) => e.armados.some((a) => a.piezas.includes(u) && a.piezas.includes(x.uid)))
+    e.tablero.push({ uid: u, x: Math.min(94, (otro?.x ?? 40) + 14), y: Math.min(90, (otro?.y ?? 40) + 6) })
+  }
+  if (perdidas.length) e.armados = e.armados.filter((a) => !a.piezas.some((u) => perdidas.includes(u)))
+}
+
 /** v5.78 · la foto del submapa pendiente al terminar la sala (vacía si se cristalizó) */
 export function mapaPendienteDe(e: EstadoBatalla): MapaPendiente | null {
   if (!e.mapa.trazos.length) return null
@@ -1352,6 +1377,7 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     // los demás trazos armados (flechas, jerarquías…) que tocaban el nombre o la descripción siguen a la carta compacta
     for (const otro of e.armados) if (otro !== a) otro.piezas = [...new Set(otro.piezas.map((u) => (u === u1 || u === u2 ? entero.uid : u)))]
   }
+  sanearArmados(e)
   e.trazos = []
   e.usadas = []
   e.bonusMult = 0
@@ -1651,6 +1677,7 @@ export function siguienteTurno(e: EstadoBatalla, ctx?: ContextoBatalla): void {
   // un turno que pasó sin afirmar (la fase seguía en «jugando» al pedir el
   // siguiente) es un turno vacío: la mano no se movió y no entró carta nueva.
   // Se lee ANTES de reasignar la fase, o contaría vacío cada turno.
+  sanearArmados(e)
   const veniaVacio = e.fase === 'jugando'
   // v5.81 · escalera de pistas: tras 2 turnos sin avance, dos cartas se iluminan (una armada y
   // una de la mano, con el vínculo pendiente que más pega); tras 3, además se dice el tipo.

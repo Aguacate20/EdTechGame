@@ -739,20 +739,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               })}
           </svg>
 
-          <svg className="trazos rotulos" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
+          <div className="rotulos-capa" aria-hidden>
             {trazosVisibles.filter((t) => esArmado(t.uid)).map((t) => {
               const pts = t.piezas.map((u) => posiciones.find((x) => x.uid === u)).filter((x): x is NonNullable<typeof x> => !!x)
               if (pts.length < 2) return null
               const cx = pts.reduce((n, q) => n + q.x, 0) / pts.length, cy = pts.reduce((n, q) => n + q.y, 0) / pts.length
               const texto = t.tool === 'flecha' ? (t.param ?? '') : HERRAMIENTAS[t.tool].nombre.toLowerCase()
-              if (!texto) return null
-              return (
-                <foreignObject key={`r-${t.uid}`} x={cx - 6} y={cy - 1.6} width={12} height={3.2} style={{ overflow: 'visible' }}>
-                  <div className="rotulo-html">{texto}</div>
-                </foreignObject>
-              )
+              return texto ? <span key={`r-${t.uid}`} className="rotulo-html" style={{ left: `${cx}%`, top: `${cy}%` }}>{texto}</span> : null
             })}
-          </svg>
+          </div>
           {enTablero.map(({ t, p }) => {
             const marcada = pendientes.includes(p.uid)
             const orden = pendientes.indexOf(p.uid)
