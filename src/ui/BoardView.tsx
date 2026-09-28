@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
 import { orientar } from '../engine/feedback'
-import { puedeCristalizar, estadoCristalizacion, progresoCristal } from '../engine/battle'
+import { puedeCristalizar, estadoCristalizacion, progresoCristal, componenteCristalizable } from '../engine/battle'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -112,8 +112,21 @@ const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).t
 
 const AYUDA_DORADA =
   '\n\n\u2726 DORADA \u2014 la fusionaste emparejando nombre y descripci\u00f3n. Entra completa, vale m\u00e1s fichas y ocupa un solo hueco de la mano.'
+/** v6.0 · para qué sirve cada clase de carta, en una línea */
+const USO: Partial<Record<string, string>> = {
+  concepto: 'Se vincula con Flecha; agrupa con Campo; ordena con Jerarquía, Secuencia o Eje.',
+  etiqueta: 'Empareja con su descripción (Identidad) y luego vincúlalo con Flecha.',
+  definicion: 'Empareja con su nombre (Identidad).',
+  subdimension: 'ATRIBUTO: es una parte de un concepto, no un concepto. No se vincula con Flecha; úsalo con Descomposición sobre su concepto, o en un Eje.',
+  caso: 'Ancla: el concepto que opera en él. Contraejemplo: el que NO opera.',
+  tesis: 'Balanza: con un criterio de refutación en el otro platillo.',
+  criterio: 'Balanza: sobre la tesis que limita.',
+  marco: 'Flecha con los conceptos que encuadra.',
+  intuicion: 'Intuición cotidiana: suena bien y no es del texto. Quémala.',
+  apocrifa: 'Falsificación: nombre de un concepto con descripción de otro. Quémala.'
+}
 const ayudaDe = (p: Pieza) =>
-  `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}`
+  `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${USO[p.clase] ? `\n\n▸ ${USO[p.clase]}` : ''}`
 
 export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo,
   }: {
@@ -146,6 +159,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [confirmar, setConfirmar] = useState<{ uid: string; trazos: number } | null>(null)
   const [acuseCerrado, setAcuseCerrado] = useState<string | null>(null)
   const [ayuda, setAyuda] = useState<{ texto: string; x: number; y: number } | null>(null)
+  /** v6.0 · globo fijo: la descripción de una carta dorada al tocarla sin herramienta */
+  const [resaltarCristal, setResaltarCristal] = useState<Set<string> | null>(null)
+  const [ayudaFija, setAyudaFija] = useState<{ texto: string; x: number; y: number; uid: string } | null>(null)
   const [raton, setRaton] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   /** pieza del tablero bajo el cursor: se previsualiza en la ranura siguiente */
   const [previsualizada, setPrevisualizada] = useState<string | null>(null)
@@ -294,12 +310,22 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     setHerramienta(null); setParam(null); setPendientes([]); setPrevisualizada(null)
   }
 
-  const posicionEnLienzo = (ev: { clientX: number; clientY: number }) => {
+  /** v6.0 · desplazamiento de agarre: dónde tomaste la carta respecto a su centro (px) */
+  const agarreRef = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 })
+  const posicionEnLienzo = (ev: { clientX: number; clientY: number }, conAgarre = true) => {
     const r = lienzo.current?.getBoundingClientRect()
     if (!r) return { x: 50, y: 50 }
+    const cx = ev.clientX - (conAgarre ? agarreRef.current.dx : 0)
+    const cy = ev.clientY - (conAgarre ? agarreRef.current.dy : 0)
+    // la carta nunca cae fuera de lo que se ve: límites de la ventana de la mesa, en % del mundo
+    const z = lienzo.current?.parentElement?.getBoundingClientRect()
+    const minX = z ? Math.max(6, ((z.left - r.left) / r.width) * 100 + 5) : 6
+    const maxX = z ? Math.min(94, ((z.right - r.left) / r.width) * 100 - 5) : 94
+    const minY = z ? Math.max(8, ((z.top - r.top) / r.height) * 100 + 5) : 8
+    const maxY = z ? Math.min(90, ((z.bottom - r.top) / r.height) * 100 - 6) : 90
     return {
-      x: Math.max(6, Math.min(94, ((ev.clientX - r.left) / r.width) * 100)),
-      y: Math.max(8, Math.min(90, ((ev.clientY - r.top) / r.height) * 100))
+      x: Math.max(minX, Math.min(maxX, ((cx - r.left) / r.width) * 100)),
+      y: Math.max(minY, Math.min(maxY, ((cy - r.top) / r.height) * 100))
     }
   }
 
@@ -425,6 +451,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </aside>
       )}
 
+      {ayudaFija && (
+        <div className="globo abajo fija" style={{ left: ayudaFija.x, top: ayudaFija.y }} onClick={() => setAyudaFija(null)}>
+          {ayudaFija.texto}
+          <small className="cerrar">toca para cerrar</small>
+        </div>
+      )}
       {ayuda && (
         <div
           className={`globo${ayuda.y > window.innerHeight / 2 ? ' arriba' : ' abajo'}`}
@@ -703,7 +735,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               })}
           </svg>
 
-          <svg className="trazos rotulos" aria-hidden>
+          <svg className="trazos rotulos" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
             {trazosVisibles.filter((t) => esArmado(t.uid)).map((t) => {
               const pts = t.piezas.map((u) => posiciones.find((x) => x.uid === u)).filter((x): x is NonNullable<typeof x> => !!x)
               if (pts.length < 2) return null
@@ -711,10 +743,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               const texto = t.tool === 'flecha' ? (t.param ?? '') : HERRAMIENTAS[t.tool].nombre.toLowerCase()
               if (!texto) return null
               return (
-                <g key={`r-${t.uid}`} transform={`translate(${cx} ${cy})`}>
-                  <rect x={-texto.length * 1.6 - 2} y={-2.4} width={texto.length * 3.2 + 4} height={4.8} rx={2.4} className="rotulo-fondo" />
-                  <text textAnchor="middle" dominantBaseline="middle" className="rotulo-texto">{texto}</text>
-                </g>
+                <foreignObject key={`r-${t.uid}`} x={cx - 6} y={cy - 1.6} width={12} height={3.2} style={{ overflow: 'visible' }}>
+                  <div className="rotulo-html">{texto}</div>
+                </foreignObject>
               )
             })}
           </svg>
@@ -730,6 +761,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
+                data-cristal={resaltarCristal ? (resaltarCristal.has(p.uid) ? 'si' : 'no') : undefined}
                 data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : e.pistaSuave && p.conceptId === e.pistaSuave ? 'suave' : undefined}
                 className={`naipe en-tablero${p.uid.startsWith('const:') ? ' constelacion' : ''} naipe-${p.clase}${marcada ? ' marcada' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
@@ -743,6 +775,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   if (resuelto || !(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) || ev.button !== 0) return
                   ev.stopPropagation(); ev.preventDefault()
                   moviendoRef.current = { uid: p.uid, raf: null }
+                  const rc = (ev.currentTarget as HTMLElement).getBoundingClientRect()
+                  agarreRef.current = { dx: ev.clientX - (rc.left + rc.width / 2), dy: ev.clientY - (rc.top + rc.height / 2) }
                   ;(ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId)
                 }}
                 onPointerMove={(ev) => {
@@ -754,9 +788,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 }}
                 onPointerUp={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null }}
                 onPointerCancel={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null }}
-                onDragStart={() => setArrastrando(p.uid)}
+                onDragStart={(ev) => { const rc = (ev.currentTarget as HTMLElement).getBoundingClientRect(); agarreRef.current = { dx: ev.clientX - (rc.left + rc.width / 2), dy: ev.clientY - (rc.top + rc.height / 2) }; setArrastrando(p.uid) }}
                 onDragEnd={() => setArrastrando(null)}
-                onClick={() => tocarPieza(p.uid)}
+                onClick={(ev) => {
+                  const armada = (e.armados ?? []).some((a) => a.piezas.includes(p.uid))
+                  if (armada && !herramienta) {
+                    setAyudaFija((f) => f?.uid === p.uid ? null : { texto: ayudaDe(p), x: Math.min(ev.clientX + 12, window.innerWidth - 342), y: ev.clientY + 12, uid: p.uid })
+                    return
+                  }
+                  tocarPieza(p.uid)
+                }}
                 onDoubleClick={() => { if (!(e.armados ?? []).some((a) => a.piezas.includes(p.uid))) pedirDevolver(p.uid) }}
                 onDragOver={(ev) => { if ((e.armados ?? []).some((a) => a.piezas.includes(p.uid))) ev.preventDefault() }}
                 onDrop={(ev) => {
@@ -1077,6 +1118,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           <>
             {e.mapa && puedeCristalizar(e, { contenido, rng: { next: () => 0 } as never, lentes }) && (
               <button className="btn primario cristalizar listo" disabled={!on.cristalizar} onClick={on.cristalizar}
+                onMouseEnter={() => { const c0 = componenteCristalizable(e, { contenido, rng: { next: () => 0 } as never, lentes }); setResaltarCristal(c0 ? new Set(c0.uids) : new Set((e.armados ?? []).flatMap((a) => a.piezas))) }}
+                onMouseLeave={() => setResaltarCristal(null)}
                 title="Ataque definitivo: un grupo de tu mapa está grande y completo. Cristalízalo y todo lo que queda cae.">✦ ATAQUE FINAL · Cristalizar</button>
             )}
             <button
@@ -1118,12 +1161,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             )}
             <button
               className={`btn peligro${zona('pozo') ? ' senala' : ''}`}
-              disabled={!piezaSel || e.quemasRestantes <= 0}
+              disabled={!piezaSel}
               onClick={() => { if (piezaSel) { on.quemar(piezaSel.uid); setSeleccion(null) } }}
               data-ayuda={'QUEMAR\nAfirmas que la carta es una falsificación. Si aciertas: tinta, una carta nueva y bonificación. Si te equivocas, destruyes material bueno.'}
             >
               Quemar {piezaSel ? `«${recorte(piezaSel.titulo, 18)}»` : 'concepto'}
-              <span className="dato"> · {e.quemasRestantes}</span>
             </button>
             <button
               className="btn" disabled={!piezaSel || e.cambiosRestantes <= 0}

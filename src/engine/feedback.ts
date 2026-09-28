@@ -30,6 +30,7 @@ function piezasDe(trazo: Veredicto['trazo'], piezas: Pieza[]): Pieza[] {
   return trazo.piezas.map((uid) => piezas.find((p) => p.uid === uid)).filter((p): p is Pieza => !!p)
 }
 const t = (c: Contenido, id: string) => c.conceptos[id]?.titulo ?? id
+const atributoTitulo = (s: string) => (s.length > 48 ? s.slice(0, 46) + '…' : s)
 const vecinos = (c: Contenido, id: string, n = 2) =>
   c.aristas.filter((a) => a.from === id || a.to === id).slice(0, n)
     .map((a) => (a.from === id ? `${verbo(a.tipo)} «${t(c, a.to)}»` : `«${t(c, a.from)}» lo ${verbo(a.tipo)}`))
@@ -41,6 +42,21 @@ export function orientar(c: Contenido, ver: Veredicto, piezas: Pieza[]): Orienta
   const ps = piezasDe(ver.trazo, piezas)
   const tool = ver.trazo.tool
   const ids = [...new Set(ps.map((p) => p.conceptId).filter((x): x is string => !!x))]
+
+  // ── v6.0 · la clase de carta no es la de la herramienta ──
+  if (['flecha', 'jerarquia', 'secuencia', 'campo', 'analogia'].includes(tool)) {
+    const atributo = ps.find((p) => p.clase === 'subdimension')
+    if (atributo) {
+      const dueno = atributo.conceptId ? t(c, atributo.conceptId) : 'su concepto'
+      return { causa: `«${atributo.titulo}» es un ATRIBUTO: una parte de «${dueno}», no un concepto. Las flechas unen conceptos.`,
+        siguiente: `Usa Descomposición: «${dueno}» con sus atributos. O vincula «${dueno}» (el concepto entero) con Flecha.` }
+    }
+    const otra = ps.find((p) => ['caso', 'tesis', 'criterio', 'intuicion', 'apocrifa'].includes(p.clase))
+    if (otra) {
+      const uso: Record<string, string> = { caso: 'Ancla o Contraejemplo', tesis: 'Balanza', criterio: 'Balanza', intuicion: 'el brasero (quémala)', apocrifa: 'el brasero (quémala)' }
+      return { causa: `«${atributoTitulo(otra.titulo)}» es ${otra.clase === 'caso' ? 'un caso' : otra.clase === 'tesis' ? 'una tesis' : otra.clase === 'criterio' ? 'un criterio' : 'una falsificación o intuición'}: no se vincula con flechas.`, siguiente: `Su sitio es ${uso[otra.clase]}.` }
+    }
+  }
 
   // ── identidad: nombre + descripción ──
   if (tool === 'identidad') {

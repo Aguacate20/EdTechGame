@@ -565,7 +565,6 @@ export function quemar(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): Eve
   return ev
 }
 function quemarSinReponer(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): EventoPozo | null {
-  if (e.quemasRestantes <= 0) return null
   if (estaArmada(e, uid)) return null
   const p = e.mano.find((x) => x.uid === uid)
   if (!p) return null
@@ -575,7 +574,7 @@ function quemarSinReponer(e: EstadoBatalla, ctx: ContextoBatalla, uid: string): 
   e.mano = e.mano.filter((x) => x.uid !== uid)
   devolverAMano(e, uid)
   e.tablero = e.tablero.filter((t) => t.uid !== uid)
-  e.quemasRestantes -= 1
+  // v6.0 · quemar es infinito (el juicio de si era buena idea sigue: acuse bien/mal)
   e.reveladas = e.reveladas.filter((x) => x !== uid)
 
   // quemar bien tiene que SENTIRSE: bonificación al próximo diagrama y carta nueva

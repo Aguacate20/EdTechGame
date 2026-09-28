@@ -524,7 +524,9 @@ export default function App() {
     const idx = (atlas?.constelaciones?.length ?? 0) % ESTALLIDOS.length
     const est = ESTALLIDOS[idx]
     setEstallido({ variante: est.id, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
-    window.setTimeout(() => setEstallido(null), est.duracion)
+    // v6.0 · durante el estallido la sala sigue en pantalla (los enemigos caen a la vista); el cierre llega después
+    e.fase = 'resuelto'
+    window.setTimeout(() => { setEstallido(null); setBatalla((prev) => (prev && prev.fase === 'resuelto' ? { ...prev, fase: 'ganado' } : prev)) }, est.duracion)
     registrar({
       ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
       arquetipo: 'cristalizar', condicion: null, mecanica: 'articulacion',
