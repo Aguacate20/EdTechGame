@@ -112,21 +112,23 @@ const recorte = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).t
 
 const AYUDA_DORADA =
   '\n\n\u2726 DORADA \u2014 la fusionaste emparejando nombre y descripci\u00f3n. Entra completa, vale m\u00e1s fichas y ocupa un solo hueco de la mano.'
-/** v6.0 · para qué sirve cada clase de carta, en una línea */
-const USO: Partial<Record<string, string>> = {
-  concepto: 'Se vincula con Flecha; agrupa con Campo; ordena con Jerarquía, Secuencia o Eje.',
-  etiqueta: 'Empareja con su descripción (Identidad) y luego vincúlalo con Flecha.',
-  definicion: 'Empareja con su nombre (Identidad).',
-  subdimension: 'ATRIBUTO: es una parte de un concepto, no un concepto. No se vincula con Flecha; úsalo con Descomposición sobre su concepto, o en un Eje.',
-  caso: 'Ancla: el concepto que opera en él. Contraejemplo: el que NO opera.',
-  tesis: 'Balanza: con un criterio de refutación en el otro platillo.',
-  criterio: 'Balanza: sobre la tesis que limita.',
-  marco: 'Flecha con los conceptos que encuadra.',
-  intuicion: 'Intuición cotidiana: suena bien y no es del texto. Quémala.',
-  apocrifa: 'Falsificación: nombre de un concepto con descripción de otro. Quémala.'
+/** v6.1 · qué herramientas admiten cada clase de carta: solo sus símbolos */
+const HERRAMIENTAS_DE_CLASE: Partial<Record<string, HerramientaId[]>> = {
+  concepto: ['flecha', 'campo', 'jerarquia', 'secuencia', 'eje', 'analogia', 'alcance', 'descomposicion'],
+  etiqueta: ['identidad', 'flecha', 'campo', 'jerarquia', 'secuencia', 'eje', 'analogia', 'alcance'],
+  definicion: ['identidad'],
+  subdimension: ['descomposicion', 'eje'],
+  caso: ['ancla', 'contraejemplo'],
+  tesis: ['balanza'],
+  criterio: ['balanza'],
+  marco: ['flecha']
+}
+const simbolosDe = (p: Pieza): string => {
+  if (p.clase === 'intuicion' || p.clase === 'apocrifa') return '🔥'
+  return (HERRAMIENTAS_DE_CLASE[p.clase] ?? []).map((h) => HERRAMIENTAS[h].glifo).join('  ')
 }
 const ayudaDe = (p: Pieza) =>
-  `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${USO[p.clase] ? `\n\n▸ ${USO[p.clase]}` : ''}`
+  `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${simbolosDe(p) ? `\n\n${simbolosDe(p)}` : ''}`
 
 export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo,
   }: {
@@ -291,6 +293,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const panRef = useRef<{ x0: number; y0: number; px: number; py: number } | null>(null)
   /** v5.99 · arrastre en vivo de cartas doradas (por puntero, sin HTML5 drag) */
   const moviendoRef = useRef<{ uid: string; raf: number | null } | null>(null)
+  /** v6.1 · si el puntero se movió, fue arrastre, no clic */
+  const seMovioRef = useRef(false)
   useEffect(() => {
     const el = lienzo.current
     if (!el) return
@@ -775,6 +779,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   if (resuelto || !(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) || ev.button !== 0) return
                   ev.stopPropagation(); ev.preventDefault()
                   moviendoRef.current = { uid: p.uid, raf: null }
+                  seMovioRef.current = false
                   const rc = (ev.currentTarget as HTMLElement).getBoundingClientRect()
                   agarreRef.current = { dx: ev.clientX - (rc.left + rc.width / 2), dy: ev.clientY - (rc.top + rc.height / 2) }
                   ;(ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId)
@@ -782,6 +787,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onPointerMove={(ev) => {
                   const mv = moviendoRef.current
                   if (!mv || mv.uid !== p.uid) return
+                  seMovioRef.current = true
                   const { x, y } = posicionEnLienzo(ev)
                   if (mv.raf !== null) cancelAnimationFrame(mv.raf)
                   mv.raf = requestAnimationFrame(() => { on.cambio((st) => soltar(st, p.uid, x, y)); mv.raf = null })
@@ -792,6 +798,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDragEnd={() => setArrastrando(null)}
                 onClick={(ev) => {
                   const armada = (e.armados ?? []).some((a) => a.piezas.includes(p.uid))
+                  if (armada && seMovioRef.current) { seMovioRef.current = false; return }
                   if (armada && !herramienta) {
                     setAyudaFija((f) => f?.uid === p.uid ? null : { texto: ayudaDe(p), x: Math.min(ev.clientX + 12, window.innerWidth - 342), y: ev.clientY + 12, uid: p.uid })
                     return
