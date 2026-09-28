@@ -938,21 +938,35 @@ function validarBalanza(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificado
   if (!criterios.length) return { ...v, nota: 'Pon un criterio en el otro platillo.' }
   const validos = criterios.filter((k) => k.tesisId === tesis.refId && k.sentido === 'refuta')
   const objeciones = criterios.filter((k) => k.sentido !== 'refuta')
-  if (validos.length && !objeciones.length) {
-    return {
-      ...v, estado: 'sostenido', fichas: 18 * validos.length + lentes.fichasPorSostenido,
-      mult: 1.6 + 0.4 * validos.length,
-      nota: 'Cumple la rúbrica: fija qué evidencia obligaría a revisar la tesis.',
-      conceptIds: tesis.conceptIds
-    }
+  const ajenos = criterios.filter((k) => k.sentido === 'refuta' && k.tesisId !== tesis.refId)
+  // v5.98 · la balanza ya no es binaria. Un criterio de refutación válido sostiene. Una
+  // objeción no es un error: es razonamiento sin criterio. Si nombra algo observable
+  // (evidencia, datos, mayoría, cifras, encuestas…) es OPERACIONALIZABLE y vale como
+  // aproximado; si es solo retórica, como plausible. Y una objeción junto a un criterio
+  // válido no anula el criterio: se sostiene y la objeción queda anotada.
+  const operacionalizable = (k: Pieza) => /evidencia|dato|datos|cifra|porcentaje|mayor[ií]a|encuesta|medici[oó]n|si se observa|si se compr|estad[ií]stic|registro|estudio/i.test(`${k.titulo} ${k.cuerpo ?? ''}`)
+  if (validos.length) {
+    const nota = objeciones.length
+      ? `Cumple la rúbrica con ${validos.length === 1 ? 'un criterio' : `${validos.length} criterios`}; la objeción no cuenta: dice por qué la tesis podría fallar, no qué observación lo mostraría.`
+      : 'Cumple la rúbrica: fija qué evidencia obligaría a revisar la tesis.'
+    return { ...v, estado: 'sostenido', fichas: 18 * validos.length + lentes.fichasPorSostenido, mult: 1.6 + 0.4 * validos.length, nota, conceptIds: tesis.conceptIds }
   }
   if (objeciones.length) {
+    const op = objeciones.filter(operacionalizable)
+    if (op.length) {
+      return {
+        ...v, estado: 'aproximado', fichas: 10, mult: 1.2,
+        nota: 'Casi: es una objeción que nombra algo observable. Para que sea criterio, dilo como condición: «si se observara que…, la tesis tendría que revisarse».',
+        conceptIds: tesis.conceptIds
+      }
+    }
     return {
-      ...v, estado: 'error',
-      nota: objeciones[0].explicacion || 'Eso es una objeción, no un criterio de refutación.',
+      ...v, estado: 'plausible', fichas: 5, mult: 1,
+      nota: `Es una objeción razonable, no un criterio: dice por qué la tesis podría fallar, pero no qué observación lo mostraría. ${objeciones[0].explicacion ? `(${objeciones[0].explicacion})` : ''}`.trim(),
       conceptIds: tesis.conceptIds
     }
   }
+  if (ajenos.length) return { ...v, estado: 'plausible', fichas: 4, mult: 1, nota: 'Es un criterio de refutación válido, pero de otra tesis: ponlo en su balanza.', conceptIds: tesis.conceptIds }
   return { ...v, nota: 'Ese criterio pertenece a otra tesis.' }
 }
 
