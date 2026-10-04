@@ -159,6 +159,18 @@ function elegirClip(ficha: FichaSprite, gesto: string, variante?: string): ClipS
   return null
 }
 
+/** v6.4 · cuánto dura (ms) el clip de un gesto: el compás del combate espera a que termine */
+export function duracionGesto(ficha: FichaSprite | undefined | null, gesto: string, variante?: string): number {
+  if (!ficha) return 0
+  const claves = [...(variante ? [`${gesto}_${variante}`] : []), gesto]
+  for (const k of claves) {
+    const v = ficha[k]
+    const clips = Array.isArray(v) ? v : v && typeof v === 'object' ? [v as ClipSprite] : []
+    if (clips.length) return Math.max(...clips.map((c) => Math.round((1000 * c.frames) / (c.fps ?? 8))))
+  }
+  return 0
+}
+
 export const fichaTieneClips = (ficha: FichaSprite): boolean => !!elegirClip(ficha, 'quieto')
 
 export function SpriteRetrato({ ficha, gesto = 'quieto', variante, tamano: tamanoBase, alt, alFallar }: {

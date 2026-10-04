@@ -342,7 +342,10 @@ export function montarMazo(
 
   // subdimensiones de los conceptos más ricos: atributos para el eje
   const conSub = conceptIds.filter((id) => (c.conceptos[id]?.subdimensiones.length ?? 0) > 0)
-  for (const id of rng.sample(conSub, 2)) piezas.push(...piezasSubdimension(c, id).slice(0, 3))
+  // v6.4 · un atributo solo se juega con Descomposición: sin esa herramienta no se reparte
+  if (bolsa.herramientas.includes('descomposicion' as HerramientaId)) {
+    for (const id of rng.sample(conSub, 2)) piezas.push(...piezasSubdimension(c, id).slice(0, 3))
+  }
 
   return rng.shuffle(piezas)
 }

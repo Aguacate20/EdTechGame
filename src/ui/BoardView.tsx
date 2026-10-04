@@ -15,7 +15,7 @@ import {
 import { tipoPorId } from '../engine/lane'
 import { oleadaActual } from '../engine/battle'
 import { lentePorId, selloPorId, type SelloId } from '../engine/powers'
-import { LaneView } from './LaneView'
+import { LaneView, compasDelGolpe } from './LaneView'
 import { usarManifest } from './assets'
 import { GLOSA_RELACION as GLOSA } from './glosas'
 import { Chip } from './components'
@@ -201,6 +201,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** máquina de gestos del héroe: ataca al resolver, acusa el golpe recibido,
    *  y vuelve al reposo — sin bucles raros */
   const [gestoHeroe, setGestoHeroe] = useState('quieto')
+  const manifestArte = usarManifest()
   /** la Página en Blanco es materia de leyenda: UN golpe que derriba a 3+
    *  enemigos que estaban con la vida llena. Limpiar una sala a mordiscos no
    *  la gasta — por eso sigue sintiéndose enorme cuando pasa. */
@@ -231,13 +232,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     const r = e.ultima
     setGestoHeroe(r.danoTotal > 0 ? 'afirma' : r.danoRecibido > 0 ? 'herido' : 'quieto')
     const ts: ReturnType<typeof setTimeout>[] = []
-    // el compás: golpe del héroe → impactos en cadena → respuesta enemiga
-    const finImpactos = 420 + 150 * r.impactos.length + 260
-    if (r.danoTotal > 0 && r.danoRecibido > 0) {
-      ts.push(setTimeout(() => setGestoHeroe('herido'), finImpactos))
-      ts.push(setTimeout(() => setGestoHeroe('quieto'), finImpactos + 700))
-    } else if (r.danoTotal > 0 || r.danoRecibido > 0) {
-      ts.push(setTimeout(() => setGestoHeroe('quieto'), Math.max(1100, finImpactos)))
+    // v6.4 · el compás: Andy termina SU ataque → pausa → responden los enemigos → Andy acusa el golpe
+    const c = compasDelGolpe(r.danoTotal > 0 ? r.disparo : null, manifestArte, r.impactos.length)
+    const finAndy = Math.max(c.clip, c.finImpactos) + 160
+    if (r.danoTotal > 0) ts.push(setTimeout(() => setGestoHeroe('quieto'), finAndy))
+    if (r.danoRecibido > 0) {
+      const golpe = (r.danoTotal > 0 ? c.inicioEnemigos : 0) + 320
+      if (r.danoTotal > 0) ts.push(setTimeout(() => setGestoHeroe('herido'), golpe))
+      ts.push(setTimeout(() => setGestoHeroe('quieto'), golpe + 700))
     }
     return () => ts.forEach(clearTimeout)
   }, [resuelto, casc.terminada, e.ultima])

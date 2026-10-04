@@ -1,5 +1,5 @@
 import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
-import { FondoImagen, Retrato, SpriteRetrato, usarManifest } from './assets'
+import { FondoImagen, Retrato, SpriteRetrato, usarManifest, duracionGesto } from './assets'
 import type { Disparo } from '../engine/weapons'
 import { sfx } from './sfx'
 import { useEffect, useRef, useState } from 'react'
@@ -37,6 +37,22 @@ function Silueta({ tipoId }: { tipoId: string }) {
     default:
       return <svg {...p}><circle cx="20" cy="20" r="9" fill="currentColor" /></svg>
   }
+}
+
+/** v6.4 · el compás del combate, en un solo sitio: primero Andy (su clip entero y la llegada
+ *  del golpe), luego una pausa, y solo entonces responden los enemigos, de uno en uno. */
+export const PAUSA_ENTRE_BANDOS = 900
+export const TURNO_ENEMIGO = 560
+export function compasDelGolpe(
+  disparo: Disparo | null | undefined, manifest: Record<string, any> | null, nImpactos: number
+): { clip: number; llegada: number; finImpactos: number; inicioEnemigos: number } {
+  const clip = disparo ? duracionGesto(manifest?.['jugador/copista'], 'golpea', disparo.arma.forma) : 0
+  const melee = !!(disparo && CUERPO_A_CUERPO.has(disparo.arma.forma))
+  const llegada = !disparo ? 0
+    : melee ? Math.max(340, Math.round(clip * 0.6))
+    : Math.max(Math.min(900, disparo.arma.duracion ?? 600), Math.round(clip * 0.7))
+  const finImpactos = llegada + 150 * Math.max(0, nImpactos - 1)
+  return { clip, llegada, finImpactos, inicioEnemigos: Math.max(finImpactos, clip) + PAUSA_ENTRE_BANDOS }
 }
 
 function Copista({ gesto }: { gesto?: string }) {
@@ -86,14 +102,14 @@ export function LaneView({
     if (!disparoListo || !ultimosImpactos.length) { setRevelados(0); return }
     setRevelados(0)
     const ts: ReturnType<typeof setTimeout>[] = []
-    const base = esMelee ? 340 : Math.min(900, disparo?.arma.duracion ?? 600)
+    const base = compasDelGolpe(disparo, manifest, ultimosImpactos.length).llegada || 340
     const paso = (i: number) => {
       setRevelados(i)
       if (i < ultimosImpactos.length) ts.push(setTimeout(() => paso(i + 1), 150))
     }
     ts.push(setTimeout(() => paso(1), base))
     return () => ts.forEach(clearTimeout)
-  }, [disparoListo, ultimosImpactos, esMelee, disparo])
+  }, [disparoListo, ultimosImpactos, esMelee, disparo, manifest])
   const golpeado = (uid: string): boolean => {
     const i = ultimosImpactos.findIndex((x) => x.uid === uid)
     return i >= 0 && i < revelados
@@ -101,13 +117,27 @@ export function LaneView({
   const todoRevelado = revelados >= ultimosImpactos.length
   /** los enemigos responden DESPUÉS del golpe del héroe: sus animaciones de
    *  avance y ataque esperan a que el último impacto aterrice */
-  const [faseEnemiga, setFaseEnemiga] = useState(false)
+  const respondedores = vivos.filter((x) => x.gesto === 'golpea' || x.gesto === 'avanza').map((x) => x.uid)
+  /** -1: aún es el turno de Andy · n: le toca al respondedor n (cada uno en su ventana) */
+  const [relojEnemigo, setRelojEnemigo] = useState(-1)
   useEffect(() => {
-    if (!disparoListo) { setFaseEnemiga(false); return }
-    if (!todoRevelado) { setFaseEnemiga(false); return }
-    const t = setTimeout(() => setFaseEnemiga(true), 260)
-    return () => clearTimeout(t)
-  }, [disparoListo, todoRevelado])
+    if (!disparoListo || !todoRevelado) { setRelojEnemigo(-1); return }
+    const c = compasDelGolpe(disparo, manifest, ultimosImpactos.length)
+    const espera = Math.max(PAUSA_ENTRE_BANDOS, c.inicioEnemigos - c.finImpactos)
+    const ts: ReturnType<typeof setTimeout>[] = []
+    const tic = (i: number) => {
+      setRelojEnemigo(i)
+      if (i < respondedores.length) ts.push(setTimeout(() => tic(i + 1), TURNO_ENEMIGO))
+    }
+    ts.push(setTimeout(() => tic(0), espera))
+    return () => ts.forEach(clearTimeout)
+  }, [disparoListo, todoRevelado, respondedores.length])
+  /** el gesto que se ve: nadie responde mientras Andy golpea, y luego cada enemigo en su turno */
+  const gestoVisible = (en: Enemigo, pendiente: boolean): string => {
+    if (disparoListo === false || pendiente) return 'quieto'
+    if (en.gesto === 'golpea' || en.gesto === 'avanza') return respondedores.indexOf(en.uid) === relojEnemigo ? en.gesto : 'quieto'
+    return en.gesto
+  }
   const embisteUid = disparoListo && disparo && esMelee && gesto === 'afirma'
     ? disparo.objetivos[0] ?? null : null
   const vivosYcaidos = enemigos
@@ -202,6 +232,8 @@ export function LaneView({
           const aqui = enemigos
             .filter((e) => e.hp > 0 || ultimosImpactos.some((i) => i.uid === e.uid))
             .filter((e) => e.posicion === casilla)
+            // v6.4 · varios en la misma casilla: el que está en la mira va delante, el resto detrás
+            .sort((a, b) => Number(enMira.has(b.uid)) - Number(enMira.has(a.uid)))
           return (
             <div className="casilla" key={casilla} role="listitem">
               <span className="numero">{casilla}</span>
@@ -214,7 +246,9 @@ export function LaneView({
                   />
                 </span>
               )}
-              {aqui.map((e) => {
+              {aqui.length > 1 && <span className="pila-cuenta">×{aqui.length}</span>}
+              <div className="pila">
+              {aqui.map((e, fila) => {
                 const t = tipoPorId(e.tipoId)
                 const impactoReal = ultimosImpactos.find((x) => x.uid === e.uid)
                 const impacto = impactoReal && golpeado(e.uid) ? impactoReal : undefined
@@ -224,9 +258,8 @@ export function LaneView({
                 return (
                   <div
                     key={e.uid}
-                    className={`bicho bicho-${disparoListo === false || (impactoReal && !impacto) ? 'quieto'
-                      : !faseEnemiga && (e.gesto === 'golpea' || e.gesto === 'avanza') ? 'quieto'
-                      : e.gesto}${enMira.has(e.uid) ? ' en-mira' : ''}`}
+                    className={`bicho bicho-${gestoVisible(e, !!(impactoReal && !impacto))}${enMira.has(e.uid) ? ' en-mira' : ''}${fila > 0 ? ' detras' : ''}`}
+                    style={fila > 0 ? ({ '--fila': fila, zIndex: 10 - fila } as React.CSSProperties) : undefined}
                     title={`${e.nombre} — ${t.glosa}`}
                   >
                     {impacto && (
@@ -237,9 +270,7 @@ export function LaneView({
                     )}
                     <Retrato
                       familia="enemigos" id={e.tipoId} alt={e.nombre}
-                      tamano={34} gesto={disparoListo === false || (impactoReal && !impacto) ? 'quieto'
-                        : !faseEnemiga && (e.gesto === 'golpea' || e.gesto === 'avanza') ? 'quieto'
-                        : e.gesto}
+                      tamano={34} gesto={gestoVisible(e, !!(impactoReal && !impacto))}
                       respaldo={<Silueta tipoId={e.tipoId} />}
                     />
                     <span className="nom">{e.nombre}</span>
@@ -254,6 +285,7 @@ export function LaneView({
                   </div>
                 )
               })}
+              </div>
             </div>
           )
         })}
