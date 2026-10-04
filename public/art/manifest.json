@@ -61,7 +61,8 @@
       "src": "luduscog/andy/andy-think.png",
       "frames": 4,
       "fps": 6
-    }
+    },
+    "escala": 3
   },
   "enemigos/copista": {
     "golpea": {
@@ -91,7 +92,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   },
   "enemigos/errata": {
     "golpea": {
@@ -121,7 +122,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   },
   "enemigos/rumor": {
     "golpea": {
@@ -146,7 +147,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1,
+    "escala": 2.4,
     "avanza": {
       "src": "luduscog/rumor/rumor-walk.png",
       "frames": 4,
@@ -181,7 +182,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   },
   "enemigos/dogma": {
     "golpea": {
@@ -211,7 +212,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 3.6
   },
   "enemigos/ortodoxia": {
     "golpea": {
@@ -241,7 +242,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.9
   },
   "enemigos/tratado": {
     "golpea": {
@@ -271,7 +272,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 3.6
   },
   "enemigos/bibliografia": {
     "quieto": {
@@ -301,7 +302,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   },
   "enemigos/apocrifo": {
     "quieto": {
@@ -331,7 +332,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   },
   "enemigos/eco": {
     "quieto": {
@@ -361,7 +362,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   },
   "enemigos/cita": {
     "quieto": {
@@ -391,7 +392,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 3.6
   },
   "enemigos/palimpsesto": {
     "quieto": {
@@ -421,6 +422,6 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 1
+    "escala": 2.4
   }
 }

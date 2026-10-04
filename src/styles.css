@@ -2155,3 +2155,13 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .globo.fija .cerrar { display: block; margin-top: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--texto-2); }
 .naipe.en-tablero[data-cristal='si'] { outline: 3px solid #BFEFFF !important; outline-offset: 3px; box-shadow: 0 0 30px rgba(191,239,255,.8) !important; animation: latido-pista 1s ease-in-out infinite; }
 .naipe.en-tablero[data-cristal='no'] { opacity: .35; filter: saturate(.5); }
+
+/* ── v6.3 · carril alto: sprites grandes y nada cortado por abajo ── */
+.app .batalla { grid-template-rows: 216px minmax(0, 1fr) 64px; }
+.app .zona-carril .carril-pista { height: 204px; }
+.app .zona-carril .casilla { padding-bottom: 12px; }
+.app .zona-carril .carril-jugador { padding-bottom: 30px; }
+@media (max-width: 720px) {
+  .app .batalla { grid-template-rows: 150px minmax(0, 1fr) 48px 150px 56px; }
+  .app .zona-carril .carril-pista { height: 138px; }
+}
