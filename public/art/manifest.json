@@ -1,24 +1,24 @@
 {
   "jugador/copista": {
     "quieto": {
-      "src": "sprites/adventurer/tiras/adventurer-idle-2.png",
-      "frames": 4,
+      "src": "luduscog/andy/andy-idle.png",
+      "frames": 6,
       "fps": 6
     },
     "avanza": {
-      "src": "sprites/adventurer/tiras/adventurer-run.png",
+      "src": "luduscog/andy/andy-run.png",
       "frames": 6,
       "fps": 10
     },
     "herido": {
-      "src": "sprites/adventurer/tiras/adventurer-hurt.png",
-      "frames": 3,
-      "fps": 8
+      "src": "luduscog/andy/andy-hit.png",
+      "frames": 5,
+      "fps": 12
     },
     "cae": {
-      "src": "sprites/adventurer/tiras/adventurer-die.png",
-      "frames": 7,
-      "fps": 8,
+      "src": "luduscog/andy/andy-defeat.png",
+      "frames": 8,
+      "fps": 6,
       "loop": false
     },
     "golpea_lluvia": {
@@ -27,266 +27,400 @@
       "fps": 12
     },
     "golpea_rayo": {
-      "src": "sprites/adventurer/tiras/adventurer-cast.png",
-      "frames": 4,
-      "fps": 10
+      "src": "luduscog/andy/andy-beam.png",
+      "frames": 8,
+      "fps": 12
     },
     "golpea_onda": {
-      "src": "sprites/adventurer/tiras/adventurer-cast.png",
-      "frames": 4,
-      "fps": 10
+      "src": "luduscog/andy/andy-connect.png",
+      "frames": 10,
+      "fps": 12
     },
     "golpea_barrido": {
-      "src": "sprites/adventurer/tiras/adventurer-slide.png",
-      "frames": 2,
+      "src": "luduscog/andy/andy-slide.png",
+      "frames": 4,
       "fps": 14
     },
     "golpea_sello": {
-      "src": "sprites/adventurer/tiras/adventurer-air-attack1.png",
+      "src": "luduscog/andy/andy-slam.png",
+      "frames": 8,
+      "fps": 12
+    },
+    "golpea_perdigon": {
+      "src": "luduscog/andy/andy-jab.png",
       "frames": 4,
       "fps": 14
     },
-    "golpea_perdigon": {
-      "src": "sprites/adventurer/tiras/adventurer-attack1.png",
-      "frames": 5,
-      "fps": 16
+    "golpea": {
+      "src": "luduscog/andy/andy-attack.png",
+      "frames": 8,
+      "fps": 12
     },
-    "golpea": [
-      {
-        "src": "sprites/adventurer/tiras/adventurer-attack1.png",
-        "frames": 5,
-        "fps": 12
-      },
-      {
-        "src": "sprites/adventurer/tiras/adventurer-attack2.png",
-        "frames": 6,
-        "fps": 12
-      },
-      {
-        "src": "sprites/adventurer/tiras/adventurer-attack3.png",
-        "frames": 6,
-        "fps": 12
-      }
-    ],
-    "volteado": false
+    "volteado": false,
+    "piensa": {
+      "src": "luduscog/andy/andy-think.png",
+      "frames": 4,
+      "fps": 6
+    }
   },
   "enemigos/copista": {
     "golpea": {
-      "src": "sprites/monsters/tiras/skeleton-attack.png",
-      "frames": 8,
+      "src": "luduscog/copista/copista-attack.png",
+      "frames": 4,
       "fps": 12
     },
     "quieto": {
-      "src": "sprites/monsters/tiras/skeleton-idle.png",
+      "src": "luduscog/copista/copista-idle.png",
       "frames": 4,
       "fps": 8
     },
     "avanza": {
-      "src": "sprites/monsters/tiras/skeleton-walk.png",
+      "src": "luduscog/copista/copista-walk.png",
       "frames": 4,
       "fps": 10
     },
     "herido": {
-      "src": "sprites/monsters/tiras/skeleton-take-hit.png",
+      "src": "luduscog/copista/copista-hit.png",
       "frames": 4,
       "fps": 10
     },
     "cae": {
-      "src": "sprites/monsters/tiras/skeleton-death.png",
+      "src": "luduscog/copista/copista-death.png",
       "frames": 4,
-      "fps": 10,
-      "loop": false
-    },
-    "volteado": true,
-    "escala": 1.7
-  },
-  "enemigos/errata": {
-    "golpea": [
-      {
-        "src": "sprites/dark_fantasy/Bat-Attack1.png",
-        "frames": 8,
-        "fps": 12
-      },
-      {
-        "src": "sprites/dark_fantasy/Bat-Attack2.png",
-        "frames": 11,
-        "fps": 12
-      }
-    ],
-    "quieto": {
-      "src": "sprites/dark_fantasy/Bat-IdleFly.png",
-      "frames": 9,
-      "fps": 8
-    },
-    "avanza": {
-      "src": "sprites/dark_fantasy/Bat-Run.png",
-      "frames": 8,
-      "fps": 10
-    },
-    "herido": {
-      "src": "sprites/dark_fantasy/Bat-Hurt.png",
-      "frames": 5,
-      "fps": 10
-    },
-    "cae": {
-      "src": "sprites/dark_fantasy/Bat-Die.png",
-      "frames": 12,
-      "fps": 10,
+      "fps": 8,
       "loop": false
     },
     "volteado": false,
-    "escala": 1.3
+    "escala": 1
+  },
+  "enemigos/errata": {
+    "golpea": {
+      "src": "luduscog/errata/errata-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "luduscog/errata/errata-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/errata/errata-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "herido": {
+      "src": "luduscog/errata/errata-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/errata/errata-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
   },
   "enemigos/rumor": {
     "golpea": {
-      "src": "sprites/monsters/Flying eye/Attack.png",
-      "frames": 8,
+      "src": "luduscog/rumor/rumor-attack.png",
+      "frames": 4,
       "fps": 12
     },
     "quieto": {
-      "src": "sprites/monsters/Flying eye/Attack.png",
-      "frames": 8,
+      "src": "luduscog/rumor/rumor-idle.png",
+      "frames": 4,
       "fps": 8
     },
     "herido": {
-      "src": "sprites/monsters/Flying eye/Take Hit.png",
+      "src": "luduscog/rumor/rumor-hit.png",
       "frames": 4,
       "fps": 10
     },
     "cae": {
-      "src": "sprites/monsters/Flying eye/Death.png",
+      "src": "luduscog/rumor/rumor-death.png",
       "frames": 4,
-      "fps": 10,
+      "fps": 8,
       "loop": false
     },
-    "volteado": true,
-    "escala": 1.5
+    "volteado": false,
+    "escala": 1,
+    "avanza": {
+      "src": "luduscog/rumor/rumor-walk.png",
+      "frames": 4,
+      "fps": 10
+    }
   },
   "enemigos/notaalpie": {
     "golpea": {
-      "src": "sprites/monsters/tiras/goblin-attack.png",
-      "frames": 8,
+      "src": "luduscog/notaalpie/notaalpie-attack.png",
+      "frames": 4,
       "fps": 12
     },
     "quieto": {
-      "src": "sprites/monsters/tiras/goblin-idle.png",
+      "src": "luduscog/notaalpie/notaalpie-idle.png",
       "frames": 4,
       "fps": 8
     },
     "avanza": {
-      "src": "sprites/monsters/tiras/goblin-run.png",
-      "frames": 8,
+      "src": "luduscog/notaalpie/notaalpie-walk.png",
+      "frames": 4,
       "fps": 10
     },
     "herido": {
-      "src": "sprites/monsters/tiras/goblin-take-hit.png",
+      "src": "luduscog/notaalpie/notaalpie-hit.png",
       "frames": 4,
       "fps": 10
     },
     "cae": {
-      "src": "sprites/monsters/tiras/goblin-death.png",
+      "src": "luduscog/notaalpie/notaalpie-death.png",
       "frames": 4,
-      "fps": 10,
+      "fps": 8,
       "loop": false
     },
-    "volteado": true,
-    "escala": 1.7
+    "volteado": false,
+    "escala": 1
   },
   "enemigos/dogma": {
     "golpea": {
-      "src": "sprites/monsters/tiras/mushroom-attack.png",
-      "frames": 8,
+      "src": "luduscog/dogma/dogma-attack.png",
+      "frames": 4,
       "fps": 12
     },
     "quieto": {
-      "src": "sprites/monsters/tiras/mushroom-idle.png",
+      "src": "luduscog/dogma/dogma-idle.png",
       "frames": 4,
       "fps": 8
     },
     "avanza": {
-      "src": "sprites/monsters/tiras/mushroom-run.png",
-      "frames": 8,
-      "fps": 10
-    },
-    "herido": {
-      "src": "sprites/monsters/tiras/mushroom-take-hit.png",
+      "src": "luduscog/dogma/dogma-walk.png",
       "frames": 4,
       "fps": 10
     },
-    "cae": {
-      "src": "sprites/monsters/tiras/mushroom-death.png",
-      "frames": 4,
-      "fps": 10,
-      "loop": false
-    },
-    "volteado": true,
-    "escala": 1.7
-  },
-  "enemigos/ortodoxia": {
-    "golpea": {
-      "src": "sprites/golems/Golem_1_attack.png",
-      "frames": 11,
-      "fps": 12
-    },
-    "quieto": {
-      "src": "sprites/golems/Golem_1_idle.png",
-      "frames": 8,
-      "fps": 8
-    },
-    "avanza": {
-      "src": "sprites/golems/Golem_1_walk.png",
-      "frames": 10,
-      "fps": 10
-    },
     "herido": {
-      "src": "sprites/golems/Golem_1_hurt.png",
-      "frames": 4,
-      "fps": 10
-    },
-    "cae": {
-      "src": "sprites/golems/Golem_1_die.png",
-      "frames": 13,
-      "fps": 10,
-      "loop": false
-    },
-    "volteado": true,
-    "escala": 1.8
-  },
-  "enemigos/tratado": {
-    "golpea": [
-      {
-        "src": "sprites/wizard/tiras/wizard-attack1.png",
-        "frames": 8,
-        "fps": 12
-      },
-      {
-        "src": "sprites/wizard/tiras/wizard-attack2.png",
-        "frames": 8,
-        "fps": 12
-      }
-    ],
-    "quieto": {
-      "src": "sprites/wizard/tiras/wizard-idle.png",
-      "frames": 8,
-      "fps": 8
-    },
-    "avanza": {
-      "src": "sprites/wizard/tiras/wizard-run.png",
-      "frames": 8,
-      "fps": 10
-    },
-    "herido": {
-      "src": "sprites/wizard/tiras/wizard-take-hit.png",
+      "src": "luduscog/dogma/dogma-hit.png",
       "frames": 3,
       "fps": 10
     },
     "cae": {
-      "src": "sprites/wizard/tiras/wizard-death.png",
-      "frames": 7,
-      "fps": 10,
+      "src": "luduscog/dogma/dogma-death.png",
+      "frames": 4,
+      "fps": 8,
       "loop": false
     },
-    "volteado": true,
-    "escala": 2.2
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/ortodoxia": {
+    "golpea": {
+      "src": "luduscog/ortodoxia/ortodoxia-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "luduscog/ortodoxia/ortodoxia-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/ortodoxia/ortodoxia-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "herido": {
+      "src": "luduscog/ortodoxia/ortodoxia-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/ortodoxia/ortodoxia-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/tratado": {
+    "golpea": {
+      "src": "luduscog/tratado/tratado-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "quieto": {
+      "src": "luduscog/tratado/tratado-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/tratado/tratado-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "herido": {
+      "src": "luduscog/tratado/tratado-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/tratado/tratado-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/bibliografia": {
+    "quieto": {
+      "src": "luduscog/bibliografia/bibliografia-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/bibliografia/bibliografia-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea": {
+      "src": "luduscog/bibliografia/bibliografia-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "herido": {
+      "src": "luduscog/bibliografia/bibliografia-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/bibliografia/bibliografia-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/apocrifo": {
+    "quieto": {
+      "src": "luduscog/apocrifo/apocrifo-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/apocrifo/apocrifo-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea": {
+      "src": "luduscog/apocrifo/apocrifo-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "herido": {
+      "src": "luduscog/apocrifo/apocrifo-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/apocrifo/apocrifo-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/eco": {
+    "quieto": {
+      "src": "luduscog/eco/eco-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/eco/eco-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea": {
+      "src": "luduscog/eco/eco-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "herido": {
+      "src": "luduscog/eco/eco-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/eco/eco-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/cita": {
+    "quieto": {
+      "src": "luduscog/cita/cita-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/cita/cita-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea": {
+      "src": "luduscog/cita/cita-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "herido": {
+      "src": "luduscog/cita/cita-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/cita/cita-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
+  },
+  "enemigos/palimpsesto": {
+    "quieto": {
+      "src": "luduscog/palimpsesto/palimpsesto-idle.png",
+      "frames": 4,
+      "fps": 8
+    },
+    "avanza": {
+      "src": "luduscog/palimpsesto/palimpsesto-walk.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "golpea": {
+      "src": "luduscog/palimpsesto/palimpsesto-attack.png",
+      "frames": 4,
+      "fps": 12
+    },
+    "herido": {
+      "src": "luduscog/palimpsesto/palimpsesto-hit.png",
+      "frames": 4,
+      "fps": 10
+    },
+    "cae": {
+      "src": "luduscog/palimpsesto/palimpsesto-death.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "volteado": false,
+    "escala": 1
   }
 }
