@@ -47,6 +47,8 @@ export interface Pieza {
   tesisId: string | null
   sentido: 'refuta' | 'defiende' | null
   sinonimos: string[]
+  /** v6.6 · atributos ya descompuestos y absorbidos por esta carta (Descomposición sostenida) */
+  partes?: string[]
 }
 
 let n = 0

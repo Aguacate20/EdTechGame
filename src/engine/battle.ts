@@ -242,6 +242,15 @@ export const TABLERO_ALTO = 100
 
 /* ---------------------------- montaje del mazo ---------------------------- */
 
+/** v6.6 · una carta absorbe atributos: los lleva escritos y pesa más en los vínculos que la usen */
+function absorberPartes(todo: Pieza, titulos: string[]): void {
+  const nuevas = titulos.filter((t) => !(todo.partes ?? []).includes(t))
+  if (!nuevas.length) return
+  const base = todo.cuerpo.split('\n⊟ ')[0]
+  todo.partes = [...(todo.partes ?? []), ...nuevas]
+  todo.cuerpo = `${base}\n⊟ Se compone de: ${todo.partes.join(' · ')}`
+  todo.importancia = Math.min(1, +(todo.importancia + 0.15 * nuevas.length).toFixed(2))
+}
 const esCartaDeConcepto = (p: Pieza) => p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion'
 
 export interface MapaPendiente {
@@ -1374,11 +1383,31 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
     const entero = piezaConcepto(ctx.contenido, p1.conceptId)
     const pos = e.tablero.find((x) => x.uid === (p1.clase === 'etiqueta' ? u1 : u2)) ?? e.tablero.find((x) => x.uid === u1)
     if (!entero || !pos) continue
+    // v6.6 · si el nombre o la descripción ya habían absorbido atributos, la carta entera los conserva
+    { const pp = [...(p1.partes ?? []), ...(p2.partes ?? [])]; if (pp.length) absorberPartes(entero, pp) }
     e.mano = [...e.mano.filter((p) => p.uid !== u1 && p.uid !== u2), entero]
     e.tablero = [...e.tablero.filter((x) => x.uid !== u1 && x.uid !== u2), { uid: entero.uid, x: pos.x, y: pos.y }]
     a.piezas = [entero.uid]
     // los demás trazos armados (flechas, jerarquías…) que tocaban el nombre o la descripción siguen a la carta compacta
     for (const otro of e.armados) if (otro !== a) otro.piezas = [...new Set(otro.piezas.map((u) => (u === u1 || u === u2 ? entero.uid : u)))]
+  }
+  // v6.6 · una descomposición armada se funde en UNA carta: el todo absorbe sus atributos
+  // (quedan escritos en la carta), la mesa no se llena de partes y el vínculo queda en oro.
+  for (const a of e.armados.filter((x) => x.tool === 'descomposicion' && x.piezas.length >= 2)) {
+    const [uTodo, ...uPartes] = a.piezas
+    const todo = e.mano.find((p) => p.uid === uTodo)
+    const partes = uPartes.map((u) => e.mano.find((p) => p.uid === u)).filter((p): p is Pieza => !!p && p.clase === 'subdimension')
+    if (!todo || !partes.length) continue
+    absorberPartes(todo, partes.map((p) => p.titulo))
+    const fuera = new Set(partes.map((p) => p.uid))
+    e.mano = e.mano.filter((p) => !fuera.has(p.uid))
+    e.tablero = e.tablero.filter((x) => !fuera.has(x.uid))
+    a.piezas = [uTodo]
+    for (const otro of e.armados) if (otro !== a) otro.piezas = [...new Set(otro.piezas.map((u) => (fuera.has(u) ? uTodo : u)))]
+    // las copias de esos atributos que queden en el mazo o el descarte ya no hacen falta
+    const ya = new Set(todo.partes ?? [])
+    const repetida = (p: Pieza) => p.clase === 'subdimension' && p.conceptId === todo.conceptId && ya.has(p.titulo)
+    e.mazo = e.mazo.filter((p) => !repetida(p)); e.descarte = e.descarte.filter((p) => !repetida(p))
   }
   sanearArmados(e)
   e.trazos = []

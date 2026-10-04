@@ -839,6 +839,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 {marcada && <span className="orden">{orden + 1}</span>}
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 42)}</span>
+                {p.partes?.length ? <span className="partes-insignia" title={`Se compone de: ${p.partes.join(' · ')}`}>⊟ {p.partes.length}</span> : null}
                 <i className="borde" style={{ background: cd.banda }} />
                 <i className={`grano grano-${cd.textura}`} />
                 {cd.canto && <i className="canto" />}
