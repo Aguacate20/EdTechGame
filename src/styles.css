@@ -2175,3 +2175,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .casilla .pila > .bicho.detras .rasgo, .casilla .pila > .bicho.detras .fase { visibility: hidden; }
 .casilla .pila-cuenta { position: absolute; top: 4px; right: 4px; z-index: 20; font-family: var(--mono); font-size: 11px; font-weight: 700;
   color: var(--texto, #F3F6FF); background: rgba(10, 18, 48, .78); border: 1px solid var(--borde, #24335E); border-radius: 99px; padding: 1px 6px; }
+
+/* ── v6.5 · la carta dorada que se arrastra va pegada al puntero (sin la transición de reordenar) ── */
+.naipe.en-tablero[data-armada='true'][data-moviendo='true'] { transition: none !important; animation: none !important; cursor: grabbing; z-index: 30; }
+/* mientras se arrastra el fondo, la mesa sigue al puntero sin retardo */
+.app .zona-lienzo .lienzo:active { transition: none; }

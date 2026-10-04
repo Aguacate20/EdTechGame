@@ -293,6 +293,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [zoom, setZoom] = useState(0.75)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const panRef = useRef<{ x0: number; y0: number; px: number; py: number } | null>(null)
+  /** v6.5 · la cámara nunca sale de la mesa: el desplazamiento se acota a lo que el mundo
+   *  (200 % de la ventana, escalado) cubre de verdad; así no hay «zona muerta» sin retorno */
+  const acotarPan = (p: { x: number; y: number }, z: number) => {
+    const v = lienzo.current?.parentElement?.getBoundingClientRect()
+    if (!v) return p
+    const mx = Math.max(0, ((2 * z - 1) / 2) * v.width), my = Math.max(0, ((2 * z - 1) / 2) * v.height)
+    return { x: Math.max(-mx, Math.min(mx, p.x)), y: Math.max(-my, Math.min(my, p.y)) }
+  }
+  const zoomRef = useRef(zoom)
+  useEffect(() => { zoomRef.current = zoom; setPan((q) => acotarPan(q, zoom)) }, [zoom])
+  /** v6.5 · la carta dorada que se está arrastrando: sin transición, pegada al puntero */
+  const [moviendoUid, setMoviendoUid] = useState<string | null>(null)
   /** v5.99 · arrastre en vivo de cartas doradas (por puntero, sin HTML5 drag) */
   const moviendoRef = useRef<{ uid: string; raf: number | null } | null>(null)
   /** v6.1 · si el puntero se movió, fue arrastre, no clic */
@@ -303,7 +315,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     const onWheel = (ev: WheelEvent) => {
       ev.preventDefault()
       if (ev.ctrlKey || ev.metaKey) setZoom((z) => Math.max(0.35, Math.min(2, +(z - ev.deltaY * 0.0025).toFixed(3))))
-      else setPan((q) => ({ x: q.x - ev.deltaX, y: q.y - ev.deltaY }))
+      else setPan((q) => acotarPan({ x: q.x - ev.deltaX, y: q.y - ev.deltaY }, zoomRef.current))
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
@@ -498,7 +510,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           })()}
           golpeMayor={resuelto && casc.terminada && !!e.ultima &&
             (e.ultima.diag.xmult > 1 || e.ultima.patron !== 'puntual' || e.ultima.danoTotal >= 400)}
-          ultimosImpactos={resuelto && casc.terminada && e.ultima ? e.ultima.impactos : []}
+          ultimosImpactos={resuelto && e.ultima ? e.ultima.impactos : []}
           disparoListo={resuelto && casc.terminada}
           disparo={resuelto && casc.terminada && e.ultima ? e.ultima.disparo : null}
         />
@@ -616,7 +628,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             panRef.current = { x0: ev.clientX, y0: ev.clientY, px: pan.x, py: pan.y }
             ;(ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId)
           }}
-          onPointerMove={(ev) => { const s = panRef.current; if (s) setPan({ x: s.px + (ev.clientX - s.x0), y: s.py + (ev.clientY - s.y0) }) }}
+          onPointerMove={(ev) => { const s = panRef.current; if (s) setPan(acotarPan({ x: s.px + (ev.clientX - s.x0), y: s.py + (ev.clientY - s.y0) }, zoom)) }}
           onPointerUp={() => { panRef.current = null }}
           onPointerCancel={() => { panRef.current = null }}
           onMouseEnter={() => setSobreTablero(true)}
@@ -762,6 +774,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
+                data-moviendo={moviendoUid === p.uid ? 'true' : undefined}
                 data-cristal={resaltarCristal ? (resaltarCristal.has(p.uid) ? 'si' : 'no') : undefined}
                 data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : e.pistaSuave && p.conceptId === e.pistaSuave ? 'suave' : undefined}
                 className={`naipe en-tablero${p.uid.startsWith('const:') ? ' constelacion' : ''} naipe-${p.clase}${marcada ? ' marcada' : ''}` +
@@ -776,6 +789,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   if (resuelto || !(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) || ev.button !== 0) return
                   ev.stopPropagation(); ev.preventDefault()
                   moviendoRef.current = { uid: p.uid, raf: null }
+                  setMoviendoUid(p.uid)
                   seMovioRef.current = false
                   const rc = (ev.currentTarget as HTMLElement).getBoundingClientRect()
                   agarreRef.current = { dx: ev.clientX - (rc.left + rc.width / 2), dy: ev.clientY - (rc.top + rc.height / 2) }
@@ -789,8 +803,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   if (mv.raf !== null) cancelAnimationFrame(mv.raf)
                   mv.raf = requestAnimationFrame(() => { on.cambio((st) => soltar(st, p.uid, x, y)); mv.raf = null })
                 }}
-                onPointerUp={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null }}
-                onPointerCancel={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null }}
+                onPointerUp={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null; setMoviendoUid(null) }}
+                onPointerCancel={() => { if (moviendoRef.current?.uid === p.uid) moviendoRef.current = null; setMoviendoUid(null) }}
                 onDragStart={(ev) => { const rc = (ev.currentTarget as HTMLElement).getBoundingClientRect(); agarreRef.current = { dx: ev.clientX - (rc.left + rc.width / 2), dy: ev.clientY - (rc.top + rc.height / 2) }; setArrastrando(p.uid) }}
                 onDragEnd={() => setArrastrando(null)}
                 onClick={(ev) => {
