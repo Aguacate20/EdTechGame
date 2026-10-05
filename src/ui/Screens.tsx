@@ -152,6 +152,13 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
   /** apareció una cuarta opción rara: se anuncia, para que se note cuando pasa */
   veta?: boolean
 }) {
+  /** v6.25 · de qué clase es cada hallazgo: se ve de un vistazo qué estás eligiendo */
+  const clase = (r: Recompensa): { id: string; rotulo: string } =>
+    r.tipo === 'lente' ? { id: 'pasiva', rotulo: 'PASIVA · siempre activa' }
+      : r.tipo === 'sello' ? { id: 'activo', rotulo: 'ACTIVO · un uso por combate' }
+        : r.tipo === 'herramienta' ? { id: 'herramienta', rotulo: 'HERRAMIENTA NUEVA · para siempre' }
+          : r.tipo === 'concepto' || r.tipo === 'caso' || r.tipo === 'tesis' || r.tipo === 'relacion' ? { id: 'carta', rotulo: 'CARTA NUEVA · entra a tu mazo' }
+            : { id: 'respiro', rotulo: 'RESPIRO' }
   const describir = (r: Recompensa): { tt: string; nom: string; cuerpo: string; pie?: string; icono?: string } => {
     switch (r.tipo) {
       case 'lente': {
@@ -166,13 +173,21 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
         const h = HERRAMIENTAS[r.id]
         return {
           tt: 'Herramienta', nom: `${h.glifo} ${h.nombre}`,
-          cuerpo: `Una más por turno. ${h.afirma}`, pie: h.ejemplo
+          cuerpo: `Una forma nueva de afirmar, y trae sus cartas al mazo. ${h.afirma}`, pie: h.ejemplo
+        }
+      }
+      case 'concepto': {
+        const k = contenido.conceptos[r.id]
+        return {
+          tt: 'Concepto entero', nom: k?.titulo ?? 'Concepto',
+          cuerpo: `Llega a tu mano ya unido, nombre y descripción juntos, listo para enlazar. ${k?.definicionCorta || k?.definicion || ''}`,
+          pie: 'Te ahorras emparejarlo; lo que cuenta ahora es con qué lo relacionas.'
         }
       }
       case 'relacion':
         return {
-          tt: 'Carta de relación', nom: r.tipoRelacion,
-          cuerpo: `Aparece ${contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0} veces en este texto, así que multiplica ${(contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0) <= 3 ? 'mucho' : 'poco'}.`
+          tt: 'Vínculo nuevo', nom: r.tipoRelacion,
+          cuerpo: `Desbloqueas este tipo de vínculo para la Flecha. Aparece ${contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0} veces en este texto, así que multiplica ${(contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0) <= 3 ? 'mucho' : 'poco'}.`
         }
       case 'caso': {
         const e = contenido.escenarios.find((x) => x.id === r.id) ?? contenido.casos.find((x) => x.id === r.id)
@@ -213,9 +228,10 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
           const esVeta = veta && i === opciones.length - 1
           return (
             <button
-              key={i} className={`naipe${esVeta ? ' veta' : ''}`}
+              key={i} className={`naipe hallazgo hallazgo-${clase(r).id}${esVeta ? ' veta' : ''}`}
               onClick={() => onElegir(r)} style={{ minHeight: 160 }}
             >
+              <span className="hallazgo-clase">{clase(r).rotulo}</span>
               <span className="tt">{d.tt}</span>
               <span className="nom">{d.icono && <IconoLente id={d.icono} tamano={26} />}{d.nom}</span>
               <span className="cuerpo">{d.cuerpo}</span>

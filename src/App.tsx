@@ -58,7 +58,9 @@ const LUCIDEZ_MAX = 80
 const cuentaDe = (b: EstadoBatalla) => ({
   vinculosSostenidos: b.hallazgos.vinculos.length, combosVistos: b.combosVistos,
   conceptosSostenidos: b.conceptosSostenidos, quemasAcertadas: b.quemasAcertadas,
-  errores: b.erroresTotales, invertidos: b.invertidosTotales
+  errores: b.erroresTotales, invertidos: b.invertidosTotales,
+  cristalizaciones: b.mapa.cristalizaciones, enlacesMapa: b.enlacesMapa ?? 0, pistasPedidas: b.pistasPedidas ?? 0,
+  herramientasDistintas: (b.herramientasSostenidas ?? []).length, mejorGolpe: b.mejorGolpe.dano
 })
 
 /** v6.20 · una cifra que sube hasta su valor: el número del gran ataque se ve crecer */
@@ -617,6 +619,8 @@ export default function App() {
     const inf = r.diag.veredictos.filter((v) => v.inferencia).length
     if (inf) setInferenciasRun((n) => n + inf)
     let nueva = lucidez - r.danoRecibido
+    // v6.25 · Tinta viva: cada vínculo sostenido devuelve lucidez
+    if (mods.curaPorSostenido > 0 && r.diag.sostenidos > 0) nueva += mods.curaPorSostenido * r.diag.sostenidos
     if (r.diag.repertoriosReubicados.length) nueva += 6
     // el golpe que sobra no se desperdicia: el exceso vuelve como claridad
     if (r.sobredano > 0) {
@@ -791,9 +795,10 @@ export default function App() {
       const calidad = Math.min(1, batalla.mejorGolpe.dano / 420 + primaEncargo(batalla.encargo, cumplido))
       // v5.63 · en modo aprendizaje el botín sigue la escalera de andamiaje, no el azar
       const r = aprendizaje && atlas
-        ? ofrecerRecompensasAndamiadas(contenido, { lentes, sellos, herramientas, relaciones: progreso.relaciones }, atlas, rngRef.current, dura, calidad, lentesVetadas(atlas))
+        ? ofrecerRecompensasAndamiadas(contenido, { lentes, sellos, herramientas, relaciones: progreso.relaciones, casos, tesis, fusionados }, atlas, rngRef.current, dura, calidad, lentesVetadas(atlas))
         : ofrecerRecompensas(contenido, {
-        lentes, sellos, herramientas, relaciones: progreso.relaciones
+        lentes, sellos, herramientas, relaciones: progreso.relaciones,
+        casos, tesis, fusionados, conocidos: atlas ? Object.keys(atlas.conceptos) : []
       }, rngRef.current, dura, calidad, atlas ? lentesVetadas(atlas) : [])
       setRecompensas(r.opciones); setVeta(r.veta)
       setPorqueBotin('porque' in r ? (r as { porque: string[] }).porque : [])
@@ -854,6 +859,7 @@ export default function App() {
           guardarAtlas(a); return a
         })
         break
+      case 'concepto': setFusionados((x) => [...new Set([...x, r.id])]); break
       case 'caso': setCasos((c) => [...c, r.id]); break
       case 'tesis': setTesis((c) => [...c, r.id]); break
       case 'fichero': setManoExtra((m) => m + 1); break

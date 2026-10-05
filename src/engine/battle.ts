@@ -86,6 +86,12 @@ export interface EstadoBatalla {
   pistaSuave: string | null
   /** v5.90 · conceptos cristalizados en esta sala: no vuelven al mazo */
   cristalizadosSala: string[]
+  /** v6.25 · pasivas del mapa y contadores para los encargos */
+  mapaGolpe?: number
+  pistasGratis?: number
+  pistasPedidas?: number
+  enlacesMapa?: number
+  herramientasSostenidas?: string[]
   /** v5.95 */
   temaCasiCompleto: boolean
   /** v5.83 · el golpe del mapa en el último turno (para la onda) */
@@ -393,7 +399,8 @@ export function iniciarBatalla(
     racha: 0, condicion: bolsa.condicion ?? null, selladoConstelacion: false,
     asentadas: bolsa.asentadas ?? [], aristasBonificadas: [],
     secos: 0, vetadasReparto: [],
-    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [...(bolsa.cristalizados ?? [])], temaCasiCompleto: !!bolsa.temaCasiCompleto, creacionesTotales: 0
+    apertura: null, avisoPiedad: null, turnosVacios: 0, aciertosOleada: 0, fallosOleada: 0, apuestaOleada: null, apuestasOleada: [], mapa: { trazos: [], umbral: 6, cristalizaciones: 0, meta: 0, hechos: 0 }, armados: [], turnosSinAvance: 0, avanzoEsteTurno: false, pista: null, pistaSuave: null, ultimoGolpeMapa: null, cristalizadosSala: [...(bolsa.cristalizados ?? [])], temaCasiCompleto: !!bolsa.temaCasiCompleto, creacionesTotales: 0,
+    mapaGolpe: ctx.lentes.mapaGolpe, pistasGratis: ctx.lentes.pistasGratis, pistasPedidas: 0, enlacesMapa: 0, herramientasSostenidas: []
   }
     // v5.66 · el potencial de daño crece con las herramientas (más trazos posibles, más
   // multiplicador) y con la mano. Los enemigos se ajustan a ese potencial, y la mano
@@ -753,7 +760,7 @@ export function golpeDelMapa(e: EstadoBatalla, r: ResultadoTurno): void {
   let conexiones = 0
   for (let i = 0; i < e.mapa.trazos.length; i++) for (let j = i + 1; j < e.mapa.trazos.length; j++)
     if (e.mapa.trazos[i].conceptIds.some((id) => e.mapa.trazos[j].conceptIds.includes(id))) conexiones += 1
-  const dano = Math.round(0.35 * Math.pow(suma, 0.8) * (1 + 0.12 * Math.min(20, conexiones)))
+  const dano = Math.round(0.35 * Math.pow(suma, 0.8) * (1 + 0.12 * Math.min(20, conexiones)) * (1 + (e.mapaGolpe ?? 0)))
   if (dano <= 0) return
   let resto = dano
   const nombres: string[] = []
@@ -770,7 +777,8 @@ export function golpeDelMapa(e: EstadoBatalla, r: ResultadoTurno): void {
 
 /** v5.82 · pedir pista a voluntad (nivel 4): cuesta un cambio; muestra las dos cartas y el tipo */
 export function pedirPista(e: EstadoBatalla, ctx: ContextoBatalla): string {
-  if (e.cambiosRestantes <= 0) return 'Sin cambios no hay pista: cada pista cuesta un cambio.'
+  const gratis = (e.pistasGratis ?? 0) > 0
+  if (!gratis && e.cambiosRestantes <= 0) return 'Sin cambios no hay pista: cada pista cuesta un cambio.'
   const dentro = new Set(e.conceptIdsCasilla)
   const jugable = (p: Pieza) => p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion'
   const ids = new Set(e.mano.filter(jugable).map((p) => p.conceptId).filter((x): x is string => !!x))
@@ -779,9 +787,11 @@ export function pedirPista(e: EstadoBatalla, ctx: ContextoBatalla): string {
     .filter((a) => dentro.has(a.from) && dentro.has(a.to) && ids.has(a.from) && ids.has(a.to) && tipos.has(a.tipo) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to)))
     .sort((x, y) => (y.confianza ?? 0) - (x.confianza ?? 0))[0]
   if (!mejor) return 'No hay vínculo pendiente entre las cartas que tienes ahora: cambia alguna.'
-  e.cambiosRestantes -= 1
+  if (gratis) e.pistasGratis = (e.pistasGratis ?? 0) - 1; else e.cambiosRestantes -= 1
+  e.pistasPedidas = (e.pistasPedidas ?? 0) + 1
   e.pista = { a: mejor.from, b: mejor.to, tipo: mejor.tipo, revelarTipo: true }
-  return 'Pista mostrada: dos cartas y el tipo de vínculo. Te costó un cambio, y el trazo rendirá al 70 %.'
+  return gratis ? 'Pista mostrada (Segunda lectura: esta no costó cambio). El trazo rendirá al 70 %.'
+    : 'Pista mostrada: dos cartas y el tipo de vínculo. Te costó un cambio, y el trazo rendirá al 70 %.'
 }
 
 /** v5.86 · orden semántico: la posición enseña la relación. Fuerzas por tipo de vínculo:
@@ -974,7 +984,7 @@ export function componenteCristalizable(e: EstadoBatalla, ctx: ContextoBatalla):
     const grupo = [restantes.shift()!]
     let cambio = true
     while (cambio) { cambio = false; for (let i = restantes.length - 1; i >= 0; i--) if (restantes[i].piezas.some((u) => grupo.some((g) => g.piezas.includes(u)))) { grupo.push(restantes.splice(i, 1)[0]); cambio = true } }
-    if (grupo.length < 4) continue
+    if (grupo.length < 4 - ctx.lentes.cristalMenos) continue
     const uids = [...new Set(grupo.flatMap((g) => g.piezas))]
     const ids = [...new Set(uids.map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
     const pendiente = ctx.contenido.aristas.some((a) => ids.includes(a.from) && ids.includes(a.to) && dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)) && !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to)))
@@ -988,7 +998,7 @@ export function puedeCristalizar(e: EstadoBatalla, ctx: ContextoBatalla): boolea
 export function progresoCristal(e: EstadoBatalla, ctx: ContextoBatalla): number {
   const ec = estadoCristalizacion(e, ctx)
   if (!ec) return 0
-  const tam = Math.min(1, ec.trazos / 4)
+  const tam = Math.min(1, ec.trazos / (4 - ctx.lentes.cristalMenos))
   return ec.pendientes === 0 ? tam : Math.min(0.85, tam)
 }
 
@@ -1069,10 +1079,21 @@ export function afirmar(e: EstadoBatalla, ctx: ContextoBatalla): ResultadoTurno 
   if (repetidos.length) { diag.mult = Math.max(0.4, diag.mult); diag.dano = Math.round(Math.max(0, diag.fichas) * diag.mult * diag.xmult) }
   const nuevosSostenidos = diag.veredictos.filter((v) => ['sostenido', 'equivalente', 'derivado'].includes(v.estado) && !repetidos.includes(v))
   const conexiones = nuevosSostenidos.filter((v) => v.conceptIds.some((id) => enMapa.has(id))).length
+  // v6.25 · lo que los encargos necesitan contar
+  e.enlacesMapa = (e.enlacesMapa ?? 0) + conexiones
+  e.herramientasSostenidas = [...new Set([...(e.herramientasSostenidas ?? []), ...nuevosSostenidos.map((v) => v.trazo.tool)])]
+  // v6.25 · Orfebre: las cartas doradas de la mesa suman fichas
+  const doradas = new Set(e.armados.flatMap((x) => x.piezas)).size
+  if (ctx.lentes.doradaFichas > 0 && doradas > 0 && nuevosSostenidos.length > 0) {
+    const f = ctx.lentes.doradaFichas * doradas
+    diag.fichas += f; diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
+    diag.ajustes.push({ nombre: `Orfebre ×${doradas}`, fichas: f, nota: `${doradas} carta(s) dorada(s) en la mesa.` })
+  }
+  const porEnlace = 0.5 + ctx.lentes.mapaEnlace
   if (conexiones > 0) {
-    diag.mult += 0.5 * conexiones
+    diag.mult += porEnlace * conexiones
     diag.dano = Math.round(diag.fichas * diag.mult * diag.xmult)
-    diag.combos.push({ id: 'articulacion', nombre: 'Enlace con el mapa', fichas: 0, mult: 0.5 * conexiones, detalle: `${conexiones} trazo(s) enganchan con lo que ya sostuviste en esta sala.` })
+    diag.combos.push({ id: 'articulacion', nombre: 'Enlace con el mapa', fichas: 0, mult: porEnlace * conexiones, detalle: `${conexiones} trazo(s) enganchan con lo que ya sostuviste en esta sala.` })
   }
   // v5.77 · las identidades rinden cada vez menos en la misma sala (la tercera, al 60 %; la
   // quinta, al 40 %): son preparación, no ataque. Y el PRIMER vínculo de cada tipo en la

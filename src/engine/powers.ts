@@ -157,6 +157,31 @@ export const LENTES: Lente[] = [
     regla: '×2.5 al daño ENTERO con un Mestizaje de cuatro clases de pieza o más.',
     costo: 'Solo se gana con su hazaña. Pide jugar con TODO el material a la vez.',
     mod: { xmults: [{ id: 'aleph', nombre: 'El Aleph', factor: 2.5, cuando: 'mestizaje4' }] } },
+  /* ---- v6.25 · las del mapa: premian construir sobre lo ya sostenido, no repetir ---- */
+  { id: 'diapason', nombre: 'Diapasón', rareza: 'comun',
+    regla: 'Tu mapa dorado resuena un 60 % más fuerte cada turno.',
+    costo: 'No hace nada hasta que tengas vínculos en oro sobre la mesa.',
+    mod: { mapaGolpe: 0.6 } },
+  { id: 'cartografa', nombre: 'Cartógrafa estelar', rareza: 'rara',
+    regla: 'Cada trazo que engancha con tu mapa multiplica casi el doble.',
+    costo: 'Los trazos sueltos, que no tocan nada de lo anterior, se quedan igual.',
+    mod: { mapaEnlace: 0.4 } },
+  { id: 'orfebre', nombre: 'Orfebre', rareza: 'comun',
+    regla: '+2 fichas por cada carta dorada que haya en la mesa cuando afirmas.',
+    costo: 'Empieza cada sala en cero: crece con el mapa.',
+    mod: { doradaFichas: 2 } },
+  { id: 'tinta_viva', nombre: 'Tinta viva', rareza: 'comun',
+    regla: 'Cada vínculo que sostienes te devuelve 1 de lucidez.',
+    costo: 'No pega más fuerte: te mantiene en pie para seguir leyendo.',
+    mod: { curaPorSostenido: 1 } },
+  { id: 'segunda_lectura', nombre: 'Segunda lectura', rareza: 'comun',
+    regla: 'La primera pista de cada combate no te cuesta un cambio.',
+    costo: 'El trazo con pista sigue rindiendo al 70 %.',
+    mod: { pistasGratis: 1 } },
+  { id: 'prisma_bolsillo', nombre: 'Prisma de bolsillo', rareza: 'rara',
+    regla: 'Cristalizas con tres vínculos enlazados en vez de cuatro.',
+    costo: 'Mapas más pequeños son constelaciones más pequeñas.',
+    mod: { cristalMenos: 1 } },
   /* ---- las escaladoras: el motor crece por JUGAR bien, no por lootear ---- */
   { id: 'cuaderno_hereje', nombre: 'Cuaderno del hereje', rareza: 'rara',
     regla: '+0.15 al multiplicador, permanente, por cada falsificación quemada en la expedición.',
@@ -202,6 +227,12 @@ export function combinarLentes(ids: string[]): ModificadoresLente {
     out.plausibleCuenta = out.plausibleCuenta || !!m.plausibleCuenta
     out.sinCastigoInvertido = out.sinCastigoInvertido || !!m.sinCastigoInvertido
     out.revelaApocrifas += m.revelaApocrifas ?? 0
+    out.mapaGolpe += m.mapaGolpe ?? 0
+    out.mapaEnlace += m.mapaEnlace ?? 0
+    out.doradaFichas += m.doradaFichas ?? 0
+    out.curaPorSostenido += m.curaPorSostenido ?? 0
+    out.pistasGratis += m.pistasGratis ?? 0
+    out.cristalMenos = Math.max(out.cristalMenos, m.cristalMenos ?? 0)
     out.xmults = [...out.xmults, ...(m.xmults ?? [])]
   }
   return out

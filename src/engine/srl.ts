@@ -28,6 +28,12 @@ export type TipoEncargo =
   | 'concepto'      // sostener algo sobre un concepto sin evidencia
   | 'apocrifa'      // quemar una falsificación
   | 'sin_error'     // cerrar la sala sin ningún error ni inversión
+  // v6.25 · los que hablan de cómo se juega hoy: el mapa, el cristal, las pistas
+  | 'enlaces'       // enganchar N trazos con el mapa dorado
+  | 'variedad'      // sostener con N herramientas distintas
+  | 'golpe'         // un golpe de N o más
+  | 'cristalizar'   // cristalizar un mapa en esta sala
+  | 'sin_pista'     // N vínculos sin pedir pista
 
 export interface Encargo {
   id: string
@@ -50,10 +56,17 @@ export interface CuentaEncargo {
   quemasAcertadas: number
   errores: number
   invertidos: number
+  cristalizaciones?: number
+  enlacesMapa?: number
+  pistasPedidas?: number
+  herramientasDistintas?: number
+  mejorGolpe?: number
 }
 
-/** Tres encargos, de tres niveles, escogidos con lo que hay en la sala y en el
- *  Atlas. El nivel 3 apunta siempre a lo que el estudiante aún no sostiene. */
+/** Tres encargos, de tres niveles, escogidos con lo que hay en la sala y en el Atlas.
+ *  v6.25 · cada nivel tiene varias propuestas y rotan de sala en sala: antes el primero era
+ *  SIEMPRE «sostener dos vínculos», y elegir lo mismo cada vez no es planear. El nivel 3
+ *  sigue apuntando, cuando existe, a lo que el estudiante aún no sostiene. */
 export function proponerEncargos(
   c: Contenido, conceptIds: string[], atlas: Atlas, mano: Pieza[], herramientas: string[]
 ): Encargo[] {
@@ -61,63 +74,50 @@ export function proponerEncargos(
   const conFallos = conceptIds
     .filter((id) => (atlas.conceptos[id]?.fallos ?? 0) > (atlas.conceptos[id]?.aciertos ?? 0))
   const hayApocrifa = mano.some((p) => p.clase === 'apocrifa')
-  const tieneCampo = herramientas.includes('campo')
-  const tieneIdentidad = herramientas.includes('identidad')
+  const distintas = new Set(herramientas).size
+  const vinculosEnSala = c.aristas.filter((a) => conceptIds.includes(a.from) && conceptIds.includes(a.to)).length
+  // la rotación depende de la sala y de cuántas expediciones lleva: estable al recargar, distinta cada vez
+  let giro = (atlas.runs ?? 0) * 7 + conceptIds.length
+  for (const id of conceptIds) for (let i = 0; i < id.length; i++) giro = (giro * 31 + id.charCodeAt(i)) >>> 0
+  const elegir = <T,>(xs: T[], salto: number): T => xs[(giro + salto) % xs.length]
+  type Borrador = Omit<Encargo, 'id' | 'nivel' | 'sobreDebil'> & { sobreDebil?: boolean }
 
-  const out: Encargo[] = []
-
-  // nivel 1: algo alcanzable con la mano actual
-  out.push({
-    id: 'e1', tipo: 'vinculos', nivel: 1, objetivo: '2', sobreDebil: false,
-    titulo: 'Sostener dos vínculos',
-    detalle: 'Dos afirmaciones que el texto respalde, en cualquier turno de la sala.'
-  })
-
-  // nivel 2: exige estructura o discriminación
-  if (hayApocrifa) {
-    out.push({
-      id: 'e2', tipo: 'apocrifa', nivel: 2, objetivo: '1', sobreDebil: false,
-      titulo: 'Cazar una falsificación',
-      detalle: 'Hay al menos una carta apócrifa en tu mano. Quémala antes de que te la cuelen.'
-    })
-  } else if (tieneCampo && tieneIdentidad) {
-    out.push({
-      id: 'e2', tipo: 'combo', nivel: 2, objetivo: 'doble_registro', sobreDebil: false,
-      titulo: 'Encender un Doble registro',
-      detalle: 'Identificar un concepto y enlazarlo en el mismo diagrama.'
-    })
-  } else {
-    out.push({
-      id: 'e2', tipo: 'vinculos', nivel: 2, objetivo: '4', sobreDebil: false,
-      titulo: 'Sostener cuatro vínculos',
-      detalle: 'Cuatro afirmaciones respaldadas a lo largo de la sala.'
-    })
-  }
-
-  // nivel 3: lo que todavía no sostienes
+  // nivel 1 · alcanzable con la mano de ahora
+  const n1: Borrador[] = [
+    { tipo: 'vinculos', objetivo: '2', titulo: 'Sostener dos vínculos', detalle: 'Dos afirmaciones que el texto respalde, en cualquier turno de la sala.' },
+    { tipo: 'golpe', objetivo: '150', titulo: 'Un golpe de 150 o más', detalle: 'Un solo diagrama que pegue 150. Dos trazos que se toquen suelen bastar.' },
+    { tipo: 'enlaces', objetivo: '1', titulo: 'Enganchar un trazo con tu mapa', detalle: 'Sostén algo y luego construye sobre ello: un trazo nuevo que toque una carta dorada.' }
+  ]
+  // nivel 2 · pide estructura o discriminación
+  const n2: Borrador[] = [
+    ...(hayApocrifa ? [{ tipo: 'apocrifa' as const, objetivo: '1', titulo: 'Cazar una falsificación', detalle: 'Hay al menos una carta apócrifa en tu mano. Quémala antes de que te la cuelen.' }] : []),
+    { tipo: 'enlaces', objetivo: '3', titulo: 'Tres trazos enganchados al mapa', detalle: 'Tres afirmaciones que se apoyen en lo que ya dejaste en oro. Así crece una constelación.' },
+    ...(distintas >= 3 ? [{ tipo: 'variedad' as const, objetivo: '3', titulo: 'Sostener con tres herramientas distintas', detalle: 'No solo flechas: una identidad, un campo, lo que tengas. Tres maneras de afirmar.' }] : []),
+    { tipo: 'vinculos', objetivo: '4', titulo: 'Sostener cuatro vínculos', detalle: 'Cuatro afirmaciones respaldadas a lo largo de la sala.' },
+    { tipo: 'golpe', objetivo: '500', titulo: 'Un golpe de 500 o más', detalle: 'Un diagrama articulado: varios trazos verdaderos que compartan cartas.' }
+  ]
+  // nivel 3 · lo que todavía no sostienes, o la jugada grande
   const debil = conFallos[0] ?? sinEvidencia[0]
-  if (debil && c.conceptos[debil]) {
-    out.push({
-      id: 'e3', tipo: 'concepto', nivel: 3, objetivo: debil, sobreDebil: true,
+  const n3: Borrador[] = [
+    ...(debil && c.conceptos[debil] ? [{
+      tipo: 'concepto' as const, objetivo: debil, sobreDebil: true,
       titulo: `Sostener algo sobre «${c.conceptos[debil].titulo}»`,
       detalle: conFallos.length
         ? 'Es el concepto que más te ha fallado. Una afirmación respaldada sobre él lo cambia.'
         : 'Aún no tienes evidencia de él en tu Atlas. Esta sala es para estrenarlo.'
-    })
-  } else if (tieneCampo) {
-    out.push({
-      id: 'e3', tipo: 'combo', nivel: 3, objetivo: 'cierre', sobreDebil: false,
-      titulo: 'Encender un Cierre',
-      detalle: 'Un campo cuyos miembros además estén enlazados por dentro.'
-    })
-  } else {
-    out.push({
-      id: 'e3', tipo: 'sin_error', nivel: 3, objetivo: '0', sobreDebil: false,
-      titulo: 'Cerrar sin un solo error',
-      detalle: 'Ni inversiones ni falsificaciones afirmadas en toda la sala.'
-    })
-  }
-  return out
+    }] : []),
+    ...(vinculosEnSala >= 4 ? [{ tipo: 'cristalizar' as const, objetivo: '1', titulo: 'Cristalizar un mapa en esta sala', detalle: 'Cuatro vínculos enlazados y sin cabos sueltos: el ataque final.' }] : []),
+    { tipo: 'sin_pista', objetivo: '3', titulo: 'Tres vínculos sin pedir pista', detalle: 'Tres afirmaciones sostenidas y ni una pista a petición en toda la sala.' },
+    { tipo: 'sin_error', objetivo: '2', titulo: 'Dos vínculos y ni un solo error', detalle: 'Ni inversiones ni falsificaciones afirmadas en toda la sala, y al menos dos vínculos sostenidos.' }
+  ]
+  // el concepto débil, cuando existe, sale dos de cada tres veces: es el encargo que más enseña
+  const tercero = n3[0].tipo === 'concepto' && giro % 3 !== 0 ? n3[0] : elegir(n3, 2)
+  // los tres niveles nunca piden lo mismo con distinto número
+  const primero = elegir(n1, 0)
+  const segundo = elegir(n2.filter((b) => b.tipo !== primero.tipo && b.tipo !== tercero.tipo), 1)
+  return [primero, segundo, tercero].map((b, i) => ({
+    ...b, id: `e${i + 1}`, nivel: (i + 1) as 1 | 2 | 3, sobreDebil: !!b.sobreDebil
+  }))
 }
 
 export function encargoCumplido(en: Encargo, k: CuentaEncargo): boolean {
@@ -126,7 +126,12 @@ export function encargoCumplido(en: Encargo, k: CuentaEncargo): boolean {
     case 'combo': return k.combosVistos.includes(en.objetivo)
     case 'concepto': return k.conceptosSostenidos.includes(en.objetivo)
     case 'apocrifa': return k.quemasAcertadas >= Number(en.objetivo)
-    case 'sin_error': return k.errores === 0 && k.invertidos === 0
+    case 'sin_error': return k.errores === 0 && k.invertidos === 0 && k.vinculosSostenidos >= Number(en.objetivo)
+    case 'enlaces': return (k.enlacesMapa ?? 0) >= Number(en.objetivo)
+    case 'variedad': return (k.herramientasDistintas ?? 0) >= Number(en.objetivo)
+    case 'golpe': return (k.mejorGolpe ?? 0) >= Number(en.objetivo)
+    case 'cristalizar': return (k.cristalizaciones ?? 0) >= Number(en.objetivo)
+    case 'sin_pista': return (k.pistasPedidas ?? 0) === 0 && k.vinculosSostenidos >= Number(en.objetivo)
   }
 }
 

@@ -264,6 +264,19 @@ export interface ModificadoresLente {
   sinCastigoInvertido: boolean
   // — información —
   revelaApocrifas: number
+  // — v6.25 · la mesa es el arma: pasivas del mapa dorado —
+  /** fracción extra al golpe con que el mapa resuena cada turno */
+  mapaGolpe: number
+  /** multiplicador extra por cada trazo que engancha con el mapa (la base es 0.5) */
+  mapaEnlace: number
+  /** fichas por cada carta dorada (armada) que haya en la mesa al afirmar */
+  doradaFichas: number
+  /** lucidez que devuelve cada vínculo sostenido */
+  curaPorSostenido: number
+  /** pistas que no cuestan cambio, por combate */
+  pistasGratis: number
+  /** trazos de menos que hacen falta para cristalizar (la base es 4) */
+  cristalMenos: number
   // — la capa multiplicativa: lentes mayores —
   /** Cada entrada multiplica el daño ENTERO si su condición se cumple en el
    *  diagrama. Las condiciones son las conductas cognitivas más caras: la
@@ -284,7 +297,8 @@ export const SIN_LENTES: ModificadoresLente = {
   fichasPorSostenido: 0, multPorUmbral: 0, multGlobal: 0, alcanceExtra: 0,
   manoExtra: 0, herramientasExtra: [], quemasExtra: 0, cambiosExtra: 0,
   robarPorAcierto: 0, fichasPorInferencia: 0, multPorAproximado: 0, plausibleCuenta: false,
-  sinCastigoInvertido: false, revelaApocrifas: 0, xmults: []
+  sinCastigoInvertido: false, revelaApocrifas: 0, xmults: [],
+  mapaGolpe: 0, mapaEnlace: 0, doradaFichas: 0, curaPorSostenido: 0, pistasGratis: 0, cristalMenos: 0
 }
 
 export type ComboId =

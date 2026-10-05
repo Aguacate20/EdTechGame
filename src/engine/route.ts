@@ -345,46 +345,73 @@ export type Recompensa =
   | { tipo: 'tesis'; id: string }
   | { tipo: 'lucidez'; cantidad: number }
   | { tipo: 'fichero' }
+  /** v6.25 · carta nueva: un concepto aún sin estrenar llega ENTERO (nombre y descripción ya unidos) */
+  | { tipo: 'concepto'; id: string }
 
 /** El refuerzo variable vive AQUÍ y solo aquí: en el botín, nunca en si acertaste.
  *  La probabilidad sube con lo bien que resolviste, pero no llega nunca a 1, así
  *  que el hallazgo raro se busca y a veces aparece. Lo que jamás varía al azar es
  *  el veredicto de una afirmación: eso corrompería la señal cognitiva. */
+/** v6.25 · cartas nuevas que el botín puede desbloquear: un concepto sin estrenar que llega
+ *  entero, un caso al que anclar, una tesis que pesar o un tipo de vínculo que aún no trazas. */
+export function cartasNuevas(
+  contenido: Contenido, tengo: { relaciones: string[]; casos?: string[]; tesis?: string[]; fusionados?: string[]; conocidos?: string[] }, rng: Rng
+): Recompensa[] {
+  const out: Recompensa[] = []
+  const vistos = new Set([...(tengo.fusionados ?? []), ...(tengo.conocidos ?? [])])
+  const concepto = Object.values(contenido.conceptos).filter((k) => !vistos.has(k.id)).sort((a, b) => b.importancia - a.importancia)[0]
+  if (concepto) out.push({ tipo: 'concepto', id: concepto.id })
+  const casos = [...contenido.casos, ...contenido.escenarios].filter((x) => !(tengo.casos ?? []).includes(x.id))
+  if (casos.length) out.push({ tipo: 'caso', id: rng.pick(casos).id })
+  const tesis = contenido.tesis.filter((x) => !(tengo.tesis ?? []).includes(x.id))
+  if (tesis.length) out.push({ tipo: 'tesis', id: rng.pick(tesis).id })
+  const rel = Object.entries(contenido.frecuenciaRelacion).sort((a, b) => a[1] - b[1]).map(([t]) => t).find((t) => !tengo.relaciones.includes(t))
+  if (rel) out.push({ tipo: 'relacion', tipoRelacion: rel })
+  return out
+}
+
+/** El refuerzo variable vive AQUÍ y solo aquí: en el botín, nunca en si acertaste.
+ *  v6.25 · el botín son tres cosas distintas, no tres rellenos: una PASIVA (lente), una CARTA
+ *  NUEVA para el mazo y un ACTIVO o herramienta que aún no tienes. La lucidez y el fichero
+ *  solo aparecen cuando no queda nada de eso por ofrecer. */
 export function ofrecerRecompensas(
   contenido: Contenido, cartera: {
     lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[]
+    casos?: string[]; tesis?: string[]; fusionados?: string[]; conocidos?: string[]
   }, rng: Rng, dura: boolean, calidad = 0, vetadas: string[] = []
 ): { opciones: Recompensa[]; veta: boolean } {
   const salida: Recompensa[] = []
 
-  // las vetadas son las lentes con hazaña pendiente: se ganan, no caen del botín
+  // 1 · pasiva. Las vetadas son las lentes con hazaña pendiente: se ganan, no caen del botín
   const libres = LENTES.filter((l) => !cartera.lentes.includes(l.id) &&
     !vetadas.includes(l.id) && (dura || l.rareza === 'comun'))
   if (libres.length) salida.push({ tipo: 'lente', id: rng.pick(libres).id })
 
+  // 2 · carta nueva
+  const cartas = cartasNuevas(contenido, cartera, rng)
+  if (cartas.length) salida.push(rng.pick(cartas))
+
+  // 3 · activo o herramienta que todavía no tienes (repetir una herramienta ya no sirve de nada)
   const sellosLibres = (Object.keys(SELLOS) as SelloId[]).filter((s) => !cartera.sellos.includes(s))
-  if (sellosLibres.length && (dura || rng.next() < 0.55)) {
-    salida.push({ tipo: 'sello', id: rng.pick(sellosLibres) })
-  }
+  const herrNuevas = ESCALERA.filter((p) => !cartera.herramientas.includes(p.id) && p.sirve(contenido)).map((p) => p.id)
+  const tercero: Recompensa[] = [
+    ...(sellosLibres.length ? [{ tipo: 'sello' as const, id: rng.pick(sellosLibres) }] : []),
+    ...(herrNuevas.length ? [{ tipo: 'herramienta' as const, id: herrNuevas[0] }] : [])
+  ]
+  if (tercero.length) salida.push(rng.pick(tercero))
 
-  const cuenta = (h: HerramientaId) => cartera.herramientas.filter((x) => x === h).length
-  const herramientas = (Object.keys(HERRAMIENTAS) as HerramientaId[])
-    .filter((h) => h !== 'eje' || contenido.ejes.length >= 1)
-    .sort((a, b) => cuenta(a) - cuenta(b))
-  if (salida.length < 3) salida.push({ tipo: 'herramienta', id: herramientas[rng.int(3)] })
-
-  const porRareza = Object.entries(contenido.frecuenciaRelacion)
-    .sort((a, b) => a[1] - b[1]).map(([t]) => t)
-  const rel = porRareza.find((t) => cartera.relaciones.filter((r) => r === t).length < 2) ?? porRareza[0]
-  if (rel && salida.length < 3) salida.push({ tipo: 'relacion', tipoRelacion: rel })
-
+  // relleno: otra carta nueva distinta, otra pasiva, y solo al final fichero o descanso
+  const yaEsta = (r: Recompensa) => salida.some((x) => JSON.stringify(x) === JSON.stringify(r))
+  for (const c of cartas) if (salida.length < 3 && !yaEsta(c)) salida.push(c)
+  const otra = libres.filter((l) => !salida.some((x) => x.tipo === 'lente' && x.id === l.id))
+  if (salida.length < 3 && otra.length) salida.push({ tipo: 'lente', id: rng.pick(otra).id })
   if (salida.length < 3) salida.push({ tipo: 'fichero' })
   while (salida.length < 3) salida.push({ tipo: 'lucidez', cantidad: dura ? 18 : 12 })
   const opciones = rng.shuffle(salida).slice(0, 3)
 
   // la veta: una cuarta opción rara, más probable cuanto mejor lo hiciste
   const probabilidad = Math.min(0.55, 0.12 + calidad * 0.4 + (dura ? 0.1 : 0))
-  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id))
+  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id) && !opciones.some((x) => x.tipo === 'lente' && x.id === l.id))
   const veta = raras.length > 0 && rng.next() < probabilidad
   if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
 
@@ -450,7 +477,7 @@ function lentePara(m: MedidaAtlas, cartera: string[], vetadas: string[]): string
 }
 
 export function ofrecerRecompensasAndamiadas(
-  contenido: Contenido, cartera: { lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[] },
+  contenido: Contenido, cartera: { lentes: string[]; sellos: SelloId[]; herramientas: HerramientaId[]; relaciones: string[]; casos?: string[]; tesis?: string[]; fusionados?: string[] },
   atlas: Atlas, rng: Rng, dura: boolean, calidad = 0, vetadas: string[] = []
 ): { opciones: Recompensa[]; veta: boolean; porque: string[] } {
   const m = medir(contenido, atlas)
@@ -461,9 +488,9 @@ export function ofrecerRecompensasAndamiadas(
   const siguiente = ESCALERA.find((p) => !cartera.herramientas.includes(p.id) && p.sirve(contenido) && p.listo(m))
   if (siguiente) { salida.push({ tipo: 'herramienta', id: siguiente.id }); porque.push(`${HERRAMIENTAS[siguiente.id].nombre}: ${siguiente.porque}.`) }
   else {
-    // todo lo usable está en la cartera: se refuerza la herramienta que más rinde hoy
-    const usada = [...cartera.herramientas].sort((a, b) => cartera.herramientas.filter((x) => x === b).length - cartera.herramientas.filter((x) => x === a).length)[0] ?? 'flecha'
-    salida.push({ tipo: 'herramienta', id: usada }); porque.push(`Otra ${HERRAMIENTAS[usada].nombre}: la que más usas.`)
+    // v6.25 · todo lo usable ya está en la cartera: en vez de repetir una herramienta, una carta nueva
+    const carta = cartasNuevas(contenido, { ...cartera, conocidos: Object.keys(atlas.conceptos) }, rng)[0]
+    if (carta) { salida.push(carta); porque.push('Ya tienes todas las herramientas que este texto admite: toca ampliar el mazo.') }
   }
   // 2. la lente que compensa la dimensión más floja
   const lente = lentePara(m, cartera.lentes, vetadas)

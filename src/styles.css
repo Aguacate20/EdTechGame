@@ -2321,3 +2321,12 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .porque-opcion:disabled { cursor: default; opacity: .75; }
 .porque-opcion.ok { border-color: var(--sostenido); background: rgba(91,211,111,.12); opacity: 1; }
 .porque-opcion.mal { border-color: #d0545c; background: rgba(208,84,92,.12); opacity: 1; }
+
+/* ═════ v6.25 · hallazgos: pasiva, carta nueva, activo, herramienta ═════ */
+.naipe.hallazgo { border-top: 4px solid var(--borde); gap: 6px; }
+.hallazgo-clase { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; font-weight: 700; padding: 3px 8px; border-radius: 999px; align-self: flex-start; }
+.hallazgo-pasiva { border-top-color: #b48cff; } .hallazgo-pasiva .hallazgo-clase { color: #1a0b33; background: #c9a8ff; }
+.hallazgo-carta { border-top-color: var(--dominar); } .hallazgo-carta .hallazgo-clase { color: #2a1c00; background: var(--dominar); }
+.hallazgo-activo { border-top-color: var(--acento); } .hallazgo-activo .hallazgo-clase { color: #2a0f00; background: var(--acento); }
+.hallazgo-herramienta { border-top-color: var(--descubierto, #38B6FF); } .hallazgo-herramienta .hallazgo-clase { color: #03203a; background: var(--descubierto, #38B6FF); }
+.hallazgo-respiro .hallazgo-clase { color: var(--texto-2); background: var(--panel-hundido); }
