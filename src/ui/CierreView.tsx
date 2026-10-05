@@ -3,6 +3,7 @@ import type { Contenido } from '../content/types'
 import type { Atlas } from '../engine/atlas'
 import type { Encargo } from '../engine/srl'
 import { tipoPorId } from '../engine/lane'
+import { claveArista, prediccionDe } from '../engine/significativo'
 import { vistazoDe } from '../engine/objectives'
 import { Galaxia } from './Galaxia'
 
@@ -23,16 +24,20 @@ interface Props {
   /** v5.62 · modo aprendizaje: la pregunta del Vistazo se cierra aquí */
   aprendizaje?: boolean
   conceptIdsSala?: string[]
-  onRespuesta?: (acierto: boolean) => void
+  onRespuesta?: (acierto: boolean, antes: boolean | null | undefined) => void
+  /** v6.24 · lo que predijo en el Vistazo, para comparar antes y después */
+  prediccion?: { clave: string; elegido: string | null; ok: boolean | null } | null
 }
 
-export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, descubiertos, hazanas, srl, onSeguir, aprendizaje = false, conceptIdsSala = [], onRespuesta }: Props) {
+export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, descubiertos, hazanas, srl, onSeguir, aprendizaje = false, conceptIdsSala = [], onRespuesta, prediccion = null }: Props) {
   const [marcado, setMarcado] = useState<string | null | undefined>(undefined)
   const [respondido, setRespondido] = useState<null | { acierto: boolean }>(null)
   const reciente = (atlas.constelaciones ?? []).some((k) => Date.now() - k.fecha < 10 * 60 * 1000)
   // la pregunta del Vistazo, con tres respuestas: la que usa un vínculo que acabas
   // de sostener, la misma al revés, y la misma con otro tipo de vínculo
-  const pregunta = aprendizaje ? vistazoDe(contenido, conceptIdsSala, atlas)?.pregunta ?? null : null
+  const vz = aprendizaje ? vistazoDe(contenido, conceptIdsSala, atlas) : null
+  const pregunta = vz?.pregunta ?? null
+  const post = vz ? prediccionDe(contenido, conceptIdsSala, vz.conceptId) : null
   const claveNueva = aprendizaje ? nuevos.aristas.find((k) => { const [f, to, tipo] = k.split('>'); return !!tipo && !!contenido.conceptos[f] && !!contenido.conceptos[to] }) ?? null : null
   const opciones = (() => {
     if (!claveNueva) return null
@@ -121,17 +126,48 @@ export function CierreView({ contenido, atlas, nuevos, mejorGolpe, enemigos, des
         <section className="panel cierre-pregunta">
           <h3>La pregunta con la que entraste</h3>
           <p className="cierre-pregunta-texto">{pregunta}</p>
-          {opciones ? (
+          {post ? (
+            <>
+              {/* v6.24 · la MISMA pregunta que predijo antes de entrar: lo que importa es qué cambió */}
+              <p>{prediccion ? 'Antes de entrar te pregunté esto mismo. Ahora que pasaste por la mesa:' : 'Ahora que pasaste por la mesa:'} <strong>¿qué dice el texto?</strong></p>
+              <div className="cierre-opciones">
+                {post.opciones.map((o) => (
+                  <button key={o.texto} className={`btn ${respondido ? (o.ok ? 'primario' : 'fantasma') : 'fantasma'} opcion-pregunta`}
+                    disabled={!!respondido}
+                    onClick={() => { setRespondido({ acierto: o.ok }); onRespuesta?.(o.ok, prediccion?.clave === post.clave ? prediccion.ok : undefined) }}>{o.texto}</button>
+                ))}
+              </div>
+              {respondido && (() => {
+                const antes = prediccion?.clave === post.clave ? prediccion : null
+                const sostuvo = nuevos.aristas.includes(claveArista(post.arista)) || !!atlas.aristas[claveArista(post.arista)]
+                const cita = post.arista.evidencia || post.arista.descripcion
+                const lectura = !antes ? (respondido.acierto ? 'Eso es lo que dice el texto.' : 'No: la marcada es la que dice el texto.')
+                  : antes.ok === null ? (respondido.acierto ? 'Entraste sin saberlo y sales sabiéndolo.' : 'Entraste sin saberlo y todavía no está claro: la marcada es la que dice el texto.')
+                  : antes.ok && respondido.acierto ? 'Lo intuías antes de entrar y lo mantuviste: ahora además lo has sostenido tú.'
+                  : !antes.ok && respondido.acierto ? 'Cambiaste de idea, y el texto te da la razón. Eso es aprender.'
+                  : antes.ok && !respondido.acierto ? 'Antes de entrar lo tenías y ahora dudaste: vuelve a mirar la marcada.'
+                  : 'Sigue sin encajar: la marcada es la que dice el texto. Volverá a salir.'
+                return (
+                  <div className={respondido.acierto ? 'nota ok' : 'nota mal'}>
+                    <p style={{ margin: 0 }}>{lectura}</p>
+                    {antes && <p style={{ margin: '4px 0 0' }}><small>Antes de entrar dijiste: {antes.elegido ?? '«todavía no lo sé»'}</small></p>}
+                    {cita && <p style={{ margin: '4px 0 0' }}><small>El texto: «{cita}»</small></p>}
+                    <p style={{ margin: '4px 0 0' }}><small>{sostuvo ? 'Este vínculo ya está en tu galaxia.' : 'Este vínculo todavía no lo has sostenido en la mesa: búscalo en la próxima sala.'}</small></p>
+                  </div>
+                )
+              })()}
+            </>
+          ) : opciones ? (
             <>
               <p>Con lo que acabas de sostener, ¿cuál de estas la responde?</p>
               <div className="cierre-opciones">
                 {opciones.map((o) => (
                   <button key={o.texto} className={`btn ${respondido ? (o.ok ? 'primario' : 'fantasma') : 'fantasma'} opcion-pregunta`}
                     disabled={!!respondido}
-                    onClick={() => { setRespondido({ acierto: o.ok }); onRespuesta?.(o.ok) }}>{o.texto}</button>
+                    onClick={() => { setRespondido({ acierto: o.ok }); onRespuesta?.(o.ok, undefined) }}>{o.texto}</button>
                 ))}
               </div>
-              {respondido && <p className={respondido.acierto ? 'nota ok' : 'nota mal'}>{respondido.acierto ? 'Eso es: lo que sostuviste en la mesa es lo que responde la pregunta.' : 'No: fíjate en la dirección y el tipo del vínculo que sostuviste. La respuesta marcada es la que va con el texto.'}</p>}
+              {respondido && <p className={respondido.acierto ? 'nota ok' : 'nota mal'}>{respondido.acierto ? 'Eso es: lo que sostuviste en la mesa es lo que responde la pregunta.' : 'No: fíjate en la dirección y el tipo del vínculo que sostuviste.'}</p>}
             </>
           ) : (
             <p>Esta vez no sostuviste ningún vínculo nuevo: la pregunta sigue abierta para la próxima sala.</p>

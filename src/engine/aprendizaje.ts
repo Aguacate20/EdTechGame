@@ -47,7 +47,9 @@ const TITULOS = ['Reconocer', 'Relacionar', 'Sostener']
 export function componerOleadas(
   c: Contenido, conceptIds: string[], herramientas: HerramientaId[], acto: number, rng: Rng,
   /** v5.62 · anclaje entre sesiones: conceptos con evidencia previa en el Atlas */
-  conEvidencia: string[] = []
+  conEvidencia: string[] = [],
+  /** v6.24 · 0 total · 1 parcial · 2 ninguno: con cuánto andamio arranca la sala */
+  inicio: 0 | 1 | 2 = 0
 ): Oleada[] {
   // lo ya visto en sesiones anteriores entra PRIMERO: la sala engancha con la
   // galaxia que ya existe, y lo nuevo se apoya en ello (aprendizaje significativo)
@@ -88,9 +90,10 @@ export function componerOleadas(
         escala * (0.55 + i * 0.2), 7 - k
       )
     ),
-    apoyo: niveles[Math.min(i, niveles.length - 1)],
+    apoyo: niveles[Math.min(i + inicio, niveles.length - 1)],
     titulo: `${TITULOS[Math.min(i, 2)]} · oleada ${i + 1} de ${tandas.length}`,
-    aviso: AVISOS[niveles[Math.min(i, niveles.length - 1)]],
+    aviso: (i === 0 && inicio > 0 ? 'Ya has sostenido la mayor parte de esta sala: el andamio arranca más arriba. ' : '') +
+      AVISOS[niveles[Math.min(i + inicio, niveles.length - 1)]],
     // la última oleada trae un escenario de distancia media sobre sus conceptos:
     // comprender es poder usar el concepto donde no se aprendió
     escenarios: i === tandas.length - 1 ? escenariosDe(c, tanda, 'media', 1) : []

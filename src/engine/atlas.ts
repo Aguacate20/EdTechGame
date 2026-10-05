@@ -66,7 +66,7 @@ export interface Atlas {
   /** v5.66 · herramientas desbloqueadas en el perfil: se ganan una vez y valen para siempre */
   herramientas?: string[]
   /** v5.79 · constelaciones cristalizadas: submapas consolidados, en oro para siempre */
-  constelaciones?: { id: string; nombre: string; conceptIds: string[]; aristas: string[]; fecha: number }[]
+  constelaciones?: { id: string; nombre: string; conceptIds: string[]; aristas: string[]; fecha: number; /** v6.24 · repaso espaciado */ repasos?: { fecha: number; ok: boolean }[] }[]
   /** autorregulación: lo que se declaró y lo que resultó, por fase del ciclo */
   srl: {
     encargosElegidos: number
@@ -77,6 +77,17 @@ export interface Atlas {
     sellosAcertados: number
     reflexiones: number
     reflexionesAcertadas: number
+    /** v6.24 · señales de aprendizaje significativo, cada una por su lado (no son calibración) */
+    prediccionesHechas?: number
+    prediccionesAcertadas?: number
+    cierresHechos?: number
+    cierresAcertados?: number
+    /** predijo mal antes de entrar y respondió bien al salir */
+    cambiosDeIdea?: number
+    porquesHechos?: number
+    porquesAcertados?: number
+    repasosHechos?: number
+    repasosAcertados?: number
   }
 }
 

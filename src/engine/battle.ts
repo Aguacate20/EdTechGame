@@ -14,6 +14,7 @@ import type { Rng } from './rng'
 import { SELLOS, type SelloId } from './powers'
 import { piezaContexto } from './pieces'
 import { armarDisparo, type Disparo } from './weapons'
+import { apoyoInicial } from './significativo'
 import { componerOleadas, oleadaDePuerta, type NivelApoyo, type Oleada } from './aprendizaje'
 import { juzgarSello, PRIMA_MARCADO, SELLO_FALLA, SELLO_X, type Encargo } from './srl'
 import { manoJugable, repararApertura, repartirApertura, robarRepartido, type InformeApertura } from './dealer'
@@ -436,7 +437,7 @@ export function iniciarBatalla(
   e.mapa.meta = vinc0.length
   e.mapa.hechos = vinc0.filter((a) => parEnMapa(e, a.from, a.to)).length
   if (bolsa.apoyo && !bolsa.mazoFijo) {
-  e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [])
+  e.oleadas = componerOleadas(ctx.contenido, conceptIds, bolsa.herramientas, acto, ctx.rng, bolsa.evidenciaPrevia ?? [], apoyoInicial(conceptIds, bolsa.sinTocar))
   // los escenarios de la primera oleada (si los hay) entran ya al mazo
   for (const id of e.oleadas[0]?.escenarios ?? []) { const pz = piezaCaso(ctx.contenido, id); if (pz) e.mazo.push(pz) }
     const primera = e.oleadas[0]
@@ -467,7 +468,8 @@ export function iniciarBatalla(
   // el piso del Repartidor: ninguna apertura muda
   repararApertura(e.mano, e.mazo, e.descarte, ctx.contenido, ctx.rng, e.condicion)
   // Ojo crítico: algunas falsificaciones vienen ya señaladas
-  const aRevelar = m.revelaApocrifas + (bolsa.apoyo && acto <= 1 ? 9 : 0)
+  // v6.24 · las falsificaciones solo vienen señaladas con el andamio entero
+  const aRevelar = m.revelaApocrifas + (bolsa.apoyo && acto <= 1 && e.nivelApoyo === 'total' ? 9 : 0)
   if (aRevelar > 0) {
     e.reveladas = e.mano.filter((p) => p.clase === 'apocrifa')
       .slice(0, aRevelar).map((p) => p.uid)

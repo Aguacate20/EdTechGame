@@ -143,6 +143,7 @@ export function adaptarBundle(raw: unknown): Contenido {
     const anclajeRaw = str(e?.anclaje, str(e?.anclaje_textual, 'verificado'))
     const arista: Arista = {
       from, to, tipo, descripcion: str(e?.descripcion),
+      evidencia: str(e?.evidencia, str(e?.evidencia_textual)) || undefined,
       confianza,
       anclaje: anclajeRaw === 'inferida' ? 'inferida' : 'verificado',
       veces: Math.max(1, num(e?.veces, num(e?.veces_afirmada, 1)))

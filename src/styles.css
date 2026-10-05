@@ -2310,3 +2310,14 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   .est-fondo { animation: est-velo var(--dur) linear forwards !important; }
   .pb-hoja { clip-path: none; animation: est-velo 3.8s linear var(--ret, 0ms) forwards; opacity: 0; }
 }
+
+/* ═════ v6.24 · aprendizaje significativo: predicción, porqué y repaso espaciado ═════ */
+.prediccion { margin: 6px 0 2px; padding: 10px 12px; border: 1px dashed var(--acento); border-radius: 10px; background: rgba(255,106,26,.06); }
+.repaso-espaciado { border-left: 3px solid var(--dominar); }
+.porque { margin: 8px 0; padding: 10px 12px; border: 1px solid var(--borde); border-left: 3px solid var(--descubierto, #38B6FF); border-radius: 10px; background: var(--panel-hundido); }
+.porque-opciones { display: flex; flex-direction: column; gap: 6px; }
+.porque-opcion { text-align: left; font: inherit; font-size: 13px; line-height: 1.4; color: var(--texto); background: var(--panel); border: 1px solid var(--borde); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.porque-opcion:hover:not(:disabled) { border-color: var(--acento); }
+.porque-opcion:disabled { cursor: default; opacity: .75; }
+.porque-opcion.ok { border-color: var(--sostenido); background: rgba(91,211,111,.12); opacity: 1; }
+.porque-opcion.mal { border-color: #d0545c; background: rgba(208,84,92,.12); opacity: 1; }

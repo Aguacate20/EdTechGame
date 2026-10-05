@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
 import { PaginaEnBlanco } from './Estallido'
+import { porqueDe } from '../engine/significativo'
 import { orientar } from '../engine/feedback'
 import { puedeCristalizar, estadoCristalizacion, progresoCristal, componenteCristalizable } from '../engine/battle'
 import type { Contenido } from '../content/types'
@@ -29,6 +30,8 @@ import { condicionPorId } from '../engine/hazanas'
 export interface AccionesBatalla {
   /** v5.62 · apuesta metacognitiva al empezar la oleada (modo aprendizaje) */
   apostarOleada?: (valor: 'si' | 'no') => void
+  /** v6.24 · el porqué de un vínculo sostenido: qué frase del texto lo respalda */
+  porque?: (acierto: boolean, clave: string) => void
   /** v5.67 · el mapa de la sala golpea entero */
   cristalizar?: () => void
   /** v5.82 */
@@ -213,6 +216,21 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     e.ultima.impactos.filter((i) => i.derribado && i.pleno).length >= 3)
   const borronSonado = useRef(-1)
   const cascadaAvisada = useRef(-1)
+  /** v6.24 · un porqué por oleada, sobre el primer vínculo sostenido que tenga frase que citar */
+  const [porqueResp, setPorqueResp] = useState<{ clave: string; elegido: string; ok: boolean } | null>(null)
+  const porqueOleada = useRef<string | null>(null)
+  const porque = useMemo(() => {
+    if (!on.porque || guia || !e.apoyo || !resuelto || !e.ultima) return null
+    for (const v of e.ultima.diag.veredictos) {
+      if (v.estado !== 'sostenido' || v.trazo.tool !== 'flecha' || !v.aristas[0]) continue
+      const p = porqueDe(contenido, v.aristas[0])
+      if (p) return p
+    }
+    return null
+  }, [e.ultima, resuelto, e.apoyo, contenido, guia, on.porque])
+  const marcaOleada = `${e.oleadaIdx}`
+  const porqueVisible = !!porque && casc.terminada && (porqueOleada.current === null || porqueOleada.current === `${marcaOleada}:${e.turno}` || porqueOleada.current.split(':')[0] !== marcaOleada)
+  useEffect(() => { setPorqueResp(null) }, [e.turno])
   useEffect(() => {
     if (!(resuelto && casc.terminada && e.ultima) || !alCerrarCascada || cascadaAvisada.current === e.turno) return
     cascadaAvisada.current = e.turno
@@ -1046,6 +1064,21 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 </div>
               )
             })()}
+            {porqueVisible && porque && (
+              <div className="porque">
+                <span className="eyebrow">El porqué</span>
+                <p style={{ margin: '2px 0 6px' }}>{porque.enunciado}</p>
+                <div className="porque-opciones">
+                  {porque.opciones.map((o) => (
+                    <button key={o.texto} disabled={!!porqueResp}
+                      className={`porque-opcion${porqueResp ? (o.ok ? ' ok' : porqueResp.elegido === o.texto ? ' mal' : '') : ''}`}
+                      onClick={() => { porqueOleada.current = `${marcaOleada}:${e.turno}`; setPorqueResp({ clave: porque.clave, elegido: o.texto, ok: o.ok }); on.porque!(o.ok, porque.clave) }}>«{o.texto}»</button>
+                  ))}
+                </div>
+                {porqueResp && <p className={porqueResp.ok ? 'nota ok' : 'nota mal'} style={{ margin: '6px 0 0' }}>
+                  {porqueResp.ok ? 'Esa es. Saber el vínculo y saber de dónde sale son dos cosas, y tienes las dos. +2 de lucidez.' : 'No era esa: la marcada es la frase que respalda tu vínculo. El trazo sigue valiendo; esto es para que sepas de dónde sale.'}</p>}
+              </div>
+            )}
             {casc.terminada && e.ultima.descubiertos.length > 0 && (
               <p className="nota ok" style={{ margin: 0 }}>
                 <strong>Descubriste «{e.ultima.descubiertos.join('» y «')}»</strong> — un vínculo

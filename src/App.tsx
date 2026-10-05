@@ -44,6 +44,7 @@ import {
 } from './engine/srl'
 import { portadaPorId, type Portada, PORTADAS } from './engine/portadas'
 import { ESTALLIDOS } from './ui/estallidos'
+import { anotarRepaso, sumarSrl } from './engine/significativo'
 import { Estallido } from './ui/Estallido'
 import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
@@ -103,6 +104,8 @@ export default function App() {
   /** v5.77 · el estallido del ataque final: variante por tamaño del mapa */
   const [estallido, setEstallido] = useState<{ variante: string; trazos: number; zonas: number; dano: number; /** v6.20 · el gran ataque del tutorial usa el mismo estallido con su propio texto */ tutorial?: boolean } | null>(null)
   const estallidoTutorialRef = useRef(false)
+  /** v6.24 · lo que el estudiante predijo en el Vistazo de la sala en curso */
+  const prediccionRef = useRef<{ clave: string; elegido: string | null; ok: boolean | null } | null>(null)
   const [lentes, setLentes] = useState<string[]>([])
   const [sellos, setSellos] = useState<SelloId[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaId[]>(
@@ -410,6 +413,7 @@ export default function App() {
     if (!contenido || !ruta || !ctx || !progreso) return
     nodoRef.current = nodo
     if (nodo.tipo === 'refugio') { setFase('refugio'); return }
+    prediccionRef.current = null
     if (aprendizaje) { setFase('vistazo'); return }
     lanzarSala(nodo, false)
   }, [contenido, ruta, ctx, aprendizaje])
@@ -1021,6 +1025,27 @@ export default function App() {
       {fase === 'vistazo' && nodoRef.current && (
         <VistazoView
           nodo={nodoRef.current} contenido={contenido} atlas={atlas}
+          onPrediccion={(p) => {
+            prediccionRef.current = p
+            if (atlas && p.ok !== null) { const a = sumarSrl(atlas, { prediccionesHechas: 1, prediccionesAcertadas: p.ok ? 1 : 0 }); setAtlas(a); guardarAtlas(a) }
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'vistazo', condicion: null, mecanica: 'prediccion',
+              itemId: `prediccion:${p.clave}`, conceptIds: p.clave.split('>').slice(0, 2),
+              operacion: 'predecir', improvisado: false, seleccion: [], correcto: p.ok === true,
+              apuesta: p.ok === null ? 'no_se' : 'predice', calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+            })
+          }}
+          onRepaso={(constId, ok) => {
+            if (!atlas) return
+            const a = anotarRepaso(atlas, constId, ok); setAtlas(a); guardarAtlas(a)
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'vistazo', condicion: null, mecanica: 'repaso_espaciado',
+              itemId: `repaso:${constId}`, conceptIds: [], operacion: 'recuperar', improvisado: false, seleccion: [],
+              correcto: ok, apuesta: '—', calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+            })
+          }}
           onEntrar={(leido) => {
             registrar({
               ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
@@ -1067,6 +1092,17 @@ export default function App() {
           } : undefined}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
+            porque: (acierto, clave) => {
+              // v6.24 · el porqué es señal de elaboración; acertarlo cura un poco, fallarlo no castiga
+              if (atlas) { const a = sumarSrl(atlas, { porquesHechos: 1, porquesAcertados: acierto ? 1 : 0 }); setAtlas(a); guardarAtlas(a) }
+              if (acierto) setLucidez((l) => Math.min(LUCIDEZ_MAX, l + 2))
+              registrar({
+                ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+                arquetipo: 'porque', condicion: null, mecanica: 'elaboracion',
+                itemId: `porque:${clave}`, conceptIds: clave.split('>').slice(0, 2), operacion: 'justificar', improvisado: false, seleccion: [],
+                correcto: acierto, apuesta: '—', calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+              })
+            },
             cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar, pedirPista, ordenar,
             huir: () => {
               guardarAqui(actoIdx, alcanzables, visitados, nodoActual)
@@ -1103,7 +1139,19 @@ export default function App() {
           descubiertos={batalla.relacionesNuevas}
           hazanas={hazanasNuevas.map((h) => ({ nombre: h.nombre, lente: h.lenteId }))}
           aprendizaje={batalla.apoyo} conceptIdsSala={batalla.conceptIdsCasilla}
-          onRespuesta={(acierto) => { const a = { ...atlas, apuestasTotales: atlas.apuestasTotales + 1, apuestasCalibradas: atlas.apuestasCalibradas + (acierto ? 1 : 0) }; setAtlas(a); guardarAtlas(a) }}
+          prediccion={prediccionRef.current}
+          onRespuesta={(acierto, antes) => {
+            // v6.24 · acertar la pregunta del cierre NO es calibración: va a su propio contador
+            const a = sumarSrl(atlas, { cierresHechos: 1, cierresAcertados: acierto ? 1 : 0, cambiosDeIdea: antes === false && acierto ? 1 : 0 })
+            setAtlas(a); guardarAtlas(a)
+            registrar({
+              ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+              arquetipo: 'cierre', condicion: null, mecanica: 'pregunta_cierre',
+              itemId: `cierre:${prediccionRef.current?.clave ?? '—'}`, conceptIds: [], operacion: 'responder', improvisado: false, seleccion: [],
+              correcto: acierto, apuesta: antes === undefined ? 'sin_prediccion' : antes === null ? 'antes_no_sabia' : antes ? 'antes_bien' : 'antes_mal',
+              calibrado: true, latenciaMs: 0, ayuda: false, repertorioTocado: null
+            })
+          }}
           srl={{
             encargo: batalla.encargo,
             cumplido: batalla.encargo ? encargoCumplido(batalla.encargo, cuentaDe(batalla)) : false,

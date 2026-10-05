@@ -46,6 +46,8 @@ export interface Arista {
    *  <0.6 el extractor lo INFIERE del sentido de los conceptos (el texto no
    *  lo trata). Las inferidas no viven en `aristas`: van a `insinuadas`. */
   confianza: number
+  /** v6.24 · la cita literal del texto que respalda el vínculo (extractor ≥ 3.15), si viene */
+  evidencia?: string
   /** ¿la descripción cita el texto (verificado) o el extractor la sintetizó? */
   anclaje: 'verificado' | 'inferida'
   /** cuántos lotes independientes del extractor afirmaron lo mismo */
