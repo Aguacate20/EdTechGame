@@ -881,7 +881,7 @@ function validarEje(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLe
       conceptIds: aciertos
     }
   }
-  return { ...v, reserva, estado: 'invertido', mult: -1, nota: `Ninguno es «${valor}» en ${eje.nombre}.`, conceptIds: ids }
+  return { ...v, reserva, estado: 'error', mult: -1, nota: `Ninguno es «${valor}» en ${eje.nombre}.`, conceptIds: ids }
 }
 
 function validarSecuencia(c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
@@ -1123,8 +1123,10 @@ function validarDescomposicion(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Mod
   }
   if (ajenas.length) {
     return {
-      ...v, reserva, estado: 'invertido', mult: -1,
-      nota: `«${ajenas[0].titulo}» es parte de otro concepto, no de «${todo.titulo}».`,
+      // v6.7 · no es una inversión (la Descomposición no tiene dirección que voltear): es un
+      // atributo de OTRO concepto. Se dice cuál, para que el jugador sepa dónde va.
+      ...v, reserva, estado: 'error', mult: -1,
+      nota: `«${ajenas[0].titulo}» no es parte de «${todo.titulo}»: es un atributo de «${(ajenas[0].conceptId && _c.conceptos[ajenas[0].conceptId]?.titulo) || 'otro concepto'}». Descompón ese concepto con él.`,
       conceptIds: [todo.conceptId]
     }
   }

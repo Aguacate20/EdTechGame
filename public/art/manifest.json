@@ -92,7 +92,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 2.3
   },
   "enemigos/errata": {
     "golpea": {
@@ -122,7 +122,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 2.1
   },
   "enemigos/rumor": {
     "golpea": {
@@ -147,7 +147,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4,
+    "escala": 2.5,
     "avanza": {
       "src": "luduscog/rumor/rumor-walk.png",
       "frames": 4,
@@ -182,7 +182,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 1.9
   },
   "enemigos/dogma": {
     "golpea": {
@@ -212,7 +212,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 3.6
+    "escala": 4.0
   },
   "enemigos/ortodoxia": {
     "golpea": {
@@ -242,7 +242,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.9
+    "escala": 3.7
   },
   "enemigos/tratado": {
     "golpea": {
@@ -272,7 +272,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 3.6
+    "escala": 4.4
   },
   "enemigos/bibliografia": {
     "quieto": {
@@ -302,7 +302,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 2.7
   },
   "enemigos/apocrifo": {
     "quieto": {
@@ -332,7 +332,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 2.5
   },
   "enemigos/eco": {
     "quieto": {
@@ -362,7 +362,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 2.6
   },
   "enemigos/cita": {
     "quieto": {
@@ -392,7 +392,7 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 3.6
+    "escala": 3.4
   },
   "enemigos/palimpsesto": {
     "quieto": {
@@ -422,6 +422,6 @@
       "loop": false
     },
     "volteado": false,
-    "escala": 2.4
+    "escala": 2.6
   }
 }
