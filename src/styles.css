@@ -2191,3 +2191,9 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .biblioteca-aviso { color: #ffb37a; display: block; margin-top: 4px; }
 .btn.peligro { background: #a8323a; border-color: #d0545c; color: #fff; }
 .btn.peligro:hover:not(:disabled) { background: #c23d46; }
+
+/* v6.15 · tutorial: botón «Entendido» y flecha de «hay más abajo» */
+.guia-entendido { margin-left: auto; flex: none; }
+.flecha-tutorial { animation: flecha-rebote 1.1s ease-in-out infinite; }
+@keyframes flecha-rebote { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .flecha-tutorial { animation: none; } }

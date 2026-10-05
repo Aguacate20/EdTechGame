@@ -187,6 +187,8 @@ export interface PasoGuia {
   /** cuando esto se cumple, el paso se da por hecho y aparece el siguiente */
   hecho: (e: EstadoBatalla) => boolean
   foco?: FocoGuia
+  /** v6.15 · paso que solo se lee: «Entendido» lo da por hecho y pasa al siguiente */
+  soloLeer?: boolean
 }
 
 /** uids (en mano y en tablero) de las piezas que apuntan a estos conceptos. */
@@ -323,7 +325,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         clave: 'lente', titulo: 'Llevas una lente',
         texto: 'A la izquierda verás «Lente del arquitecto». Es una pasiva: no hace nada por sí sola, pero multiplica cuando un diagrama tiene varias afirmaciones enlazadas. El Dogma que tienes enfrente, además, no cede ante una sola frase.',
         hecho: (e) => e.tablero.length >= 1,
-        foco: { zona: 'pasivas' }
+        foco: { zona: 'pasivas' }, soloLeer: true
       },
       {
         clave: 'cadena3', titulo: 'Encadena tres ideas',

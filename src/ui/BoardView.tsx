@@ -137,6 +137,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** paso del tutorial que toca ahora, si estamos en él */
   guia?: {
     titulo: string; texto: string; indice: number; total: number
+    clave?: string; alEntender?: () => void
     foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[] }
   } | null
   fondo?: { n: number; sala?: string | null }
@@ -288,6 +289,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   const foco = guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
+  /** v6.15 · el cuadro de instrucción se puede ocultar; vuelve con el paso siguiente */
+  const [guiaOculta, setGuiaOculta] = useState<string | null>(null)
+  const guiaVisible = !!guia && guiaOculta !== `${guia.clave ?? guia.indice}`
   /** v5.87 · cámara de la mesa: el mundo es uno; la vista lo escala entero y se desplaza
    *  (arrastrar el fondo, dos dedos en el trackpad, Ctrl+rueda para zoom) */
   const [zoom, setZoom] = useState(0.75)
@@ -445,7 +449,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
       {/* v6.13 · paso libre (sin foco): no hay velo, la pantalla entera queda encendida */}
       {guia?.foco && <TutorialVelo burbuja={burbujaRef} foco={guia.foco} />}
-      {guia && (
+      {guia && guiaVisible && (
         <aside
           ref={burbujaRef}
           className={`guia${
@@ -464,7 +468,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   <i key={i} className={i < guia.indice ? 'hecho' : i === guia.indice ? 'activo' : ''} />
                 ))}
               </div>
-              <small className="guia-espera"><b /> Esperando tu acción</small>
+              {!guia.alEntender && <small className="guia-espera"><b /> Esperando tu acción</small>}
+              <button className="btn chico primario guia-entendido"
+                onClick={() => { if (guia.alEntender) guia.alEntender(); else setGuiaOculta(`${guia.clave ?? guia.indice}`) }}>Entendido</button>
             </div>
           </div>
         </aside>
@@ -540,12 +546,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         })}
 
         <div className={`separador${zona('pasivas')}`} />
-        <span className={`eyebrow${zona('pasivas')}`}>Pasivas</span>
+        <span data-tutorial="pasivas-titulo" className={`eyebrow${zona('pasivas')}`}>Pasivas</span>
         {lentesIds.length === 0 && <span className="silencio dato">ninguna</span>}
         {lentesIds.map((id) => {
           const l = lentePorId(id)
           return (
-            <span key={id} className={`pastilla ancha${zona('pasivas') ? ' senala' : ''}`} data-ayuda={`${l.nombre.toUpperCase()}\n${l.regla}\n\n${l.costo}`}>
+            <span key={id} data-tutorial="pasivas" className={`pastilla ancha${zona('pasivas') ? ' senala' : ''}`} data-ayuda={`${l.nombre.toUpperCase()}\n${l.regla}\n\n${l.costo}`}>
               {l.nombre}
             </span>
           )

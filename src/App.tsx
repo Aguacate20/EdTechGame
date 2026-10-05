@@ -1024,7 +1024,9 @@ export default function App() {
             const foco = paso.foco
               ? { zona: paso.foco.zona, piezas: paso.foco.piezas?.(batalla), herramientas: paso.foco.herramientas, relaciones: paso.foco.relaciones }
               : undefined
-            return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length, foco }
+            return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length, foco, clave: paso.clave,
+              // v6.15 · «Entendido»: en un paso de solo leer lo da por hecho; en los demás solo oculta el cuadro
+              alEntender: paso.soloLeer ? () => setPasosHechos((prev) => prev.includes(paso.clave) ? prev : [...prev, paso.clave]) : undefined }
           })()}
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
