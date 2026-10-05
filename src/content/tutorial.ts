@@ -241,7 +241,8 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         clave: 'identidad', titulo: 'Ahora di que son lo mismo',
         texto: 'Pulsa la Identidad (=) en la columna izquierda. Verás un recuadro junto al cursor. Toca el nombre y después su descripción: se irán colocando en A y en B. Cuando estén las dos, pulsa Trazar abajo.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
-        foco: { zona: 'herramientas', herramientas: ['identidad'] }
+        // v6.12 · además del botón, las dos fichas de la mesa que hay que tocar
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) }
       },
       {
         clave: 'afirmar', titulo: 'Afirma lo que has dicho',

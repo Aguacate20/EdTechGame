@@ -773,6 +773,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             return (
               <div
                 key={p.uid}
+                data-uid={p.uid}
                 data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
                 data-moviendo={moviendoUid === p.uid ? 'true' : undefined}
                 data-cristal={resaltarCristal ? (resaltarCristal.has(p.uid) ? 'si' : 'no') : undefined}
@@ -892,7 +893,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               </div>
             )}
 
-            <button className="btn primario" disabled={!puedeCerrar} onClick={cerrarTrazo}>Trazar</button>
+            <button data-tutorial="trazar" className="btn primario" disabled={!puedeCerrar} onClick={cerrarTrazo}>Trazar</button>
             <button className="btn fantasma" onClick={reset}>✕</button>
           </div>
         )}

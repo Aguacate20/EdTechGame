@@ -26,6 +26,8 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       if (foco?.zona && ZONA_A_ANCLA[foco.zona] && !(concreto && zonaEsContenedor)) sel.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
       for (const u of foco?.piezas ?? []) sel.push(`[data-uid="${u}"]`)
       for (const h of foco?.herramientas ?? []) sel.push(`[data-herramienta="${h}"]`)
+      // v6.12 · con una herramienta señalada, el botón «Trazar» también es parte del paso
+      if (foco?.herramientas?.length) sel.push('[data-tutorial="trazar"]')
       const els = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))
       const nuevos = els.map((el) => { const r = el.getBoundingClientRect(); return { x: r.left - 6, y: r.top - 6, w: r.width + 12, h: r.height + 12 } })
         .filter((r) => r.w > 20 && r.h > 20)
