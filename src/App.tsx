@@ -45,6 +45,7 @@ import {
 import { portadaPorId, type Portada, PORTADAS } from './engine/portadas'
 import { ESTALLIDOS } from './ui/estallidos'
 import { anotarRepaso, sumarSrl } from './engine/significativo'
+import { mapaParaCierre } from './engine/battle'
 import { Estallido } from './ui/Estallido'
 import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
@@ -104,8 +105,9 @@ export default function App() {
   /** v5.63 · por qué el botín ofrece lo que ofrece (modo aprendizaje) */
   const [porqueBotin, setPorqueBotin] = useState<string[]>([])
   /** v5.77 · el estallido del ataque final: variante por tamaño del mapa */
-  const [estallido, setEstallido] = useState<{ variante: string; trazos: number; zonas: number; dano: number; /** v6.20 · el gran ataque del tutorial usa el mismo estallido con su propio texto */ tutorial?: boolean } | null>(null)
+  const [estallido, setEstallido] = useState<{ variante: string; trazos: number; zonas: number; dano: number; /** v6.28 · cierre de expedición sin haber cristalizado */ cierre?: boolean; /** v6.20 · el gran ataque del tutorial usa el mismo estallido con su propio texto */ tutorial?: boolean } | null>(null)
   const estallidoTutorialRef = useRef(false)
+  const cierreHechoRef = useRef<string | null>(null)
   /** v6.24 · lo que el estudiante predijo en el Vistazo de la sala en curso */
   const prediccionRef = useRef<{ clave: string; elegido: string | null; ok: boolean | null } | null>(null)
   const [lentes, setLentes] = useState<string[]>([])
@@ -1095,6 +1097,34 @@ export default function App() {
               setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
               window.setTimeout(() => setEstallido(null), est.duracion)
             }, 650)
+          } : tutorial === null ? () => {
+            // v6.28 · el jefe cayó con un ataque normal: lo que quedó en oro se cristaliza igual.
+            // Sin esto el mapa se perdía al empezar otra expedición y la partida terminaba sin clímax.
+            const b = batalla
+            // solo el jefe del ÚLTIMO acto (entre actos el mapa sigue vivo) y sin oleadas por delante
+            const ultimoActo = !!ruta && actoIdx >= ruta.actos.length - 1
+            const sinOleadas = b ? (b.oleadas.length === 0 || b.oleadaIdx >= b.oleadas.length - 1) : false
+            if (!b || !atlas || !ultimoActo || !sinOleadas || nodoRef.current?.dificultad !== 'jefe' || vivos(b).length > 0 || b.mapa.cristalizaciones > 0) return
+            if (cierreHechoRef.current === runIdRef.current) return
+            const m = mapaParaCierre(b)
+            if (!m) return
+            cierreHechoRef.current = runIdRef.current
+            window.setTimeout(() => {
+              const grado = (id: string) => contenido.aristas.filter((x) => x.from === id || x.to === id).length
+              const eje = [...m.conceptIds].sort((x, y) => grado(y) - grado(x))[0]
+              const a2 = { ...atlas, constelaciones: [...(atlas.constelaciones ?? []), { id: `const:${Date.now()}`, nombre: contenido.conceptos[eje]?.titulo ?? 'Constelación', conceptIds: m.conceptIds, aristas: m.aristas, fecha: Date.now() }] }
+              setAtlas(a2); guardarAtlas(a2); guardarPendiente(null)
+              const est = ESTALLIDOS[(atlas.constelaciones?.length ?? 0) % ESTALLIDOS.length]
+              sfx.titan(3)
+              setEstallido({ variante: est.id, trazos: m.trazos, zonas: 1, dano: 0, cierre: true })
+              window.setTimeout(() => setEstallido(null), est.duracion)
+              registrar({
+                ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
+                arquetipo: 'cristalizar', condicion: 'cierre', mecanica: 'articulacion',
+                itemId: `cristalizar_cierre:${m.trazos}`, conceptIds: m.conceptIds, operacion: 'cristalizar', improvisado: false, seleccion: [],
+                correcto: true, apuesta: '0', calibrado: true, latenciaMs: 0, ayuda: true, repertorioTocado: null
+              })
+            }, 1500)
           } : undefined}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
@@ -1125,6 +1155,10 @@ export default function App() {
               <small>TU PRIMER GRAN ATAQUE</small>
               <b className="estallido-cifra">−<Contador hasta={estallido.dano} /></b>
               <span>{estallido.trazos} afirmaciones verdaderas que se sostienen entre sí · así se gana aquí</span>
+            </>) : estallido.cierre ? (<>
+              <small>CIERRE DE EXPEDICIÓN</small>
+              <b>Tu mapa queda en el cielo</b>
+              <span>{estallido.trazos} vínculos que sostuviste se guardan como constelación</span>
             </>) : (<>
               <small>ATAQUE FINAL · {ESTALLIDOS.find((x) => x.id === estallido.variante)?.nombre.toUpperCase()}</small>
               <b>Mapa completo</b>

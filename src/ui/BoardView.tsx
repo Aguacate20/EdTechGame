@@ -3,7 +3,7 @@ import { TutorialVelo } from './TutorialVelo'
 import { GolpeMayor, PaginaEnBlanco, escalonDeGolpe } from './Estallido'
 import { porqueDe } from '../engine/significativo'
 import { orientar } from '../engine/feedback'
-import { puedeCristalizar, estadoCristalizacion, progresoCristal, componenteCristalizable } from '../engine/battle'
+import { puedeCristalizar, estadoCristalizacion, progresoCristal, componenteCristalizable, guiaCristal } from '../engine/battle'
 import type { Contenido } from '../content/types'
 import type { Pieza } from '../engine/pieces'
 import {
@@ -216,6 +216,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     e.ultima.impactos.filter((i) => i.derribado && i.pleno).length >= 3)
   const borronSonado = useRef(-1)
   const cascadaAvisada = useRef(-1)
+  /** v6.28 · el ataque final, listo o a un vínculo: se ilumina lo que toca (no en el tutorial) */
+  const gc = useMemo(() => (guia ? null : guiaCristal(e, { contenido, rng: { next: () => 0 } as never, lentes })), [e, contenido, lentes, guia])
+  const cristalListo = gc?.estado === 'listo' ? new Set(gc.uids) : null
+  const faltaIds = gc?.estado === 'casi' ? [gc.a, gc.b] : []
+  const faltaEn = (p: Pieza) => !!p.conceptId && faltaIds.includes(p.conceptId) && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion')
   /** v6.24 · un porqué por oleada, sobre el primer vínculo sostenido que tenga frase que citar */
   const [porqueResp, setPorqueResp] = useState<{ clave: string; elegido: string; ok: boolean } | null>(null)
   const porqueOleada = useRef<string | null>(null)
@@ -627,6 +632,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               ) : (
                 <small className="cristal-falta">Une cartas: 4 vínculos seguidos desbloquean el ataque final</small>
               )}
+              {!resuelto && gc?.estado === 'casi' && (
+                <small className="cristal-casi">✦ A un vínculo del ataque final: une «{contenido.conceptos[gc.a]?.titulo}» con «{contenido.conceptos[gc.b]?.titulo}»</small>
+              )}
+              {!resuelto && gc?.estado === 'listo' && (
+                <small className="cristal-ya">✦ Tus cartas doradas están cargadas: pulsa «Ataque final» abajo</small>
+              )}
               <div className="mapa-acciones">
                 {on.pedirPista && !resuelto && <button className="btn chico fantasma" onClick={on.pedirPista} title="Cuesta un cambio; el trazo rinde al 70 %">Pista</button>}
               </div>
@@ -819,6 +830,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 data-armada={(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) ? 'true' : undefined}
                 data-moviendo={moviendoUid === p.uid ? 'true' : undefined}
                 data-cristal={resaltarCristal ? (resaltarCristal.has(p.uid) ? 'si' : 'no') : undefined}
+                data-cristal-listo={!resuelto && cristalListo?.has(p.uid) ? 'true' : undefined}
+                data-falta={!resuelto && faltaEn(p) ? 'true' : undefined}
                 data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : e.pistaSuave && p.conceptId === e.pistaSuave ? 'suave' : undefined}
                 className={`naipe en-tablero${p.uid.startsWith('const:') ? ' constelacion' : ''} naipe-${p.clase}${marcada ? ' marcada' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
@@ -1136,6 +1149,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-uid={p.uid}
+                data-falta={!resuelto && faltaEn(p) ? 'true' : undefined}
                 data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
                   `${dorada ? ' dorada' : ''}` +
@@ -1195,7 +1209,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         {!resuelto ? (
           <>
             {e.mapa && puedeCristalizar(e, { contenido, rng: { next: () => 0 } as never, lentes }) && (
-              <button className="btn primario cristalizar listo" disabled={!on.cristalizar} onClick={on.cristalizar}
+              <button className="btn primario grande cristalizar listo" disabled={!on.cristalizar} onClick={on.cristalizar}
                 onMouseEnter={() => { const c0 = componenteCristalizable(e, { contenido, rng: { next: () => 0 } as never, lentes }); setResaltarCristal(c0 ? new Set(c0.uids) : new Set((e.armados ?? []).flatMap((a) => a.piezas))) }}
                 onMouseLeave={() => setResaltarCristal(null)}
                 title="Ataque definitivo: un grupo de tu mapa está grande y completo. Cristalízalo y todo lo que queda cae.">✦ ATAQUE FINAL · Cristalizar</button>

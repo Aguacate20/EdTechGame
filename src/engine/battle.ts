@@ -1019,6 +1019,58 @@ export function estadoCristalizacion(e: EstadoBatalla, ctx: ContextoBatalla): { 
   return mejor
 }
 
+/** v6.28 · que el clímax no se escape. Dice si el ataque final está listo o a UN vínculo de
+ *  estarlo, y en ese caso qué dos conceptos hay que unir. No dice el tipo de vínculo: señala
+ *  dónde mirar, no qué responder. */
+export function guiaCristal(e: EstadoBatalla, ctx: ContextoBatalla):
+  { estado: 'listo'; uids: string[] } | { estado: 'casi'; a: string; b: string; grupo: string[] } | null {
+  if (e.fase !== 'jugando') return null
+  const listo = componenteCristalizable(e, ctx)
+  if (listo) return { estado: 'listo', uids: listo.uids }
+  if (e.temaCasiCompleto && e.armados.length >= 1) return { estado: 'listo', uids: [...new Set(e.armados.flatMap((x) => x.piezas))] }
+  const falta = 4 - ctx.lentes.cristalMenos
+  const dentro = new Set(e.conceptIdsCasilla)
+  const tipos = new Set(e.relacionesDisponibles)
+  const vale = (a: { from: string; to: string; tipo: string }) => dentro.has(a.from) && dentro.has(a.to) && (tipos.size === 0 || tipos.has(a.tipo)) &&
+    !e.mapa.trazos.some((x) => x.conceptIds.includes(a.from) && x.conceptIds.includes(a.to))
+  const jugable = (id: string) => e.mano.some((p) => p.conceptId === id && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion'))
+  const restantes = [...e.armados]
+  const grupos: Trazo[][] = []
+  while (restantes.length) {
+    const g = [restantes.shift()!]
+    let cambio = true
+    while (cambio) { cambio = false; for (let i = restantes.length - 1; i >= 0; i--) if (restantes[i].piezas.some((u) => g.some((x) => x.piezas.includes(u)))) { g.push(restantes.splice(i, 1)[0]); cambio = true } }
+    grupos.push(g)
+  }
+  for (const g of grupos.sort((x, y) => y.length - x.length)) {
+    if (g.length < falta - 1) continue
+    const uids = [...new Set(g.flatMap((x) => x.piezas))]
+    const ids = [...new Set(uids.map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
+    const pend = ctx.contenido.aristas.filter((a) => ids.includes(a.from) && ids.includes(a.to) && vale(a))
+    // un solo cabo suelto dentro del grupo: unirlo lo completa
+    if (pend.length === 1) return { estado: 'casi', a: pend[0].from, b: pend[0].to, grupo: uids }
+    // el grupo está limpio pero le falta un vínculo de tamaño: el mejor es el que trae un concepto sin más cabos
+    if (pend.length === 0 && g.length === falta - 1) {
+      const cand = ctx.contenido.aristas.filter((a) => vale(a) && (ids.includes(a.from) !== ids.includes(a.to)) && jugable(ids.includes(a.from) ? a.to : a.from))
+        .map((a) => { const nuevo = ids.includes(a.from) ? a.to : a.from; return { a, cabos: ctx.contenido.aristas.filter((x) => x !== a && vale(x) && ((x.from === nuevo && ids.includes(x.to)) || (x.to === nuevo && ids.includes(x.from)))).length } })
+        .sort((x, y) => x.cabos - y.cabos || y.a.confianza - x.a.confianza)[0]
+      if (cand) return { estado: 'casi', a: cand.a.from, b: cand.a.to, grupo: uids }
+    }
+  }
+  return null
+}
+
+/** v6.28 · el cierre de la expedición: si el jefe cae sin haber cristalizado, lo que quedó en
+ *  oro sobre la mesa se consolida igual. No hace daño (ya no queda nadie): guarda el mapa. */
+export function mapaParaCierre(e: EstadoBatalla): { conceptIds: string[]; aristas: string[]; trazos: number } | null {
+  const enlaces = e.armados.filter((x) => x.tool !== 'identidad')
+  if (enlaces.length < 2) return null
+  const uids = [...new Set(e.armados.flatMap((x) => x.piezas))]
+  const conceptIds = [...new Set(uids.map((u) => e.mano.find((p) => p.uid === u)?.conceptId).filter((x): x is string => !!x))]
+  if (conceptIds.length < 2) return null
+  return { conceptIds, aristas: e.mapa.trazos.filter((x) => x.tool !== 'identidad' && x.conceptIds.every((id) => conceptIds.includes(id))).map((x) => x.firma), trazos: enlaces.length }
+}
+
 /** Cristalizar: el mapa entero golpea de una vez (×2; ×3 si cruza zonas) y se vacía
  *  para empezar otro. Es el evento de impacto: la razón para TERMINAR un mapa. */
 export function cristalizar(e: EstadoBatalla, ctx: ContextoBatalla): { dano: number; zonas: number; trazos: number; impactos: { nombre: string; dano: number; derribado: boolean }[]; conceptIds: string[]; aristas: string[]; finalDeTema: boolean } {

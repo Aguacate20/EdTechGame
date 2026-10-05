@@ -2348,3 +2348,19 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 @keyframes gm-chispa { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1.4); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(calc(var(--d) * 2)) scale(.2); } }
 .gm-legendario .gm-tajo { height: 34vh; margin-top: -17vh; } .gm-legendario .gm-flash { animation-duration: 1s; }
 @media (prefers-reduced-motion: reduce) { .gm-chispa, .gm-flash { display: none; } .gm-tajo, .gm-texto { animation-duration: 2.5s; animation-timing-function: linear; } }
+
+/* ═════ v6.28 · el ataque final no se escapa: cartas cargadas y el vínculo que falta ═════ */
+.naipe.en-tablero[data-cristal-listo='true'] { outline: 3px solid #7ee0ff; outline-offset: 3px; animation: cristal-cargado 1.6s linear infinite; z-index: 4; }
+/* se anima con filter y outline-color: el box-shadow de las doradas es !important y una animación no lo pisa */
+@keyframes cristal-cargado {
+  0%, 100% { outline-color: #7ee0ff; filter: drop-shadow(0 0 10px #7ee0ff) drop-shadow(0 0 22px rgba(126,224,255,.7)) brightness(1.08); }
+  33% { outline-color: #ff9df0; filter: drop-shadow(0 0 12px #ff9df0) drop-shadow(0 0 26px rgba(255,157,240,.7)) brightness(1.15); }
+  66% { outline-color: #ffe08a; filter: drop-shadow(0 0 12px #ffe08a) drop-shadow(0 0 26px rgba(255,224,138,.75)) brightness(1.15); }
+}
+[data-falta='true'] { outline: 3px dashed #ff9df0 !important; outline-offset: 4px; animation: falta-uno 1s ease-in-out infinite; }
+@keyframes falta-uno { 0%, 100% { filter: drop-shadow(0 0 4px rgba(255,157,240,.6)); } 50% { filter: drop-shadow(0 0 14px #ff9df0) drop-shadow(0 0 26px rgba(255,157,240,.7)) brightness(1.12); } }
+.cristal-casi { display: block; color: #ff9df0; font-weight: 700; margin-top: 2px; }
+.cristal-ya { display: block; color: #7ee0ff; font-weight: 700; margin-top: 2px; }
+.btn.cristalizar.listo { animation: cristal-boton 1.2s ease-in-out infinite; }
+@keyframes cristal-boton { 0%, 100% { box-shadow: 0 0 0 0 rgba(126,224,255,.7), 0 0 22px rgba(255,194,61,.6); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(126,224,255,0), 0 0 40px rgba(255,157,240,.8); transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .naipe.en-tablero[data-cristal-listo='true'], [data-falta='true'], .btn.cristalizar.listo { animation: none; } }
