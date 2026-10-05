@@ -337,7 +337,8 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         clave: 'combo', titulo: 'Ahora haz que se toquen',
         texto: 'Sin afirmar todavía: empareja Abeja con su descripción usando la Identidad (=), y encierra Abeja, Flor y Polinización con el Campo (◯). Al compartir piezas entre trazos se encienden los combos, y ahí es donde el número se dispara.',
         hecho: (e) => e.trazos.length >= 3,
-        foco: { zona: 'herramientas', herramientas: ['identidad', 'campo'] }
+        // v6.16 · también las fichas del paso: las que faltan por sacar (descripción de Abeja, Flor) y las de la mesa
+        foco: { zona: 'herramientas', herramientas: ['identidad', 'campo'], piezas: de(['abeja', 'flor', 'polinizacion']) }
       },
       {
         clave: 'estallido', titulo: 'Suéltalo todo de una vez',
