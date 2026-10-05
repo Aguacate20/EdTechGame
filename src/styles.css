@@ -2202,3 +2202,7 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .estallido-texto b.estallido-cifra { font-size: clamp(56px, 13vw, 140px); font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #fff; animation: cifra-late .5s ease-in-out 1.4s 3; }
 @keyframes cifra-late { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .estallido-texto b.estallido-cifra { animation: none; } }
+
+/* v6.21 · el estallido SÍ cubre la pantalla: `.app > *` lo dejaba en flujo (position: relative),
+   debajo de todo y fuera de la vista. Afectaba también al ataque final de cristalizar. */
+.app > .estallido { position: fixed; inset: 0; z-index: 120; }
