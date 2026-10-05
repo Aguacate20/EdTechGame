@@ -2184,3 +2184,10 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .naipe .partes-insignia { position: absolute; top: -8px; right: -8px; z-index: 3; font-family: var(--mono); font-size: 11px; font-weight: 800;
   color: #1A1200; background: linear-gradient(135deg, var(--dominar, #FFC23D), var(--acento, #FF6A1A)); border-radius: 99px; padding: 1px 7px;
   box-shadow: 0 0 10px rgba(255,194,61,.55); white-space: nowrap; }
+
+/* v6.10 · biblioteca: borrar una lectura */
+.biblioteca-lista li .entrar-item-texto { flex: 1; min-width: 0; }
+.biblioteca-acciones { display: flex; gap: 6px; flex-shrink: 0; }
+.biblioteca-aviso { color: #ffb37a; display: block; margin-top: 4px; }
+.btn.peligro { background: #a8323a; border-color: #d0545c; color: #fff; }
+.btn.peligro:hover:not(:disabled) { background: #c23d46; }

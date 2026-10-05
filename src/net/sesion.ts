@@ -132,6 +132,11 @@ export async function listarBiblioteca(api: string, studentId: string): Promise<
   const r = await json<{ documentos: { id: string; titulo: string; conceptos: number; relaciones: number; objeto_de_estudio: string | null }[] }>(`${api}/students/${studentId}/biblioteca`)
   return r.documentos.map((d) => ({ id: d.id, titulo: d.titulo, conceptos: d.conceptos, relaciones: d.relaciones, objeto: d.objeto_de_estudio }))
 }
+/** Borra un documento del perfil. Devuelve cuántos documentos quedan. */
+export async function borrarDocumento(api: string, studentId: string, docId: string): Promise<number> {
+  const r = await json<{ quedan?: number }>(`${api}/students/${studentId}/biblioteca/${encodeURIComponent(docId)}`, { method: 'DELETE' })
+  return r.quedan ?? 0
+}
 /** Sube un archivo al perfil: el extractor lo procesa y se suma al plan. */
 export async function subirDocumento(api: string, studentId: string, archivo: File): Promise<string> {
   const fd = new FormData()

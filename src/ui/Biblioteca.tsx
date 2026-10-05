@@ -1,14 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
-import { listarBiblioteca, type DocumentoResumen, type Sesion } from '../net/sesion'
+import { borrarDocumento, listarBiblioteca, type DocumentoResumen, type Sesion } from '../net/sesion'
 import { nombreCapa, quitar, subir, useSubidas } from '../net/subidas'
 
-interface Props { sesion: Sesion; onActualizado?: () => void; onVolver?: () => void }
+interface Props { sesion: Sesion; onActualizado?: () => void; onVolver?: () => void; /** se borró un documento: quedan N en el perfil */ onBorrado?: (quedan: number) => void }
 
 /** La biblioteca del perfil: lo que ya subió y la caja para subir más. Cada
  *  documento se suma al mismo plan; el backend unifica los conceptos que se
  *  repiten entre lecturas y recalcula las zonas. Nada queda aislado. */
-export function Biblioteca({ sesion, onVolver }: Props) {
+export function Biblioteca({ sesion, onVolver, onBorrado }: Props) {
   const [docs, setDocs] = useState<DocumentoResumen[] | null>(null)
+  const [porBorrar, setPorBorrar] = useState<string | null>(null)
+  const [borrando, setBorrando] = useState(false)
+  const [errorBorrar, setErrorBorrar] = useState<string | null>(null)
+  const borrar = async (id: string) => {
+    setBorrando(true); setErrorBorrar(null)
+    try {
+      const quedan = await borrarDocumento(sesion.api, sesion.studentId, id)
+      setDocs((ds) => (ds ?? []).filter((d) => d.id !== id))
+      setPorBorrar(null)
+      onBorrado?.(quedan)
+    } catch (e) {
+      setErrorBorrar(e instanceof Error ? e.message : 'No se pudo borrar.')
+    } finally { setBorrando(false) }
+  }
   const entrada = useRef<HTMLInputElement>(null)
   const subidas = useSubidas()
   const activas = subidas.filter((x) => x.estado === 'subiendo' || x.estado === 'procesando')
@@ -58,7 +72,23 @@ export function Biblioteca({ sesion, onVolver }: Props) {
               <span className="entrar-item-texto">
                 <b>{d.objeto ? `${d.objeto} — ${d.titulo}` : d.titulo}</b>
                 <small>{d.conceptos} conceptos · {d.relaciones} relaciones</small>
+                {porBorrar === d.id && (
+                  <small className="biblioteca-aviso">
+                    {docs.length === 1
+                      ? 'Es tu única lectura: se borra con toda tu galaxia y tu progreso. No se puede deshacer.'
+                      : 'Se borra la lectura y lo que aprendiste de sus conceptos. No se puede deshacer.'}
+                    {errorBorrar && <span className="entrar-error"> {errorBorrar}</span>}
+                  </small>
+                )}
               </span>
+              {porBorrar === d.id ? (
+                <span className="biblioteca-acciones">
+                  <button className="btn chico peligro" disabled={borrando} onClick={() => void borrar(d.id)}>{borrando ? 'Borrando…' : 'Sí, borrar'}</button>
+                  <button className="btn chico fantasma" disabled={borrando} onClick={() => { setPorBorrar(null); setErrorBorrar(null) }}>Cancelar</button>
+                </span>
+              ) : (
+                <button className="btn chico fantasma" onClick={() => { setPorBorrar(d.id); setErrorBorrar(null) }}>Borrar</button>
+              )}
             </li>
           ))}
         </ul>

@@ -14,7 +14,7 @@ import { generarRuta, ofrecerRecompensas, ofrecerRecompensasAndamiadas, type Nod
 import { Rng, semillaLegible } from './engine/rng'
 import {
   anotarPropuesta, cargarAtlas, coberturaAtlas, confirmarPropuestas, descargarLog,
-  EQUIPO_INICIAL, guardarAtlas, registrar, type Atlas
+  EQUIPO_INICIAL, atlasVacio, guardarAtlas, registrar, type Atlas
 } from './engine/atlas'
 import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
@@ -855,6 +855,37 @@ export default function App() {
     else if (p === 'expedicion') setFase('inicio')
   }
   const salir = () => { completoRef.current = null; mapaExpedicionRef.current = null; temaRef.current = null; setTemaActivoEstado(null); cerrarSesion(); observarAtlas(null); fijarAmbito(null); setSesion(null); setContenido(null); setFase('cargar') }
+  /** v6.10 · se borró una lectura: el plan se rehace sin ella y el Atlas suelta lo que ya no existe.
+   *  Si era la última, el perfil queda en blanco y se vuelve a la entrada a subir otra. */
+  const alBorrarDocumento = (quedan: number) => {
+    if (!sesion) return
+    borrarExpedicion(); setGuardada(null); guardarPendiente(null)
+    const fuente = contenido?.fuente ?? 'plan'
+    if (quedan <= 0) {
+      const limpio = atlasVacio(fuente)
+      guardarAtlas(limpio); setAtlas(limpio)
+      salir()
+      return
+    }
+    void cargarPlan(sesion.api, sesion.studentId).then((plan) => {
+      if (!plan) return
+      const c = adaptarBundle(plan)
+      const a = atlasRef.current
+      if (a) {
+        const dentro = (id: string) => !!c.conceptos[id]
+        const podado: Atlas = {
+          ...a, fuente: c.fuente,
+          conceptos: Object.fromEntries(Object.entries(a.conceptos).filter(([id]) => dentro(id))),
+          aristas: Object.fromEntries(Object.entries(a.aristas).filter(([, x]) => dentro(x.from) && dentro(x.to))),
+          propuestas: Object.fromEntries(Object.entries(a.propuestas).filter(([, x]) => dentro(x.from) && dentro(x.to))),
+          constelaciones: (a.constelaciones ?? []).filter((k) => k.conceptIds.every(dentro))
+        }
+        guardarAtlas(podado); setAtlas(podado)
+      }
+      temaRef.current = null; setTemaActivoEstado(null)
+      completoRef.current = c; setContenido(c)
+    })
+  }
   const barra = (activa: Pestana, extra?: React.ReactNode) => (
     <Shell sesion={sesion} atlas={atlas} activa={activa} onPestana={irA} onSalir={salir}>{extra}</Shell>
   )
@@ -865,6 +896,7 @@ export default function App() {
         <Biblioteca
           sesion={sesion}
           onVolver={() => setFase('inicio')}
+          onBorrado={alBorrarDocumento}
         />
       </div>
     )

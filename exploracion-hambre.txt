@@ -1,0 +1,68 @@
+
+> edtech-game@6.8.0 explorar
+> esbuild scripts/explorar.ts --bundle --platform=node --format=esm --outfile=.explorar.mjs --log-level=warning && node .explorar.mjs hambre.json
+
+
+hambre.json
+14 conceptos · 8 aristas firmes · 0 insinuadas · 4 clusters · 0 ejes · 6 casos · 6 tesis · 2 marcos · 11 intuiciones · 12 conceptos con atributos
+
+── 1 · Flecha sobre cada arista firme ──
+ tal como el texto:  sostenido 8
+ misma arista AL REVÉS, por tipo:
+   apoya          aproximado 5
+   causa          invertido 2
+   extiende       aproximado 1
+ misma arista con OTRO tipo (filas: lo que dice el texto → lo que puso el jugador):
+   apoya         causa: aproximado | extiende: aproximado
+   causa         apoya: aproximado | extiende: aproximado
+   extiende      apoya: aproximado | causa: aproximado
+
+── 2 · Flexibilidad: insinuadas y conexiones propias ──
+ insinuadas jugadas tal cual:  —
+ 83 pares sin vínculo, con un tipo cualquiera:  convive 36 · silencio 36 · plausible 10 · propuesta 1
+
+── 3 · Herramientas sobre todo su material ──
+ Identidad correcta                 sostenido 14
+ Identidad cruzada                  error 14
+ Campo (2…6 del mismo cluster)      sostenido 6
+ Campo con un intruso               silencio 4
+ Jerarquía correcta                 —
+ Jerarquía al revés                 —
+ Eje con el valor correcto          —
+ Eje con otro valor                 —
+ Secuencia correcta                 —
+ Secuencia al revés                 —
+ Ancla (caso + sus conceptos)       sostenido 6
+ Ancla con concepto ajeno           error 6
+ Contraejemplo (concepto ajeno)     plausible 6
+ Contraejemplo con concepto propio  error 6
+ Balanza (por sentido del criterio) refuta:sostenido 6
+ Balanza con criterio de otra tesis plausible 6
+ Analogía (mismo vínculo)           sostenido 16
+ Analogía con el 2º par volteado    silencio 16
+ Alcance (sobre aristas «matiza»)   —
+ Alcance al revés                   —
+ Descomposición (carta entera)      sostenido 12
+ Descomposición (carta de nombre)   sostenido 12
+ Descomposición con atributo ajeno  error 12
+
+── 4 · Ranuras y mensajes ──
+ 396 combinaciones de dos cartas admitidas por las ranuras · 0 sin explicación
+
+── 5 · Material del bundle ──
+ conceptos sin ninguna arista firme: 4/14 — Análisis de contenido, Análisis crítico de discursos (ACD), Análisis cuantitativo de encuestas, Entrevistas y grupos focales
+ tipos de vínculo: apoya 5 · causa 2 · extiende 1
+
+════════ HALLAZGOS ════════
+
+[REVISAR] Contraejemplo razonable (caso + concepto que no opera en él) que no se sostiene — 6 casos
+     · Se realizó un análisis de contenido de l… ✗ Literatura juvenil ⇒ plausible: Cierto, pero demasiado fácil: ese concepto ni siquiera ronda
+     · Se utilizó el Análisis Crítico de Discur… ✗ Análisis de contenido ⇒ plausible: Cierto, pero demasiado fácil: ese concepto ni siquiera ronda
+     · La investigación de Martorell (2012) des… ✗ Análisis de contenido ⇒ plausible: Cierto, pero demasiado fácil: ese concepto ni siquiera ronda
+     · Según Blanes (2018), "Los Juegos del Ham… ✗ Análisis de contenido ⇒ plausible: Cierto, pero demasiado fácil: ese concepto ni siquiera ronda
+
+[DATO] Conceptos sin ninguna arista firme (solo se juegan con Identidad o propuestas) — 1 caso
+     · Análisis de contenido, Análisis crítico de discursos (ACD), Análisis cuantitativo de encuestas, Entrevistas y grupos focales
+
+0 tipos de bug · 1 por revisar · 1 datos del contenido
+
