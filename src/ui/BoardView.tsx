@@ -443,7 +443,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
       )}
 
-      {guia && <TutorialVelo burbuja={burbujaRef} foco={guia.foco ?? null} />}
+      {/* v6.13 · paso libre (sin foco): no hay velo, la pantalla entera queda encendida */}
+      {guia?.foco && <TutorialVelo burbuja={burbujaRef} foco={guia.foco} />}
       {guia && (
         <aside
           ref={burbujaRef}
