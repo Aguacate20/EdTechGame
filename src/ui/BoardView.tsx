@@ -287,7 +287,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   }) : false
 
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
-  const foco = guia?.foco
+  // v6.18 · mientras se resuelve el ataque no hay foco: la pantalla entera se enciende para verlo
+  const foco = resuelto ? undefined : guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
   /** v6.15 · el cuadro de instrucción se puede ocultar; vuelve con el paso siguiente */
   const [guiaOculta, setGuiaOculta] = useState<string | null>(null)
@@ -448,7 +449,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       )}
 
       {/* v6.13 · paso libre (sin foco): no hay velo, la pantalla entera queda encendida */}
-      {guia?.foco && <TutorialVelo burbuja={burbujaRef} foco={guia.foco} />}
+      {foco && <TutorialVelo burbuja={burbujaRef} foco={foco} />}
       {guia && guiaVisible && (
         <aside
           ref={burbujaRef}
