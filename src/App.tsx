@@ -125,6 +125,8 @@ export default function App() {
   const [sesion, setSesion] = useState<Sesion | null>(() => leerSesion())
   /** el plan entero del perfil (la galaxia lo ve todo); la expedición juega un tema */
   const completoRef = useRef<Contenido | null>(null)
+  const contenidoRef = useRef<Contenido | null>(null)
+  contenidoRef.current = contenido
   const [temaActivo, setTemaActivoEstado] = useState<string | null>(null)
   const [conceptoFoco, setConceptoFoco] = useState<string | null>(null)
   const temaRef = useRef<string | null>(null)
@@ -317,7 +319,10 @@ export default function App() {
     const c = contenidoTutorial()
     // v5.64: el tutorial NUNCA toca el Atlas del perfil. Se guarda tu texto y tu
     // Atlas para volver a ellos, y el tutorial carga el suyo sin ámbito de perfil.
-    if (contenido && atlas && contenido.fuente !== c.fuente) previoRef.current = { contenido: completoRef.current ?? contenido, atlas }
+    // v6.19 · se leen por ref: esta función se crea una sola vez y veía `contenido` y `atlas`
+    // como estaban al arrancar (vacíos), así que nunca guardaba a dónde volver
+    const actual = contenidoRef.current, atlasActual = atlasRef.current
+    if (actual && atlasActual && actual.fuente !== c.fuente) previoRef.current = { contenido: completoRef.current ?? actual, atlas: atlasActual }
     observarAtlas(null)
     fijarAmbito(null)
     const a = cargarAtlas(c.fuente)
@@ -1174,7 +1179,7 @@ export default function App() {
                 setContenido(null); setFase('cargar')
               }
             }}>
-              {previoRef.current ? 'Volver a mi texto' : 'Cargar mi texto'}
+              Volver al menú principal
             </button>
             <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
               Repetir el tutorial
