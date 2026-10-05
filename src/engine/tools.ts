@@ -928,7 +928,8 @@ function validarAncla(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificadore
       conceptIds: aciertos
     }
   }
-  return { ...v, reserva, estado: 'invertido', mult: -1, nota: `Ninguno opera ahí. ${caso.cierre}`, conceptIds: ids }
+  // v6.8 · no es una inversión (no hay dirección que voltear): es una atribución falsa
+  return { ...v, reserva, estado: 'error', mult: -1, nota: `Ninguno opera ahí. ${caso.cierre}`, conceptIds: ids }
 }
 
 function validarBalanza(_c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
@@ -994,7 +995,8 @@ function validarContraejemplo(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modif
   const errados = resto.filter((p) => dentro.has(p.conceptId!))
   if (errados.length) {
     return {
-      ...v, reserva, estado: 'invertido', mult: -1,
+      // v6.8 · tampoco aquí hay dirección: el concepto SÍ opera en el caso, la afirmación es falsa
+      ...v, reserva, estado: 'error', mult: -1,
       nota: `«${errados[0].titulo}» sí opera en ese caso: ${caso.cierre}`,
       conceptIds: errados.map((p) => p.conceptId!)
     }

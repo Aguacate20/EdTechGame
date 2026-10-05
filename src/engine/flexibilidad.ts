@@ -77,7 +77,8 @@ export function flexibilizar(c: Contenido, veredictos: Veredicto[], piezas: Piez
     if (tool === 'contraejemplo' && v.estado !== 'error') continue
     if (tool === 'contraejemplo') {
       const caso = ps.find((p) => p.clase === 'caso')
-      if (caso && ids.some((id) => caso.conceptIds.some((k) => noVinculo(c, id, k)))) { abrir(v, 'sostenido', 30, 1.6, 'El texto contrapone a propósito ese concepto con lo que el caso ilustra: contraejemplo de manual, vale doble.'); continue }
+      // v6.8 · solo cuenta un concepto que NO está en el caso: uno que sí opera ahí no es contraejemplo
+      if (caso && ids.some((id) => !caso.conceptIds.includes(id) && caso.conceptIds.some((k) => noVinculo(c, id, k)))) { abrir(v, 'sostenido', 30, 1.6, 'El texto contrapone a propósito ese concepto con lo que el caso ilustra: contraejemplo de manual, vale doble.'); continue }
     }
 
     // ── campo: padre común o vecino común aunque las zonas no coincidan ──
