@@ -333,12 +333,19 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
         foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] }
       },
+      // v6.17 · el combo son dos pasos: cada uno ilumina solo lo suyo, y no se invita a
+      // afirmar hasta que estén trazados LOS DOS (antes bastaba un trazo cualquiera)
       {
         clave: 'combo', titulo: 'Ahora haz que se toquen',
-        texto: 'Sin afirmar todavía: empareja Abeja con su descripción usando la Identidad (=), y encierra Abeja, Flor y Polinización con el Campo (◯). Al compartir piezas entre trazos se encienden los combos, y ahí es donde el número se dispara.',
-        hecho: (e) => e.trazos.length >= 3,
-        // v6.16 · también las fichas del paso: las que faltan por sacar (descripción de Abeja, Flor) y las de la mesa
-        foco: { zona: 'herramientas', herramientas: ['identidad', 'campo'], piezas: de(['abeja', 'flor', 'polinizacion']) }
+        texto: 'Sin afirmar todavía: empareja Abeja con su descripción usando la Identidad (=). Si la descripción sigue en tu mano, sácala primero a la mesa.',
+        hecho: (e) => trazosDe(e, 'identidad') >= 1,
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) }
+      },
+      {
+        clave: 'combo-campo', titulo: 'Y enciérralas en un campo',
+        texto: 'Todavía sin afirmar: saca Flor y encierra Abeja, Flor y Polinización con el Campo (◯). Al compartir piezas entre trazos se encienden los combos, y ahí es donde el número se dispara.',
+        hecho: (e) => trazosDe(e, 'campo') >= 1,
+        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['abeja', 'flor', 'polinizacion']) }
       },
       {
         clave: 'estallido', titulo: 'Suéltalo todo de una vez',
