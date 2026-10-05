@@ -176,6 +176,8 @@ export interface FocoGuia {
   piezas?: (e: EstadoBatalla) => string[]
   /** herramientas pulsables; si falta, todas */
   herramientas?: HerramientaId[]
+  /** v6.14 · tipos de vínculo que el paso pide: se iluminan al abrir la Flecha */
+  relaciones?: string[]
 }
 
 export interface PasoGuia {
@@ -283,7 +285,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         clave: 'cadena', titulo: 'Encadena dos ideas',
         texto: 'Saca las tres fichas iluminadas: Abeja, Polinización y Fruto. Con la Flecha (→) di que la abeja causa la polinización, y luego que la polinización causa el fruto. Dos trazos en el mismo diagrama pegan mucho más que uno.',
         hecho: (e) => trazosDe(e, 'flecha') >= 2 || e.turno > 2,
-        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'] }
+        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] }
       },
       {
         clave: 'sospecha', titulo: 'Cuidado con la falsificación',
@@ -327,7 +329,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         clave: 'cadena3', titulo: 'Encadena tres ideas',
         texto: 'Saca Abeja, Polinización y Fruto. Con la Flecha (→) di que la abeja causa la polinización, y que la polinización causa el fruto. Dos trazos: eso ya es una cadena.',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
-        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'] }
+        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] }
       },
       {
         clave: 'combo', titulo: 'Ahora haz que se toquen',

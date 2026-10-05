@@ -137,7 +137,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** paso del tutorial que toca ahora, si estamos en él */
   guia?: {
     titulo: string; texto: string; indice: number; total: number
-    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[] }
+    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[] }
   } | null
   fondo?: { n: number; sala?: string | null }
 }) {
@@ -872,6 +872,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   return (
                     <button
                       key={tipo}
+                      data-relacion={tipo}
                       className={`apuesta chica${param === tipo ? ' activa' : ''}${favorecida ? ' favorecida' : ''}`}
                       onClick={() => setParam(tipo)}
                       data-ayuda={`${tipo.toUpperCase()}\n${GLOSA[tipo] ?? ''}${favorecida ? '\n\nUna de tus lentes favorece este vínculo.' : ''}`}

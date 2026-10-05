@@ -9,7 +9,7 @@ interface Rect { x: number; y: number; w: number; h: number }
 
 const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro' }
 
-export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[] } | null }) {
+export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[]; relaciones?: string[] } | null }) {
   const [rects, setRects] = useState<Rect[]>([])
   const [bubble, setBubble] = useState<Rect | null>(null)
   const vivo = useRef(true)
@@ -26,11 +26,13 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       if (foco?.zona && ZONA_A_ANCLA[foco.zona] && !(concreto && zonaEsContenedor)) sel.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
       for (const u of foco?.piezas ?? []) sel.push(`[data-uid="${u}"]`)
       for (const h of foco?.herramientas ?? []) sel.push(`[data-herramienta="${h}"]`)
+      // v6.14 · el tipo de vínculo que pide el paso; el botón solo existe con la Flecha abierta
+      for (const r of foco?.relaciones ?? []) sel.push(`[data-relacion="${r}"]`)
       // v6.12 · con una herramienta señalada, el botón «Trazar» también es parte del paso
       if (foco?.herramientas?.length) sel.push('[data-tutorial="trazar"]')
       const els = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))
       const nuevos = els.map((el) => { const r = el.getBoundingClientRect(); return { x: r.left - 6, y: r.top - 6, w: r.width + 12, h: r.height + 12 } })
-        .filter((r) => r.w > 20 && r.h > 20)
+        .filter((r) => r.w > 16 && r.h > 16)
       setRects((prev) => (JSON.stringify(prev) === JSON.stringify(nuevos) ? prev : nuevos))
       const b = burbuja.current?.getBoundingClientRect()
       const nb = b ? { x: b.left, y: b.top, w: b.width, h: b.height } : null
