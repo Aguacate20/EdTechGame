@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cunaVitral, ESTALLIDOS, ESTRELLAS, N_FACETAS } from './estallidos'
 
@@ -48,6 +49,48 @@ export function PaginaEnBlanco({ caidos, retardoMs = 0 }: { caidos: number; reta
         <small>UN SOLO TRAZO</small>
         <b>Página en blanco</b>
         <span>{caidos} {caidos === 1 ? 'enemigo borrado' : 'enemigos borrados'} · no queda nada escrito contra ti</span>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
+/** v6.27 · a partir de cuánto daño un golpe se celebra, y cómo se llama cada escalón */
+export const GOLPES_MAYORES = [
+  { desde: 10000, id: 'legendario', rotulo: 'GOLPE LEGENDARIO' },
+  { desde: 5000, id: 'colosal', rotulo: 'GOLPE COLOSAL' },
+  { desde: 2000, id: 'mayor', rotulo: 'GOLPE MAYOR' }
+]
+export const escalonDeGolpe = (dano: number) => GOLPES_MAYORES.find((g) => dano >= g.desde) ?? null
+
+function Cifra({ hasta, ms = 700 }: { hasta: number; ms?: number }) {
+  const [v, setV] = useState(0)
+  useEffect(() => {
+    let raf = 0; const t0 = performance.now()
+    const paso = (t: number) => { const k = Math.min(1, (t - t0) / ms); setV(Math.round(hasta * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf = requestAnimationFrame(paso) }
+    raf = requestAnimationFrame(paso)
+    return () => cancelAnimationFrame(raf)
+  }, [hasta, ms])
+  return <>{v.toLocaleString('es')}</>
+}
+
+/** El golpe grande de una partida normal: un tajo de luz cruza la pantalla con la cifra
+ *  subiendo. Dura poco más de dos segundos y no bloquea nada: es un premio, no una pausa.
+ *  El estallido completo sigue reservado para cristalizar. */
+export function GolpeMayor({ dano, trazos }: { dano: number; trazos: number }) {
+  const g = escalonDeGolpe(dano)
+  if (!g || typeof document === 'undefined') return null
+  return createPortal(
+    <div className={`golpe-mayor gm-${g.id}`} role="status" aria-live="polite">
+      <div className="gm-flash" />
+      <div className="gm-tajo" />
+      {Array.from({ length: g.id === 'mayor' ? 16 : g.id === 'colosal' ? 26 : 38 }, (_, i) => (
+        <i key={i} className="gm-chispa" style={{ ['--a' as string]: `${(i * 137) % 360}deg`, ['--d' as string]: `${24 + ((i * 53) % 34)}vmin`, ['--t' as string]: `${(i % 6) * 40}ms` }} />
+      ))}
+      <div className="gm-texto">
+        <small>{g.rotulo}</small>
+        <b>−<Cifra hasta={dano} /></b>
+        <span>{trazos} {trazos === 1 ? 'afirmación sostenida' : 'afirmaciones que se sostienen entre sí'}</span>
       </div>
     </div>,
     document.body

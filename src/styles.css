@@ -2330,3 +2330,21 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .hallazgo-activo { border-top-color: var(--acento); } .hallazgo-activo .hallazgo-clase { color: #2a0f00; background: var(--acento); }
 .hallazgo-herramienta { border-top-color: var(--descubierto, #38B6FF); } .hallazgo-herramienta .hallazgo-clase { color: #03203a; background: var(--descubierto, #38B6FF); }
 .hallazgo-respiro .hallazgo-clase { color: var(--texto-2); background: var(--panel-hundido); }
+
+/* ═════ v6.27 · golpe mayor (2.000+), colosal (5.000+) y legendario (10.000+) ═════ */
+.golpe-mayor { position: fixed; inset: 0; z-index: 112; pointer-events: none; overflow: hidden; display: grid; place-items: center; --gm: #ffc23d; --gm2: #ff6a1a; animation: gm-fuera 2.5s linear forwards; }
+.gm-colosal { --gm: #7ee0ff; --gm2: #3a7bff; } .gm-legendario { --gm: #ff9df0; --gm2: #a44bff; }
+@keyframes gm-fuera { 0%, 99% { visibility: visible; } 100% { visibility: hidden; } }
+.gm-flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #fff 0, var(--gm) 30%, transparent 70%); opacity: 0; animation: gm-flash .7s ease-out forwards; }
+@keyframes gm-flash { 0% { opacity: 0; } 12% { opacity: .7; } 100% { opacity: 0; } }
+.gm-tajo { position: absolute; left: -25%; top: 50%; width: 150%; height: 26vh; margin-top: -13vh; transform: rotate(-7deg) scaleX(0); transform-origin: 50% 50%; background: linear-gradient(180deg, transparent 0, rgba(6,10,30,.82) 14%, rgba(6,10,30,.9) 86%, transparent 100%); border-top: 3px solid var(--gm); border-bottom: 3px solid var(--gm2); box-shadow: 0 0 60px var(--gm), 0 0 120px var(--gm2); animation: gm-tajo 2.5s cubic-bezier(.2,.9,.2,1) forwards; }
+@keyframes gm-tajo { 0% { transform: rotate(-7deg) scaleX(0); opacity: 1; } 10% { transform: rotate(-7deg) scaleX(1); } 78% { transform: rotate(-7deg) scaleX(1); opacity: 1; } 100% { transform: rotate(-7deg) scaleX(1) scaleY(0); opacity: 0; } }
+.gm-texto { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; transform: rotate(-7deg); text-align: center; animation: gm-texto 2.5s cubic-bezier(.2,1.4,.3,1) forwards; }
+.gm-texto small { font-family: var(--mono); letter-spacing: .5em; font-size: 14px; font-weight: 700; color: var(--gm); text-shadow: 0 0 14px var(--gm2); }
+.gm-texto b { font-size: clamp(64px, 13vw, 170px); line-height: .95; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #fff; text-shadow: 0 0 24px var(--gm), 0 0 70px var(--gm2), 0 4px 0 rgba(0,0,0,.4); }
+.gm-texto span { font-size: 15px; color: #fff; opacity: .9; text-shadow: 0 1px 8px #000; }
+@keyframes gm-texto { 0%, 6% { opacity: 0; transform: rotate(-7deg) scale(2.6); } 16% { opacity: 1; transform: rotate(-7deg) scale(.94); } 22% { transform: rotate(-7deg) scale(1.05); } 28% { transform: rotate(-7deg) scale(1); } 34% { transform: rotate(-7deg) scale(1.08); } 40% { transform: rotate(-7deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(-7deg) scale(1.1); } }
+.gm-chispa { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 12px 3px var(--gm); opacity: 0; animation: gm-chispa 1.3s cubic-bezier(.1,.7,.3,1) calc(.12s + var(--t)) forwards; }
+@keyframes gm-chispa { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1.4); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(calc(var(--d) * 2)) scale(.2); } }
+.gm-legendario .gm-tajo { height: 34vh; margin-top: -17vh; } .gm-legendario .gm-flash { animation-duration: 1s; }
+@media (prefers-reduced-motion: reduce) { .gm-chispa, .gm-flash { display: none; } .gm-tajo, .gm-texto { animation-duration: 2.5s; animation-timing-function: linear; } }

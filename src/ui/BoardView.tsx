@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
-import { PaginaEnBlanco } from './Estallido'
+import { GolpeMayor, PaginaEnBlanco, escalonDeGolpe } from './Estallido'
 import { porqueDe } from '../engine/significativo'
 import { orientar } from '../engine/feedback'
 import { puedeCristalizar, estadoCristalizacion, progresoCristal, componenteCristalizable } from '../engine/battle'
@@ -416,6 +416,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       onMouseMove={seguirRaton} onMouseLeave={() => setAyuda(null)}
     >
       {/* v6.22 · la Página en Blanco cubre la pantalla entera, no solo el carril */}
+      {/* v6.27 · un golpe de 2000 o más se celebra (fuera del tutorial, que tiene su propio cierre) */}
+      {resuelto && casc.terminada && e.ultima && !aniquilacion && !guia && escalonDeGolpe(e.ultima.danoTotal) && (
+        <GolpeMayor key={`gm-${e.turno}`} dano={e.ultima.danoTotal} trazos={e.ultima.diag.sostenidos} />
+      )}
       {aniquilacion && e.ultima && <PaginaEnBlanco key={e.turno} caidos={e.ultima.impactos.filter((x) => x.derribado).length} retardoMs={340 + 150 * e.ultima.impactos.length} />}
       {h && !resuelto && sobreTablero && (
         <div
