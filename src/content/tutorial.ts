@@ -323,7 +323,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
     pasos: [
       {
         clave: 'lente', titulo: 'Llevas una lente',
-        texto: 'A la izquierda verás «Lente del arquitecto». Es una pasiva: no hace nada por sí sola, pero multiplica cuando un diagrama tiene varias afirmaciones enlazadas. El Dogma que tienes enfrente, además, no cede ante una sola frase.',
+        texto: 'A la izquierda verás «Lente del arquitecto». Es una pasiva: no hace nada por sí sola, pero multiplica cuando un diagrama tiene varias afirmaciones enlazadas. El Cabezadura que tienes enfrente, además, no cede ante una sola frase.',
         hecho: (e) => e.tablero.length >= 1,
         foco: { zona: 'pasivas' }, soloLeer: true
       },

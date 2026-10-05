@@ -103,7 +103,7 @@ export function MapView({ ruta, acto, alcanzables, visitados, actual, onElegir, 
                     </span>
                     <span className="nom">
                       {n.tipo === 'refugio' ? 'Alto en el camino'
-                        : dif === 'jefe' ? 'El Tratado'
+                        : dif === 'jefe' ? 'El Sabelotodo'
                         : dif === 'dura' ? 'Oleada dura'
                         : dif === 'media' ? 'Oleada media' : 'Oleada ligera'}
                     </span>

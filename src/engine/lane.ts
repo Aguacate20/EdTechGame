@@ -39,62 +39,62 @@ export interface TipoEnemigo {
 
 export const ROSTER: TipoEnemigo[] = [
   {
-    id: 'copista', nombre: 'El Copista', rango: 'comun',
+    id: 'copista', nombre: 'Plumilla', rango: 'comun',
     glosa: 'Copia sin entender. Avanza una casilla y golpea cuando llega.',
     velocidad: 1, alcance: 1, vidaBase: 26, ataque: 4, rasgo: 'ninguno', costo: 1, desdeActo: 0
   },
   {
-    id: 'errata', nombre: 'La Errata', rango: 'comun',
+    id: 'errata', nombre: 'El Gazapo', rango: 'comun',
     glosa: 'Se cuela rápido. Avanza dos casillas por turno, pero es frágil.',
     velocidad: 2, alcance: 1, vidaBase: 16, ataque: 4, rasgo: 'ninguno', costo: 2, desdeActo: 0
   },
   {
-    id: 'rumor', nombre: 'El Rumor', rango: 'comun',
+    id: 'rumor', nombre: 'El Chismoso', rango: 'comun',
     glosa: 'No necesita acercarse: te alcanza desde el fondo del carril todos los turnos.',
     velocidad: 0, alcance: LARGO_CARRIL, vidaBase: 22, ataque: 2, rasgo: 'ninguno', costo: 2, desdeActo: 0
   },
   {
-    id: 'apocrifo', nombre: 'El Apócrifo', rango: 'comun',
+    id: 'apocrifo', nombre: 'El Farsante', rango: 'comun',
     glosa: 'Cuando golpea, deja una carta falsificada en tu mazo.',
     velocidad: 1, alcance: 1, vidaBase: 30, ataque: 3, rasgo: 'apocrifo', costo: 3, desdeActo: 0
   },
   {
-    id: 'notaalpie', nombre: 'La Nota al Pie', rango: 'comun',
+    id: 'notaalpie', nombre: 'El Asterisco', rango: 'comun',
     glosa: 'No te hace daño: se lleva una carta de tu mano cada turno que está cerca.',
     velocidad: 1, alcance: 2, vidaBase: 24, ataque: 0, rasgo: 'roba', costo: 2, desdeActo: 0
   },
   {
-    id: 'dogma', nombre: 'El Dogma', rango: 'duro',
+    id: 'dogma', nombre: 'El Cabezadura', rango: 'duro',
     glosa: 'Un diagrama de un solo trazo no le hace daño: encadena dos o más.',
     velocidad: 1, alcance: 2, vidaBase: 54, ataque: 6, rasgo: 'blindado_cadena', costo: 4, desdeActo: 1
   },
   {
-    id: 'eco', nombre: 'El Eco', rango: 'duro',
+    id: 'eco', nombre: 'El Remedón', rango: 'duro',
     glosa: 'No se derrota de golpe: la primera vez que lo hieres retrocede. Al atacar deja una intuición.',
     velocidad: 1, alcance: 1, vidaBase: 34, ataque: 4, rasgo: 'retrocede', costo: 3, desdeActo: 1
   },
   {
-    id: 'cita', nombre: 'La Cita Descontextualizada', rango: 'duro',
+    id: 'cita', nombre: 'La Encadenada', rango: 'duro',
     glosa: 'Cada dos turnos salta hacia delante sin avisar.',
     velocidad: 1, alcance: 1, vidaBase: 30, ataque: 6, rasgo: 'salta', costo: 3, desdeActo: 1
   },
   {
-    id: 'palimpsesto', nombre: 'El Palimpsesto', rango: 'duro',
+    id: 'palimpsesto', nombre: 'El Enrollado', rango: 'duro',
     glosa: 'Se reescribe: si en un turno no lo tocas, recupera vida.',
     velocidad: 1, alcance: 1, vidaBase: 44, ataque: 5, rasgo: 'regenera', costo: 4, desdeActo: 2
   },
   {
-    id: 'bibliografia', nombre: 'La Bibliografía', rango: 'duro',
+    id: 'bibliografia', nombre: 'El Mamotreto', rango: 'duro',
     glosa: 'Al caer se divide en dos entradas menores.',
     velocidad: 1, alcance: 1, vidaBase: 34, ataque: 4, rasgo: 'divide', costo: 4, desdeActo: 2
   },
   {
-    id: 'ortodoxia', nombre: 'La Ortodoxia', rango: 'duro',
+    id: 'ortodoxia', nombre: 'Don Pilar', rango: 'duro',
     glosa: 'Solo le hacen daño los vínculos que unen zonas distintas del texto o que contrastan.',
     velocidad: 1, alcance: 2, vidaBase: 48, ataque: 6, rasgo: 'blindado_puente', costo: 5, desdeActo: 2
   },
   {
-    id: 'tratado', nombre: 'El Tratado', rango: 'jefe',
+    id: 'tratado', nombre: 'El Sabelotodo', rango: 'jefe',
     glosa: 'No se mueve. Exige una jugada distinta en cada una de sus fases.',
     velocidad: 0, alcance: LARGO_CARRIL, vidaBase: 130, ataque: 7, rasgo: 'fases', costo: 10, desdeActo: 0
   }
@@ -206,16 +206,16 @@ export function factorBlindaje(e: Enemigo, f: FormaAfirmacion): { factor: number
     case 'blindado_cadena':
       return f.eslabones >= 2
         ? { factor: 1, motivo: null }
-        : { factor: 0.15, motivo: 'Al Dogma no le hace daño un diagrama de un solo trazo: encadena dos o más.' }
+        : { factor: 0.15, motivo: 'Al Cabezadura no le hace daño un diagrama de un solo trazo: encadena dos o más.' }
     case 'blindado_puente':
       return f.puente || f.contraste
         ? { factor: 1, motivo: null }
-        : { factor: 0.15, motivo: 'A la Ortodoxia solo le hacen daño los vínculos que unen zonas distintas o que contrastan; lo demás le rebota.' }
+        : { factor: 0.15, motivo: 'A Don Pilar solo le hacen daño los vínculos que unen zonas distintas o que contrastan; lo demás le rebota.' }
     case 'fases': {
       const exigida = FASES_JEFE[e.fase % FASES_JEFE.length]
       return f.jugadas.includes(exigida.jugada)
         ? { factor: 1.25, motivo: null }
-        : { factor: 0.2, motivo: `El Tratado exige ahora: ${exigida.etiqueta}.` }
+        : { factor: 0.2, motivo: `El Sabelotodo exige ahora: ${exigida.etiqueta}.` }
     }
     default:
       return { factor: 1, motivo: null }

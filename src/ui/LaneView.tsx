@@ -181,13 +181,13 @@ export function LaneView({
       )}
       <div className="carril-jugador">
         <div>
-          <span className="eyebrow">El Copista</span>
+          <span className="eyebrow">Andy</span>
           <div className="vida ancha"><span style={{ width: `${(lucidez / lucidezMax) * 100}%` }} /></div>
           <span className="dato silencio">{lucidez}/{lucidezMax}</span>
         </div>
         <span className={`heroe-casa${embisteUid ? ' fuera' : ''}`}>
           <Retrato
-            familia="jugador" id="copista" alt="El Copista"
+            familia="jugador" id="copista" alt="Andy"
             tamano={56} gesto={gesto} variante={disparo?.arma.forma}
             respaldo={<Copista gesto={gesto} />}
           />
