@@ -130,11 +130,13 @@ const simbolosDe = (p: Pieza): string => {
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${simbolosDe(p) ? `\n\n${simbolosDe(p)}` : ''}`
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo,
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo, alCerrarCascada,
   }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
   /** paso del tutorial que toca ahora, si estamos en él */
+  /** v6.20 · avisa una vez por turno cuando la cuenta del diagrama termina de subir */
+  alCerrarCascada?: (dano: number, sostenidos: number, xmult: number) => void
   guia?: {
     titulo: string; texto: string; indice: number; total: number
     clave?: string; alEntender?: () => void
@@ -209,6 +211,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const aniquilacion = !!(resuelto && casc.terminada && e.ultima &&
     e.ultima.impactos.filter((i) => i.derribado && i.pleno).length >= 3)
   const borronSonado = useRef(-1)
+  const cascadaAvisada = useRef(-1)
+  useEffect(() => {
+    if (!(resuelto && casc.terminada && e.ultima) || !alCerrarCascada || cascadaAvisada.current === e.turno) return
+    cascadaAvisada.current = e.turno
+    const buenos = e.ultima.diag.veredictos.filter((v) => v.estado !== 'error' && v.estado !== 'invertido' && v.estado !== 'silencio').length
+    alCerrarCascada(e.ultima.danoTotal, buenos, e.ultima.diag.xmult)
+  }, [resuelto, casc.terminada, e.ultima, e.turno, alCerrarCascada])
   const titanSonado = useRef(-1)
   useEffect(() => {
     if (!(resuelto && casc.terminada && e.ultima) || aniquilacion) return

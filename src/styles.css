@@ -2197,3 +2197,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .flecha-tutorial { animation: flecha-rebote 1.1s ease-in-out infinite; }
 @keyframes flecha-rebote { 0%, 100% { transform: translateY(-4px); } 50% { transform: translateY(4px); } }
 @media (prefers-reduced-motion: reduce) { .flecha-tutorial { animation: none; } }
+
+/* v6.20 · el gran ataque del tutorial: la cifra crece y late */
+.estallido-texto b.estallido-cifra { font-size: clamp(56px, 13vw, 140px); font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #fff; animation: cifra-late .5s ease-in-out 1.4s 3; }
+@keyframes cifra-late { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .estallido-texto b.estallido-cifra { animation: none; } }

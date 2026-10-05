@@ -59,6 +59,23 @@ const cuentaDe = (b: EstadoBatalla) => ({
   errores: b.erroresTotales, invertidos: b.invertidosTotales
 })
 
+/** v6.20 · una cifra que sube hasta su valor: el número del gran ataque se ve crecer */
+function Contador({ hasta, ms = 1400 }: { hasta: number; ms?: number }) {
+  const [v, setV] = useState(0)
+  useEffect(() => {
+    let raf = 0
+    const t0 = performance.now()
+    const paso = (t: number) => {
+      const k = Math.min(1, (t - t0) / ms)
+      setV(Math.round(hasta * (1 - Math.pow(1 - k, 3))))
+      if (k < 1) raf = requestAnimationFrame(paso)
+    }
+    raf = requestAnimationFrame(paso)
+    return () => cancelAnimationFrame(raf)
+  }, [hasta, ms])
+  return <>{v.toLocaleString('es')}</>
+}
+
 export default function App() {
   const [contenido, setContenido] = useState<Contenido | null>(null)
   const [fase, setFase] = useState<Fase>('cargar')
@@ -83,7 +100,8 @@ export default function App() {
   /** v5.63 · por qué el botín ofrece lo que ofrece (modo aprendizaje) */
   const [porqueBotin, setPorqueBotin] = useState<string[]>([])
   /** v5.77 · el estallido del ataque final: variante por tamaño del mapa */
-  const [estallido, setEstallido] = useState<{ variante: string; trazos: number; zonas: number; dano: number } | null>(null)
+  const [estallido, setEstallido] = useState<{ variante: string; trazos: number; zonas: number; dano: number; /** v6.20 · el gran ataque del tutorial usa el mismo estallido con su propio texto */ tutorial?: boolean } | null>(null)
+  const estallidoTutorialRef = useRef(false)
   const [lentes, setLentes] = useState<string[]>([])
   const [sellos, setSellos] = useState<SelloId[]>([])
   const [herramientas, setHerramientas] = useState<HerramientaId[]>(
@@ -332,6 +350,7 @@ export default function App() {
     rngRef.current = rng
     runIdRef.current = `tutorial-${indice}-${Date.now()}`
     setContenido(c); setAtlas(a); setTutorial(indice); setPasosHechos([])
+    estallidoTutorialRef.current = false
     setLucidez(LUCIDEZ_MAX); setAprendizaje(true)
     setLentes(sala.lente ? [sala.lente] : []); setSellos([]); setHerramientas(sala.herramientas)
     setManoExtra(0); setCasos([]); setTesis([]); setFusionados([]); setIntuiciones([])
@@ -1034,6 +1053,17 @@ export default function App() {
               alEntender: paso.soloLeer ? () => setPasosHechos((prev) => prev.includes(paso.clave) ? prev : [...prev, paso.clave]) : undefined }
           })()}
           e={batalla} contenido={contenido} lentes={mods}
+          alCerrarCascada={tutorial !== null && tutorial === SALAS_TUTORIAL.length - 1 ? (dano, sostenidos, xmult) => {
+            // v6.20 · el cierre del tutorial: si el diagrama fue de verdad un combo, estalla la pantalla entera
+            if (estallidoTutorialRef.current || dano <= 0 || !(xmult > 1 || sostenidos >= 3)) return
+            estallidoTutorialRef.current = true
+            window.setTimeout(() => {
+              const est = ESTALLIDOS[0]
+              sfx.titan(4)
+              setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
+              window.setTimeout(() => setEstallido(null), est.duracion)
+            }, 650)
+          } : undefined}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
           on={{
             cambio, afirmar, continuar, quemar, cambiar, sello, sellar, elegirEncargo, apostarOleada, cristalizar, pedirPista, ordenar,
@@ -1052,9 +1082,15 @@ export default function App() {
           {[...Array(ESTALLIDOS.find((x) => x.id === estallido.variante)?.chispas ?? 24)].map((_, i) => <i key={i} className="estallido-chispa" style={{ ['--i' as string]: i }} />)}
           <div className="estallido-rayo" /><div className="estallido-rayo r2" /><div className="estallido-rayo r3" />
           <div className="estallido-texto">
-            <small>ATAQUE FINAL · {ESTALLIDOS.find((x) => x.id === estallido.variante)?.nombre.toUpperCase()}</small>
-            <b>Mapa completo</b>
-            <span>{estallido.trazos} vínculos{estallido.zonas >= 2 ? ` · ${estallido.zonas} zonas` : ''} · todo cae</span>
+            {estallido.tutorial ? (<>
+              <small>TU PRIMER GRAN ATAQUE</small>
+              <b className="estallido-cifra">−<Contador hasta={estallido.dano} /></b>
+              <span>{estallido.trazos} afirmaciones verdaderas que se sostienen entre sí · así se gana aquí</span>
+            </>) : (<>
+              <small>ATAQUE FINAL · {ESTALLIDOS.find((x) => x.id === estallido.variante)?.nombre.toUpperCase()}</small>
+              <b>Mapa completo</b>
+              <span>{estallido.trazos} vínculos{estallido.zonas >= 2 ? ` · ${estallido.zonas} zonas` : ''} · todo cae</span>
+            </>)}
           </div>
         </div>
       )}
