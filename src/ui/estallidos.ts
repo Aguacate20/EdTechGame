@@ -1,25 +1,34 @@
-/* Las animaciones del ataque final. Cada entrada es una variante: el juego las rota por
- * el número de constelaciones del perfil, así el jugador siempre estrena una. Para añadir
- * una: una entrada aquí (id, nombre, duración, chispas) y su bloque CSS `.estallido.<id>`
- * en styles.css (anillos, chispas, rayos y texto ya existen como base; cada variante
- * redefine colores, tiempos y formas). Hasta 15 previstas; las que no tienen CSS propio
- * usan la base. */
+/* Las animaciones del ataque final (cristalizar). El juego las rota por el número de
+ * constelaciones del perfil, así el jugador estrena una cada vez.
+ *
+ * v6.22 · cinco coreografías propias en vez de quince recoloreadas. Cada una tiene su
+ * bloque `.estallido.<id>` en styles.css y usa las piezas de <Estallido>: fondo, gema,
+ * facetas (16, en abanico) y estrellas (40, dispersas), además de los anillos, rayos y
+ * texto de base. Para añadir otra: una entrada aquí y su bloque CSS. */
 export interface Estallido { id: string; nombre: string; duracion: number; chispas: number }
 
 export const ESTALLIDOS: Estallido[] = [
-  { id: 'supernova', nombre: 'Supernova', duracion: 5200, chispas: 36 },
-  { id: 'aurora', nombre: 'Aurora', duracion: 5600, chispas: 20 },
-  { id: 'eclipse', nombre: 'Eclipse', duracion: 5400, chispas: 16 },
-  { id: 'lluvia', nombre: 'Lluvia de estrellas', duracion: 5800, chispas: 48 },
-  { id: 'pulsar', nombre: 'Púlsar', duracion: 5000, chispas: 24 },
-  { id: 'nebulosa', nombre: 'Nebulosa', duracion: 5400, chispas: 28 },
-  { id: 'cometa', nombre: 'Cometa', duracion: 5200, chispas: 30 },
-  { id: 'corona', nombre: 'Corona solar', duracion: 5600, chispas: 32 },
-  { id: 'vortice', nombre: 'Vórtice', duracion: 5400, chispas: 40 },
-  { id: 'cristal', nombre: 'Cristal', duracion: 5000, chispas: 18 },
-  { id: 'marea', nombre: 'Marea', duracion: 5600, chispas: 22 },
-  { id: 'faro', nombre: 'Faro', duracion: 5200, chispas: 14 },
-  { id: 'enjambre', nombre: 'Enjambre', duracion: 5800, chispas: 60 },
-  { id: 'trueno', nombre: 'Trueno', duracion: 5000, chispas: 26 },
-  { id: 'amanecer', nombre: 'Amanecer', duracion: 6000, chispas: 20 }
+  { id: 'prisma', nombre: 'Prisma', duracion: 5200, chispas: 0 },
+  { id: 'geoda', nombre: 'Geoda', duracion: 5600, chispas: 0 },
+  { id: 'constelacion', nombre: 'Constelación', duracion: 5800, chispas: 0 },
+  { id: 'vitral', nombre: 'Vitral', duracion: 5400, chispas: 0 },
+  { id: 'escarcha', nombre: 'Escarcha', duracion: 5400, chispas: 0 }
 ]
+
+/** azar con semilla: las mismas posiciones en cada render, sin saltos */
+function azar(semilla: number) { let s = semilla; return () => (s = (s * 16807) % 2147483647) / 2147483647 }
+
+export const N_FACETAS = 16
+/** 40 estrellas en polares desde el centro: ángulo, distancia (vmin), tamaño y retardo */
+export const ESTRELLAS = (() => {
+  const r = azar(7)
+  return Array.from({ length: 40 }, (_, i) => ({
+    a: Math.round(r() * 360), d: Math.round(10 + r() * 46), s: +(0.6 + r() * 1.4).toFixed(2), t: +(r() * 1.2).toFixed(2), i
+  }))
+})()
+/** cuña i del vitral: triángulo con vértice en el centro (en % de la pantalla) */
+export function cunaVitral(i: number): string {
+  const paso = 360 / N_FACETAS, hueco = 0.9
+  const p = (g: number) => `${(50 + 120 * Math.cos((g * Math.PI) / 180)).toFixed(1)}% ${(50 + 120 * Math.sin((g * Math.PI) / 180)).toFixed(1)}%`
+  return `polygon(50% 50%, ${p(i * paso + hueco)}, ${p((i + 1) * paso - hueco)})`
+}

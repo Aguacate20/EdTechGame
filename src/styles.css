@@ -2206,3 +2206,107 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 /* v6.21 · el estallido SÍ cubre la pantalla: `.app > *` lo dejaba en flujo (position: relative),
    debajo de todo y fuera de la vista. Afectaba también al ataque final de cristalizar. */
 .app > .estallido { position: fixed; inset: 0; z-index: 120; }
+
+/* ═════════════ v6.22 · cinco ataques finales (cristalizar) y la Página en Blanco ═════════════ */
+.est-fondo, .est-gema, .est-faceta, .est-estrella { position: absolute; pointer-events: none; opacity: 0; }
+.est-fondo { inset: 0; }
+.est-gema, .est-faceta, .est-estrella { left: 50%; top: 50%; }
+.est-estrella { width: calc(5px * var(--s)); height: calc(5px * var(--s)); margin: calc(-2.5px * var(--s)); border-radius: 50%; background: #fff; box-shadow: 0 0 10px 2px rgba(255,255,255,.7); transform: rotate(var(--a)) translateX(var(--d)); }
+.estallido-texto { z-index: 5; }
+@keyframes est-nada { from { background: transparent; } to { background: transparent; } }
+@keyframes est-velo { 0% { opacity: 0; } 8% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes est-texto-tarde { 0%, 42% { opacity: 0; transform: scale(.6); } 48% { opacity: 1; transform: scale(1.1); } 53% { transform: scale(1); } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px); } }
+@keyframes est-texto-final { 0%, 68% { opacity: 0; transform: scale(.6); } 74% { opacity: 1; transform: scale(1.1); } 79% { transform: scale(1); } 94% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes est-titilar { 0%, 100% { opacity: 0; scale: 0; } 50% { opacity: 1; scale: 1; } }
+.estallido.prisma, .estallido.geoda, .estallido.constelacion, .estallido.vitral, .estallido.escarcha { animation-name: est-nada; }
+.estallido.prisma .estallido-texto, .estallido.geoda .estallido-texto, .estallido.vitral .estallido-texto, .estallido.escarcha .estallido-texto { animation-name: est-texto-tarde; }
+.estallido.prisma .estallido-texto b, .estallido.geoda .estallido-texto b, .estallido.constelacion .estallido-texto b, .estallido.vitral .estallido-texto b, .estallido.escarcha .estallido-texto b { color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 34px rgba(0,0,0,.55), 0 0 60px rgba(255,255,255,.35); }
+.estallido .estallido-texto span { text-shadow: 0 1px 8px rgba(0,0,0,.8); color: #fff; }
+
+/* ── 1 · PRISMA: una gema se forma, estalla en blanco y abre la luz en un abanico de color ── */
+.estallido.prisma .est-fondo { background: radial-gradient(circle, rgba(14,24,64,.6), rgba(4,6,20,.94)); animation: est-velo var(--dur) ease-out forwards; }
+.estallido.prisma .est-gema { width: 16vmin; height: 16vmin; margin: -8vmin; clip-path: polygon(50% 0, 100% 36%, 50% 100%, 0 36%); background: linear-gradient(155deg, #fff 8%, #a8ecff 38%, #5a9bff 62%, #e9d0ff 82%, #fff); animation: prisma-gema var(--dur) cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes prisma-gema { 0% { opacity: 0; transform: scale(0) rotate(-200deg); } 16% { opacity: 1; transform: scale(1.2) rotate(8deg); } 22% { transform: scale(1) rotate(0); filter: brightness(1); } 32% { transform: scale(1.06); filter: brightness(1.5); } 40% { transform: scale(.94); filter: brightness(1); } 45% { transform: scale(1.9); filter: brightness(4); } 54% { transform: scale(1.1); filter: brightness(1.6); } 84% { opacity: 1; transform: scale(1.1) rotate(0); } 100% { opacity: 0; transform: scale(.5) rotate(40deg); } }
+.estallido.prisma .est-faceta { width: 80vmax; height: 3.6vmin; margin-top: -1.8vmin; clip-path: polygon(0 42%, 100% 0, 100% 100%, 0 58%); transform-origin: 0 50%; transform: rotate(var(--a)) scaleX(0); background: linear-gradient(90deg, hsl(var(--h) 100% 78% / 1), hsl(var(--h) 100% 60% / .75) 40%, hsl(var(--h) 100% 55% / 0)); mix-blend-mode: screen; animation: prisma-haz var(--dur) cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i) * 22ms); }
+@keyframes prisma-haz { 0%, 43% { opacity: 0; transform: rotate(var(--a)) scaleX(0); } 47% { opacity: 1; transform: rotate(var(--a)) scaleX(.25); } 62% { opacity: 1; transform: rotate(calc(var(--a) + 10deg)) scaleX(1); } 84% { opacity: .75; transform: rotate(calc(var(--a) + 22deg)) scaleX(1); } 100% { opacity: 0; transform: rotate(calc(var(--a) + 30deg)) scaleX(1.1); } }
+.estallido.prisma .est-estrella { animation: est-titilar 1.1s ease-in-out calc(var(--dur) * .46 + var(--t)) 2; }
+.estallido.prisma .estallido-anillo { border-color: #fff; animation-delay: calc(var(--dur) * .43); opacity: 0; }
+.estallido.prisma .estallido-anillo.t2 { border-color: #9be7ff; animation-delay: calc(var(--dur) * .43 + .18s); } .estallido.prisma .estallido-anillo.t3 { border-color: #ffd1f7; animation-delay: calc(var(--dur) * .43 + .36s); } .estallido.prisma .estallido-anillo.t4 { animation-delay: calc(var(--dur) * .43 + .54s); }
+.estallido.prisma .estallido-rayo { display: none; }
+
+/* ── 2 · GEODA: la roca se parte y por dentro era cristal ── */
+.estallido.geoda .est-fondo { background: radial-gradient(circle, #fff3c4 0, #ffd66b 7%, #d59bff 20%, #7b3fd6 38%, #2b1160 62%, #0c0620 100%); animation: est-velo var(--dur) ease-out forwards; }
+.estallido.geoda .est-fondo::before, .estallido.geoda .est-fondo::after { content: ''; position: absolute; top: 0; bottom: 0; width: 52%; background: repeating-linear-gradient(115deg, #0b1026 0 26px, #0e1530 26px 58px, #090d20 58px 96px); }
+.estallido.geoda .est-fondo::before { left: 0; clip-path: polygon(0 0, 96% 0, 100% 9%, 93% 20%, 99% 33%, 92% 47%, 100% 58%, 94% 71%, 99% 84%, 95% 100%, 0 100%); animation: geoda-izq var(--dur) cubic-bezier(.3,.1,.2,1) forwards; }
+.estallido.geoda .est-fondo::after { right: 0; clip-path: polygon(100% 0, 4% 0, 8% 9%, 1% 20%, 7% 33%, 0 47%, 8% 58%, 2% 71%, 7% 84%, 3% 100%, 100% 100%); animation: geoda-der var(--dur) cubic-bezier(.3,.1,.2,1) forwards; }
+@keyframes geoda-izq { 0%, 12% { transform: translateX(2%); } 14% { transform: translateX(.5%); } 16% { transform: translateX(1.4%); } 20% { transform: translateX(-1%); } 44% { transform: translateX(-62%); } 100% { transform: translateX(-66%); } }
+@keyframes geoda-der { 0%, 12% { transform: translateX(-2%); } 14% { transform: translateX(-.5%); } 16% { transform: translateX(-1.4%); } 20% { transform: translateX(1%); } 44% { transform: translateX(62%); } 100% { transform: translateX(66%); } }
+.estallido.geoda .est-faceta { width: 10vmin; height: 30vmin; margin: -30vmin 0 0 -5vmin; transform-origin: 50% 100%; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, #fff 0, #ecd2ff 22%, #a66bf0 60%, #4b1f9a 100%); transform: rotate(var(--a)) translateY(-47vmin) rotate(180deg) scaleY(0); animation: geoda-diente var(--dur) cubic-bezier(.2,1.3,.3,1) forwards; animation-delay: calc(var(--i) * 45ms); }
+.estallido.geoda .est-faceta:nth-of-type(odd) { height: 21vmin; margin-top: -21vmin; width: 7vmin; margin-left: -3.5vmin; background: linear-gradient(180deg, #fff 0, #ffe9a8 25%, #e9a93a 70%, #7a4a08 100%); }
+.estallido.geoda .est-faceta:nth-of-type(3n) { height: 36vmin; margin-top: -36vmin; }
+@keyframes geoda-diente { 0%, 24% { opacity: 0; transform: rotate(var(--a)) translateY(-47vmin) rotate(180deg) scaleY(0); } 28% { opacity: 1; } 46% { opacity: 1; transform: rotate(var(--a)) translateY(-47vmin) rotate(180deg) scaleY(1); filter: brightness(1.8); } 54% { filter: brightness(1); } 84% { opacity: 1; transform: rotate(var(--a)) translateY(-47vmin) rotate(180deg) scaleY(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-47vmin) rotate(180deg) scaleY(1); } }
+.estallido.geoda .est-gema { width: 26vmin; height: 26vmin; margin: -13vmin; border-radius: 50%; background: radial-gradient(circle, #fff 0, #fff1b8 28%, rgba(255,214,107,.55) 52%, transparent 72%); animation: geoda-nucleo var(--dur) ease-out forwards; }
+@keyframes geoda-nucleo { 0%, 30% { opacity: 0; transform: scale(0); } 46% { opacity: 1; transform: scale(1.5); } 56% { transform: scale(1); } 66% { transform: scale(1.18); } 76% { transform: scale(1); } 86% { opacity: 1; } 100% { opacity: 0; transform: scale(1.4); } }
+.estallido.geoda .est-estrella { background: #ffe9a8; box-shadow: 0 0 10px 2px rgba(255,214,107,.8); animation: est-titilar 1.3s ease-in-out calc(var(--dur) * .4 + var(--t)) 2; }
+.estallido.geoda .estallido-anillo { border-color: #ffd66b; animation-delay: calc(var(--dur) * .44); opacity: 0; } .estallido.geoda .estallido-anillo.t2 { border-color: #d59bff; animation-delay: calc(var(--dur) * .44 + .2s); } .estallido.geoda .estallido-anillo.t3, .estallido.geoda .estallido-anillo.t4 { display: none; }
+.estallido.geoda .estallido-rayo { display: none; }
+
+/* ── 3 · CONSTELACIÓN: se encienden las estrellas, se trazan los vínculos, todo converge y estalla ── */
+.estallido.constelacion .est-fondo { background: radial-gradient(circle, #10225a 0, #060a22 55%, #02030a 100%); animation: est-velo var(--dur) ease-out forwards; }
+.estallido.constelacion .estallido-texto { animation-name: est-texto-final; }
+.estallido.constelacion .est-estrella { animation: const-astro calc(var(--dur) - 1.3s) ease-in-out var(--t) forwards; }
+@keyframes const-astro { 0% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(0); } 7% { opacity: 1; transform: rotate(var(--a)) translateX(var(--d)) scale(2.2); } 12% { transform: rotate(var(--a)) translateX(var(--d)) scale(1); } 58% { opacity: 1; transform: rotate(var(--a)) translateX(var(--d)) scale(1.2); } 76% { opacity: 1; transform: rotate(calc(var(--a) + 70deg)) translateX(0) scale(.5); } 79%, 100% { opacity: 0; transform: rotate(calc(var(--a) + 70deg)) translateX(0) scale(0); } }
+.estallido.constelacion .est-faceta { --L: 30vmin; width: var(--L); height: 2px; margin-top: -1px; transform-origin: 0 50%; transform: rotate(var(--a)) scaleX(0); background: linear-gradient(90deg, rgba(160,205,255,0), rgba(170,210,255,.95)); animation: const-linea var(--dur) ease-in-out forwards; animation-delay: calc(var(--i) * 55ms); }
+.estallido.constelacion .est-faceta:nth-of-type(odd) { --L: 44vmin; } .estallido.constelacion .est-faceta:nth-of-type(3n) { --L: 37vmin; } .estallido.constelacion .est-faceta:nth-of-type(5n) { --L: 22vmin; }
+.estallido.constelacion .est-faceta::after { content: ''; position: absolute; right: -6px; top: -6px; width: 13px; height: 13px; border-radius: 50%; background: #fff; box-shadow: 0 0 16px 4px rgba(150,200,255,.9); }
+@keyframes const-linea { 0%, 20% { opacity: 0; transform: rotate(var(--a)) scaleX(0); } 24% { opacity: 1; } 44% { opacity: 1; transform: rotate(var(--a)) scaleX(1); } 56% { opacity: 1; transform: rotate(calc(var(--a) + 12deg)) scaleX(1); } 68% { opacity: 1; transform: rotate(calc(var(--a) + 60deg)) scaleX(0); } 100% { opacity: 0; transform: rotate(calc(var(--a) + 60deg)) scaleX(0); } }
+.estallido.constelacion .est-gema { width: 8vmin; height: 8vmin; margin: -4vmin; border-radius: 50%; background: radial-gradient(circle, #fff 0, #cfe6ff 40%, rgba(120,180,255,0) 70%); animation: const-nova var(--dur) ease-out forwards; }
+@keyframes const-nova { 0%, 62% { opacity: 0; transform: scale(0); } 68% { opacity: 1; transform: scale(1.2); } 71% { opacity: 1; transform: scale(9); } 80% { opacity: .5; transform: scale(16); } 100% { opacity: 0; transform: scale(22); } }
+.estallido.constelacion .estallido-anillo { border-color: #cfe6ff; animation-delay: calc(var(--dur) * .69); opacity: 0; } .estallido.constelacion .estallido-anillo.t2 { border-color: #fff; animation-delay: calc(var(--dur) * .69 + .15s); } .estallido.constelacion .estallido-anillo.t3 { border-color: var(--dominar); animation-delay: calc(var(--dur) * .69 + .3s); } .estallido.constelacion .estallido-anillo.t4 { animation-delay: calc(var(--dur) * .69 + .45s); }
+.estallido.constelacion .estallido-rayo { animation-delay: calc(var(--dur) * .69); animation-duration: calc(var(--dur) * .3); } .estallido.constelacion .estallido-rayo.r2 { animation-delay: calc(var(--dur) * .69 + .1s); } .estallido.constelacion .estallido-rayo.r3 { animation-delay: calc(var(--dur) * .69 + .2s); }
+
+/* ── 4 · VITRAL: la pantalla se arma como un rosetón, pieza a pieza, y se hace añicos ── */
+.estallido.vitral .est-fondo { background: #04050d; animation: est-velo var(--dur) ease-out forwards; }
+.estallido.vitral .est-faceta { left: 0; top: 0; width: 100%; height: 100%; clip-path: var(--cuna); --m: calc(var(--a) + 11.25deg); background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.95) 0, rgba(255,255,255,.2) 16%, transparent 34%), radial-gradient(circle at 50% 50%, hsl(var(--h) 90% 62%) 0, hsl(calc(var(--h) + 30) 85% 42%) 55%, hsl(calc(var(--h) + 50) 80% 26%) 100%); animation: vitral-pieza var(--dur) cubic-bezier(.4,0,.2,1) forwards; animation-delay: calc(var(--i) * 75ms); }
+@keyframes vitral-pieza { 0% { opacity: 0; filter: brightness(3); transform: scale(1.25); } 5% { opacity: 1; filter: brightness(2.6); transform: scale(1); } 12% { filter: brightness(1); } 50% { opacity: 1; filter: brightness(1.05); transform: none; } 54% { filter: brightness(2.8); transform: scale(1.03); } 60% { opacity: 1; filter: brightness(1.4); transform: translate(calc(cos(var(--m)) * 4vmax), calc(sin(var(--m)) * 4vmax)) rotate(0deg); } 100% { opacity: 0; filter: brightness(1); transform: translate(calc(cos(var(--m)) * 75vmax), calc(sin(var(--m)) * 75vmax + 30vh)) rotate(calc(var(--i) * 23deg - 160deg)) scale(.7); } }
+.estallido.vitral .est-gema { width: 18vmin; height: 18vmin; margin: -9vmin; border-radius: 50%; background: radial-gradient(circle, #fff 0, #fff3c4 36%, #ffc23d 60%, rgba(255,194,61,0) 72%); box-shadow: 0 0 0 .8vmin #04050d, 0 0 6vmin rgba(255,220,140,.8); animation: vitral-roseta var(--dur) ease-out forwards; }
+@keyframes vitral-roseta { 0% { opacity: 0; transform: scale(0); } 8% { opacity: 1; transform: scale(1.2); } 14% { transform: scale(1); } 50% { opacity: 1; transform: scale(1); } 55% { opacity: 1; transform: scale(2.6); filter: brightness(2); } 66% { opacity: 0; transform: scale(5); } 100% { opacity: 0; } }
+.estallido.vitral .est-estrella { animation: est-titilar .9s ease-in-out calc(var(--dur) * .56 + var(--t) * .5) 1; }
+.estallido.vitral .estallido-anillo { border-color: #fff; animation-delay: calc(var(--dur) * .54); opacity: 0; } .estallido.vitral .estallido-anillo.t2 { animation-delay: calc(var(--dur) * .54 + .2s); border-color: var(--dominar); } .estallido.vitral .estallido-anillo.t3, .estallido.vitral .estallido-anillo.t4 { display: none; }
+.estallido.vitral .estallido-rayo { display: none; }
+.estallido.vitral .estallido-texto { animation-name: est-texto-final; }
+@keyframes vitral-texto { 0%, 56% { opacity: 0; transform: scale(.6); } 62% { opacity: 1; transform: scale(1.1); } 67% { transform: scale(1); } 92% { opacity: 1; } 100% { opacity: 0; } }
+.estallido.vitral .estallido-texto { animation-name: vitral-texto; }
+
+/* ── 5 · ESCARCHA: el hielo crece desde los bordes, se cierra sobre el centro y se quiebra ── */
+.estallido.escarcha .est-fondo { background: rgba(5,14,40,.78); animation: escarcha-velo var(--dur) ease-in-out forwards; }
+@keyframes escarcha-velo { 0% { opacity: 0; box-shadow: inset 0 0 0 0 rgba(190,235,255,0); } 8% { opacity: 1; } 46% { opacity: 1; box-shadow: inset 0 0 40vmin 14vmin rgba(190,235,255,.7); background: rgba(5,14,40,.78); } 50% { background: rgba(255,255,255,.95); box-shadow: inset 0 0 40vmin 14vmin rgba(255,255,255,.9); } 60% { background: rgba(8,22,58,.7); box-shadow: inset 0 0 20vmin 4vmin rgba(190,235,255,.3); } 86% { opacity: 1; } 100% { opacity: 0; box-shadow: inset 0 0 0 0 rgba(190,235,255,0); } }
+.estallido.escarcha .est-faceta { --k: .78; width: 60vmax; height: 4.4vmin; margin-top: -2.2vmin; transform-origin: 0 50%; clip-path: polygon(0 0, 22% 30%, 30% 6%, 46% 38%, 100% 50%, 46% 62%, 30% 94%, 22% 70%, 0 100%); background: linear-gradient(90deg, #fff 0, #d6f2ff 30%, #8fd0ff 65%, rgba(120,190,255,.5) 100%); transform: rotate(var(--a)) translateX(74vmax) rotate(180deg) scaleX(0); animation: escarcha-pua var(--dur) cubic-bezier(.3,.6,.2,1) forwards; animation-delay: calc(var(--i) * 28ms); }
+.estallido.escarcha .est-faceta:nth-of-type(odd) { --k: .56; height: 3vmin; margin-top: -1.5vmin; } .estallido.escarcha .est-faceta:nth-of-type(3n) { --k: .9; }
+@keyframes escarcha-pua { 0% { opacity: 0; transform: rotate(var(--a)) translateX(74vmax) rotate(180deg) scaleX(0); translate: 0 0; } 5% { opacity: 1; } 44% { opacity: 1; transform: rotate(var(--a)) translateX(74vmax) rotate(180deg) scaleX(var(--k)); filter: brightness(1); } 50% { filter: brightness(2.4); translate: 0 0; } 56% { opacity: 1; transform: rotate(calc(var(--a) + 3deg)) translateX(74vmax) rotate(180deg) scaleX(var(--k)); } 100% { opacity: 0; transform: rotate(calc(var(--a) + 9deg)) translateX(78vmax) rotate(180deg) scaleX(var(--k)); translate: 0 46vh; } }
+.estallido.escarcha .est-gema { width: 22vmin; height: 22vmin; margin: -11vmin; clip-path: polygon(50% 0, 60% 28%, 93% 25%, 72% 50%, 93% 75%, 60% 72%, 50% 100%, 40% 72%, 7% 75%, 28% 50%, 7% 25%, 40% 28%); background: radial-gradient(circle, #fff 0, #c9ecff 45%, #7cc4ff 100%); animation: escarcha-copo var(--dur) ease-in-out forwards; }
+@keyframes escarcha-copo { 0%, 14% { opacity: 0; transform: scale(0) rotate(-90deg); } 40% { opacity: 1; transform: scale(1) rotate(0deg); } 48% { transform: scale(1.1) rotate(8deg); filter: brightness(1); } 51% { transform: scale(2.4) rotate(14deg); filter: brightness(3); opacity: 1; } 62% { opacity: 0; transform: scale(4) rotate(30deg); } 100% { opacity: 0; } }
+.estallido.escarcha .est-estrella { background: #eaf8ff; box-shadow: 0 0 8px 1px rgba(170,225,255,.9); animation: escarcha-nieve calc(var(--dur) * .5) linear calc(var(--dur) * .5 + var(--t) * .4) forwards; }
+@keyframes escarcha-nieve { 0% { opacity: 0; translate: 0 -6vh; } 12% { opacity: 1; } 80% { opacity: .9; } 100% { opacity: 0; translate: 2vw 44vh; } }
+.estallido.escarcha .estallido-anillo { border-color: #c9ecff; animation-delay: calc(var(--dur) * .49); opacity: 0; } .estallido.escarcha .estallido-anillo.t2 { border-color: #fff; animation-delay: calc(var(--dur) * .49 + .18s); } .estallido.escarcha .estallido-anillo.t3 { border-color: #8fd0ff; animation-delay: calc(var(--dur) * .49 + .36s); } .estallido.escarcha .estallido-anillo.t4 { display: none; }
+.estallido.escarcha .estallido-rayo { display: none; }
+.estallido.escarcha .estallido-texto { animation-name: vitral-texto; }
+
+/* ── LA PÁGINA EN BLANCO: la hoja se limpia de un trazo y la tinta se levanta ── */
+.pagina-blanca { position: fixed; font-family: var(--sans, inherit); inset: 0; z-index: 115; pointer-events: none; overflow: hidden; }
+.pb-hoja { position: absolute; inset: 0; background: repeating-linear-gradient(180deg, transparent 0 38px, rgba(40,70,150,.09) 38px 39px), linear-gradient(90deg, transparent 0 9%, rgba(200,60,60,.16) 9% calc(9% + 2px), transparent calc(9% + 2px)), radial-gradient(ellipse at 50% 40%, #fffdf6 0, #f3ecdc 100%); clip-path: inset(0 100% 0 0); animation: pb-barrer 3.8s cubic-bezier(.65,0,.2,1) var(--ret, 0ms) forwards; }
+@keyframes pb-barrer { 0% { clip-path: inset(0 100% 0 0); opacity: 1; } 24% { clip-path: inset(0 0 0 0); } 80% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+.pb-filo { position: absolute; top: -5%; bottom: -5%; left: 0; width: 14px; background: #fff; box-shadow: 0 0 60px 26px rgba(255,255,255,.95), -30px 0 90px 30px rgba(255,236,190,.5); opacity: 0; animation: pb-filo 3.8s cubic-bezier(.65,0,.2,1) var(--ret, 0ms) forwards; }
+@keyframes pb-filo { 0% { left: -2%; opacity: 1; } 24% { left: 101%; opacity: 1; } 25%, 100% { left: 101%; opacity: 0; } }
+.pb-letra { position: absolute; left: var(--x); top: var(--y); font-family: Georgia, 'Times New Roman', serif; font-style: normal; font-size: clamp(20px, 3.4vw, 46px); color: #1b2340; opacity: 0; animation: pb-letra 1.7s ease-out calc(var(--ret, 0ms) + var(--t) * 1.25 + 60ms) forwards; }
+@keyframes pb-letra { 0% { opacity: 0; transform: translateY(0) rotate(0deg) scale(1); filter: blur(0); } 10% { opacity: .9; } 100% { opacity: 0; transform: translateY(-140px) rotate(var(--g)) scale(.5); filter: blur(3px); } }
+.pb-sello { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%) rotate(-3deg); text-align: center; display: flex; flex-direction: column; gap: 10px; color: #141a33; opacity: 0; white-space: nowrap; animation: pb-sello 2.8s cubic-bezier(.2,1.5,.35,1) calc(var(--ret, 0ms) + 1s) forwards; }
+.pb-sello small { font-family: var(--mono); letter-spacing: .5em; font-size: 13px; color: #a8323a; }
+.pb-sello b { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: clamp(44px, 9vw, 120px); line-height: 1; letter-spacing: .01em; }
+.pb-sello span { font-size: 16px; color: #3a4466; white-space: normal; }
+@keyframes pb-sello { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-3deg) scale(2.6); } 14% { opacity: 1; transform: translate(-50%, -50%) rotate(-3deg) scale(.95); } 20% { transform: translate(-50%, -50%) rotate(-3deg) scale(1.04); } 26% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); } 72% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -54%) rotate(-3deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .est-faceta, .est-estrella, .est-gema, .pb-filo, .pb-letra { display: none; }
+  .est-fondo { animation: est-velo var(--dur) linear forwards !important; }
+  .pb-hoja { clip-path: none; animation: est-velo 3.8s linear var(--ret, 0ms) forwards; opacity: 0; }
+}

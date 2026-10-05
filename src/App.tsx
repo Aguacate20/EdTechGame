@@ -44,6 +44,7 @@ import {
 } from './engine/srl'
 import { portadaPorId, type Portada, PORTADAS } from './engine/portadas'
 import { ESTALLIDOS } from './ui/estallidos'
+import { Estallido } from './ui/Estallido'
 import { evaluarHazanas, lentesVetadas, type Hazana } from './engine/hazanas'
 
 type Fase =
@@ -1077,11 +1078,7 @@ export default function App() {
       )}
 
       {estallido && (
-        <div className={`estallido ${estallido.variante}`} role="status" aria-live="assertive" style={{ ['--dur' as string]: `${(ESTALLIDOS.find((x) => x.id === estallido.variante)?.duracion ?? 5000)}ms` }}>
-          <div className="estallido-anillo" /><div className="estallido-anillo t2" /><div className="estallido-anillo t3" /><div className="estallido-anillo t4" />
-          {[...Array(ESTALLIDOS.find((x) => x.id === estallido.variante)?.chispas ?? 24)].map((_, i) => <i key={i} className="estallido-chispa" style={{ ['--i' as string]: i }} />)}
-          <div className="estallido-rayo" /><div className="estallido-rayo r2" /><div className="estallido-rayo r3" />
-          <div className="estallido-texto">
+        <Estallido variante={estallido.variante}>
             {estallido.tutorial ? (<>
               <small>TU PRIMER GRAN ATAQUE</small>
               <b className="estallido-cifra">−<Contador hasta={estallido.dano} /></b>
@@ -1091,8 +1088,7 @@ export default function App() {
               <b>Mapa completo</b>
               <span>{estallido.trazos} vínculos{estallido.zonas >= 2 ? ` · ${estallido.zonas} zonas` : ''} · todo cae</span>
             </>)}
-          </div>
-        </div>
+        </Estallido>
       )}
       {fase === 'resumen' && batalla && (() => {
         const antes = atlasAlEmpezarRef.current
