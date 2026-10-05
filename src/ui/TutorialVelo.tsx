@@ -19,7 +19,11 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       if (!vivo.current) return
       // anclas con nombre fijo (data-tutorial / data-uid / data-herramienta); si no hay, la clase de siempre
       const sel: string[] = []
-      if (foco?.zona && ZONA_A_ANCLA[foco.zona]) sel.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
+      // v6.11 · si el paso señala cartas o herramientas concretas, se recortan ELLAS y no toda
+      // la columna: iluminar la mano entera no dice cuál hay que jugar
+      const concreto = (foco?.piezas?.length ?? 0) + (foco?.herramientas?.length ?? 0) > 0
+      const zonaEsContenedor = foco?.zona === 'mano' || foco?.zona === 'herramientas'
+      if (foco?.zona && ZONA_A_ANCLA[foco.zona] && !(concreto && zonaEsContenedor)) sel.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
       for (const u of foco?.piezas ?? []) sel.push(`[data-uid="${u}"]`)
       for (const h of foco?.herramientas ?? []) sel.push(`[data-herramienta="${h}"]`)
       const els = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))

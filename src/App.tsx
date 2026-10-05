@@ -1020,7 +1020,11 @@ export default function App() {
             const i = sala.pasos.findIndex((x) => !pasosHechos.includes(x.clave))
             const idx = i < 0 ? sala.pasos.length - 1 : i
             const paso = sala.pasos[idx]
-            return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length }
+            // v6.11 · el foco del paso llega a la mesa: sin esto el velo oscurecía todo y solo se veía la instrucción
+            const foco = paso.foco
+              ? { zona: paso.foco.zona, piezas: paso.foco.piezas?.(batalla), herramientas: paso.foco.herramientas }
+              : undefined
+            return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length, foco }
           })()}
           e={batalla} contenido={contenido} lentes={mods}
           lucidez={lucidez} lucidezMax={LUCIDEZ_MAX} lentesIds={lentes}
