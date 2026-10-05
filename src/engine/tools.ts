@@ -1103,6 +1103,18 @@ function validarAlcance(c: Contenido, t: Trazo, ps: Pieza[], lentes: Modificador
 
 /** Descomponer: el todo y sus partes. No es lo mismo que jerarquizar: una
  *  categoría contiene ejemplares, un todo contiene componentes. */
+/** v6.9 · ¿el nombre del atributo remite al concepto? Compara raíces de las palabras de contenido
+ *  (≥ 5 letras, primeras 6 sin tildes) del atributo con las del título y los sinónimos del concepto. */
+export function atributoAfin(nombreAtributo: string, todo: Pieza, c: Contenido): boolean {
+  const raices = (s: string) => new Set(s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-zñ]+/).filter((w) => w.length >= 5).map((w) => w.slice(0, 6)))
+  const k = todo.conceptId ? c.conceptos[todo.conceptId] : null
+  const delConcepto = raices([todo.titulo, ...(k?.sinonimos ?? [])].join(' '))
+  // una raíz que comparten tres o más títulos («análisis de…») no distingue a ninguno: no cuenta
+  const comun = (r: string) => Object.values(c.conceptos).filter((x) => raices(x.titulo).has(r)).length >= 3
+  for (const r of raices(nombreAtributo)) if (delConcepto.has(r) && !comun(r)) return true
+  return false
+}
+
 function validarDescomposicion(_c: Contenido, t: Trazo, ps: Pieza[], lentes: ModificadoresLente): Veredicto {
   const v = vacio(t, 'estructura')
   const reserva = reservaDe(ps)
@@ -1120,6 +1132,17 @@ function validarDescomposicion(_c: Contenido, t: Trazo, ps: Pieza[], lentes: Mod
       fichas: 11 * buenas.length + lentes.fichasPorSostenido,
       mult: 1.2 + 0.35 * buenas.length,
       nota: `El texto desglosa «${todo.titulo}» exactamente en esas partes.`,
+      conceptIds: [todo.conceptId]
+    }
+  }
+  // v6.9 · un atributo de otro concepto cuyo NOMBRE remite al concepto elegido («estructura
+  // narrativa» puesto en «Narrativa») es una lectura defendible: no se castiga. Da crédito
+  // parcial, dice dónde lo pone el texto y no se guarda en el mapa.
+  if (ajenas.length && ajenas.every((p) => atributoAfin(p.titulo, todo, _c))) {
+    const dueno = (p: Pieza) => (p.conceptId && _c.conceptos[p.conceptId]?.titulo) || 'otro concepto'
+    return {
+      ...v, reserva, estado: 'aproximado', fichas: 6 * buenas.length + 4 * ajenas.length,
+      nota: `«${ajenas[0].titulo}» suena a «${todo.titulo}» y es defendible, pero el texto lo trata como parte de «${dueno(ajenas[0])}».`,
       conceptIds: [todo.conceptId]
     }
   }

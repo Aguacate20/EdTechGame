@@ -197,6 +197,14 @@ export function adaptarBundle(raw: unknown): Contenido {
         const val = it?.valor ?? it?.value ?? it?.polo
         if (cid && (typeof val === 'string' || typeof val === 'number')) valores[cid] = val
       }
+    } else if (Array.isArray(e?.positions)) {
+      // v6.9 · forma del extractor ≥ 3.8: posiciones 0..1 entre dos polos. El juego agrupa por
+      // extremo, así que cada posición se lee como polo bajo, intermedio o polo alto.
+      const bajo = str(e?.polo_bajo, 'bajo'), alto = str(e?.polo_alto, 'alto')
+      for (const it of e.positions) {
+        const cid = str(it?.concept_id, str(it?.id)); const x = Number(it?.position)
+        if (cid && Number.isFinite(x)) valores[cid] = x <= 0.35 ? bajo : x >= 0.65 ? alto : 'intermedio'
+      }
     } else if (Array.isArray(e?.polos)) {
       for (const polo of e.polos) {
         const etiqueta = str(polo?.label, str(polo?.nombre, 'polo'))
@@ -204,7 +212,7 @@ export function adaptarBundle(raw: unknown): Contenido {
       }
     }
     if (Object.keys(valores).length >= 4) {
-      ejes.push({ id: str(e?.id, `eje_${i}`), nombre, provisional: bool(e?.provisional), valores })
+      ejes.push({ id: str(e?.id, `eje_${i}`), nombre, provisional: bool(e?.provisional) || e?.status === 'borrador', valores })
     }
   }
   nota(

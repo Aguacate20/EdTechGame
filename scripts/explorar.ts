@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs'
 import { adaptarBundle } from '../src/content/adapter'
 import type { Contenido } from '../src/content/types'
-import { evaluarDiagrama, HERRAMIENTAS, aceptaEnRanura, type HerramientaId, type Trazo, type Veredicto } from '../src/engine/tools'
+import { evaluarDiagrama, HERRAMIENTAS, aceptaEnRanura, atributoAfin, type HerramientaId, type Trazo, type Veredicto } from '../src/engine/tools'
 import { piezaConcepto, piezaEtiqueta, piezaDefinicion, piezaCaso, piezaTesis, piezasCriterio, piezasSubdimension, piezaMarco, piezaIntuicion, type Pieza } from '../src/engine/pieces'
 import { Rng } from '../src/engine/rng'
 
@@ -30,7 +30,7 @@ const hallazgos: { grav: 'BUG' | 'REVISAR' | 'DATO'; titulo: string; ejemplos: s
 const anotar = (grav: 'BUG' | 'REVISAR' | 'DATO', titulo: string, ej: string) => {
   let h = hallazgos.find((x) => x.titulo === titulo)
   if (!h) { h = { grav, titulo, ejemplos: [], n: 0 }; hallazgos.push(h) }
-  h.n++; if (h.ejemplos.length < 4) h.ejemplos.push(ej)
+  h.n++; if (h.ejemplos.length < 6) h.ejemplos.push(ej)
 }
 const sec = (s: string) => console.log(`\n── ${s} ──`)
 
@@ -226,6 +226,14 @@ const fila = (nombre: string, ok: Cuenta, extra = '') => console.log(` ${nombre.
   const dueños = new Map<string, string[]>()
   for (const id of con) for (const s of c.conceptos[id].subdimensiones) dueños.set(s.nombre.toLowerCase().trim(), [...(dueños.get(s.nombre.toLowerCase().trim()) ?? []), id])
   for (const [nombre, ds] of dueños) if (new Set(ds).size > 1) anotar('REVISAR', 'El mismo atributo aparece en varios conceptos: la carta no dice de cuál es y solo uno se acepta', `«${nombre}» en ${[...new Set(ds)].map(T).join(' / ')}`)
+  // v6.9 · atributos cuyo nombre remite a OTRO concepto: el lector los pondrá allí con buena razón
+  const afin: Cuenta = {}
+  for (const id of con) for (const parte of piezasSubdimension(c, id)) for (const otro of ids) {
+    if (otro === id || !atributoAfin(parte.titulo, K(otro), c)) continue
+    const v = juzga('descomposicion', [K(otro), parte]); sumar(afin, v.estado)
+    anotar(v.estado === 'error' || v.estado === 'invertido' ? 'BUG' : 'DATO', v.estado === 'error' || v.estado === 'invertido' ? 'Atributo cuyo nombre remite a otro concepto, y ponerlo allí se castiga' : 'Atributo cuyo nombre remite a otro concepto (ambiguo para el lector; el juez da crédito parcial)', `«${parte.titulo}» es de ${T(id)}, pero suena a ${T(otro)} ⇒ ${v.estado}`)
+  }
+  fila('Atributo afín a otro concepto', afin)
   fila('Descomposición (carta entera)', ok); fila('Descomposición (carta de nombre)', nom); fila('Descomposición con atributo ajeno', mez)
 }
 
