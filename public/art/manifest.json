@@ -22,9 +22,9 @@
       "loop": false
     },
     "golpea_lluvia": {
-      "src": "sprites/adventurer/tiras/adventurer-bow.png",
-      "frames": 9,
-      "fps": 12
+      "src": "luduscog/andy/andy-volley.png",
+      "frames": 4,
+      "fps": 7
     },
     "golpea_rayo": {
       "src": "luduscog/andy/andy-beam.png",
@@ -62,7 +62,22 @@
       "frames": 4,
       "fps": 6
     },
-    "escala": 3
+    "escala": 3,
+    "golpea_maza": {
+      "src": "luduscog/andy/andy-mace.png",
+      "frames": 4,
+      "fps": 7
+    },
+    "golpea_gancho": {
+      "src": "luduscog/andy/andy-hook.png",
+      "frames": 4,
+      "fps": 7
+    },
+    "golpea_tenaza": {
+      "src": "luduscog/andy/andy-pincer.png",
+      "frames": 4,
+      "fps": 7
+    }
   },
   "enemigos/copista": {
     "golpea": {
