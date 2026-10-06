@@ -332,10 +332,10 @@ export function descargarLog(): void {
    ========================================================================== */
 export type EtapaLectura = 1 | 2 | 3 | 4
 export const ETAPAS: Record<EtapaLectura, { nombre: string; glosa: string }> = {
-  1: { nombre: 'Conocer', glosa: 'Empiezas uniendo cada nombre con su descripción. Sin cartas falsas ni reglas especiales.' },
-  2: { nombre: 'Conectar', glosa: 'Ya conoces las ideas: ahora las conectas entre sí. Aparecen cartas falsas.' },
-  3: { nombre: 'Aplicar', glosa: 'Llegan los casos, las tesis y las salas con reglas especiales.' },
-  4: { nombre: 'Dominar', glosa: 'Todo el juego abierto, con todas tus herramientas.' }
+  1: { nombre: 'Conocer', glosa: 'Empiezas uniendo cada nombre con su descripción. Enemigos sencillos y sin reglas especiales.' },
+  2: { nombre: 'Conectar', glosa: 'Ya conoces las ideas: ahora las conectas entre sí. Llegan más tipos de enemigos.' },
+  3: { nombre: 'Aplicar', glosa: 'Llegan los ejemplos, las afirmaciones, enemigos duros y salas con reglas especiales.' },
+  4: { nombre: 'Dominar', glosa: 'Todo el juego abierto: todos los enemigos y todas tus herramientas.' }
 }
 export function etapaDeLectura(a: Atlas | null, c: Contenido): EtapaLectura {
   if (!a) return 1

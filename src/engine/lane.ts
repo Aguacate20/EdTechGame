@@ -100,6 +100,17 @@ export const ROSTER: TipoEnemigo[] = [
   }
 ]
 
+/** v6.37 · etapa de la lectura: al principio solo salen los enemigos más simples y
+ *  los más fuertes van apareciendo a medida que el Atlas de ese texto se llena. */
+let ETAPA_ENEMIGOS = 4
+export const fijarEtapaEnemigos = (n: number): void => { ETAPA_ENEMIGOS = n }
+const SIMPLES = ['copista', 'errata', 'rumor']
+const permitido = (t: TipoEnemigo): boolean =>
+  ETAPA_ENEMIGOS >= 4 ? true
+    : ETAPA_ENEMIGOS === 3 ? t.desdeActo <= 1
+      : ETAPA_ENEMIGOS === 2 ? t.desdeActo === 0
+        : SIMPLES.includes(t.id)
+
 export const tipoPorId = (id: string): TipoEnemigo =>
   ROSTER.find((t) => t.id === id) ?? ROSTER[0]
 
@@ -150,7 +161,7 @@ export function estimarFrente(dificultad: Dificultad, acto: number): number {
     return Math.round((jefe?.vidaBase ?? 120) * escala * 1.6)
   }
   const presupuesto = PRESUPUESTO[dificultad] + Math.floor(acto * 1.5)
-  const pool = ROSTER.filter((t) => t.rango !== 'jefe' && t.desdeActo <= acto)
+  const pool = ROSTER.filter((t) => t.rango !== 'jefe' && t.desdeActo <= acto && permitido(t))
   const vidaPorCosto = pool.reduce((n, t) => n + t.vidaBase / t.costo, 0) / Math.max(1, pool.length)
   return Math.round(presupuesto * vidaPorCosto * escala / 10) * 10
 }
@@ -160,7 +171,7 @@ export function generarOleada(dificultad: Dificultad, acto: number, rng: Rng): E
   // también, o el número grande sería decorativo
   const escala = Math.pow(1.3, acto)
   if (dificultad === 'jefe') {
-    const guardia = ROSTER.filter((t) => t.rango === 'comun' && t.desdeActo <= acto)
+    const guardia = ROSTER.filter((t) => t.rango === 'comun' && t.desdeActo <= acto && permitido(t))
     return [
       crearEnemigo('tratado', escala * 1.6, LARGO_CARRIL),
       ...(guardia.length ? [crearEnemigo(rng.pick(guardia).id, escala * 0.8, LARGO_CARRIL - 2)] : [])
@@ -168,7 +179,7 @@ export function generarOleada(dificultad: Dificultad, acto: number, rng: Rng): E
   }
 
   let presupuesto = PRESUPUESTO[dificultad] + Math.floor(acto * 1.5)
-  const disponibles = ROSTER.filter((t) => t.rango !== 'jefe' && t.desdeActo <= acto)
+  const disponibles = ROSTER.filter((t) => t.rango !== 'jefe' && t.desdeActo <= acto && permitido(t))
   const salida: Enemigo[] = []
   let intentos = 0
 

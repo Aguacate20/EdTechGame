@@ -20,6 +20,7 @@ import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
 } from './engine/savegame'
 import { contenidoTutorial, SALAS_TUTORIAL, type EstadoUI } from './content/tutorial'
+import { fijarEtapaEnemigos } from './engine/lane'
 import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
@@ -364,6 +365,7 @@ export default function App() {
     const a = cargarAtlas(c.fuente)
     const sala = SALAS_TUTORIAL[indice]
     if (!sala) { setTutorial(null); setFase('inicio'); return }
+    fijarEtapaEnemigos(4)
     const rng = new Rng(`tutorial-${indice}`)
     rngRef.current = rng
     runIdRef.current = `tutorial-${indice}-${Date.now()}`
@@ -463,7 +465,9 @@ export default function App() {
     }
     // el carril escala con las expediciones ya hechas: vuelves más fuerte, pero
     // también encuentras enemigos más duros
-    const actoEfectivo = actoIdx + Math.min(3, Math.floor(progreso.expediciones / 2))
+    // v6.37 · en las primeras etapas de una lectura los enemigos no escalan con tus expediciones
+    const actoEfectivo = etapaRun <= 2 ? actoIdx : actoIdx + Math.min(3, Math.floor(progreso.expediciones / 2))
+    fijarEtapaEnemigos(etapaRun)
     const e = iniciarBatalla(
       ctx, nodo.conceptIds, bolsa, nodo.dificultad, actoEfectivo,
       acto.manoSugerida + manoExtra
