@@ -1175,8 +1175,8 @@ export default function App() {
         <Estallido variante={estallido.variante}>
             {estallido.tutorial ? (<>
               <small>TU PRIMER GRAN ATAQUE</small>
-              <b className="estallido-cifra">−<Contador hasta={estallido.dano} /></b>
-              <span>{estallido.trazos} afirmaciones verdaderas que se sostienen entre sí · así se gana aquí</span>
+              <b className="estallido-cifra">¡<Contador hasta={estallido.dano} /> de daño!</b>
+              <span>Uniste {estallido.trazos} conexiones correctas en un solo ataque · así se gana aquí</span>
             </>) : estallido.cierre ? (<>
               <small>CIERRE DE EXPEDICIÓN</small>
               <b>Tu mapa queda en el cielo</b>

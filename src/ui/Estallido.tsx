@@ -89,7 +89,7 @@ export function GolpeMayor({ dano, trazos }: { dano: number; trazos: number }) {
       ))}
       <div className="gm-texto">
         <small>{g.rotulo}</small>
-        <b>−<Cifra hasta={dano} /></b>
+        <b><Cifra hasta={dano} /> de daño</b>
         <span>{trazos} {trazos === 1 ? 'afirmación sostenida' : 'afirmaciones que se sostienen entre sí'}</span>
       </div>
     </div>,

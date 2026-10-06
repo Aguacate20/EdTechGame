@@ -225,7 +225,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** la Página en Blanco es materia de leyenda: UN golpe que derriba a 3+
    *  enemigos que estaban con la vida llena. Limpiar una sala a mordiscos no
    *  la gasta — por eso sigue sintiéndose enorme cuando pasa. */
-  const aniquilacion = !!(resuelto && casc.terminada && e.ultima &&
+  // v6.38 · en el tutorial no salta: el golpe grande se guarda para el ataque final
+  const aniquilacion = !!(!guia && resuelto && casc.terminada && e.ultima &&
     e.ultima.impactos.filter((i) => i.derribado && i.pleno).length >= 3)
   const borronSonado = useRef(-1)
   const cascadaAvisada = useRef(-1)
