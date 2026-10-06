@@ -44,26 +44,26 @@ export interface Ruta { semilla: string; actos: Acto[] }
 
 export const RUTAS: Record<EtiquetaRuta, { nombre: string; promesa: string; riesgo: string }> = {
   consolidar: {
-    nombre: 'Consolidar',
-    promesa: 'Conceptos frecuentes, bien poblados de descripciones parecidas.',
-    riesgo: 'Oleada ligera. Poca tinta.'
+    nombre: 'Repasar',
+    promesa: 'Ideas que salen mucho en el texto.',
+    riesgo: 'Sala fácil. Premio pequeño.'
   },
   elaborar: {
-    nombre: 'Elaborar',
-    promesa: 'Conceptos densos, con muchos vínculos alrededor.',
-    riesgo: 'Permite cadenas largas. Tinta media.'
+    nombre: 'Conectar',
+    promesa: 'Ideas con muchas conexiones entre sí.',
+    riesgo: 'Sala media. Premio medio.'
   },
   umbral: {
-    nombre: 'Umbral',
-    promesa: 'Pasa por un concepto que reorganiza el mapa.',
-    riesgo: 'Oleada dura. Multiplica si lo sostienes.'
+    nombre: 'Idea clave',
+    promesa: 'Incluye una de las ideas más importantes del texto.',
+    riesgo: 'Sala difícil. Buen premio.'
   },
   portal: {
-    nombre: 'Portal',
-    promesa: 'Casos de dominios que el autor no menciona.',
-    riesgo: 'Lo que más cuesta y lo que más tinta deja.'
+    nombre: 'Casos nuevos',
+    promesa: 'Situaciones reales que el texto no menciona.',
+    riesgo: 'Lo más difícil y con el mejor premio.'
   },
-  descanso: { nombre: 'Alto', promesa: 'Sin enemigos.', riesgo: 'Ninguno.' }
+  descanso: { nombre: 'Descanso', promesa: 'Sin enemigos.', riesgo: 'Ninguno.' }
 }
 
 /* ==========================================================================
@@ -224,7 +224,7 @@ function formaDelActo(c: Contenido, conceptIds: string[], rng: Rng, esUltimo: bo
 
 /** En modo aprendizaje cada sala son tres oleadas, así que el acto se acorta:
  *  doce combates por acto serían una maratón. */
-export function generarRuta(contenido: Contenido, semilla: string, corto = false): Ruta {
+export function generarRuta(contenido: Contenido, semilla: string, corto = false, etapa = 4): Ruta {
   const rng = new Rng(semilla)
   const unidades = contenido.unidades.filter((u) => u.conceptIds.length >= 2).slice(0, 5)
   if (!unidades.length) {
@@ -277,18 +277,19 @@ export function generarRuta(contenido: Contenido, semilla: string, corto = false
           dominios: tipo === 'refugio' ? [] : dominiosDe(contenido, conceptIds),
           minutos: tipo === 'refugio' ? 1
             : Math.max(2, Math.round(conceptIds.length * 0.4) + (dificultad === 'jefe' ? 3 : dificultad === 'dura' ? 2 : 1)),
-          casos: tipo === 'oleada' || tipo === 'jefe' ? casosPara(contenido, conceptIds, etiqueta, rng) : [],
-          tesis: tipo === 'jefe'
+          casos: ((cs: string[]) => (etapa >= 3 ? cs : []))(tipo === 'oleada' || tipo === 'jefe' ? casosPara(contenido, conceptIds, etiqueta, rng) : []),
+          tesis: ((ts: string[]) => (etapa >= 3 ? ts : []))(tipo === 'jefe'
             ? rng.sample(contenido.tesis.map((t) => t.id), 2)
             : etiqueta === 'umbral'
               ? rng.sample(contenido.tesis.filter((t) =>
                   t.conceptIds.some((x) => conceptIds.includes(x))).map((t) => t.id), 1)
-              : [],
+              : []),
           salidas: [],
           // el «boss blind»: la sala dura anuncia su regla; la ligera no la necesita.
           // Se elige por hash del id y no con el RNG, para no mover la semilla
           // de todo lo demás: la misma semilla debe dar la misma expedición.
-          condicion: dificultad === 'dura'
+          // v6.34 · las reglas especiales de sala solo aparecen cuando la lectura ya va avanzada
+          condicion: etapa < 3 ? null : dificultad === 'dura'
             ? ['cadena', 'monocultivo', 'marco_rival'][
                 [...`a${ai}c${col}f${f}`].reduce((n, ch) => n + ch.charCodeAt(0), 0) % 3]
             : dificultad === 'jefe' ? 'cadena' : null
@@ -490,17 +491,17 @@ export function ofrecerRecompensasAndamiadas(
   else {
     // v6.25 · todo lo usable ya está en la cartera: en vez de repetir una herramienta, una carta nueva
     const carta = cartasNuevas(contenido, { ...cartera, conocidos: Object.keys(atlas.conceptos) }, rng)[0]
-    if (carta) { salida.push(carta); porque.push('Ya tienes todas las herramientas que este texto admite: toca ampliar el mazo.') }
+    if (carta) { salida.push(carta); porque.push('Ya tienes todas las herramientas para este texto: ahora ganas cartas nuevas.') }
   }
   // 2. la lente que compensa la dimensión más floja
   const lente = lentePara(m, cartera.lentes, vetadas)
-  if (lente) { salida.push({ tipo: 'lente', id: lente }); porque.push(`${LENTES.find((l) => l.id === lente)?.nombre}: para lo que más te cuesta ahora.`) }
+  if (lente) { salida.push({ tipo: 'lente', id: lente }); porque.push(`${LENTES.find((l) => l.id === lente)?.nombre}: te ayuda en lo que más te cuesta ahora.`) }
   // 3. el tipo de vínculo que más falta por sostener en el texto
   const sostenidas = new Set(Object.keys(atlas.aristas))
   const faltan = new Map<string, number>()
   for (const x of contenido.aristas) if (!sostenidas.has(`${x.from}>${x.to}>${x.tipo}`)) faltan.set(x.tipo, (faltan.get(x.tipo) ?? 0) + 1)
   const rel = [...faltan.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t).find((t) => cartera.relaciones.filter((r) => r === t).length < 2)
-  if (rel && salida.length < 3) { salida.push({ tipo: 'relacion', tipoRelacion: rel }); porque.push(`Vínculo «${rel}»: es el que más queda por sostener en el texto.`) }
+  if (rel && salida.length < 3) { salida.push({ tipo: 'relacion', tipoRelacion: rel }); porque.push(`Conexión «${rel}»: es la que más te falta practicar en este texto.`) }
   // 4. sello solo cuando la calibración ya dice algo
   const sellosLibres = (Object.keys(SELLOS) as SelloId[]).filter((s) => !cartera.sellos.includes(s))
   if (salida.length < 3 && sellosLibres.length && atlas.apuestasTotales >= 6) salida.push({ tipo: 'sello', id: sellosLibres[0] })

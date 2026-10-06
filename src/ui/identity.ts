@@ -51,8 +51,9 @@ const TEXTURA: Record<string, Cedula['textura']> = {
  *  color propio, se cazarían falsificaciones por la banda y la mecánica de
  *  discriminar moriría. */
 export const BANDA: Record<Pieza['clase'], string> = {
-  etiqueta: '#4f9be8',      // v6.31 · Nombre y Descripción comparten azul: azul con azul se emparejan
-  definicion: '#4f9be8',    // mismo azul que el Nombre
+  etiqueta: '#4f9be8',      // v6.34 · azul (nombre) + amarillo (descripción) = verde (idea completa)
+  //      // v6.31 · Nombre y Descripción comparten azul: azul con azul se emparejan
+  definicion: '#e8c64f',    // mismo azul que el Nombre
   concepto: '#4e8c7a',      // Concepto completo: verdigrís
   apocrifa: '#4e8c7a',      // ¡idéntica al concepto, a propósito!
   caso: '#2f8fa3',          // Caso: cian

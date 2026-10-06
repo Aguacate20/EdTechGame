@@ -39,56 +39,56 @@ export interface Herramienta {
 export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
   flecha: {
     id: 'flecha', nombre: 'Se conecta', glifo: '→',
-    afirma: 'Que existe este vínculo, con este tipo y en esta dirección.',
+    afirma: 'Una carta lleva a la otra. Tú eliges cómo: causa, apoya, contrasta…',
     aridad: [2, 2], rolesExigidos: ['nodo', 'nodo'], parametro: 'relacion',
     dimension: 'relacion', ordenada: true,
     ejemplo: "«Sequía» —causa→ «Migración de las aves». Una idea empuja a la otra."
   },
   identidad: {
     id: 'identidad', nombre: 'Es lo mismo', glifo: '=',
-    afirma: 'Que este nombre y esta descripción son la misma cosa.',
+    afirma: 'Este nombre y esta descripción son lo mismo.',
     aridad: [2, 2], rolesExigidos: ['nodo', 'nodo'], parametro: null,
     dimension: 'recuperacion', ordenada: false,
     ejemplo: "«Ballena» = «mamífero marino que filtra kril». El nombre y su descripción."
   },
   campo: {
     id: 'campo', nombre: 'Van juntos', glifo: '◯',
-    afirma: 'Que todo lo que encierro pertenece a la misma zona del texto.',
+    afirma: 'Todas estas cartas hablan del mismo tema.',
     aridad: [2, 6], rolesExigidos: ['nodo'], parametro: null,
     dimension: 'estructura', ordenada: false,
     ejemplo: "◯ ( «Lobo» · «Zorro» · «Coyote» ) — todos son cánidos: la misma zona del mapa."
   },
   jerarquia: {
     id: 'jerarquia', nombre: 'Incluye a', glifo: '⊃',
-    afirma: 'Que el primero es la categoría que contiene al segundo.',
+    afirma: 'La primera es el grupo; las demás están dentro de ese grupo.',
     aridad: [2, 4], rolesExigidos: ['nodo'], parametro: null,
     dimension: 'estructura', ordenada: true,
     ejemplo: "«Ave» ⊃ «Pingüino». El primero es la categoría que contiene al segundo."
   },
   eje: {
     id: 'eje', nombre: 'Se parecen en', glifo: '⊢',
-    afirma: 'Que todo esto cae en el mismo extremo de un eje del dominio.',
+    afirma: 'Estas cartas se parecen en una característica.',
     aridad: [2, 5], rolesExigidos: ['nodo'], parametro: 'eje',
     dimension: 'relacion', ordenada: false,
     ejemplo: "⊢ vuela: ( «Águila» · «Colibrí» ). Los dos caen en el mismo extremo del eje."
   },
   secuencia: {
     id: 'secuencia', nombre: 'Va en orden', glifo: '⇢',
-    afirma: 'Que esto ocurre en este orden, cada paso llevando al siguiente.',
+    afirma: 'Esto pasa en este orden: primero una, luego la otra.',
     aridad: [3, 4], rolesExigidos: ['nodo'], parametro: null,
     dimension: 'estructura', ordenada: true,
     ejemplo: "«Huevo» ⇢ «Oruga» ⇢ «Mariposa». Cada paso lleva al siguiente, en ese orden."
   },
   ancla: {
     id: 'ancla', nombre: 'Explica el caso', glifo: '⌖',
-    afirma: 'Que estos conceptos son los que operan en este caso.',
+    afirma: 'Estas ideas explican lo que pasa en este caso.',
     aridad: [2, 4], rolesExigidos: ['caso', 'nodo'], parametro: null,
     dimension: 'transferencia', ordenada: true,
     ejemplo: "⌖ «Un jardín sin abejas no da fruto» + ( «Polinización» · «Mutualismo» )."
   },
   balanza: {
     id: 'balanza', nombre: 'Lo pone a prueba', glifo: '⚖',
-    afirma: 'Que esto es lo que obligaría a revisar la tesis.',
+    afirma: 'Esto es lo que pondría en duda la tesis.',
     aridad: [2, 3], rolesExigidos: ['tesis', 'criterio'], parametro: null,
     dimension: 'produccion', ordenada: true,
     ejemplo: "⚖ «Los cuervos usan herramientas» + «Un cuervo criado aislado no las usaría»."
@@ -96,28 +96,28 @@ export const HERRAMIENTAS: Record<HerramientaId, Herramienta> = {
   ,
   contraejemplo: {
     id: 'contraejemplo', nombre: 'Aquí no aplica', glifo: '⊘',
-    afirma: 'Que este concepto NO opera en este caso, aunque lo parezca.',
+    afirma: 'Esta idea NO aplica en este caso, aunque lo parezca.',
     aridad: [2, 3], rolesExigidos: ['caso', 'nodo'], parametro: null,
     dimension: 'discriminacion', ordenada: true,
     ejemplo: '⊘ «Un pingüino no vuela» + «Aerodinámica del vuelo batido». Se le parece, pero ahí no aplica.'
   },
   analogia: {
     id: 'analogia', nombre: 'Es como', glifo: '≈',
-    afirma: 'Que A es a B lo que C es a D, en dos zonas distintas del texto.',
+    afirma: 'A es a B como C es a D.',
     aridad: [4, 4], rolesExigidos: ['nodo'], parametro: null,
     dimension: 'transferencia', ordenada: true,
     ejemplo: '≈ «Corazón» es a «Sangre» lo que «Raíz» es a «Savia». Misma estructura, otro reino.'
   },
   alcance: {
     id: 'alcance', nombre: 'Solo vale si', glifo: '⊣',
-    afirma: 'Que lo primero solo vale bajo la condición que pone lo segundo.',
+    afirma: 'Lo primero solo es cierto cuando pasa lo segundo.',
     aridad: [2, 2], rolesExigidos: ['nodo', 'nodo'], parametro: null,
     dimension: 'discriminacion', ordenada: true,
     ejemplo: '⊣ «Los osos hibernan» vale bajo «Climas con invierno marcado». Fuera de ahí, no.'
   },
   descomposicion: {
     id: 'descomposicion', nombre: 'Sus partes', glifo: '⊟',
-    afirma: 'Que lo primero se compone de las partes que siguen.',
+    afirma: 'La primera se compone de las partes que siguen.',
     aridad: [2, 4], rolesExigidos: ['nodo'], parametro: null,
     dimension: 'estructura', ordenada: true,
     ejemplo: '⊟ «Colmena» ⊟ ( «Obreras» · «Zánganos» · «Reina» ). El todo y sus partes.'

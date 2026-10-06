@@ -2405,3 +2405,11 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .sigue-turno:not(:disabled) { animation: sigue-latido 1.3s ease-in-out infinite; }
 @keyframes sigue-latido { 0%, 100% { filter: brightness(1); transform: scale(1); } 50% { filter: brightness(1.25); transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .sigue-turno:not(:disabled) { animation: none; } }
+
+/* v6.34 · nombre (azul) y descripción (amarilla) se complementan: cada una lleva
+   en el borde derecho el color de su pareja; juntas dan el verde de la idea completa */
+.renglon[data-clase="etiqueta"], .naipe-etiqueta { border-right: 4px solid #e8c64f; }
+.renglon[data-clase="definicion"], .naipe-definicion { border-right: 4px solid #4f9be8; }
+.renglon[data-clase="etiqueta"] { background-image: linear-gradient(90deg, rgba(79,155,232,.16), transparent 55%, rgba(232,198,79,.07)) !important; }
+.renglon[data-clase="definicion"] { background-image: linear-gradient(90deg, rgba(232,198,79,.16), transparent 55%, rgba(79,155,232,.07)) !important; }
+.etapa-lectura { color: var(--acento); font-weight: 700; cursor: help; }

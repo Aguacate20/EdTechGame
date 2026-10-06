@@ -323,3 +323,22 @@ export function descargarLog(): void {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+/* ==========================================================================
+   v6.34 · La etapa de la lectura.
+   Una lectura nueva empieza por lo más fácil (unir nombres con descripciones)
+   y va abriendo cartas y conexiones más difíciles a medida que el Atlas de ESE
+   texto se llena. Es el progreso real, no el número de partidas, lo que sube.
+   ========================================================================== */
+export type EtapaLectura = 1 | 2 | 3 | 4
+export const ETAPAS: Record<EtapaLectura, { nombre: string; glosa: string }> = {
+  1: { nombre: 'Conocer', glosa: 'Empiezas uniendo cada nombre con su descripción. Sin cartas falsas ni reglas especiales.' },
+  2: { nombre: 'Conectar', glosa: 'Ya conoces las ideas: ahora las conectas entre sí. Aparecen cartas falsas.' },
+  3: { nombre: 'Aplicar', glosa: 'Llegan los casos, las tesis y las salas con reglas especiales.' },
+  4: { nombre: 'Dominar', glosa: 'Todo el juego abierto, con todas tus herramientas.' }
+}
+export function etapaDeLectura(a: Atlas | null, c: Contenido): EtapaLectura {
+  if (!a) return 1
+  const { pct } = coberturaAtlas(a, c)
+  return pct < 12 ? 1 : pct < 35 ? 2 : pct < 65 ? 3 : 4
+}

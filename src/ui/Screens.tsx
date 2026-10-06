@@ -154,40 +154,39 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
 }) {
   /** v6.25 · de qué clase es cada hallazgo: se ve de un vistazo qué estás eligiendo */
   const clase = (r: Recompensa): { id: string; rotulo: string } =>
-    r.tipo === 'lente' ? { id: 'pasiva', rotulo: 'PASIVA · siempre activa' }
-      : r.tipo === 'sello' ? { id: 'activo', rotulo: 'ACTIVO · un uso por combate' }
+    r.tipo === 'lente' ? { id: 'pasiva', rotulo: 'MEJORA · siempre activa' }
+      : r.tipo === 'sello' ? { id: 'activo', rotulo: 'AYUDA · un uso por combate' }
         : r.tipo === 'herramienta' ? { id: 'herramienta', rotulo: 'HERRAMIENTA NUEVA · para siempre' }
           : r.tipo === 'concepto' || r.tipo === 'caso' || r.tipo === 'tesis' || r.tipo === 'relacion' ? { id: 'carta', rotulo: 'CARTA NUEVA · entra a tu mazo' }
-            : { id: 'respiro', rotulo: 'RESPIRO' }
+            : { id: 'respiro', rotulo: 'DESCANSO' }
   const describir = (r: Recompensa): { tt: string; nom: string; cuerpo: string; pie?: string; icono?: string } => {
     switch (r.tipo) {
       case 'lente': {
         const l = lentePorId(r.id)
-        return { tt: `Lente · ${l.rareza}`, nom: l.nombre, cuerpo: l.regla, pie: l.costo, icono: r.id }
+        return { tt: 'Mejora', nom: l.nombre, cuerpo: l.regla, pie: l.costo === 'Sin desventaja.' ? undefined : `Ojo: ${l.costo}`, icono: r.id }
       }
       case 'sello': {
         const x = selloPorId(r.id)
-        return { tt: 'Sello · un uso por combate', nom: `${x.glifo} ${x.nombre}`, cuerpo: x.efecto }
+        return { tt: 'Ayuda · un uso por combate', nom: `${x.glifo} ${x.nombre}`, cuerpo: x.efecto }
       }
       case 'herramienta': {
         const h = HERRAMIENTAS[r.id]
         return {
           tt: 'Herramienta', nom: `${h.glifo} ${h.nombre}`,
-          cuerpo: `Una forma nueva de afirmar, y trae sus cartas al mazo. ${h.afirma}`, pie: h.ejemplo
+          cuerpo: `Una forma nueva de unir cartas. ${h.afirma}`, pie: h.ejemplo
         }
       }
       case 'concepto': {
         const k = contenido.conceptos[r.id]
         return {
-          tt: 'Concepto entero', nom: k?.titulo ?? 'Concepto',
-          cuerpo: `Llega a tu mano ya unido, nombre y descripción juntos, listo para enlazar. ${k?.definicionCorta || k?.definicion || ''}`,
-          pie: 'Te ahorras emparejarlo; lo que cuenta ahora es con qué lo relacionas.'
+          tt: 'Idea completa', nom: k?.titulo ?? 'Concepto',
+          cuerpo: `Llega con nombre y descripción ya unidos, lista para conectar. ${k?.definicionCorta || k?.definicion || ''}`
         }
       }
       case 'relacion':
         return {
-          tt: 'Vínculo nuevo', nom: r.tipoRelacion,
-          cuerpo: `Desbloqueas este tipo de vínculo para la Flecha. Aparece ${contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0} veces en este texto, así que multiplica ${(contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0) <= 3 ? 'mucho' : 'poco'}.`
+          tt: 'Conexión nueva', nom: r.tipoRelacion,
+          cuerpo: `Un tipo nuevo de conexión para «Se conecta» (→). Sale ${contenido.frecuenciaRelacion[r.tipoRelacion] ?? 0} veces en este texto.`
         }
       case 'caso': {
         const e = contenido.escenarios.find((x) => x.id === r.id) ?? contenido.casos.find((x) => x.id === r.id)
@@ -202,22 +201,22 @@ export function RewardView({ opciones, onElegir, titulo, contenido, veta }: {
       }
       case 'fichero':
         return {
-          tt: 'Fichero', nom: 'Ampliar el fichero',
-          cuerpo: 'Robas una carta más cada turno durante el resto de la expedición.'
+          tt: 'Mejora', nom: 'Una carta más',
+          cuerpo: 'Robas una carta más cada turno hasta el final de esta partida.'
         }
       default:
-        return { tt: 'Descanso', nom: `Recuperas ${r.cantidad} de lucidez`, cuerpo: 'Volver entero también es una decisión.' }
+        return { tt: 'Descanso', nom: `Recuperas ${r.cantidad} de vida`, cuerpo: 'Andy descansa y sigue más fuerte.' }
     }
   }
 
   return (
     <div className="envoltura pila">
       <div>
-        <span className="eyebrow">Hallazgo</span>
+        <span className="eyebrow">Premio · elige uno</span>
         <h2 className="display" style={{ fontSize: 28 }}>{titulo}</h2>
         {veta && (
           <p className="aviso-veta">
-            ✦ Una veta. Aquí había algo que no siempre está.
+            ✦ ¡Premio raro! Esta vez hay una opción extra.
           </p>
         )}
       </div>

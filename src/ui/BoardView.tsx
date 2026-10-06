@@ -613,7 +613,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         })}
 
         <div className={`separador${zona('pasivas')}`} />
-        <span data-tutorial="pasivas-titulo" className={`eyebrow${zona('pasivas')}`}>Pasivas</span>
+        <span data-tutorial="pasivas-titulo" className={`eyebrow${zona('pasivas')}`}>Mejoras</span>
         {lentesIds.length === 0 && <span className="silencio dato">ninguna</span>}
         {lentesIds.map((id) => {
           const l = lentePorId(id)
@@ -1197,9 +1197,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
         {leyenda && (
           <div className="leyenda-clases">
-            {([['etiqueta', 'empareja con su Descripción (Identidad =) o úsalo como nodo'],
-              ['definicion', 'suelta: su dueño existe — emparéjala o úsala como nodo'],
-              ['concepto', 'completo: nodo pleno para cualquier herramienta'],
+            {([['etiqueta', 'azul: únelo con su descripción usando «Es lo mismo» (=)'],
+              ['definicion', 'amarilla: únela con su nombre usando «Es lo mismo» (=)'],
+              ['concepto', 'verde: nombre y descripción ya unidos. Sirve con cualquier herramienta'],
               ['caso', 'ánclalo (⌖) a los conceptos que operan en él, o enlaza ejemplificando'],
               ['tesis', 'pésala (⚖) con sus criterios, apóyala o contrástala'],
               ['criterio', 'va a la balanza de su tesis'],
@@ -1221,6 +1221,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <div
                 key={p.uid}
                 data-uid={p.uid}
+                data-clase={p.clase}
                 data-falta={!resuelto && faltaEn(p) ? 'true' : undefined}
                 data-pista={e.pista && p.conceptId && (p.clase === 'concepto' || p.clase === 'etiqueta' || p.clase === 'definicion') && (e.pista.a === p.conceptId || e.pista.b === p.conceptId) ? 'true' : undefined}
                 className={`renglon${seleccion === p.uid ? ' activa' : ''}` +
@@ -1254,8 +1255,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       {/* ============================ encargo ============================= */}
       {encargoPendiente && (
         <div className="encargos">
-          <span className="eyebrow">Antes de empezar</span>
-          <h2 className="encargos-titulo">¿Qué te propones en esta sala?</h2>
+          <span className="eyebrow">Reto opcional</span>
+          <h2 className="encargos-titulo">Elige un reto para esta sala</h2>
           <div className="encargos-fila">
             {e.encargosOfrecidos.map((en) => (
               <button key={en.id} className={`encargo n${en.nivel}`}
@@ -1263,15 +1264,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 data-ayuda={en.detalle}>
                 <span className="encargo-nivel">{'◆'.repeat(en.nivel)}</span>
                 <span className="encargo-titulo">{en.titulo}</span>
-                <span className="dato">+{[0, 4, 8, 14][en.nivel]} lucidez · botín mejor</span>
+                <span className="dato">+{[0, 4, 8, 14][en.nivel]} de vida · mejor premio</span>
               </button>
             ))}
             <button className="btn fantasma" onClick={() => on.elegirEncargo(null)}>
-              Sin encargo
+              Sin reto
             </button>
           </div>
           <span className="silencio" style={{ fontSize: 12 }}>
-            Mira tu mano y el frente antes de elegir. Un encargo exigente que se cumple cura más; uno que no, no castiga.
+            Si lo cumples, Andy recupera vida y el premio es mejor. Si no, no pasa nada.
           </span>
         </div>
       )}

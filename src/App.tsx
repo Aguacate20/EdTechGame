@@ -14,7 +14,7 @@ import { generarRuta, ofrecerRecompensas, ofrecerRecompensasAndamiadas, type Nod
 import { Rng, semillaLegible } from './engine/rng'
 import {
   anotarPropuesta, cargarAtlas, coberturaAtlas, confirmarPropuestas, descargarLog,
-  EQUIPO_INICIAL, atlasVacio, guardarAtlas, registrar, type Atlas
+  EQUIPO_INICIAL, etapaDeLectura, ETAPAS, type EtapaLectura, atlasVacio, guardarAtlas, registrar, type Atlas
 } from './engine/atlas'
 import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
@@ -122,6 +122,8 @@ export default function App() {
   /** los pasos del tutorial son monótonos: una vez hechos, no vuelven atrás
    *  aunque afirmar limpie el tablero y la condición deje de cumplirse */
   const [pasosHechos, setPasosHechos] = useState<string[]>([])
+  /** v6.34 · etapa de la lectura con la que se armó la expedición en curso */
+  const [etapaRun, setEtapaRun] = useState<number>(4)
   const previoRef = useRef<{ contenido: Contenido; atlas: Atlas } | null>(null)
   // foto del Atlas al empezar la batalla, para enseñar lo ganado en el cierre
   const atlasAlEmpezarRef = useRef<Atlas | null>(null)
@@ -250,7 +252,10 @@ export default function App() {
     let r: Ruta
     const base = contenidoDeExpedicion(completoRef.current ?? contenido)
     setContenido(base)
-    try { r = generarRuta(base, sem, conApoyo) }
+    // v6.34 · una lectura nueva empieza por lo fácil; el progreso en el Atlas va abriendo lo difícil
+    const etapa = etapaDeLectura(atlas, completoRef.current ?? contenido)
+    setEtapaRun(etapa)
+    try { r = generarRuta(base, sem, conApoyo, etapa) }
     catch (err) { alert((err as Error).message); return }
 
     setRuta(r); setActoIdx(0); setAlcanzables(r.actos[0].entradas)
@@ -263,7 +268,11 @@ export default function App() {
     setLentes([...portada.lentesIniciales]); setSellos([])
     // v5.66 · el kit inicial + todo lo desbloqueado en el perfil (una herramienta ganada vale para siempre)
     const delPerfil = (atlas?.herramientas ?? []) as HerramientaId[]
-    setHerramientas([...new Set([...EQUIPO_INICIAL.herramientas, ...delPerfil, ...portada.herramientasExtra])] as HerramientaId[])
+    setHerramientas((etapa === 1
+      ? ['identidad', 'identidad', 'identidad', 'flecha']
+      : etapa === 2
+        ? [...EQUIPO_INICIAL.herramientas]
+        : [...new Set([...EQUIPO_INICIAL.herramientas, ...delPerfil, ...portada.herramientasExtra])]) as HerramientaId[])
     setManoExtra(portada.manoDelta)
     setBatalla(null); setVictoria(false)
     borrarExpedicion(); setGuardada(null)
@@ -292,7 +301,7 @@ export default function App() {
     if (!contenido || !ruta) return
     guardarExpedicion({
       tema: temaRef.current ?? undefined,
-      fuente: contenido.fuente, semilla, runId: runIdRef.current,
+      fuente: contenido.fuente, semilla, etapa: etapaRun, runId: runIdRef.current,
       actoIdx: acto, alcanzables: alc, visitados: vis, nodoActual: nodo,
       lucidez, aprendizaje, lentes, sellos, herramientas, manoExtra,
       casos, tesis, fusionados, intuiciones,
@@ -307,7 +316,8 @@ export default function App() {
     let r: Ruta
     const base = contenidoDeExpedicion(completoRef.current ?? contenido)
     setContenido(base)
-    try { r = generarRuta(base, guardada.semilla, guardada.aprendizaje) } catch { return }
+    try { r = generarRuta(base, guardada.semilla, guardada.aprendizaje, guardada.etapa ?? 4) } catch { return }
+    setEtapaRun(guardada.etapa ?? 4)
     rngRef.current = new Rng(guardada.semilla)
     runIdRef.current = guardada.runId
     setSemilla(guardada.semilla)
@@ -428,7 +438,9 @@ export default function App() {
     void acto
     const bolsa: Bolsa = {
       herramientas: [...herramientas, ...(leido ? [] : ['flecha' as HerramientaId])],
-      relaciones: progreso.relaciones,
+      etapa: etapaRun,
+      // en la primera etapa, solo las conexiones más simples
+      relaciones: etapaRun === 1 ? (progreso.relaciones.filter((x) => ['apoya', 'causa'].includes(x)).length ? progreso.relaciones.filter((x) => ['apoya', 'causa'].includes(x)) : progreso.relaciones) : progreso.relaciones,
       casos: [...new Set([...nodo.casos, ...casos])],
       tesis: [...new Set([...nodo.tesis, ...tesis])],
       intuiciones, fusionados,
@@ -1013,6 +1025,7 @@ export default function App() {
         </span>
         <span className="sep" />
         {fase !== 'batalla' && <Medidor valor={lucidez} max={LUCIDEZ_MAX} etiqueta="Lucidez" />}
+        {ruta && tutorial === null && <span className="dato etapa-lectura" data-ayuda={`NIVEL ${etapaRun} DE 4 · ${ETAPAS[etapaRun as EtapaLectura].nombre.toUpperCase()}\n${ETAPAS[etapaRun as EtapaLectura].glosa}\n\nSube solo, a medida que llenas el Atlas de esta lectura.`}>Nivel {etapaRun} · {ETAPAS[etapaRun as EtapaLectura].nombre}</span>}
         <span className="dato silencio">Atlas {cob.pct}%</span>
         <button className="btn fantasma" onClick={() => { setFaseAnterior(fase); setFase('atlas') }}>Atlas</button>
         <button
@@ -1228,7 +1241,7 @@ export default function App() {
 
       {fase === 'recompensa' && porqueBotin.length > 0 && (
         <aside className="porque-botin">
-          <small>Por qué estas mejoras</small>
+          <small>Por qué te ofrecemos esto</small>
           <ul>{porqueBotin.map((p, i) => <li key={i}>{p}</li>)}</ul>
         </aside>
       )}

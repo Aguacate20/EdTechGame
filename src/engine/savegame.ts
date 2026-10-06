@@ -21,6 +21,8 @@ export interface ExpedicionGuardada {
   /** tema del plan sobre el que se juega (v5.58); sin él, la expedición es del plan entero */
   tema?: string
   semilla: string
+  /** v6.34 · etapa de la lectura con la que se armó esta expedición */
+  etapa?: number
   runId: string
   actoIdx: number
   alcanzables: string[]

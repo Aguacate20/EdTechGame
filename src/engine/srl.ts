@@ -84,31 +84,31 @@ export function proponerEncargos(
 
   // nivel 1 · alcanzable con la mano de ahora
   const n1: Borrador[] = [
-    { tipo: 'vinculos', objetivo: '2', titulo: 'Sostener dos vínculos', detalle: 'Dos afirmaciones que el texto respalde, en cualquier turno de la sala.' },
-    { tipo: 'golpe', objetivo: '150', titulo: 'Un golpe de 150 o más', detalle: 'Un solo diagrama que pegue 150. Dos trazos que se toquen suelen bastar.' },
-    { tipo: 'enlaces', objetivo: '1', titulo: 'Enganchar un trazo con tu mapa', detalle: 'Sostén algo y luego construye sobre ello: un trazo nuevo que toque una carta dorada.' }
+    { tipo: 'vinculos', objetivo: '2', titulo: 'Haz 2 conexiones correctas', detalle: 'En cualquier turno de esta sala.' },
+    { tipo: 'golpe', objetivo: '150', titulo: 'Haz un ataque de 150 o más', detalle: 'Dos conexiones que compartan una carta suelen bastar.' },
+    { tipo: 'enlaces', objetivo: '1', titulo: 'Conecta algo con una carta dorada', detalle: 'Las cartas doradas son las que ya acertaste.' }
   ]
   // nivel 2 · pide estructura o discriminación
   const n2: Borrador[] = [
-    ...(hayApocrifa ? [{ tipo: 'apocrifa' as const, objetivo: '1', titulo: 'Cazar una falsificación', detalle: 'Hay al menos una carta apócrifa en tu mano. Quémala antes de que te la cuelen.' }] : []),
-    { tipo: 'enlaces', objetivo: '3', titulo: 'Tres trazos enganchados al mapa', detalle: 'Tres afirmaciones que se apoyen en lo que ya dejaste en oro. Así crece una constelación.' },
-    ...(distintas >= 3 ? [{ tipo: 'variedad' as const, objetivo: '3', titulo: 'Sostener con tres herramientas distintas', detalle: 'No solo flechas: una identidad, un campo, lo que tengas. Tres maneras de afirmar.' }] : []),
-    { tipo: 'vinculos', objetivo: '4', titulo: 'Sostener cuatro vínculos', detalle: 'Cuatro afirmaciones respaldadas a lo largo de la sala.' },
-    { tipo: 'golpe', objetivo: '500', titulo: 'Un golpe de 500 o más', detalle: 'Un diagrama articulado: varios trazos verdaderos que compartan cartas.' }
+    ...(hayApocrifa ? [{ tipo: 'apocrifa' as const, objetivo: '1', titulo: 'Quema una carta falsa', detalle: 'Hay al menos una carta falsa en tu mano. Encuéntrala y quémala.' }] : []),
+    { tipo: 'enlaces', objetivo: '3', titulo: 'Haz 3 conexiones con cartas doradas', detalle: 'Construye sobre lo que ya acertaste.' },
+    ...(distintas >= 3 ? [{ tipo: 'variedad' as const, objetivo: '3', titulo: 'Usa 3 herramientas distintas', detalle: 'Y que las tres conexiones sean correctas.' }] : []),
+    { tipo: 'vinculos', objetivo: '4', titulo: 'Haz 4 conexiones correctas', detalle: 'A lo largo de esta sala.' },
+    { tipo: 'golpe', objetivo: '500', titulo: 'Haz un ataque de 500 o más', detalle: 'Varias conexiones correctas que compartan cartas.' }
   ]
   // nivel 3 · lo que todavía no sostienes, o la jugada grande
   const debil = conFallos[0] ?? sinEvidencia[0]
   const n3: Borrador[] = [
     ...(debil && c.conceptos[debil] ? [{
       tipo: 'concepto' as const, objetivo: debil, sobreDebil: true,
-      titulo: `Sostener algo sobre «${c.conceptos[debil].titulo}»`,
+      titulo: `Acierta algo sobre «${c.conceptos[debil].titulo}»`,
       detalle: conFallos.length
-        ? 'Es el concepto que más te ha fallado. Una afirmación respaldada sobre él lo cambia.'
-        : 'Aún no tienes evidencia de él en tu Atlas. Esta sala es para estrenarlo.'
+        ? 'Es la idea que más te ha costado. Haz una conexión correcta con ella.'
+        : 'Todavía no la has usado. Haz una conexión correcta con ella.'
     }] : []),
-    ...(vinculosEnSala >= 4 ? [{ tipo: 'cristalizar' as const, objetivo: '1', titulo: 'Cristalizar un mapa en esta sala', detalle: 'Cuatro vínculos enlazados y sin cabos sueltos: el ataque final.' }] : []),
-    { tipo: 'sin_pista', objetivo: '3', titulo: 'Tres vínculos sin pedir pista', detalle: 'Tres afirmaciones sostenidas y ni una pista a petición en toda la sala.' },
-    { tipo: 'sin_error', objetivo: '2', titulo: 'Dos vínculos y ni un solo error', detalle: 'Ni inversiones ni falsificaciones afirmadas en toda la sala, y al menos dos vínculos sostenidos.' }
+    ...(vinculosEnSala >= 4 ? [{ tipo: 'cristalizar' as const, objetivo: '1', titulo: 'Haz el ataque final en esta sala', detalle: 'Cuatro conexiones correctas unidas entre sí.' }] : []),
+    { tipo: 'sin_pista', objetivo: '3', titulo: 'Haz 3 conexiones sin pedir pista', detalle: 'Tres correctas sin usar el botón de pista.' },
+    { tipo: 'sin_error', objetivo: '2', titulo: 'Haz 2 conexiones sin ningún error', detalle: 'Ni una conexión equivocada en toda la sala.' }
   ]
   // el concepto débil, cuando existe, sale dos de cada tres veces: es el encargo que más enseña
   const tercero = n3[0].tipo === 'concepto' && giro % 3 !== 0 ? n3[0] : elegir(n3, 2)

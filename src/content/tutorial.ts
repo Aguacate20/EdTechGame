@@ -389,7 +389,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Este enemigo es duro. Necesita un ataque grande.',
         foco: { zona: 'carril' } },
       { clave: 'lente', soloLeer: true, boton: 'Siguiente', hecho: (e) => e.tablero.length >= 1,
-        texto: 'Llevas una lente: da más fuerza a los ataques largos.',
+        texto: 'Llevas una mejora: da más fuerza a los ataques largos.',
         foco: { zona: 'pasivas' } },
       { clave: 'cadena3',
         texto: 'Saca «Abeja», «Polinización» y «Fruto». Únelas con dos flechas «causa».',

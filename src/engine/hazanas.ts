@@ -131,16 +131,16 @@ export interface CondicionSala {
 
 export const CONDICIONES: CondicionSala[] = [
   {
-    id: 'cadena', nombre: 'Cadena',
-    glosa: 'Una frase suelta no abre camino: los diagramas de un solo trazo rinden el 40 %.'
+    id: 'cadena', nombre: 'Mejor en cadena',
+    glosa: 'Aquí un ataque con una sola conexión pega menos de la mitad. Une varias.'
   },
   {
-    id: 'monocultivo', nombre: 'Monocultivo',
-    glosa: 'Aquí las identidades no hieren: todo el daño sale de relacionar y estructurar. Emparejar sigue fusionando.'
+    id: 'monocultivo', nombre: 'Solo conexiones',
+    glosa: 'Aquí «Es lo mismo» no hace daño. Ataca conectando ideas entre sí.'
   },
   {
-    id: 'marco_rival', nombre: 'Marco rival',
-    glosa: 'La sala premia la oposición: cada contraste sostenido añade +0.5 al multiplicador.'
+    id: 'marco_rival', nombre: 'Premio al contraste',
+    glosa: 'Aquí cada «contrasta» correcto hace más fuerte tu ataque.'
   }
 ]
 

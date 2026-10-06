@@ -141,6 +141,8 @@ export interface EstadoBatalla {
   fase: 'jugando' | 'resuelto' | 'ganado' | 'perdido'
   ultima: ResultadoTurno | null
   sinFrontera?: boolean
+  /** v6.34 · etapa de la lectura (1 = recién empezada): decide qué tan difícil llega el mazo */
+  etapa?: number
   manoBase: number
   pozo: EventoPozo[]
   /** el último gesto del pozo, para poder darle acuse de recibo en pantalla */
@@ -292,6 +294,8 @@ export interface Bolsa {
   apoyo: boolean
   /** el tutorial reparte una mano y un frente fijos, para poder guiar paso a paso */
   mazoFijo?: Pieza[]
+  /** v6.34 · etapa de la lectura (1 = recién empezada) */
+  etapa?: number
   /** v6.31 · tutorial: no se añaden cartas de conceptos vecinos; solo las del guion */
   sinFrontera?: boolean
   enemigosFijos?: Enemigo[]
@@ -324,7 +328,9 @@ export function montarMazo(
     if (bolsa.archivados?.includes(id) && !bolsa.marcados?.includes(id)) continue
     // con andamio, lo que nunca has visto llega entero: primero se aprende qué
     // es, y solo después se pone a prueba si lo reconoces por su descripción
-    const enteroPorApoyo = bolsa.apoyo && bolsa.sinTocar.includes(id)
+    const etapa = bolsa.etapa ?? 4
+    // en la primera etapa todo llega como pareja nombre + descripción: se empieza por reconocer
+    const enteroPorApoyo = etapa > 1 && bolsa.apoyo && bolsa.sinTocar.includes(id)
     if (bolsa.fusionados.includes(id) || enteroPorApoyo) {
       // ya lo aprendiste: entra como concepto completo, vale más y ocupa un hueco
       const p = piezaConcepto(c, id)
@@ -336,7 +342,7 @@ export function montarMazo(
       if (d) piezas.push(d)
     }
   }
-  for (let i = 0; i < Math.max(0, APOCRIFAS[dificultad] + (bolsa.apocrifasDelta ?? 0)); i++) {
+  for (let i = 0; i < ((bolsa.etapa ?? 4) <= 1 ? 0 : Math.max(0, APOCRIFAS[dificultad] + (bolsa.apocrifasDelta ?? 0))); i++) {
     const p = piezaApocrifa(c, rng.pick(conceptIds), rng)
     if (p) piezas.push(p)
   }
@@ -357,7 +363,7 @@ export function montarMazo(
 
   // un marco si alguno cubre esta casilla: sirve como campo semántico
   const marco = c.marcos.find((m) => m.conceptIds.filter((x) => conceptIds.includes(x)).length >= 2)
-  if (marco) { const p = piezaMarco(c, marco.id); if (p) piezas.push(p) }
+  if (marco && (bolsa.etapa ?? 4) >= 2) { const p = piezaMarco(c, marco.id); if (p) piezas.push(p) }
 
   // subdimensiones de los conceptos más ricos: atributos para el eje
   const conSub = conceptIds.filter((id) => (c.conceptos[id]?.subdimensiones.length ?? 0) > 0)
