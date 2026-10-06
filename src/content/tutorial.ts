@@ -171,33 +171,52 @@ import type { HerramientaId } from '../engine/tools'
 /** Qué se ilumina y qué se bloquea durante un paso. El resto de la pantalla se
  *  oscurece: en un tutorial, poder tocarlo todo es poder perderse. */
 export interface FocoGuia {
-  zona: 'mano' | 'herramientas' | 'lienzo' | 'afirmar' | 'pasivas' | 'pozo'
+  zona: 'mano' | 'herramientas' | 'lienzo' | 'afirmar' | 'pasivas' | 'pozo' | 'carril' | 'trazar' | 'quemar'
   /** piezas que se pueden tocar o arrastrar; el resto queda inerte */
   piezas?: (e: EstadoBatalla) => string[]
   /** herramientas pulsables; si falta, todas */
   herramientas?: HerramientaId[]
   /** v6.14 · tipos de vínculo que el paso pide: se iluminan al abrir la Flecha */
   relaciones?: string[]
+  /** v6.29 · qué se recorta de verdad. Lo demás del foco sigue pulsable pero a oscuras:
+   *  un paso, una sola cosa encendida */
+  ilumina?: ('zona' | 'piezas' | 'herramientas' | 'relaciones' | 'trazar')[]
+  /** v6.29 · dibuja una flecha de la carta señalada a la mesa: «arrástrala aquí» */
+  arrastrar?: boolean
 }
+
+/** v6.29 · lo que el jugador tiene «en la mano» en la interfaz y el motor no ve */
+export interface EstadoUI { herramienta: string | null; pendientes: number; param: string | null; seleccion: string | null }
 
 export interface PasoGuia {
   clave: string
-  titulo: string
   texto: string
   /** cuando esto se cumple, el paso se da por hecho y aparece el siguiente */
   hecho: (e: EstadoBatalla) => boolean
+  /** v6.29 · pasos que se cumplen con un gesto de interfaz (elegir herramienta, tocar cartas) */
+  hechoUI?: (ui: EstadoUI, e: EstadoBatalla) => boolean
   foco?: FocoGuia
-  /** v6.15 · paso que solo se lee: «Entendido» lo da por hecho y pasa al siguiente */
+  /** v6.15 · paso que solo se lee: el botón lo da por hecho y pasa al siguiente */
   soloLeer?: boolean
+  /** v6.29 · Andy en grande, en el centro de la pantalla */
+  centro?: boolean
+  /** texto del botón en los pasos de solo leer */
+  boton?: string
 }
 
 /** uids (en mano y en tablero) de las piezas que apuntan a estos conceptos. */
 const de = (ids: string[]) => (e: EstadoBatalla) =>
   e.mano.filter((p) => p.conceptId && ids.includes(p.conceptId)).map((p) => p.uid)
 
+/** solo el nombre o solo la descripción de un concepto */
+const deClase = (id: string, clase: string) => (e: EstadoBatalla) =>
+  e.mano.filter((p) => p.conceptId === id && p.clase === clase).map((p) => p.uid)
+
 /** uid de la carta falsificada, para poder señalarla sin decir cuál es. */
 const laFalsa = (e: EstadoBatalla) =>
   e.mano.filter((p) => p.clase === 'apocrifa').map((p) => p.uid)
+
+const nunca = () => false
 
 export interface SalaTutorial {
   titulo: string
@@ -235,30 +254,43 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       crearEnemigo('copista', escala * 0.55, 8)
     ],
     pasos: [
-      {
-        clave: 'arrastrar', titulo: 'Saca dos fichas al tablero',
-        texto: 'A la derecha tienes tu mano. Arrastra al centro las dos fichas iluminadas: el nombre «Abeja» y su descripción. Todavía no pasa nada: solo las pones sobre la mesa.',
-        hecho: (e) => enTablero(e, 2),
-        foco: { zona: 'mano', piezas: de(['abeja']) }
-      },
-      {
-        clave: 'identidad', titulo: 'Ahora di que son lo mismo',
-        texto: 'Pulsa la Identidad (=) en la columna izquierda. Verás un recuadro junto al cursor. Toca el nombre y después su descripción: se irán colocando en A y en B. Cuando estén las dos, pulsa Trazar abajo.',
+      { clave: 'hola', centro: true, soloLeer: true, boton: '¡Vamos!', hecho: nunca,
+        texto: '¡Hola! Soy Andy. Ayúdame a derrotar a los enemigos con tu conocimiento.' },
+      { clave: 'enemigos', soloLeer: true, boton: 'Siguiente', hecho: nunca,
+        texto: 'Ellos vienen por mí. Si llegan, me hacen daño.',
+        foco: { zona: 'carril' } },
+      { clave: 'cartas', soloLeer: true, boton: 'Siguiente', hecho: (e) => enTablero(e, 1),
+        texto: 'Estas son tus cartas. Con ellas atacamos.',
+        foco: { zona: 'mano' } },
+      { clave: 'sacar1',
+        texto: 'Arrastra la carta «Abeja» a la mesa.',
+        hecho: (e) => deClase('abeja', 'etiqueta')(e).some((u) => e.tablero.some((t) => t.uid === u)) || enTablero(e, 2) || e.turno > 1,
+        foco: { zona: 'mano', piezas: deClase('abeja', 'etiqueta'), arrastrar: true } },
+      { clave: 'sacar2',
+        texto: 'Ahora arrastra su descripción.',
+        hecho: (e) => enTablero(e, 2) || e.turno > 1,
+        foco: { zona: 'mano', piezas: de(['abeja']), arrastrar: true } },
+      { clave: 'igual',
+        texto: 'Toca el botón «=». Quiere decir «son lo mismo».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
-        // v6.12 · además del botón, las dos fichas de la mesa que hay que tocar
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) }
-      },
-      {
-        clave: 'afirmar', titulo: 'Afirma lo que has dicho',
-        texto: 'Pulsa «Afirmar el diagrama». El juego comprueba tu afirmación contra el texto y la convierte en un ataque: cuanto más verdadero y más articulado, más fuerte pega.',
+        hechoUI: (ui) => ui.herramienta === 'identidad',
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']), ilumina: ['herramientas'] } },
+      { clave: 'tocar',
+        texto: 'Toca las dos cartas de la mesa.',
+        hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
+        hechoUI: (ui) => ui.herramienta === 'identidad' && ui.pendientes >= 2,
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']), ilumina: ['piezas', 'herramientas'] } },
+      { clave: 'trazar',
+        texto: 'Pulsa «Trazar».',
+        hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
+        foco: { zona: 'trazar', herramientas: ['identidad'], piezas: de(['abeja']), ilumina: ['zona'] } },
+      { clave: 'afirmar',
+        texto: '¡Listo! Pulsa «Afirmar» para atacar.',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
-        foco: { zona: 'afirmar' }
-      },
-      {
-        clave: 'repetir', titulo: 'Despeja el carril',
-        texto: 'Ya sabes lo básico: pon, relaciona, afirma. Ahora hazlo hasta que no quede nadie. Prueba lo que se te ocurra: empareja «Flor» con su descripción, o une dos conceptos con la Flecha. El carril avanza una casilla por cada afirmación, así que no te duermas.',
-        hecho: (e) => e.enemigos.every((x) => x.hp <= 0)
-      }
+        foco: { zona: 'afirmar' } },
+      { clave: 'repetir',
+        texto: '¡Así se hace! Repítelo con «Flor» hasta vencerlos.',
+        hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
     ]
   },
   {
@@ -283,23 +315,51 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       crearEnemigo('apocrifo', escala * 0.6, 8)
     ],
     pasos: [
-      {
-        clave: 'cadena', titulo: 'Encadena dos ideas',
-        texto: 'Saca las tres fichas iluminadas: Abeja, Polinización y Fruto. Con la Flecha (→) di que la abeja causa la polinización, y luego que la polinización causa el fruto. Dos trazos en el mismo diagrama pegan mucho más que uno.',
-        hecho: (e) => trazosDe(e, 'flecha') >= 2 || e.turno > 2,
-        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] }
-      },
-      {
-        clave: 'sospecha', titulo: 'Cuidado con la falsificación',
-        texto: 'Fíjate en la ficha iluminada: lleva el nombre de «Murciélago» con la descripción de un ave. Selecciónala en la mano y pulsa «Quemar»: si aciertas, robas una carta y tu próximo diagrama multiplica más.',
+      { clave: 'hola2', centro: true, soloLeer: true, boton: 'Siguiente', hecho: nunca,
+        texto: '¡Bien hecho! Ahora te enseño la flecha: sirve para unir dos ideas.' },
+      { clave: 'sacar3',
+        texto: 'Arrastra estas tres cartas a la mesa.',
+        hecho: (e) => enTablero(e, 3) || trazosDe(e, 'flecha') >= 1 || e.turno > 1,
+        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), arrastrar: true } },
+      { clave: 'flecha',
+        texto: 'Toca el botón «→».',
+        hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
+        hechoUI: (ui) => ui.herramienta === 'flecha',
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), ilumina: ['herramientas'] } },
+      { clave: 'tocar2',
+        texto: 'Toca «Abeja» y después «Polinización».',
+        hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
+        hechoUI: (ui) => ui.herramienta === 'flecha' && ui.pendientes >= 2,
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), relaciones: ['causa'], ilumina: ['piezas', 'herramientas'] } },
+      { clave: 'causa',
+        texto: 'Elige «causa»: la abeja causa la polinización.',
+        hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
+        hechoUI: (ui) => ui.herramienta === 'flecha' && ui.pendientes >= 2 && ui.param === 'causa',
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), relaciones: ['causa'], ilumina: ['relaciones'] } },
+      { clave: 'trazar2',
+        texto: 'Pulsa «Trazar».',
+        hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
+        foco: { zona: 'trazar', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), relaciones: ['causa'], ilumina: ['zona'] } },
+      { clave: 'cadena',
+        texto: 'Otra flecha igual: «Polinización» causa «Fruto».',
+        hecho: (e) => trazosDe(e, 'flecha') >= 2 || e.turno > 1,
+        foco: { zona: 'mano', piezas: de(['polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] } },
+      { clave: 'afirmar2',
+        texto: '¡Dos flechas pegan más que una! Pulsa «Afirmar».',
+        hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
+        foco: { zona: 'afirmar' } },
+      { clave: 'falsa',
+        texto: '¡Ojo! Esta carta miente: dice «Murciélago» pero describe un ave. Tócala.',
         hecho: (e) => e.quemasAcertadas >= 1 || e.pozo.length >= 1,
-        foco: { zona: 'pozo', piezas: laFalsa }
-      },
-      {
-        clave: 'mejora', titulo: 'Termina con lo que tengas',
-        texto: 'Despeja el carril. Cuantas más cosas verdaderas digas en un mismo diagrama, más fuerte pega: dos trazos valen mucho más que dos diagramas de uno.',
-        hecho: (e) => e.enemigos.every((x) => x.hp <= 0)
-      }
+        hechoUI: (ui, e) => !!ui.seleccion && laFalsa(e).includes(ui.seleccion),
+        foco: { zona: 'pozo', piezas: laFalsa, ilumina: ['piezas'] } },
+      { clave: 'sospecha',
+        texto: 'Pulsa «Quemar» para destruirla.',
+        hecho: (e) => e.quemasAcertadas >= 1 || e.pozo.length >= 1,
+        foco: { zona: 'quemar', piezas: laFalsa, ilumina: ['zona'] } },
+      { clave: 'mejora',
+        texto: '¡Muy bien! Ahora vence a los que quedan.',
+        hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
     ]
   }
 ,
@@ -321,38 +381,30 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
     ],
     enemigos: (escala) => [crearEnemigo('dogma', escala * 0.85, 7)],
     pasos: [
-      {
-        clave: 'lente', titulo: 'Llevas una lente',
-        texto: 'A la izquierda verás «Lente del arquitecto». Es una pasiva: no hace nada por sí sola, pero multiplica cuando un diagrama tiene varias afirmaciones enlazadas. El Cabezadura que tienes enfrente, además, no cede ante una sola frase.',
-        hecho: (e) => e.tablero.length >= 1,
-        foco: { zona: 'pasivas' }, soloLeer: true
-      },
-      {
-        clave: 'cadena3', titulo: 'Encadena tres ideas',
-        texto: 'Saca Abeja, Polinización y Fruto. Con la Flecha (→) di que la abeja causa la polinización, y que la polinización causa el fruto. Dos trazos: eso ya es una cadena.',
+      { clave: 'hola3', centro: true, soloLeer: true, boton: 'Siguiente', hecho: nunca,
+        texto: 'Último truco: el gran ataque. Entre más cartas unas, más fuerte pego.' },
+      { clave: 'jefe', soloLeer: true, boton: 'Siguiente', hecho: nunca,
+        texto: 'Este enemigo es duro. Necesita un ataque grande.',
+        foco: { zona: 'carril' } },
+      { clave: 'lente', soloLeer: true, boton: 'Siguiente', hecho: (e) => e.tablero.length >= 1,
+        texto: 'Llevas una lente: da más fuerza a los ataques largos.',
+        foco: { zona: 'pasivas' } },
+      { clave: 'cadena3',
+        texto: 'Saca «Abeja», «Polinización» y «Fruto». Únelas con dos flechas «causa».',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
-        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] }
-      },
-      // v6.17 · el combo son dos pasos: cada uno ilumina solo lo suyo, y no se invita a
-      // afirmar hasta que estén trazados LOS DOS (antes bastaba un trazo cualquiera)
-      {
-        clave: 'combo', titulo: 'Ahora haz que se toquen',
-        texto: 'Sin afirmar todavía: empareja Abeja con su descripción usando la Identidad (=). Si la descripción sigue en tu mano, sácala primero a la mesa.',
+        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] } },
+      { clave: 'combo',
+        texto: 'No ataques aún. Saca la descripción de «Abeja» y únelas con «=».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) }
-      },
-      {
-        clave: 'combo-campo', titulo: 'Y enciérralas en un campo',
-        texto: 'Todavía sin afirmar: saca Flor y encierra Abeja, Flor y Polinización con el Campo (◯). Al compartir piezas entre trazos se encienden los combos, y ahí es donde el número se dispara.',
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) } },
+      { clave: 'combo-campo',
+        texto: 'Saca «Flor». Con «◯» encierra Abeja, Flor y Polinización.',
         hecho: (e) => trazosDe(e, 'campo') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['abeja', 'flor', 'polinizacion']) }
-      },
-      {
-        clave: 'estallido', titulo: 'Suéltalo todo de una vez',
-        texto: 'Pulsa «Afirmar el diagrama» y mira la cuenta subir eslabón por eslabón. Esto es lo que persigue el juego: no acertar mucho, sino decir muchas cosas verdaderas que se sostengan entre sí.',
+        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['abeja', 'flor', 'polinizacion']) } },
+      { clave: 'estallido',
+        texto: '¡Ahora sí! Pulsa «Afirmar» y mira.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) || e.turno > 2,
-        foco: { zona: 'afirmar' }
-      }
+        foco: { zona: 'afirmar' } }
     ]
   }
 ]

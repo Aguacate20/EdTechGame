@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
+import { Retrato } from './assets'
 import { GolpeMayor, PaginaEnBlanco, escalonDeGolpe } from './Estallido'
 import { porqueDe } from '../engine/significativo'
 import { orientar } from '../engine/feedback'
@@ -142,9 +143,12 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** v6.20 · avisa una vez por turno cuando la cuenta del diagrama termina de subir */
   alCerrarCascada?: (dano: number, sostenidos: number, xmult: number) => void
   guia?: {
-    titulo: string; texto: string; indice: number; total: number
+    titulo?: string; texto: string; indice: number; total: number
     clave?: string; alEntender?: () => void
-    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[] }
+    centro?: boolean; boton?: string
+    hechoUI?: (ui: { herramienta: string | null; pendientes: number; param: string | null; seleccion: string | null }) => boolean
+    alCumplir?: () => void
+    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean }
   } | null
   fondo?: { n: number; sala?: string | null }
 }) {
@@ -323,6 +327,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   // v6.18 · mientras se resuelve el ataque no hay foco: la pantalla entera se enciende para verlo
   const foco = resuelto ? undefined : guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
+  const fichaAndy = usarManifest()?.['jugador/copista'] as { escala?: number } | undefined
+  const escalaAndy = typeof fichaAndy?.escala === 'number' ? fichaAndy.escala : 1
   /** v6.15 · el cuadro de instrucción se puede ocultar; vuelve con el paso siguiente */
   const [guiaOculta, setGuiaOculta] = useState<string | null>(null)
   const guiaVisible = !!guia && guiaOculta !== `${guia.clave ?? guia.indice}`
@@ -358,7 +364,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
   }, [])
-  const zona = (z: string) => (foco?.zona === z ? ' destacada' : '')
+  // v6.29 · pasos del tutorial que se cumplen con un gesto de interfaz (elegir «=», tocar dos cartas…)
+  useEffect(() => {
+    if (guia?.hechoUI?.({ herramienta, pendientes: pendientes.length, param, seleccion })) guia.alCumplir?.()
+  }, [herramienta, pendientes, param, seleccion, guia?.clave])
+  // v6.29 · la columna entera solo se enciende si el paso no señala nada concreto dentro de ella
+  const zonaEntera = !!foco && !(foco.piezas?.length || foco.herramientas?.length) && (!foco.ilumina || foco.ilumina.includes('zona'))
+  const zona = (z: string) => (foco?.zona === z && zonaEntera ? ' destacada' : '')
   const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
   const herrLibre = (id: HerramientaId) => !foco?.herramientas || foco.herramientas.includes(id)
 
@@ -489,18 +501,19 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
       {/* v6.13 · paso libre (sin foco): no hay velo, la pantalla entera queda encendida */}
       {foco && <TutorialVelo burbuja={burbujaRef} foco={foco} />}
+      {guia && guiaVisible && guia.centro && <div className="guia-fondo" />}
       {guia && guiaVisible && (
         <aside
           ref={burbujaRef}
-          className={`guia${
-            guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' ? ' apartada' : ''
+          className={`guia${guia.centro ? ' centro' : ''}${
+            guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' || guia.foco?.zona === 'carril' ? ' apartada' : ''
           }`}
           role="dialog" aria-live="polite" aria-label={`Tutorial, paso ${guia.indice + 1} de ${guia.total}`}
         >
-          <div className="guia-andy" aria-hidden="true"><span>✦</span></div>
+          <div className="guia-andy" aria-hidden="true">
+            <Retrato familia="jugador" id="copista" alt="" tamano={Math.round((guia.centro ? 170 : 88) / escalaAndy)} gesto="quieto" respaldo={<span>✦</span>} />
+          </div>
           <div className="guia-cuerpo">
-            <span className="eyebrow">Paso {guia.indice + 1} de {guia.total}</span>
-            <strong>{guia.titulo}</strong>
             <p>{guia.texto}</p>
             <div className="guia-pie">
               <div className="pasos-puntos">
@@ -508,9 +521,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   <i key={i} className={i < guia.indice ? 'hecho' : i === guia.indice ? 'activo' : ''} />
                 ))}
               </div>
-              {!guia.alEntender && <small className="guia-espera"><b /> Esperando tu acción</small>}
-              <button className="btn chico primario guia-entendido"
-                onClick={() => { if (guia.alEntender) guia.alEntender(); else setGuiaOculta(`${guia.clave ?? guia.indice}`) }}>Entendido</button>
+              {guia.alEntender
+                ? <button className="btn primario guia-entendido" onClick={guia.alEntender}>{guia.boton ?? 'Siguiente'} →</button>
+                : guia.foco
+                  ? <small className="guia-espera"><b /> Tu turno</small>
+                  : <button className="btn chico guia-entendido" onClick={() => setGuiaOculta(`${guia.clave ?? guia.indice}`)}>Entendido</button>}
             </div>
           </div>
         </aside>
@@ -1252,7 +1267,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               </span>
             )}
             <button
-              className={`btn peligro${zona('pozo') ? ' senala' : ''}`}
+              data-tutorial="quemar"
+              className={`btn peligro${zona('pozo') || zona('quemar') ? ' senala' : ''}`}
               disabled={!piezaSel}
               onClick={() => { if (piezaSel) { on.quemar(piezaSel.uid); setSeleccion(null) } }}
               data-ayuda={'QUEMAR\nAfirmas que la carta es una falsificación. Si aciertas: tinta, una carta nueva y bonificación. Si te equivocas, destruyes material bueno.'}

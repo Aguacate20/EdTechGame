@@ -19,7 +19,7 @@ import {
 import {
   borrarExpedicion, guardarExpedicion, leerExpedicion, type ExpedicionGuardada
 } from './engine/savegame'
-import { contenidoTutorial, SALAS_TUTORIAL } from './content/tutorial'
+import { contenidoTutorial, SALAS_TUTORIAL, type EstadoUI } from './content/tutorial'
 import { Entrar } from './ui/Entrar'
 import { Shell, type Pestana } from './ui/Shell'
 import { Biblioteca } from './ui/Biblioteca'
@@ -1080,11 +1080,15 @@ export default function App() {
             const paso = sala.pasos[idx]
             // v6.11 · el foco del paso llega a la mesa: sin esto el velo oscurecía todo y solo se veía la instrucción
             const foco = paso.foco
-              ? { zona: paso.foco.zona, piezas: paso.foco.piezas?.(batalla), herramientas: paso.foco.herramientas, relaciones: paso.foco.relaciones }
+              ? { zona: paso.foco.zona, piezas: paso.foco.piezas?.(batalla), herramientas: paso.foco.herramientas, relaciones: paso.foco.relaciones, ilumina: paso.foco.ilumina, arrastrar: paso.foco.arrastrar }
               : undefined
-            return { titulo: paso.titulo, texto: paso.texto, indice: idx, total: sala.pasos.length, foco, clave: paso.clave,
-              // v6.15 · «Entendido»: en un paso de solo leer lo da por hecho; en los demás solo oculta el cuadro
-              alEntender: paso.soloLeer ? () => setPasosHechos((prev) => prev.includes(paso.clave) ? prev : [...prev, paso.clave]) : undefined }
+            const marcar = () => setPasosHechos((prev) => prev.includes(paso.clave) ? prev : [...prev, paso.clave])
+            return { texto: paso.texto, indice: idx, total: sala.pasos.length, foco, clave: paso.clave,
+              centro: paso.centro, boton: paso.boton,
+              // v6.29 · pasos que se cumplen con un gesto de interfaz
+              hechoUI: paso.hechoUI ? (ui: EstadoUI) => paso.hechoUI!(ui, batalla) : undefined, alCumplir: marcar,
+              // v6.15 · en un paso de solo leer el botón lo da por hecho; en los demás solo oculta el cuadro
+              alEntender: paso.soloLeer ? marcar : undefined }
           })()}
           e={batalla} contenido={contenido} lentes={mods}
           alCerrarCascada={tutorial !== null && tutorial === SALAS_TUTORIAL.length - 1 ? (dano, sostenidos, xmult) => {

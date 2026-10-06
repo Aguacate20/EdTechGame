@@ -17,30 +17,40 @@ function contenedorConScroll(el: HTMLElement): HTMLElement | null {
   return null
 }
 
-const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro' }
+const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro', trazar: 'trazar', quemar: 'quemar' }
 
-export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[]; relaciones?: string[] } | null }) {
+export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean } | null }) {
   const [rects, setRects] = useState<Rect[]>([])
   const [bubble, setBubble] = useState<Rect | null>(null)
   const [flecha, setFlecha] = useState<Flecha | null>(null)
+  /** v6.29 · «arrastra esto hasta aquí»: de la carta señalada en la mano al centro de la mesa */
+  const [arrastre, setArrastre] = useState<string | null>(null)
   const vivo = useRef(true)
   useEffect(() => {
     vivo.current = true
     const medir = () => {
       if (!vivo.current) return
       // anclas con nombre fijo (data-tutorial / data-uid / data-herramienta); si no hay, la clase de siempre
-      const sel: string[] = []
-      // v6.11 · si el paso señala cartas o herramientas concretas, se recortan ELLAS y no toda
-      // la columna: iluminar la mano entera no dice cuál hay que jugar
-      const concreto = (foco?.piezas?.length ?? 0) + (foco?.herramientas?.length ?? 0) > 0
-      const zonaEsContenedor = foco?.zona === 'mano' || foco?.zona === 'herramientas'
-      if (foco?.zona && ZONA_A_ANCLA[foco.zona] && !(concreto && zonaEsContenedor)) sel.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
-      for (const u of foco?.piezas ?? []) sel.push(`[data-uid="${u}"]`)
-      for (const h of foco?.herramientas ?? []) sel.push(`[data-herramienta="${h}"]`)
-      // v6.14 · el tipo de vínculo que pide el paso; el botón solo existe con la Flecha abierta
-      for (const r of foco?.relaciones ?? []) sel.push(`[data-relacion="${r}"]`)
-      // v6.12 · con una herramienta señalada, el botón «Trazar» también es parte del paso
-      if (foco?.herramientas?.length) sel.push('[data-tutorial="trazar"]')
+      const armar = (il?: string[]) => {
+        const s: string[] = []
+        const ve = (k: string) => !il || il.includes(k)
+        // v6.11 · si el paso señala cartas o herramientas concretas, se recortan ELLAS y no toda
+        // la columna: iluminar la mano entera no dice cuál hay que jugar
+        const concreto = (foco?.piezas?.length ?? 0) + (foco?.herramientas?.length ?? 0) > 0
+        const zonaEsContenedor = foco?.zona === 'mano' || foco?.zona === 'herramientas'
+        if (ve('zona') && foco?.zona && ZONA_A_ANCLA[foco.zona] && !(concreto && zonaEsContenedor)) s.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
+        if (ve('piezas')) for (const u of foco?.piezas ?? []) s.push(`[data-uid="${u}"]`)
+        if (ve('herramientas')) for (const h of foco?.herramientas ?? []) s.push(`[data-herramienta="${h}"]`)
+        // v6.14 · el tipo de vínculo que pide el paso; el botón solo existe con la Flecha abierta
+        if (ve('relaciones')) for (const r of foco?.relaciones ?? []) s.push(`[data-relacion="${r}"]`)
+        // v6.12 · con una herramienta señalada, el botón «Trazar» también es parte del paso
+        if (il ? il.includes('trazar') : foco?.herramientas?.length) s.push('[data-tutorial="trazar"]')
+        return s
+      }
+      // v6.29 · un paso, una sola cosa encendida; si eso no está en pantalla (cerró la
+      // herramienta, p. ej.), se enciende todo lo del foco para que nunca quede a oscuras
+      let sel = armar(foco?.ilumina)
+      if (foco?.ilumina && !(sel.length && document.querySelector(sel.join(',')))) sel = armar()
       const els = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))
       // v6.15 · lo que queda fuera de la vista de su columna (hay que desplazarse) no se recorta
       // en un sitio falso: se marca con una flecha en el borde por donde hay que ir
@@ -58,6 +68,18 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         const q = { x: r.left - 6, y: top - 6, w: r.width + 12, h: bottom - top + 12 }
         if (q.w > 16 && q.h > 16) nuevos.push(q)
       }
+      let na: string | null = null
+      if (foco?.arrastrar) {
+        const origen = (foco.piezas ?? []).map((u) => document.querySelector<HTMLElement>(`[data-tutorial="mano"] [data-uid="${u}"]`)).find(Boolean)
+        const mesa = document.querySelector<HTMLElement>('[data-tutorial="mesa"]')
+        if (origen && mesa) {
+          const o = origen.getBoundingClientRect(), m = mesa.getBoundingClientRect()
+          const x0 = Math.round(o.left - 4), y0 = Math.round(o.top + o.height / 2)
+          const x1 = Math.round(m.left + m.width * 0.5), y1 = Math.round(m.top + m.height * 0.5)
+          na = `M ${x0} ${y0} Q ${Math.round((x0 + x1) / 2)} ${Math.min(y0, y1) - 90}, ${x1} ${y1}`
+        }
+      }
+      setArrastre((prev) => (prev === na ? prev : na))
       setFlecha((prev) => (JSON.stringify(prev) === JSON.stringify(nuevaFlecha) ? prev : nuevaFlecha))
       setRects((prev) => (JSON.stringify(prev) === JSON.stringify(nuevos) ? prev : nuevos))
       const b = burbuja.current?.getBoundingClientRect()
@@ -108,7 +130,18 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
           <path d={flecha.abajo ? 'M -7 -3 L 0 6 L 7 -3' : 'M -7 3 L 0 -6 L 7 3'} fill="none" stroke="#0A1230" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </g></g>
       )}
-      {conector && (
+      {arrastre && (
+        <g className="arrastre-tutorial">
+          <defs><marker id="punta-arrastre" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M 1 1 L 8 5 L 1 9" fill="none" stroke="#FFD23F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></marker></defs>
+          <path d={arrastre} fill="none" stroke="#0A1230" strokeWidth="9" strokeLinecap="round" opacity="0.55" />
+          <path d={arrastre} fill="none" stroke="#FFD23F" strokeWidth="4" strokeLinecap="round" strokeDasharray="2 12" markerEnd="url(#punta-arrastre)" />
+          <g>
+            <circle r="13" fill="#FFD23F" opacity="0.35" /><circle r="7" fill="#FFD23F" stroke="#0A1230" strokeWidth="2" />
+            <animateMotion dur="1.5s" repeatCount="indefinite" path={arrastre} />
+          </g>
+        </g>
+      )}
+      {conector && !arrastre && (
         <g>
           <path d={conector} fill="none" stroke="#FF6A1A" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" className="conector-tutorial" />
           <circle r="3.5" fill="#FF6A1A"><animateMotion dur="1.6s" repeatCount="indefinite" path={conector} /></circle>
