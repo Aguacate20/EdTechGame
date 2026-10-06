@@ -140,6 +140,10 @@ const simbolosDe = (p: Pieza): string => {
   if (p.clase === 'intuicion' || p.clase === 'apocrifa') return '🔥'
   return (HERRAMIENTAS_DE_CLASE[p.clase] ?? []).map((h) => HERRAMIENTAS[h].glifo).join('  ')
 }
+/** v6.43 · los globos negros al pasar el ratón y el recuadro que seguía al cursor se retiraron:
+ *  lo que hay que leer está en la carta, y lo largo se abre con «+» */
+const SIN_GLOBOS: boolean = true
+
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${simbolosDe(p) ? `\n\n${simbolosDe(p)}` : ''}`
 
@@ -186,6 +190,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [resaltarCristal, setResaltarCristal] = useState<Set<string> | null>(null)
   const [ayudaFija, setAyudaFija] = useState<{ texto: string; x: number; y: number; uid: string } | null>(null)
   const [raton, setRaton] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  /** v6.43 · la ficha completa de una carta o mejora, en un cuadro propio (botón «+») */
+  const [detalle, setDetalle] = useState<{ tt: string; color: string; titulo: string; cuerpo: string } | null>(null)
+  const abrirDetalle = (p: Pieza) => setDetalle({ tt: ETIQUETA[p.clase], color: BANDA[p.clase], titulo: p.titulo, cuerpo: [p.cuerpo, p.explicacion && p.clase !== 'apocrifa' ? p.explicacion : '', p.partes?.length ? `Partes: ${p.partes.join(' · ')}` : ''].filter(Boolean).join('\n\n') })
   /** pieza del tablero bajo el cursor: se previsualiza en la ranura siguiente */
   const [previsualizada, setPrevisualizada] = useState<string | null>(null)
   /** el rastro solo estorba fuera del tablero: allí no hay nada que señalar */
@@ -195,6 +202,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   // ::after dentro de cada elemento, y los contenedores con overflow lo cortaban.
   const seguirRaton = (ev: React.MouseEvent) => {
     setRaton({ x: ev.clientX, y: ev.clientY })
+    if (SIN_GLOBOS) { if (ayuda) setAyuda(null); return }
     const destino = (ev.target as HTMLElement).closest('[data-ayuda]') as HTMLElement | null
     // con una herramienta en la mano, la descripción se lee en el rastro y no
     // en un globo aparte: dos cuadros a la vez confunden más de lo que ayudan
@@ -458,7 +466,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         <GolpeMayor key={`gm-${e.turno}`} dano={e.ultima.danoTotal} trazos={e.ultima.diag.sostenidos} />
       )}
       {aniquilacion && e.ultima && <PaginaEnBlanco key={e.turno} caidos={e.ultima.impactos.filter((x) => x.derribado).length} retardoMs={340 + 150 * e.ultima.impactos.length} />}
-      {h && !resuelto && sobreTablero && (
+      {!SIN_GLOBOS && h && !resuelto && sobreTablero && (
         <div
           className="rastro"
           style={{
@@ -552,6 +560,16 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </aside>
       )}
 
+      {detalle && (
+        <div className="velo" onClick={() => setDetalle(null)}>
+          <div className="ficha-detalle" style={{ ['--color' as string]: detalle.color }} onClick={(ev) => ev.stopPropagation()}>
+            <span className="ficha-tt">{detalle.tt}</span>
+            <h3>{detalle.titulo}</h3>
+            {detalle.cuerpo.split('\n\n').map((t, k) => <p key={k}>{t}</p>)}
+            <button className="btn primario" onClick={() => setDetalle(null)}>Cerrar</button>
+          </div>
+        </div>
+      )}
       {ayudaFija && (
         <div className="globo abajo fija" style={{ left: ayudaFija.x, top: ayudaFija.y }} onClick={() => setAyudaFija(null)}>
           {ayudaFija.texto}
@@ -628,7 +646,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         {lentesIds.map((id) => {
           const l = lentePorId(id)
           return (
-            <span key={id} data-tutorial="pasivas" className={`pastilla ancha${zona('pasivas') ? ' senala' : ''}`} data-ayuda={`${l.nombre.toUpperCase()}\n${l.regla}\n\n${l.costo}`}>
+            <span key={id} data-tutorial="pasivas" className={`pastilla ancha${zona('pasivas') ? ' senala' : ''}`} role="button" style={{ cursor: 'pointer' }}
+              onClick={() => setDetalle({ tt: 'Mejora', color: 'var(--acento)', titulo: l.nombre, cuerpo: `${l.regla}${l.costo && l.costo !== 'Sin desventaja.' ? `\n\nOjo: ${l.costo}` : ''}` })} data-ayuda={`${l.nombre.toUpperCase()}\n${l.regla}\n\n${l.costo}`}>
               {l.nombre}
             </span>
           )
@@ -712,6 +731,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         })()}
         <div
           className="lienzo" ref={lienzo}
+          data-con-siluetas={foco?.arrastrar ? 'true' : undefined}
           style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
           onPointerDown={(ev) => {
             if (ev.target !== lienzo.current || ev.button !== 0) return
@@ -813,6 +833,13 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 </g>
               )
             })}
+            {h && !resuelto && pendientes.length >= 2 && pendientes.slice(1).map((u, k) => {
+              const a = posiciones.find((x) => x.uid === pendientes[h.ordenada ? k : 0]), b = posiciones.find((x) => x.uid === u)
+              if (!a || !b) return null
+              return <line key={`previo${k}`} className="trazo-previo" x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                stroke="var(--acento)" style={{ color: 'var(--acento)' }} vectorEffect="non-scaling-stroke"
+                markerEnd={h.ordenada ? 'url(#punta-flecha)' : undefined} />
+            })}
             <defs>
               <marker id="punta-flecha" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
                 <path d="M0 0.5 L9 4.5 L0 8.5 z" fill="currentColor" />
@@ -843,6 +870,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               })}
           </svg>
 
+          {foco?.arrastrar && !resuelto && (() => {
+            // v6.43 · siluetas punteadas: dónde soltar las cartas (arriba, lejos de la barra de la herramienta)
+            const ids = foco.piezas ?? []
+            const puestas = ids.filter((u) => e.tablero.some((t) => t.uid === u)).length
+            return ids.map((_, k) => k < puestas ? null : (
+              <div key={`sil${k}`} data-tutorial="silueta" className="silueta-carta"
+                style={{ left: `${50 + (k - (ids.length - 1) / 2) * 13}%`, top: '41%' }}>
+                <span>{k === puestas ? 'Suéltala aquí' : ''}</span>
+              </div>
+            ))
+          })()}
           <div className="rotulos-capa" aria-hidden>
             {trazosVisibles.filter((t) => esArmado(t.uid)).map((t) => {
               const pts = t.piezas.map((u) => posiciones.find((x) => x.uid === u)).filter((x): x is NonNullable<typeof x> => !!x)
@@ -904,7 +942,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   const armada = (e.armados ?? []).some((a) => a.piezas.includes(p.uid))
                   if (armada && seMovioRef.current) { seMovioRef.current = false; return }
                   if (armada && !herramienta) {
-                    setAyudaFija((f) => f?.uid === p.uid ? null : { texto: ayudaDe(p), x: Math.min(ev.clientX + 12, window.innerWidth - 342), y: ev.clientY + 12, uid: p.uid })
+                    void ev; void setAyudaFija; abrirDetalle(p)
                     return
                   }
                   tocarPieza(p.uid)
@@ -932,6 +970,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 {marcada && <span className="orden">{orden + 1}</span>}
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 42)}</span>
+                {p.cuerpo && <span className="desc-mesa">{recorte(p.cuerpo, 70)}</span>}
+                {(p.cuerpo.length > 70 || p.titulo.length > 42) && (
+                  <button className="mas-info" title="Ver completa" onPointerDown={(ev) => ev.stopPropagation()}
+                    onClick={(ev) => { ev.stopPropagation(); abrirDetalle(p) }}>+</button>
+                )}
+                {(() => {
+                  const cs = coloresCompatibles(p, e.mano)
+                  return cs.length ? <span className="compat" aria-hidden="true">{cs.map((c) => <i key={c} style={{ background: c }} />)}</span> : null
+                })()}
                 {p.partes?.length ? <span className="partes-insignia" title={`Se compone de: ${p.partes.join(' · ')}`}>⊟ {p.partes.length}</span> : null}
                 <i className="borde" style={{ background: cd.banda }} />
                 <i className={`grano grano-${cd.textura}`} />
@@ -1255,7 +1302,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               >
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA_MANO[p.clase] ?? ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
-                {p.cuerpo && <span className="desc">{recorte(p.cuerpo, 120)}</span>}
+                {p.cuerpo && <span className="desc">{recorte(p.cuerpo, 170)}</span>}
+                {(p.cuerpo.length > 170 || p.titulo.length > 40) && (
+                  <button className="mas-info" title="Ver completa" onClick={(ev) => { ev.stopPropagation(); abrirDetalle(p) }}>+</button>
+                )}
                 {cd.canto && <span className="marca">idea clave</span>}
                 {(() => {
                   const cs = coloresCompatibles(p, e.mano)

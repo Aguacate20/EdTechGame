@@ -71,7 +71,7 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       let na: string | null = null
       if (foco?.arrastrar) {
         const origen = (foco.piezas ?? []).map((u) => document.querySelector<HTMLElement>(`[data-tutorial="mano"] [data-uid="${u}"]`)).find(Boolean)
-        const mesa = document.querySelector<HTMLElement>('[data-tutorial="mesa"]')
+        const mesa = document.querySelector<HTMLElement>('[data-tutorial="silueta"]') ?? document.querySelector<HTMLElement>('[data-tutorial="mesa"]')
         if (origen && mesa) {
           const o = origen.getBoundingClientRect(), m = mesa.getBoundingClientRect()
           const x0 = Math.round(o.left - 4), y0 = Math.round(o.top + o.height / 2)
