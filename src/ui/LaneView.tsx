@@ -2,7 +2,7 @@ import { faseJefe, LARGO_CARRIL, tipoPorId, type Enemigo } from '../engine/lane'
 import { FondoImagen, Retrato, SpriteRetrato, usarManifest, duracionGesto } from './assets'
 import type { Disparo } from '../engine/weapons'
 import { sfx } from './sfx'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState  } from 'react'
 
 /* El carril: el jugador a la izquierda, los enemigos entrando por la derecha.
    Cada afirmación es un turno; cada turno se acercan. */
@@ -69,8 +69,10 @@ function Copista({ gesto }: { gesto?: string }) {
 const CUERPO_A_CUERPO = new Set(['maza', 'gancho', 'tenaza', 'barrido'])
 
 export function LaneView({
-  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor, aniquilacion, fondo, golpeTier = 0
+  enemigos, lucidez, lucidezMax, alcance, gesto, ultimosImpactos, disparoListo, disparo, golpeMayor, aniquilacion, fondo, golpeTier = 0, alImpacto
 }: {
+  /** v6.41 · se llama una vez, cuando el golpe llega al primer enemigo */
+  alImpacto?: () => void
   enemigos: Enemigo[]
   lucidez: number
   lucidezMax: number
@@ -98,6 +100,8 @@ export function LaneView({
    *  proyectil o embestida), luego cae el primero, y el desborde recorre la
    *  cadena con cadencia — nadie muere antes de recibir su golpe */
   const [revelados, setRevelados] = useState(0)
+  const alImpactoRef = useRef(alImpacto)
+  alImpactoRef.current = alImpacto
   useEffect(() => {
     if (!disparoListo || !ultimosImpactos.length) { setRevelados(0); return }
     setRevelados(0)
@@ -105,6 +109,7 @@ export function LaneView({
     const base = compasDelGolpe(disparo, manifest, ultimosImpactos.length).llegada || 340
     const paso = (i: number) => {
       setRevelados(i)
+      if (i === 1) alImpactoRef.current?.()
       if (i < ultimosImpactos.length) ts.push(setTimeout(() => paso(i + 1), 150))
     }
     ts.push(setTimeout(() => paso(1), base))

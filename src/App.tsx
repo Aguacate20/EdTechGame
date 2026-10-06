@@ -312,6 +312,8 @@ export default function App() {
       manoExtra, casos, tesis, fusionados, intuiciones, portadaId, marcados, archivados,
       quemasRun, inferenciasRun])
 
+  /** v6.41 · «¡Vamos a mi primera expedición!»: al volver del tutorial se arranca sola */
+  const arrancarTrasTutorialRef = useRef(false)
   const retomar = useCallback(() => {
     if (!contenido || !guardada) return
     let r: Ruta
@@ -896,6 +898,12 @@ export default function App() {
     void cargarPlan(sesion.api, sesion.studentId).then((plan) => { if (plan) { const c = adaptarBundle(plan); completoRef.current = c; setContenido(c) } })
   }, [subidas, sesion, tranquila])
 
+  useEffect(() => {
+    if (!arrancarTrasTutorialRef.current || fase !== 'inicio' || tutorial !== null || !contenido || !atlas) return
+    arrancarTrasTutorialRef.current = false
+    if (guardada) retomar(); else empezarExpedicion(quiereApoyo)
+  }, [fase, tutorial, contenido, atlas, guardada])
+
   /* -------------------------------- render -------------------------------- */
 
   if (fase === 'cargar' || !contenido || !atlas || !progreso) {
@@ -1111,18 +1119,16 @@ export default function App() {
               alEntender: paso.soloLeer ? marcar : undefined }
           })()}
           e={batalla} contenido={contenido} lentes={mods}
-          alCerrarCascada={tutorial !== null && tutorial === SALAS_TUTORIAL.length - 1 ? (dano, sostenidos, xmult) => {
-            // v6.20 · el cierre del tutorial: si el diagrama fue de verdad un combo, estalla la pantalla entera
+          alCaerEnemigo={tutorial !== null && tutorial === SALAS_TUTORIAL.length - 1 ? (dano, sostenidos, xmult) => {
+            // v6.41 · el estallido del tutorial entra en el instante en que el enemigo recibe el golpe y cae
             if (estallidoTutorialRef.current || dano <= 0 || !(xmult > 1 || sostenidos >= 3)) return
             estallidoTutorialRef.current = true
-            window.setTimeout(() => {
-              const est = ESTALLIDOS[0]
-              sfx.titan(4)
-              setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
-              window.setTimeout(() => setEstallido(null), est.duracion)
-            // v6.40 · espera a que Andy golpee y el enemigo caiga: el estallido entra justo después
-            }, 2500)
-          } : tutorial === null ? () => {
+            const est = ESTALLIDOS[0]
+            sfx.titan(4)
+            setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
+            window.setTimeout(() => setEstallido(null), est.duracion)
+          } : undefined}
+          alCerrarCascada={tutorial !== null ? undefined : tutorial === null ? () => {
             // v6.28 · el jefe cayó con un ataque normal: lo que quedó en oro se cristaliza igual.
             // Sin esto el mapa se perdía al empezar otra expedición y la partida terminaba sin clímax.
             const b = batalla
@@ -1303,28 +1309,31 @@ export default function App() {
             Ahora viene lo bueno: hazlo con tus propias lecturas y mira cómo se enciende tu galaxia.
           </p>
           <p className="silencio">Entre más conexiones correctas unas en un ataque, más fuerte pego. ¿Vamos por la primera expedición?</p>
-          <div className="fila">
-            <button className="btn primario grande" onClick={() => {
+          {(() => {
+            // de vuelta al perfil: su ámbito, su Atlas (el de verdad, no el del tutorial)
+            const volver = (arrancar: boolean) => {
               const prev = previoRef.current
               setTutorial(null)
               if (prev) {
-                // de vuelta al perfil: su ámbito, su Atlas (el de verdad, no el del tutorial)
                 fijarAmbito(sesion?.studentId ?? null)
                 observarAtlas(sesion ? (x) => subirAtlas(sesion, x) : null)
                 const real = cargarAtlas(prev.contenido.fuente)
                 setContenido(prev.contenido); setAtlas(real)
                 setGuardada(leerExpedicion(prev.contenido.fuente))
+                arrancarTrasTutorialRef.current = arrancar
                 setFase('inicio')
               } else {
                 setContenido(null); setFase('cargar')
               }
-            }}>
-              ¡Vamos a mi primera expedición!
-            </button>
-            <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
-              Repetir el tutorial
-            </button>
-          </div>
+            }
+            return (<>
+              <div className="fila">
+                <button className="btn primario grande" onClick={() => volver(true)}>¡Vamos a mi primera expedición!</button>
+                <button className="btn fantasma" onClick={() => empezarTutorial(0)}>Repetir el tutorial</button>
+              </div>
+              <button className="btn-desnudo cierre-menu" onClick={() => volver(false)}>Menú principal</button>
+            </>)
+          })()}
         </div>
       )}
 

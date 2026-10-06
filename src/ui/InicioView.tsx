@@ -3,6 +3,23 @@ import type { Contenido } from '../content/types'
 import { coberturaAtlas, nivelDe, type Atlas } from '../engine/atlas'
 import type { Sesion } from '../net/sesion'
 import { Galaxia } from './Galaxia'
+import { ENLACES } from '../content/enlaces'
+
+/** v6.41 · racha de días seguidos entrando al juego (se guarda en este navegador) */
+function usarRacha(quien: string): number {
+  const [dias] = useState(() => {
+    try {
+      const k = `luduscog:racha:${quien}`
+      const hoy = new Date(); const f = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+      const ayer = new Date(hoy.getTime() - 86400000)
+      const g = JSON.parse(localStorage.getItem(k) ?? 'null') as { ultimo: string; dias: number } | null
+      const n = !g ? 1 : g.ultimo === f(hoy) ? g.dias : g.ultimo === f(ayer) ? g.dias + 1 : 1
+      localStorage.setItem(k, JSON.stringify({ ultimo: f(hoy), dias: n }))
+      return n
+    } catch { return 1 }
+  })
+  return dias
+}
 import { esDiamante, type Tema } from '../engine/temas'
 
 /** El Inicio según Inicio.dc.html: tres columnas, la galaxia al centro.
@@ -41,9 +58,9 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
 export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onNueva, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema, diamante = false }: Props) {
   const zonaFoco: string | null = null
   // v6.35 · todo cabe en la primera pantalla: la galaxia ocupa lo que sobra de alto
-  const [altoGalaxia, setAltoGalaxia] = useState(() => Math.max(200, Math.min(520, window.innerHeight - 330)))
+  const [altoGalaxia, setAltoGalaxia] = useState(() => Math.max(200, Math.min(520, window.innerHeight - 400)))
   useEffect(() => {
-    const f = () => setAltoGalaxia(Math.max(200, Math.min(520, window.innerHeight - 330)))
+    const f = () => setAltoGalaxia(Math.max(200, Math.min(520, window.innerHeight - 400)))
     window.addEventListener('resize', f); return () => window.removeEventListener('resize', f)
   }, [])
   const [confirmarNueva, setConfirmarNueva] = useState(false)
@@ -61,16 +78,33 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
   const cob = coberturaAtlas(atlas, contenido)
   void onAtlas
   const nombre = sesion?.nombre ?? 'explorador'
+  const racha = usarRacha(sesion?.studentId ?? 'local')
   const fuente = contenido.fuente.replace(/\.pdf$/i, '')
 
   return (
     <div className="inicio">
       <main className="inicio-centro">
-        <div className="inicio-cab">
-          <b>{cob.aristas === 0 ? `Hola, ${nombre}. Cada conexión correcta enciende una estrella.` : `Hola, ${nombre}. Ya llevas ${cob.aristas} conexiones en tu galaxia.`}</b>
-          <small>{fuente}</small>
+        {(() => {
+          const faltan = ids.length - niveles.filter((n) => n >= 1).length
+          const m = guardada ? { cara: 'anima', texto: `¡Hola, ${nombre}! Dejaste una expedición a medias. ¿Seguimos?` }
+            : cob.aristas === 0 ? { cara: 'saludo', texto: `¡Hola, ${nombre}! Empieza una expedición y enciende tu primera estrella.` }
+              : racha >= 3 ? { cara: 'celebra', texto: `¡${racha} días seguidos, ${nombre}! Hoy encendemos otra zona.` }
+                : faltan > 0 && faltan <= 5 ? { cara: 'piensa', texto: `Te ${faltan === 1 ? 'falta 1 estrella' : `faltan ${faltan} estrellas`} para completar esta lectura.` }
+                  : faltan === 0 ? { cara: 'celebra', texto: `¡Encendiste todas las estrellas, ${nombre}! Ahora a conectarlas mejor.` }
+                    : { cara: 'explica', texto: `¡Hola, ${nombre}! Ya llevas ${cob.aristas} conexiones. Vamos por más.` }
+          return (
+            <div className="inicio-andy">
+              <img src={`${import.meta.env.BASE_URL}art/andy-caras/${m.cara}.png`} alt="" draggable={false} />
+              <div className="inicio-andy-dice"><b>{m.texto}</b><small>{fuente}</small></div>
+              {racha >= 2 && <span className="inicio-racha" title="Días seguidos entrando a jugar">🔥 {racha} días</span>}
+            </div>
+          )
+        })()}
+        <div className="inicio-galaxia">
+          <i className="fugaz f1" /><i className="fugaz f2" />
+          {cob.aristas === 0 && <span className="inicio-vacia">Aquí aparecerá tu primera estrella ✦</span>}
+          <Galaxia contenido={contenido} atlas={atlas} modo="vivo" alto={altoGalaxia} onEstrella={onEstrella} zonaFoco={zonaFoco} />
         </div>
-        <Galaxia contenido={contenido} atlas={atlas} modo="vivo" alto={altoGalaxia} onEstrella={onEstrella} zonaFoco={zonaFoco} />
         <div className="escalones">
           {DIMS.map((d) => (
             <div key={d.id} className="escalon">
@@ -119,6 +153,10 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
           <button className={`btn primario inicio-continuar${diamante ? ' diamante' : ''}`} onClick={onContinuar}>{diamante ? '◆ Repasar el texto' : `Empezar expedición${aprendizaje ? ' · aprendizaje' : ''}`}</button>
         )}
       </footer>
+      <div className="inicio-enlaces">
+        <span>LudusCog · aprender jugando</span>
+        {ENLACES.filter((x) => x.url).map((x) => <a key={x.nombre} href={x.url} target="_blank" rel="noreferrer">{x.nombre}</a>)}
+      </div>
     </div>
   )
 }

@@ -143,13 +143,15 @@ const simbolosDe = (p: Pieza): string => {
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${simbolosDe(p) ? `\n\n${simbolosDe(p)}` : ''}`
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo, alCerrarCascada,
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo, alCerrarCascada, alCaerEnemigo,
   }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
   /** paso del tutorial que toca ahora, si estamos en él */
   /** v6.20 · avisa una vez por turno cuando la cuenta del diagrama termina de subir */
   alCerrarCascada?: (dano: number, sostenidos: number, xmult: number) => void
+  /** v6.41 · avisa en el instante en que el primer enemigo recibe el golpe */
+  alCaerEnemigo?: (dano: number, sostenidos: number, xmult: number) => void
   guia?: {
     titulo?: string; texto: string; indice: number; total: number
     clave?: string; alEntender?: () => void
@@ -576,6 +578,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           )}
         </div>
         <LaneView
+          alImpacto={alCaerEnemigo && e.ultima ? () => { const u = e.ultima!; alCaerEnemigo(u.danoTotal, u.diag.veredictos.filter((v) => v.estado !== 'error' && v.estado !== 'invertido' && v.estado !== 'silencio').length, u.diag.xmult) } : undefined}
           enemigos={e.enemigos} lucidez={lucidez} lucidezMax={lucidezMax}
           alcance={resuelto ? 0 : previa.alcance}
           gesto={gestoHeroe}
