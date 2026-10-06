@@ -162,7 +162,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     centro?: boolean; boton?: string; cara?: string
     hechoUI?: (ui: { herramienta: string | null; pendientes: number; param: string | null; seleccion: string | null }) => boolean
     alCumplir?: () => void
-    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean }
+    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; huecos?: number }
   } | null
   fondo?: { n: number; sala?: string | null }
 }) {
@@ -873,10 +873,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           {foco?.arrastrar && !resuelto && (() => {
             // v6.43 · siluetas punteadas: dónde soltar las cartas (arriba, lejos de la barra de la herramienta)
             const ids = foco.piezas ?? []
-            const puestas = ids.filter((u) => e.tablero.some((t) => t.uid === u)).length
-            return ids.map((_, k) => k < puestas ? null : (
+            const total = Math.max(foco.huecos ?? ids.length, 1)
+            // las que ya están en la mesa ocupan los primeros huecos; quedan por señalar las que faltan
+            const faltan = ids.filter((u) => !e.tablero.some((t) => t.uid === u)).length
+            const puestas = Math.max(0, Math.min(e.tablero.length, total - faltan))
+            const paso = total <= 2 ? 30 : 24
+            return Array.from({ length: total }, (_, k) => k < puestas || k >= puestas + faltan ? null : (
               <div key={`sil${k}`} data-tutorial="silueta" className="silueta-carta"
-                style={{ left: `${50 + (k - (ids.length - 1) / 2) * 20}%`, top: '41%' }}>
+                style={{ left: `${50 + (k - (total - 1) / 2) * paso}%`, top: '41%' }}>
                 <span>{k === puestas ? 'Suéltala aquí' : ''}</span>
               </div>
             ))

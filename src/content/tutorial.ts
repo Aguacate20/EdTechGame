@@ -184,6 +184,8 @@ export interface FocoGuia {
   ilumina?: ('zona' | 'piezas' | 'herramientas' | 'relaciones' | 'trazar')[]
   /** v6.29 · dibuja una flecha de la carta señalada a la mesa: «arrástrala aquí» */
   arrastrar?: boolean
+  /** v6.49 · cuántos huecos tiene la fila completa: así el primero sale a la izquierda y no centrado */
+  huecos?: number
 }
 
 /** v6.29 · lo que el jugador tiene «en la mano» en la interfaz y el motor no ve */
@@ -276,11 +278,11 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'sacar1',
         texto: 'Arrastra la carta «Nube» a la mesa.',
         hecho: (e) => deClase('nube', 'etiqueta')(e).some((u) => e.tablero.some((t) => t.uid === u)) || enTablero(e, 2) || e.turno > 1,
-        foco: { zona: 'mano', piezas: deClase('nube', 'etiqueta'), arrastrar: true } },
+        foco: { zona: 'mano', piezas: deClase('nube', 'etiqueta'), arrastrar: true, huecos: 2 } },
       { clave: 'sacar2',
         texto: 'Ahora arrastra su descripción.',
         hecho: (e) => enTablero(e, 2) || e.turno > 1,
-        foco: { zona: 'mano', piezas: de(['nube']), arrastrar: true } },
+        foco: { zona: 'mano', piezas: de(['nube']), arrastrar: true, huecos: 2 } },
       { clave: 'armas', cara: 'explica', soloLeer: true, boton: 'Siguiente',
         texto: 'Estas son tus armas. Con ellas unes cartas y demuestras lo que sabes.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
@@ -334,7 +336,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'sacar3',
         texto: 'Arrastra estas tres cartas a la mesa.',
         hecho: (e) => enTablero(e, 3) || trazosDe(e, 'flecha') >= 1 || e.turno > 1,
-        foco: { zona: 'mano', piezas: de(['nube', 'lluvia', 'charco']), arrastrar: true } },
+        foco: { zona: 'mano', piezas: de(['nube', 'lluvia', 'charco']), arrastrar: true, huecos: 3 } },
       { clave: 'flecha',
         texto: 'Toca el botón «→».',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
