@@ -45,6 +45,8 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         if (ve('relaciones')) for (const r of foco?.relaciones ?? []) s.push(`[data-relacion="${r}"]`)
         // v6.12 · con una herramienta señalada, el botón «Trazar» también es parte del paso
         if (il ? il.includes('trazar') : foco?.herramientas?.length) s.push('[data-tutorial="trazar"]')
+        // v6.45 · al arrastrar, también se enciende el sitio donde va la carta
+        if (foco?.arrastrar) s.push('[data-tutorial="silueta"]')
         return s
       }
       // v6.29 · un paso, una sola cosa encendida; si eso no está en pantalla (cerró la
@@ -75,7 +77,7 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         if (origen && mesa) {
           const o = origen.getBoundingClientRect(), m = mesa.getBoundingClientRect()
           const x0 = Math.round(o.left - 4), y0 = Math.round(o.top + o.height / 2)
-          const x1 = Math.round(m.left + m.width * 0.5), y1 = Math.round(m.top + m.height * 0.5)
+          const x1 = Math.round(m.left + m.width * 0.5), y1 = Math.round(mesa.dataset.tutorial === 'silueta' ? m.top - 10 : m.top + m.height * 0.5)
           na = `M ${x0} ${y0} Q ${Math.round((x0 + x1) / 2)} ${Math.min(y0, y1) - 90}, ${x1} ${y1}`
         }
       }
