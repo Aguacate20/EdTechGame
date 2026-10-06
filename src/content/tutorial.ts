@@ -188,6 +188,8 @@ export interface FocoGuia {
   huecos?: number
   /** v6.50 · sitios exactos (x, y en % de la mesa) para las cartas que faltan por sacar */
   sitios?: [number, number][]
+  /** v6.58 · en qué orden tocar las cartas de la mesa: cada una lleva su número mientras hay herramienta */
+  orden?: (e: EstadoBatalla) => string[]
 }
 
 /** v6.29 · lo que el jugador tiene «en la mano» en la interfaz y el motor no ve */
@@ -222,6 +224,12 @@ const deClase = (id: string, clase: string) => (e: EstadoBatalla) =>
 /** uid de la carta falsificada, para poder señalarla sin decir cuál es. */
 export const laFalsa = (e: EstadoBatalla) =>
   e.mano.filter((p) => p.clase === 'apocrifa').map((p) => p.uid)
+
+/** uids en orden. 'nube' = la carta de nombre o de idea; 'nube:def' = su descripción */
+const enOrden = (...specs: string[]) => (e: EstadoBatalla) => specs.map((sp) => {
+  const [id, def] = sp.split(':')
+  return e.mano.find((p) => p.conceptId === id && (def ? p.clase === 'definicion' : p.clase !== 'definicion'))?.uid ?? ''
+}).filter(Boolean)
 
 const nunca = () => false
 
@@ -305,11 +313,11 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Toca las dos cartas de la mesa.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'identidad' && ui.pendientes >= 2,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['piezas', 'herramientas'] } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['piezas', 'herramientas'], orden: enOrden('nube', 'nube:def') } },
       { clave: 'trazar',
         texto: 'Pulsa «Trazar».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
-        foco: { zona: 'trazar', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['zona'] } },
+        foco: { zona: 'trazar', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['zona'], orden: enOrden('nube', 'nube:def') } },
       { clave: 'afirmar',
         texto: '¡Bien! Estás diciendo que «Nube» es «algo blanco o gris que flota en el cielo». Pulsa «Afirmar» para atacar.',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
@@ -355,20 +363,20 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Toca «Nube» y después «Lluvia».',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'flecha' && ui.pendientes >= 2,
-        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['piezas', 'herramientas'] } },
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['piezas', 'herramientas'], orden: enOrden('nube', 'lluvia') } },
       { clave: 'causa',
         texto: 'Elige «causa»: la nube causa la lluvia.',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'flecha' && ui.pendientes >= 2 && ui.param === 'causa',
-        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['relaciones'] } },
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['relaciones'], orden: enOrden('nube', 'lluvia') } },
       { clave: 'trazar2',
         texto: 'Pulsa «Trazar».',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
-        foco: { zona: 'trazar', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['zona'] } },
+        foco: { zona: 'trazar', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['zona'], orden: enOrden('nube', 'lluvia') } },
       { clave: 'cadena',
         texto: 'Otra flecha igual: «Lluvia» causa «Charco».',
         hecho: (e) => trazosDe(e, 'flecha') >= 2 || e.turno > 1,
-        foco: { zona: 'mano', piezas: de(['lluvia', 'charco']), herramientas: ['flecha'], relaciones: ['causa'] } },
+        foco: { zona: 'mano', piezas: de(['lluvia', 'charco']), herramientas: ['flecha'], relaciones: ['causa'], orden: enOrden('lluvia', 'charco') } },
       { clave: 'afirmar2',
         texto: '¡Dos flechas pegan más que una! Pulsa «Afirmar».',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
@@ -408,7 +416,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'cadena3',
         texto: 'Vuelve a sacar «Nube», «Lluvia» y «Charco». Únelas con «→» y «causa»: puedes tocar las tres seguidas.',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
-        foco: { zona: 'mano', piezas: (e) => [...deClase('nube', 'etiqueta')(e), ...de(['lluvia', 'charco'])(e)], herramientas: ['flecha'], relaciones: ['causa'], arrastrar: true, sitios: [[26, 34], [50, 34], [74, 34]] } },
+        foco: { zona: 'mano', piezas: (e) => [...deClase('nube', 'etiqueta')(e), ...de(['lluvia', 'charco'])(e)], herramientas: ['flecha'], relaciones: ['causa'], arrastrar: true, sitios: [[26, 34], [50, 34], [74, 34]], orden: enOrden('nube', 'lluvia', 'charco') } },
       // v6.57 · igual que con «Trueno»: primero solo sacar la descripción; después, solo la herramienta
       { clave: 'sacar-desc', cara: 'piensa',
         texto: 'No ataques aún. Arrastra la carta «¿Qué soy?» a la mesa.',
@@ -417,7 +425,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'combo', cara: 'explica',
         texto: 'Toca «= Es lo mismo» y luego «Nube» y su descripción.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']) } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), orden: enOrden('nube', 'nube:def') } },
       // v6.56 · dos pasos: primero solo sacar «Trueno»; después, solo la herramienta
       { clave: 'sacar-trueno',
         texto: 'Ahora arrastra «Trueno» a la mesa.',
@@ -426,7 +434,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'combo-campo', cara: 'explica',
         texto: 'Toca «◯ Van juntos» y luego Nube, Trueno y Lluvia: las tres son de una tormenta.',
         hecho: (e) => trazosDe(e, 'campo') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['nube', 'trueno', 'lluvia']) } },
+        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['nube', 'trueno', 'lluvia']), orden: enOrden('nube', 'lluvia', 'trueno') } },
       { clave: 'estallido', cara: 'anima',
         texto: '¡Ahora sí! Pulsa «Afirmar» y mira.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) || e.turno > 2,

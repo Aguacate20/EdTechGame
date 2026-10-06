@@ -67,7 +67,9 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
           continue
         }
         const top = caja ? Math.max(r.top, caja.top) : r.top, bottom = caja ? Math.min(r.bottom, caja.bottom) : r.bottom
-        const q = { x: r.left - 6, y: top - 6, w: r.width + 12, h: bottom - top + 12 }
+        // v6.58 · las cartas de la mesa llevan su número encima: el recorte sube para que se vea encendido
+        const sube = el.classList.contains('en-tablero') ? 30 : 0
+        const q = { x: r.left - 6, y: top - 6 - sube, w: r.width + 12, h: bottom - top + 12 + sube }
         if (q.w > 16 && q.h > 16) nuevos.push(q)
       }
       let na: string | null = null

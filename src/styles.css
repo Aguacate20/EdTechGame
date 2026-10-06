@@ -2564,3 +2564,10 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .resultado-fila.mal .resultado-marca { background: #e0564f; }
 .resultado-fila strong { font-size: 14.5px; }
 .resultado-fila p { font-size: 13px; margin-top: 3px; color: var(--texto); opacity: .85; }
+
+/* v6.58 · tutorial: número de orden sobre cada carta que hay que tocar */
+.toca-num { position: absolute; top: -17px; left: 50%; transform: translateX(-50%); min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; display: grid; place-items: center; font-size: 13px; font-weight: 800; white-space: nowrap; background: #0A1230; color: #FFD23F; border: 2px dashed #FFD23F; z-index: 6; pointer-events: none; opacity: .8; }
+.toca-num.sigue { background: #FFD23F; color: #0A1230; border-style: solid; border-color: #0A1230; opacity: 1; top: -24px; animation: toca-bota .8s ease-in-out infinite; box-shadow: 0 3px 10px rgba(0, 0, 0, .5); }
+.toca-num.sigue::after { content: ''; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #FFD23F; border-bottom: 0; }
+@keyframes toca-bota { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+@media (prefers-reduced-motion: reduce) { .toca-num.sigue { animation: none; } }

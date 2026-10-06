@@ -162,7 +162,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     centro?: boolean; boton?: string; cara?: string
     hechoUI?: (ui: { herramienta: string | null; pendientes: number; param: string | null; seleccion: string | null }) => boolean
     alCumplir?: () => void
-    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; huecos?: number; sitios?: [number, number][] }
+    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; huecos?: number; sitios?: [number, number][]; orden?: string[] }
   } | null
   fondo?: { n: number; sala?: string | null }
 }) {
@@ -1014,6 +1014,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
                 {marcada && <span className="orden">{orden + 1}</span>}
+                {(() => {
+                  // v6.58 · tutorial: con la herramienta abierta, cada carta dice en qué orden tocarla
+                  if (!h || resuelto || marcada || !foco?.orden) return null
+                  const k = foco.orden.indexOf(p.uid)
+                  if (k < 0) return null
+                  const sigue = foco.orden.findIndex((u) => !pendientes.includes(u)) === k
+                  return <span className={`toca-num${sigue ? ' sigue' : ''}`}>{sigue ? `Toca ${k + 1}` : k + 1}</span>
+                })()}
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 42)}</span>
                 {p.cuerpo && <span className="desc-mesa">{recorte(p.cuerpo, 70)}</span>}
