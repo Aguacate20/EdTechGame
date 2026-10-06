@@ -23,6 +23,8 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
   const [rects, setRects] = useState<Rect[]>([])
   const [bubble, setBubble] = useState<Rect | null>(null)
   const [flecha, setFlecha] = useState<Flecha | null>(null)
+  /** v6.60 · huecos sin borde para los números «Toca 1, 2, 3»: encendidos, pero el marco naranja ciñe solo la carta */
+  const [extras, setExtras] = useState<Rect[]>([])
   /** v6.29 · «arrastra esto hasta aquí»: de la carta señalada en la mano al centro de la mesa */
   const [arrastre, setArrastre] = useState<string | null>(null)
   const vivo = useRef(true)
@@ -40,7 +42,8 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         const zonaEsContenedor = foco?.zona === 'mano' || foco?.zona === 'herramientas'
         if (ve('zona') && foco?.zona && ZONA_A_ANCLA[foco.zona] && !(concreto && zonaEsContenedor)) s.push(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`)
         if (ve('piezas')) for (const u of foco?.piezas ?? []) s.push(`[data-uid="${u}"]`)
-        if (ve('herramientas')) for (const h of foco?.herramientas ?? []) s.push(`[data-herramienta="${h}"]`)
+        // v6.60 · una herramienta ya elegida deja de señalarse: la atención pasa a las cartas
+        if (ve('herramientas')) for (const h of foco?.herramientas ?? []) s.push(`[data-herramienta="${h}"]:not(.activa)`)
         // v6.14 · el tipo de vínculo que pide el paso; el botón solo existe con la Flecha abierta
         if (ve('relaciones')) for (const r of foco?.relaciones ?? []) s.push(`[data-relacion="${r}"]`)
         // v6.12 · con una herramienta señalada, el botón «Trazar» también es parte del paso
@@ -68,9 +71,9 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         }
         const top = caja ? Math.max(r.top, caja.top) : r.top, bottom = caja ? Math.min(r.bottom, caja.bottom) : r.bottom
         // v6.58 · las cartas de la mesa llevan su número encima: el recorte sube para que se vea encendido
-        const sube = el.classList.contains('en-tablero') ? 30 : 0
-        const q = { x: r.left - 6, y: top - 6 - sube, w: r.width + 12, h: bottom - top + 12 + sube }
-        if (q.w > 16 && q.h > 16) nuevos.push(q)
+        const q = { x: r.left - 6, y: top - 6, w: r.width + 12, h: bottom - top + 12 }
+        // la carta que toca ahora va primero: hacia ella apunta la línea de Andy
+        if (q.w > 16 && q.h > 16) { if (el.querySelector('.toca-num.sigue')) nuevos.unshift(q); else nuevos.push(q) }
       }
       let na: string | null = null
       if (foco?.arrastrar) {
@@ -86,6 +89,8 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       setArrastre((prev) => (prev === na ? prev : na))
       setFlecha((prev) => (JSON.stringify(prev) === JSON.stringify(nuevaFlecha) ? prev : nuevaFlecha))
       setRects((prev) => (JSON.stringify(prev) === JSON.stringify(nuevos) ? prev : nuevos))
+      const ex = Array.from(document.querySelectorAll<HTMLElement>('.toca-num, .naipe.en-tablero.marcada .orden')).map((n) => { const r = n.getBoundingClientRect(); return { x: Math.round(r.left - 4), y: Math.round(r.top - 8), w: Math.round(r.width + 8), h: Math.round(r.height + 18) } })
+      setExtras((prev) => (JSON.stringify(prev) === JSON.stringify(ex) ? prev : ex))
       const b = burbuja.current?.getBoundingClientRect()
       const nb = b ? { x: b.left, y: b.top, w: b.width, h: b.height } : null
       setBubble((prev) => (JSON.stringify(prev) === JSON.stringify(nb) ? prev : nb))
@@ -121,6 +126,7 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         <mask id="velo-recortes">
           <rect x="0" y="0" width={W} height={H} fill="#fff" />
           {rects.map((r, i) => <rect key={i} x={r.x} y={r.y} width={r.w} height={r.h} rx="12" fill="#000" />)}
+          {extras.map((r, i) => <rect key={`x${i}`} x={r.x} y={r.y} width={r.w} height={r.h} rx="13" fill="#000" />)}
         </mask>
         <filter id="velo-glow"><feGaussianBlur stdDeviation="6" /></filter>
       </defs>
