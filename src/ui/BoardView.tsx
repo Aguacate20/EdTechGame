@@ -876,7 +876,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             const puestas = ids.filter((u) => e.tablero.some((t) => t.uid === u)).length
             return ids.map((_, k) => k < puestas ? null : (
               <div key={`sil${k}`} data-tutorial="silueta" className="silueta-carta"
-                style={{ left: `${50 + (k - (ids.length - 1) / 2) * 13}%`, top: '41%' }}>
+                style={{ left: `${50 + (k - (ids.length - 1) / 2) * 20}%`, top: '41%' }}>
                 <span>{k === puestas ? 'Suéltala aquí' : ''}</span>
               </div>
             ))
