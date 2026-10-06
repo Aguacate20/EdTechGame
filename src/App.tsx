@@ -123,6 +123,8 @@ export default function App() {
   /** los pasos del tutorial son monótonos: una vez hechos, no vuelven atrás
    *  aunque afirmar limpie el tablero y la condición deje de cumplirse */
   const [pasosHechos, setPasosHechos] = useState<string[]>([])
+  /** v6.63 · el golpe del ataque final sobre el carril, después del estallido */
+  const [remate, setRemate] = useState<number | null>(null)
   /** v6.34 · etapa de la lectura con la que se armó la expedición en curso */
   const [etapaRun, setEtapaRun] = useState<number>(4)
   const previoRef = useRef<{ contenido: Contenido; atlas: Atlas } | null>(null)
@@ -131,7 +133,12 @@ export default function App() {
   /** v5.70 · el mapa de la expedición: lo sostenido en las salas ya ganadas */
   const mapaExpedicionRef = useRef<MapaPendiente | null>(null)
   const clavePendiente = () => `ludus:mapa-pendiente:${ambitoActual() ?? 'local'}`
-  const guardarPendiente = (m: MapaPendiente | null) => { mapaExpedicionRef.current = m; try { m ? localStorage.setItem(clavePendiente(), JSON.stringify(m)) : localStorage.removeItem(clavePendiente()) } catch { /* sin almacenamiento */ } }
+  /** v6.63 · el mapa pendiente del perfil, apartado mientras dura el tutorial */
+  const pendientePrevioRef = useRef<MapaPendiente | null>(null)
+  const guardarPendiente = (m: MapaPendiente | null) => {
+    // el tutorial no deja mapa: lo armado ahí no puede dar un ataque final en una expedición real
+    if (runIdRef.current.startsWith('tutorial-')) return
+    mapaExpedicionRef.current = m; try { m ? localStorage.setItem(clavePendiente(), JSON.stringify(m)) : localStorage.removeItem(clavePendiente()) } catch { /* sin almacenamiento */ } }
 
   const [batalla, setBatalla] = useState<EstadoBatalla | null>(null)
   const [recompensas, setRecompensas] = useState<Recompensa[]>([])
@@ -361,7 +368,8 @@ export default function App() {
     // v6.19 · se leen por ref: esta función se crea una sola vez y veía `contenido` y `atlas`
     // como estaban al arrancar (vacíos), así que nunca guardaba a dónde volver
     const actual = contenidoRef.current, atlasActual = atlasRef.current
-    if (actual && atlasActual && actual.fuente !== c.fuente) previoRef.current = { contenido: completoRef.current ?? actual, atlas: atlasActual }
+    if (actual && atlasActual && actual.fuente !== c.fuente) { previoRef.current = { contenido: completoRef.current ?? actual, atlas: atlasActual }; pendientePrevioRef.current = mapaExpedicionRef.current }
+    mapaExpedicionRef.current = null
     observarAtlas(null)
     fijarAmbito(null)
     const a = cargarAtlas(c.fuente)
@@ -554,6 +562,9 @@ export default function App() {
     if (!puedeCristalizar(batalla, ctx)) return
     const e = { ...batalla, enemigos: batalla.enemigos.map((x) => ({ ...x })), armados: batalla.armados.map((x) => ({ ...x })) }
     const r = cristalizarBatalla(e, ctx)
+    // v6.63 · los enemigos siguen en pie mientras dura el estallido; caen después, a la vista
+    const caidos = e.enemigos
+    e.enemigos = batalla.enemigos.map((x) => ({ ...x }))
     let conceptIdsMapa = r.conceptIds
     const aristasMapa = r.aristas
     if (r.finalDeTema) {
@@ -578,7 +589,15 @@ export default function App() {
     setEstallido({ variante: est.id, trazos: trazosMapa, zonas: r.zonas, dano: r.dano })
     // v6.0 · durante el estallido la sala sigue en pantalla (los enemigos caen a la vista); el cierre llega después
     e.fase = 'resuelto'
-    window.setTimeout(() => { setEstallido(null); setBatalla((prev) => (prev && prev.fase === 'resuelto' ? { ...prev, fase: 'ganado' } : prev)) }, est.duracion)
+    window.setTimeout(() => {
+      setEstallido(null)
+      setBatalla((prev) => (prev ? { ...prev, enemigos: caidos } : prev))
+      setRemate(r.dano); sfx.titan(3)
+      window.setTimeout(() => {
+        setRemate(null)
+        setBatalla((prev) => (prev && prev.fase === 'resuelto' ? { ...prev, fase: 'ganado' } : prev))
+      }, 1900)
+    }, est.duracion)
     registrar({
       ts: Date.now(), runId: runIdRef.current, nodoId: nodoRef.current?.id ?? '—',
       arquetipo: 'cristalizar', condicion: null, mecanica: 'articulacion',
@@ -1096,6 +1115,7 @@ export default function App() {
 
       {fase === 'batalla' && batalla && (
         <BoardView
+          remate={remate}
           fondo={{ n: actoIdx + 1, sala: nodoRef.current?.dificultad ?? null }}
           guia={(() => {
             if (tutorial === null) return null
@@ -1317,6 +1337,9 @@ export default function App() {
             const volver = (arrancar: boolean) => {
               const prev = previoRef.current
               setTutorial(null)
+              // el mapa vuelve a ser el del perfil (o ninguno): nada del tutorial sobrevive
+              runIdRef.current = ''
+              mapaExpedicionRef.current = pendientePrevioRef.current; pendientePrevioRef.current = null
               if (prev) {
                 fijarAmbito(sesion?.studentId ?? null)
                 observarAtlas(sesion ? (x) => subirAtlas(sesion, x) : null)

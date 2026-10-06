@@ -147,7 +147,7 @@ const SIN_GLOBOS: boolean = true
 const ayudaDe = (p: Pieza) =>
   `${ETIQUETA[p.clase].toUpperCase()} · ${p.titulo}${p.cuerpo ? `\n\n${p.cuerpo}` : ''}${simbolosDe(p) ? `\n\n${simbolosDe(p)}` : ''}`
 
-export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo, alCerrarCascada, alCaerEnemigo,
+export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lentesIds, guia, fondo, alCerrarCascada, alCaerEnemigo, remate,
   }: {
   e: EstadoBatalla; contenido: Contenido; lentes: ModificadoresLente
   on: AccionesBatalla; lucidez: number; lucidezMax: number; lentesIds: string[]
@@ -165,6 +165,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; huecos?: number; sitios?: [number, number][]; orden?: string[]; grupo?: boolean }
   } | null
   fondo?: { n: number; sala?: string | null }
+  /** v6.63 · daño del ataque final cayendo sobre el carril */
+  remate?: number | null
 }) {
   const lienzo = useRef<HTMLDivElement>(null)
   const [herramienta, setHerramienta] = useState<HerramientaId | null>(null)
@@ -634,7 +636,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         >{ayuda.texto}</div>
       )}
       {/* ============================ carril ============================ */}
-      <div data-tutorial="carril" className="zona-carril">
+      <div data-tutorial="carril" className={`zona-carril${remate != null ? ' rematando' : ''}`}>
+        {remate != null && <div className="remate-carril" aria-live="polite"><i /><b>¡{remate} de daño!</b><small>Ataque final · todos caen</small></div>}
         <div className="parte-frente">
           <span className="dato silencio">
             El frente aguanta <strong>{vivos(e).reduce((n, x) => n + x.hp, 0)}</strong>
