@@ -186,6 +186,8 @@ export interface FocoGuia {
   arrastrar?: boolean
   /** v6.49 · cuántos huecos tiene la fila completa: así el primero sale a la izquierda y no centrado */
   huecos?: number
+  /** v6.50 · sitios exactos (x, y en % de la mesa) para las cartas que faltan por sacar */
+  sitios?: [number, number][]
 }
 
 /** v6.29 · lo que el jugador tiene «en la mano» en la interfaz y el motor no ve */
@@ -399,15 +401,15 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'cadena3',
         texto: 'Saca «Nube», «Lluvia» y «Charco». Únelas con dos flechas «causa».',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
-        foco: { zona: 'mano', piezas: (e) => [...deClase('nube', 'etiqueta')(e), ...de(['lluvia', 'charco'])(e)], herramientas: ['flecha'], relaciones: ['causa'] } },
+        foco: { zona: 'mano', piezas: (e) => [...deClase('nube', 'etiqueta')(e), ...de(['lluvia', 'charco'])(e)], herramientas: ['flecha'], relaciones: ['causa'], arrastrar: true, sitios: [[26, 34], [50, 34], [74, 34]] } },
       { clave: 'combo', cara: 'piensa',
         texto: 'No ataques aún. Saca la carta «¿Qué soy?» y únela a «Nube» con «=».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']) } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), arrastrar: true, sitios: [[26, 52]] } },
       { clave: 'combo-campo',
         texto: 'Saca «Trueno». Con «◯» encierra Nube, Trueno y Lluvia.',
         hecho: (e) => trazosDe(e, 'campo') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['nube', 'trueno', 'lluvia']) } },
+        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['nube', 'trueno', 'lluvia']), arrastrar: true, sitios: [[50, 52]] } },
       { clave: 'estallido', cara: 'anima',
         texto: '¡Ahora sí! Pulsa «Afirmar» y mira.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) || e.turno > 2,
