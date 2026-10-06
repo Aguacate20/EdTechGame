@@ -514,14 +514,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <Retrato familia="jugador" id="copista" alt="" tamano={Math.round((guia.centro ? 170 : 88) / escalaAndy)} gesto="quieto" respaldo={<span>✦</span>} />
           </div>
           <div className="guia-cuerpo">
-            <p>{guia.texto}</p>
+            <p>{resuelto && !guia.centro ? 'Mira a la derecha cómo te fue. Luego pulsa «Siguiente turno».' : guia.texto}</p>
             <div className="guia-pie">
               <div className="pasos-puntos">
                 {Array.from({ length: guia.total }, (_, i) => (
                   <i key={i} className={i < guia.indice ? 'hecho' : i === guia.indice ? 'activo' : ''} />
                 ))}
               </div>
-              {guia.alEntender
+              {resuelto && !guia.centro ? null : guia.alEntender
                 ? <button className="btn primario guia-entendido" onClick={guia.alEntender}>{guia.boton ?? 'Siguiente'} →</button>
                 : guia.foco
                   ? <small className="guia-espera"><b /> Tu turno</small>
@@ -1129,7 +1129,52 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       </main>
 
       {/* ============================== mano ============================== */}
-      <aside data-tutorial="mano" className={`zona-mano${zona('mano') || zona('pozo')}`}>
+      <aside data-tutorial="mano" className={`zona-mano${zona('mano') || zona('pozo')}${resuelto && e.ultima ? ' con-resultado' : ''}`}>
+        {/* v6.30 · tras el ataque la mano se retira: aquí va lo que pasó con cada conexión,
+            para que no parezca que aún se puede jugar antes de «Siguiente turno» */}
+        {resuelto && e.ultima && (() => {
+          const nombre = (uid: string) => {
+            const pz = foto?.piezas.find((x) => x.uid === uid) ?? e.mano.find((x) => x.uid === uid)
+            return !pz ? '…' : pz.clase === 'definicion' ? 'su descripción' : `«${recorte(pz.titulo, 28)}»`
+          }
+          const filas = trazosVisibles.filter((t) => !esArmado(t.uid)).map((t) => ({ t, ver: veredictos.find((v) => v.trazo.uid === t.uid) }))
+          const tono = (est?: string) => TONO_NOTA[est ?? 'silencio'] ?? 'nota'
+          const bien = filas.filter((f) => tono(f.ver?.estado) === 'ok').length
+          const mal = filas.filter((f) => tono(f.ver?.estado) === 'mal').length
+          const dudosas = filas.length - bien - mal
+          return (
+            <div className="resultado-turno">
+              <span className="eyebrow">Resultado del ataque</span>
+              <div className="resultado-resumen">
+                {bien > 0 && <span className="r-ok">✓ {bien} bien</span>}
+                {dudosas > 0 && <span className="r-nota">~ {dudosas} a medias</span>}
+                {mal > 0 && <span className="r-mal">✗ {mal} mal</span>}
+              </div>
+              <div className="resultado-lista">
+                {filas.filter((f) => casc.trazosRevelados.has(f.t.uid)).map(({ t, ver }) => {
+                  const tn = tono(ver?.estado)
+                  const o = ver && tn !== 'ok' ? orientar(contenido, ver, e.mano) : null
+                  return (
+                    <div key={t.uid} className={`resultado-fila ${tn} aparece`}>
+                      <b className="resultado-marca">{tn === 'ok' ? '✓' : tn === 'mal' ? '✗' : '~'}</b>
+                      <div>
+                        <strong>
+                          {t.tool === 'flecha' && t.piezas.length === 2
+                            ? <>{nombre(t.piezas[0])} <i>{VERBO_RELACION[t.param ?? ''] ?? t.param ?? '→'}</i> {nombre(t.piezas[1])}</>
+                            : <>{HERRAMIENTAS[t.tool].glifo} {t.piezas.map(nombre).join(' · ')}</>}
+                        </strong>
+                        <span className="resultado-estado">{ETIQUETA_ESTADO[ver?.estado ?? 'silencio']}</span>
+                        {ver?.nota && <p>{ver.nota}</p>}
+                        {o && <p className="resultado-prueba"><b>Prueba:</b> {o.siguiente}</p>}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              {casc.terminada && <p className="resultado-sigue">Pulsa <b>«{e.fase === 'ganado' ? 'El carril queda despejado' : e.fase === 'perdido' ? 'Cerrar la expedición' : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda' : 'Siguiente turno'}»</b> para seguir ↓</p>}
+            </div>
+          )
+        })()}
         <div className="fila" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="eyebrow">Mano</span>
           <span className="fila" style={{ gap: 8 }}>
@@ -1301,7 +1346,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             {casc.xmult > 1 && <><span className="por">×</span><span className="xmult">×{casc.xmult.toFixed(1)}</span></>}
             {casc.total !== null && <><span className="por">=</span><span className={`total${casc.xmult > 1 ? ' mayor' : ''}`}>{casc.total}</span></>}
           </div>
-          <button className="btn primario grande" disabled={!casc.terminada}
+          <button className="btn primario grande sigue-turno" disabled={!casc.terminada}
             onClick={() => { setTrazoAbierto(null); on.continuar() }}>
             {e.fase === 'ganado' ? 'El carril queda despejado'
               : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda'

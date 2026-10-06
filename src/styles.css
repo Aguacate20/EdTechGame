@@ -2382,3 +2382,26 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .guia.centro .pasos-puntos { display: none; }
 @media (max-width: 1080px) { .guia.centro { position: fixed; } }
 .guia { width: min(400px, calc(100vw - 32px)); }
+
+/* v6.30 · tras el ataque, la columna de la mano muestra el resultado */
+.zona-mano.con-resultado > *:not(.resultado-turno) { display: none; }
+.resultado-turno { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
+.resultado-resumen { display: flex; flex-wrap: wrap; gap: 6px 12px; font-weight: 800; font-size: 14px; }
+.r-ok { color: var(--verdigris); } .r-nota { color: var(--laton); } .r-mal { color: var(--oxido); }
+.r-dano { margin-left: auto; color: var(--acento); }
+.resultado-lista { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; padding-right: 2px; }
+.resultado-fila { display: flex; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--panel-hundido); border-left: 3px solid var(--laton); }
+.resultado-fila.ok { border-left-color: var(--verdigris); }
+.resultado-fila.mal { border-left-color: var(--oxido); }
+.resultado-marca { font-size: 16px; line-height: 1.2; color: var(--laton); }
+.resultado-fila.ok .resultado-marca { color: var(--verdigris); }
+.resultado-fila.mal .resultado-marca { color: var(--oxido); }
+.resultado-fila strong { display: block; font-size: 13.5px; line-height: 1.3; }
+.resultado-fila strong i { font-weight: 500; color: var(--texto-2); }
+.resultado-estado { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--texto-2); margin-top: 2px; }
+.resultado-fila p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--texto-2); }
+.resultado-prueba b { color: var(--acento); }
+.resultado-sigue { margin: auto 0 0; padding: 8px 10px; border-radius: 10px; text-align: center; font-size: 13.5px; background: rgba(255, 106, 26, .12); border: 1px dashed var(--acento); }
+.sigue-turno:not(:disabled) { animation: sigue-latido 1.3s ease-in-out infinite; }
+@keyframes sigue-latido { 0%, 100% { filter: brightness(1); transform: scale(1); } 50% { filter: brightness(1.25); transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .sigue-turno:not(:disabled) { animation: none; } }
