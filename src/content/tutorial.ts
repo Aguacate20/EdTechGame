@@ -25,40 +25,41 @@ const C = (
 })
 
 const CONCEPTOS = [
-  C('abeja', 'Abeja', 'Insecto social que recoge néctar y, al hacerlo, traslada polen entre flores.', 'empirico', 'u1', 'c1', 0.9, false,
-    [['Obrera', 'Recolecta y cuida la colmena.'], ['Reina', 'Pone los huevos de toda la colonia.']]),
-  C('polinizacion', 'Polinización', 'Traslado del polen de una flor a otra, sin el cual la planta no da fruto.', 'teorico', 'u1', 'c1', 1, true),
-  C('flor', 'Flor', 'Órgano reproductor de la planta, que ofrece néctar para atraer a quien la poliniza.', 'empirico', 'u1', 'c1', 0.7),
-  C('fruto', 'Fruto', 'Lo que la planta produce cuando su flor ha sido fecundada.', 'empirico', 'u1', 'c1', 0.6),
-  C('insecto', 'Insecto', 'Animal de seis patas y cuerpo en tres partes, con o sin alas.', 'teorico', 'u1', 'c1', 0.5),
-  C('murcielago', 'Murciélago', 'Mamífero volador y nocturno que se orienta por el eco de sus propios chillidos.', 'empirico', 'u2', 'c2', 0.8),
-  C('mamifero', 'Mamífero', 'Animal de sangre caliente que amamanta a sus crías.', 'teorico', 'u2', 'c2', 0.7),
-  C('ecolocalizacion', 'Ecolocalización', 'Orientarse emitiendo sonidos y escuchando cómo rebotan en los objetos.', 'teorico', 'u2', 'c2', 0.9, true),
-  C('ballena', 'Ballena', 'Mamífero marino gigante que filtra kril del agua y también se orienta por sonido.', 'empirico', 'u2', 'c2', 0.7),
-  C('ave', 'Ave', 'Animal de plumas y pico que pone huevos; casi todas vuelan.', 'teorico', 'u2', 'c2', 0.6)
+  // v6.47 · el tema del tutorial es la lluvia: algo que todo el mundo ya sabe, para que
+  // toda la atención vaya a CÓMO se juega y no a qué significa cada carta
+  C('nube', 'Nube', 'Algo blanco o gris que flota en el cielo.', 'empirico', 'u1', 'c1', 0.9),
+  C('lluvia', 'Lluvia', 'Agua que cae del cielo.', 'empirico', 'u1', 'c1', 1, true),
+  C('charco', 'Charco', 'Agua que queda en el suelo después de llover.', 'empirico', 'u1', 'c1', 0.7),
+  C('trueno', 'Trueno', 'Ruido muy fuerte que suena en el cielo.', 'empirico', 'u1', 'c1', 0.6),
+  C('tormenta', 'Tormenta', 'Mal tiempo con mucha lluvia, viento y truenos.', 'teorico', 'u1', 'c1', 0.5),
+  C('sol', 'Sol', 'La estrella que nos da luz de día.', 'empirico', 'u2', 'c2', 0.8),
+  C('calor', 'Calor', 'Lo que sientes cuando la temperatura es alta.', 'teorico', 'u2', 'c2', 0.9, true),
+  C('sed', 'Sed', 'Ganas de tomar agua.', 'empirico', 'u2', 'c2', 0.7),
+  C('sombra', 'Sombra', 'Lugar oscuro y fresco donde no llega el sol.', 'empirico', 'u2', 'c2', 0.7),
+  C('verano', 'Verano', 'La época más calurosa del año.', 'teorico', 'u2', 'c2', 0.6)
 ]
 
 const ARISTAS: [string, string, string, string][] = [
-  ['abeja', 'polinizacion', 'causa', 'La abeja, al buscar néctar, produce la polinización.'],
-  ['polinizacion', 'fruto', 'causa', 'Sin polinización la flor no llega a dar fruto.'],
-  ['flor', 'abeja', 'apoya', 'La flor ofrece néctar y así atrae a la abeja.'],
-  ['insecto', 'abeja', 'generaliza', 'Insecto es la categoría que contiene a la abeja.'],
-  ['mamifero', 'murcielago', 'generaliza', 'Mamífero es la categoría que contiene al murciélago.'],
-  ['mamifero', 'ballena', 'generaliza', 'Mamífero es la categoría que contiene a la ballena.'],
-  ['murcielago', 'ecolocalizacion', 'apoya', 'El murciélago es el caso donde mejor se ve la ecolocalización.'],
-  ['ballena', 'ecolocalizacion', 'apoya', 'La ballena también se orienta por el eco del sonido.'],
-  ['murcielago', 'ave', 'contrasta', 'Vuela como un ave, pero es un mamífero: se parecen y no son lo mismo.'],
-  ['abeja', 'flor', 'requiere', 'La abeja necesita la flor para alimentarse.'],
-  ['ecolocalizacion', 'murcielago', 'ejemplifica', 'El murciélago es el ejemplo clásico de ecolocalización.']
+  ['nube', 'lluvia', 'causa', 'La nube trae la lluvia.'],
+  ['lluvia', 'charco', 'causa', 'La lluvia deja charcos en el suelo.'],
+  ['trueno', 'tormenta', 'apoya', 'El trueno avisa que hay tormenta.'],
+  ['tormenta', 'lluvia', 'causa', 'La tormenta trae mucha lluvia.'],
+  ['lluvia', 'nube', 'requiere', 'Para que llueva tiene que haber nubes.'],
+  ['sol', 'calor', 'causa', 'El sol da calor.'],
+  ['calor', 'sed', 'causa', 'Con calor da sed.'],
+  ['sol', 'sombra', 'causa', 'Con sol, las cosas hacen sombra.'],
+  ['verano', 'calor', 'apoya', 'En verano hace más calor.'],
+  ['sol', 'nube', 'contrasta', 'Con sol el cielo está despejado; con nubes, tapado.'],
+  ['calor', 'verano', 'ejemplifica', 'El calor es lo más típico del verano.']
 ]
 
 const CASOS = [
-  ['huerto', 'Un huerto cercado deja de dar fruta el año en que desaparecen los insectos de la zona, aunque las plantas florecen igual.',
-   ['abeja', 'polinizacion', 'fruto'], 'polinizacion', 'agricultura',
-   'Sin quien traslade el polen, la flor se queda en flor: hay floración pero no fructificación.'],
-  ['cueva', 'Un animal se mueve a toda velocidad por una cueva sin luz y jamás choca con las paredes.',
-   ['ecolocalizacion', 'murcielago'], 'ecolocalizacion', 'zoología',
-   'Se orienta por el eco de sus propios sonidos, no por la vista.']
+  ['patio', 'Después de una tarde gris, el patio amanece lleno de agua.',
+   ['nube', 'lluvia', 'charco'], 'lluvia', 'la casa',
+   'Hubo nubes, llovió y la lluvia dejó charcos.'],
+  ['playa', 'En la playa, al mediodía, todos buscan agua para beber.',
+   ['sol', 'calor', 'sed'], 'calor', 'vacaciones',
+   'El sol da calor y el calor da sed.']
 ]
 
 function construir() {
@@ -90,18 +91,18 @@ function construir() {
   }
 
   const unidades = [
-    { id: 'u1', numero: 1, titulo: 'Abejas y flores', concept_ids: CONCEPTOS.filter((c) => c.unidad_id === 'u1').map((c) => c.id) },
-    { id: 'u2', numero: 2, titulo: 'Quién vuela y quién no', concept_ids: CONCEPTOS.filter((c) => c.unidad_id === 'u2').map((c) => c.id) }
+    { id: 'u1', numero: 1, titulo: 'La lluvia', concept_ids: CONCEPTOS.filter((c) => c.unidad_id === 'u1').map((c) => c.id) },
+    { id: 'u2', numero: 2, titulo: 'El sol', concept_ids: CONCEPTOS.filter((c) => c.unidad_id === 'u2').map((c) => c.id) }
   ]
 
   return {
     bundle_version: 'tutorial', compiled_from_schema: '2.1.0',
-    source_filename: 'Tutorial · animales',
+    source_filename: 'Tutorial · el clima',
     concepts: conceptos,
     graph: {
       por_tipo: porTipo, adyacencia,
       clusters: Object.entries(clusters).map(([id, ids], i) => ({
-        id, label: i === 0 ? 'El huerto' : 'Quién vuela', concept_ids: ids
+        id, label: i === 0 ? 'La lluvia' : 'El sol', concept_ids: ids
       })),
       ejes: []
     },
@@ -109,23 +110,23 @@ function construir() {
     distractor_pools: pools,
     content: {
       repertoires: [{
-        id: 'rep_murcielago', concept_id: 'mamifero',
-        label: 'Si vuela, es un ave',
-        example: 'Ver un murciélago al anochecer y darlo por un pájaro raro.',
-        contraste_cientifico: 'Volar no define al grupo: el murciélago amamanta, y eso lo hace mamífero.',
-        contexto_donde_funciona: 'Para casi todo lo que ves volando de día, la regla acierta: la mayoría sí son aves.',
-        concepto_confundido: 'ave'
+        id: 'rep_nube', concept_id: 'lluvia',
+        label: 'Si hay nubes, seguro llueve',
+        example: 'Ver el cielo nublado y dar por hecho que va a llover.',
+        contraste_cientifico: 'Hay muchos días nublados en los que no cae ni una gota.',
+        contexto_donde_funciona: 'Con nubes muy oscuras y viento, casi siempre acierta.',
+        concepto_confundido: 'nube'
       }],
       cases: CASOS.map(([id, description, concept_ids, primary, dominio, resolucion]) => ({
         id, description, concept_ids, primary_concept_id: primary,
         dominio, resolucion_esperada: resolucion, variables_clave: [], prediction_enabled: false
       })),
       scenarios: [{
-        id: 'sc_ciudad',
-        description: 'En una ciudad sin jardines, los árboles frutales de los patios dan cada año menos fruta.',
-        concept_ids: ['polinizacion', 'abeja', 'flor'],
-        distancia: 'media', dominio: 'urbanismo',
-        resolucion_esperada: 'Sin plantas con flor alrededor no hay insectos que trasladen el polen entre los árboles.',
+        id: 'sc_paraguas',
+        description: 'El cielo se pone gris y la gente empieza a sacar el paraguas.',
+        concept_ids: ['nube', 'lluvia'],
+        distancia: 'media', dominio: 'la calle',
+        resolucion_esperada: 'Las nubes grises avisan que viene la lluvia.',
         error_embebido: null
       }],
       theses: [], frameworks: []
@@ -151,7 +152,7 @@ export function contenidoTutorial(): Contenido {
   return cache
 }
 
-export const ES_TUTORIAL = 'Tutorial · animales'
+export const ES_TUTORIAL = 'Tutorial · el clima'
 
 /* ==========================================================================
    El guion.
@@ -245,15 +246,15 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
   {
     titulo: 'Sala 1 · Poner y emparejar',
     intro: 'Dos criaturas se acercan. Lo único que tienes son fichas de papel: nombres por un lado, descripciones por otro. Juntarlas correctamente es tu primer ataque.',
-    conceptIds: ['abeja', 'flor'],
+    conceptIds: ['nube', 'lluvia'],
     sinFrontera: true,
     herramientas: ['identidad', 'identidad', 'flecha'],
     relaciones: ['apoya', 'causa'],
     mazo: (c) => [
-      piezaEtiqueta(c, 'abeja')!,
-      piezaDefinicion(c, 'abeja')!,
-      piezaEtiqueta(c, 'flor')!,
-      piezaDefinicion(c, 'flor')!
+      piezaEtiqueta(c, 'nube')!,
+      piezaDefinicion(c, 'nube')!,
+      piezaEtiqueta(c, 'lluvia')!,
+      piezaDefinicion(c, 'lluvia')!
     ],
     enemigos: (escala) => [
       crearEnemigo('copista', escala * 0.55, 6),
@@ -265,7 +266,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'idea', cara: 'explica', centro: true, soloLeer: true, boton: 'Entendido', hecho: nunca,
         texto: 'Aquí se gana con lo que sabes: cada idea que conectas bien es un golpe.' },
       { clave: 'idea2', cara: 'anima', centro: true, soloLeer: true, boton: '¡A jugar!', hecho: nunca,
-        texto: 'Hoy practicamos con ideas fáciles de biología. Después subes tus propias lecturas y juegas con ellas.' },
+        texto: 'Hoy practicamos con algo que ya sabes: la lluvia. Después subes tus propias lecturas y juegas con ellas.' },
       { clave: 'enemigos', cara: 'preocupado', soloLeer: true, boton: 'Siguiente', hecho: nunca,
         texto: 'Ellos vienen por mí. Si llegan, me hacen daño.',
         foco: { zona: 'carril' } },
@@ -273,13 +274,13 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Estas son tus cartas. Con ellas atacamos.',
         foco: { zona: 'mano' } },
       { clave: 'sacar1',
-        texto: 'Arrastra la carta «Abeja» a la mesa.',
-        hecho: (e) => deClase('abeja', 'etiqueta')(e).some((u) => e.tablero.some((t) => t.uid === u)) || enTablero(e, 2) || e.turno > 1,
-        foco: { zona: 'mano', piezas: deClase('abeja', 'etiqueta'), arrastrar: true } },
+        texto: 'Arrastra la carta «Nube» a la mesa.',
+        hecho: (e) => deClase('nube', 'etiqueta')(e).some((u) => e.tablero.some((t) => t.uid === u)) || enTablero(e, 2) || e.turno > 1,
+        foco: { zona: 'mano', piezas: deClase('nube', 'etiqueta'), arrastrar: true } },
       { clave: 'sacar2',
         texto: 'Ahora arrastra su descripción.',
         hecho: (e) => enTablero(e, 2) || e.turno > 1,
-        foco: { zona: 'mano', piezas: de(['abeja']), arrastrar: true } },
+        foco: { zona: 'mano', piezas: de(['nube']), arrastrar: true } },
       { clave: 'armas', cara: 'explica', soloLeer: true, boton: 'Siguiente',
         texto: 'Estas son tus armas. Con ellas unes cartas y demuestras lo que sabes.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
@@ -288,39 +289,39 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Toca el botón «=». Quiere decir «son lo mismo».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'identidad',
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']), ilumina: ['herramientas'] } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['herramientas'] } },
       { clave: 'tocar',
         texto: 'Toca las dos cartas de la mesa.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'identidad' && ui.pendientes >= 2,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']), ilumina: ['piezas', 'herramientas'] } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['piezas', 'herramientas'] } },
       { clave: 'trazar',
         texto: 'Pulsa «Trazar».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1 || e.turno > 1,
-        foco: { zona: 'trazar', herramientas: ['identidad'], piezas: de(['abeja']), ilumina: ['zona'] } },
+        foco: { zona: 'trazar', herramientas: ['identidad'], piezas: de(['nube']), ilumina: ['zona'] } },
       { clave: 'afirmar',
         texto: '¡Listo! Pulsa «Afirmar» para atacar.',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
         foco: { zona: 'afirmar' } },
       { clave: 'repetir', cara: 'anima',
-        texto: '¡Así se hace! Ahora tú: une «Flor» con su descripción.',
+        texto: '¡Así se hace! Ahora tú: une «Lluvia» con su descripción.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
     ]
   },
   {
     titulo: 'Sala 2 · Relacionar y desconfiar',
     intro: 'Ahora hay tres. Y entre tus fichas se ha colado una falsificación: un nombre con la descripción de otra cosa. Si la usas, tu diagrama pierde fuerza; si la detectas, ganas ventaja.',
-    conceptIds: ['abeja', 'polinizacion', 'fruto', 'murcielago', 'mamifero'],
+    conceptIds: ['nube', 'lluvia', 'charco', 'calor', 'sol'],
     herramientas: ['flecha', 'flecha', 'identidad', 'campo'],
     relaciones: ['apoya', 'causa', 'generaliza'],
     // la falsificación es siempre la misma y es la confusión clásica: un
     // murciélago con la descripción de un ave. En un tutorial nada al azar.
     mazo: (c) => [
-      piezaConcepto(c, 'abeja')!,
-      piezaConcepto(c, 'polinizacion')!,
-      piezaConcepto(c, 'fruto')!,
-      piezaConcepto(c, 'mamifero')!,
-      piezaCaso(c, 'huerto')!
+      piezaConcepto(c, 'nube')!,
+      piezaConcepto(c, 'lluvia')!,
+      piezaConcepto(c, 'charco')!,
+      piezaConcepto(c, 'sol')!,
+      piezaCaso(c, 'patio')!
     ],
     enemigos: (escala) => [
       crearEnemigo('copista', escala * 0.6, 5),
@@ -333,30 +334,30 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'sacar3',
         texto: 'Arrastra estas tres cartas a la mesa.',
         hecho: (e) => enTablero(e, 3) || trazosDe(e, 'flecha') >= 1 || e.turno > 1,
-        foco: { zona: 'mano', piezas: de(['abeja', 'polinizacion', 'fruto']), arrastrar: true } },
+        foco: { zona: 'mano', piezas: de(['nube', 'lluvia', 'charco']), arrastrar: true } },
       { clave: 'flecha',
         texto: 'Toca el botón «→».',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'flecha',
-        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), ilumina: ['herramientas'] } },
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), ilumina: ['herramientas'] } },
       { clave: 'tocar2',
-        texto: 'Toca «Abeja» y después «Polinización».',
+        texto: 'Toca «Nube» y después «Lluvia».',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'flecha' && ui.pendientes >= 2,
-        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), relaciones: ['causa'], ilumina: ['piezas', 'herramientas'] } },
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['piezas', 'herramientas'] } },
       { clave: 'causa',
-        texto: 'Elige «causa»: la abeja causa la polinización.',
+        texto: 'Elige «causa»: la nube causa la lluvia.',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
         hechoUI: (ui) => ui.herramienta === 'flecha' && ui.pendientes >= 2 && ui.param === 'causa',
-        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), relaciones: ['causa'], ilumina: ['relaciones'] } },
+        foco: { zona: 'herramientas', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['relaciones'] } },
       { clave: 'trazar2',
         texto: 'Pulsa «Trazar».',
         hecho: (e) => trazosDe(e, 'flecha') >= 1 || e.turno > 1,
-        foco: { zona: 'trazar', herramientas: ['flecha'], piezas: de(['abeja', 'polinizacion']), relaciones: ['causa'], ilumina: ['zona'] } },
+        foco: { zona: 'trazar', herramientas: ['flecha'], piezas: de(['nube', 'lluvia']), relaciones: ['causa'], ilumina: ['zona'] } },
       { clave: 'cadena',
-        texto: 'Otra flecha igual: «Polinización» causa «Fruto».',
+        texto: 'Otra flecha igual: «Lluvia» causa «Charco».',
         hecho: (e) => trazosDe(e, 'flecha') >= 2 || e.turno > 1,
-        foco: { zona: 'mano', piezas: de(['polinizacion', 'fruto']), herramientas: ['flecha'], relaciones: ['causa'] } },
+        foco: { zona: 'mano', piezas: de(['lluvia', 'charco']), herramientas: ['flecha'], relaciones: ['causa'] } },
       { clave: 'afirmar2',
         texto: '¡Dos flechas pegan más que una! Pulsa «Afirmar».',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
@@ -370,18 +371,18 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
   {
     titulo: 'Sala 3 · El golpe grande',
     intro: 'Llevas una lente puesta y tienes justo las fichas que hacen falta. Enfrente, algo que no cede ante una sola frase.',
-    conceptIds: ['abeja', 'flor', 'polinizacion', 'fruto', 'insecto'],
+    conceptIds: ['nube', 'trueno', 'lluvia', 'charco', 'tormenta'],
     herramientas: ['flecha', 'flecha', 'identidad', 'campo', 'jerarquia'],
     relaciones: ['causa', 'apoya', 'generaliza'],
     /** una pasiva regalada: que vea qué hace antes de tener que elegirla */
     lente: 'arquitecto',
     mazo: (c) => [
-      piezaEtiqueta(c, 'abeja')!,
-      piezaDefinicion(c, 'abeja')!,
-      piezaConcepto(c, 'polinizacion')!,
-      piezaConcepto(c, 'fruto')!,
-      piezaConcepto(c, 'flor')!,
-      piezaConcepto(c, 'insecto')!
+      piezaEtiqueta(c, 'nube')!,
+      piezaDefinicion(c, 'nube')!,
+      piezaConcepto(c, 'lluvia')!,
+      piezaConcepto(c, 'charco')!,
+      piezaConcepto(c, 'trueno')!,
+      piezaConcepto(c, 'tormenta')!
     ],
     enemigos: (escala) => [crearEnemigo('dogma', escala * 0.85, 7)],
     pasos: [
@@ -394,17 +395,17 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Llevas una mejora: da más fuerza a los ataques largos.',
         foco: { zona: 'pasivas' } },
       { clave: 'cadena3',
-        texto: 'Saca «Abeja», «Polinización» y «Fruto». Únelas con dos flechas «causa».',
+        texto: 'Saca «Nube», «Lluvia» y «Charco». Únelas con dos flechas «causa».',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
-        foco: { zona: 'mano', piezas: (e) => [...deClase('abeja', 'etiqueta')(e), ...de(['polinizacion', 'fruto'])(e)], herramientas: ['flecha'], relaciones: ['causa'] } },
+        foco: { zona: 'mano', piezas: (e) => [...deClase('nube', 'etiqueta')(e), ...de(['lluvia', 'charco'])(e)], herramientas: ['flecha'], relaciones: ['causa'] } },
       { clave: 'combo', cara: 'piensa',
-        texto: 'No ataques aún. Saca la carta «¿Qué soy?» y únela a «Abeja» con «=».',
+        texto: 'No ataques aún. Saca la carta «¿Qué soy?» y únela a «Nube» con «=».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']) } },
       { clave: 'combo-campo',
-        texto: 'Saca «Flor». Con «◯» encierra Abeja, Flor y Polinización.',
+        texto: 'Saca «Trueno». Con «◯» encierra Nube, Trueno y Lluvia.',
         hecho: (e) => trazosDe(e, 'campo') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['abeja', 'flor', 'polinizacion']) } },
+        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['nube', 'trueno', 'lluvia']) } },
       { clave: 'estallido', cara: 'anima',
         texto: '¡Ahora sí! Pulsa «Afirmar» y mira.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) || e.turno > 2,
@@ -417,7 +418,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
 export const PASOS_TUTORIAL: { clave: string; titulo: string; texto: string }[] = [
   {
     clave: 'arrastrar', titulo: 'Primero, saca las piezas',
-    texto: 'Arrastra dos cartas de la derecha al tablero. Una es un nombre («Abeja») y otra una descripción. Todavía no pasa nada: solo las estás poniendo sobre la mesa.'
+    texto: 'Arrastra dos cartas de la derecha al tablero. Una es un nombre («Nube») y otra una descripción. Todavía no pasa nada: solo las estás poniendo sobre la mesa.'
   },
   {
     clave: 'herramienta', titulo: 'Ahora di algo sobre ellas',

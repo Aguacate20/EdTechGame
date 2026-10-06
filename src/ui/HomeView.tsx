@@ -113,7 +113,7 @@ export function HomeView({
           </h2>
           <p className="silencio" style={{ margin: 0, fontSize: 13.5 }}>
             {enTutorial
-              ? 'Con abejas, flores y murciélagos: aquí se aprende la mecánica, no el tema. Las cartas y los enemigos son siempre los mismos, y una guía te va diciendo qué hacer.'
+              ? 'Con nubes, lluvia y charcos: aquí se aprende cómo se juega, no el tema. Las cartas y los enemigos son siempre los mismos, y una guía te va diciendo qué hacer.'
               : propuesta.detalle}
           </p>
           {!enTutorial && p.expediciones > 0 && (
