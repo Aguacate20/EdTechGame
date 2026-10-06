@@ -959,7 +959,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   `${e.reveladas.includes(p.uid) ? ' senalada' : ''}` +
                   `${enFoco ? ' en-foco' : trazoAbierto ? ' fuera-de-foco' : ''}` +
                   `${inservible ? ' inservible' : ''}`}
-                style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd),
+                style={{ left: `${t.x}%`, top: `${t.y}%`, ...estiloDeCedula(cd), ['--clase' as string]: cd.banda,
                   ...(texturaDe(p.clase) ? { background: `${texturaDe(p.clase)}, ${cd.tono}` } : {}) }}
                 draggable={!resuelto && !(e.armados ?? []).some((a) => a.piezas.includes(p.uid))}
                 onPointerDown={(ev) => {
@@ -1017,7 +1017,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 42)}</span>
                 {p.cuerpo && <span className="desc-mesa">{recorte(p.cuerpo, 70)}</span>}
-                {(p.cuerpo.length > 70 || p.titulo.length > 42) && (
+                {(p.cuerpo.length > 0 || p.titulo.length > 42) && (
                   <button className="mas-info" title="Ver completa" onPointerDown={(ev) => ev.stopPropagation()}
                     onClick={(ev) => { ev.stopPropagation(); abrirDetalle(p) }}>+</button>
                 )}
@@ -1260,16 +1260,18 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           const dudosas = filas.length - bien - mal
           return (
             <div className="resultado-turno" data-tutorial="resultado">
-              <span className="eyebrow">Resultado del ataque</span>
+              <span className="eyebrow">¿Cómo te fue?</span>
               <div className="resultado-resumen">
                 {bien > 0 && <span className="r-ok">✓ {bien} bien</span>}
-                {dudosas > 0 && <span className="r-nota">~ {dudosas} a medias</span>}
+                {dudosas > 0 && <span className="r-nota">~ {dudosas} casi</span>}
                 {mal > 0 && <span className="r-mal">✗ {mal} mal</span>}
               </div>
               <div className="resultado-lista">
                 {filas.filter((f) => casc.trazosRevelados.has(f.t.uid)).map(({ t, ver }) => {
                   const tn = tono(ver?.estado)
                   const o = ver && tn !== 'ok' ? orientar(contenido, ver, e.mano) : null
+                  // v6.54 · una sola razón, corta: por qué está bien o por qué no
+                  const razon = recorte((tn === 'ok' ? ver?.nota : o?.causa ?? ver?.nota) ?? '', 150)
                   return (
                     <div key={t.uid} className={`resultado-fila ${tn} aparece`}>
                       <b className="resultado-marca">{tn === 'ok' ? '✓' : tn === 'mal' ? '✗' : '~'}</b>
@@ -1277,11 +1279,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                         <strong>
                           {t.tool === 'flecha' && t.piezas.length === 2
                             ? <>{nombre(t.piezas[0])} <i>{VERBO_RELACION[t.param ?? ''] ?? t.param ?? '→'}</i> {nombre(t.piezas[1])}</>
-                            : <>{HERRAMIENTAS[t.tool].glifo} {t.piezas.map(nombre).join(' · ')}</>}
+                            : <>{t.piezas.map(nombre).join(t.tool === 'identidad' ? ' = ' : ' · ')}</>}
                         </strong>
-                        <span className="resultado-estado">{ETIQUETA_ESTADO[ver?.estado ?? 'silencio']}</span>
-                        {ver?.nota && <p>{ver.nota}</p>}
-                        {o && <p className="resultado-prueba"><b>Prueba:</b> {o.siguiente}</p>}
+                        {razon && <p>{razon}</p>}
                       </div>
                     </div>
                   )
@@ -1350,7 +1350,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA_MANO[p.clase] ?? ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
                 {p.cuerpo && <span className="desc">{recorte(p.cuerpo, 170)}</span>}
-                {(p.cuerpo.length > 170 || p.titulo.length > 40) && (
+                {(p.cuerpo.length > 0 || p.titulo.length > 40) && (
                   <button className="mas-info" title="Ver completa" onClick={(ev) => { ev.stopPropagation(); abrirDetalle(p) }}>+</button>
                 )}
                 {cd.canto && <span className="marca">idea clave</span>}
