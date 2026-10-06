@@ -1123,10 +1123,13 @@ export default function App() {
             // v6.41 · el estallido del tutorial entra en el instante en que el enemigo recibe el golpe y cae
             if (estallidoTutorialRef.current || dano <= 0 || !(xmult > 1 || sostenidos >= 3)) return
             estallidoTutorialRef.current = true
-            const est = ESTALLIDOS[0]
-            sfx.titan(4)
-            setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
-            window.setTimeout(() => setEstallido(null), est.duracion)
+            // v6.52 · unas décimas para ver caer al enemigo antes del estallido
+            window.setTimeout(() => {
+              const est = ESTALLIDOS[0]
+              sfx.titan(4)
+              setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
+              window.setTimeout(() => setEstallido(null), est.duracion)
+            }, 550)
           } : undefined}
           alCerrarCascada={tutorial !== null ? undefined : tutorial === null ? () => {
             // v6.28 · el jefe cayó con un ataque normal: lo que quedó en oro se cristaliza igual.

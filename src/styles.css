@@ -2527,3 +2527,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .naipe.en-tablero .borde { border-radius: var(--r) 0 0 var(--r); }
 .naipe.en-tablero .compat { border-radius: 0 var(--r) var(--r) 0; }
 .naipe.en-tablero .grano { border-radius: var(--r); overflow: hidden; }
+
+/* v6.52 · con una herramienta abierta, Andy sube sobre el carril para no tapar la barra ni «Trazar» */
+.guia.arriba, .guia.apartada.arriba { top: 76px; bottom: auto; left: 16px; right: auto; }

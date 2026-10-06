@@ -433,6 +433,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       const pieza = enTablero.find((x) => x.p.uid === uid)?.p
       // no se deja gastar la herramienta en una pieza que la ranura no admite
       if (!pieza || !aceptaEnRanura(h.id, pendientes.length, pieza)) return
+      // v6.52 · la flecha admite varias cartas seguidas (1 → 2 → 3…), hasta seis
+      if (h.id === 'flecha' && pendientes.length >= 6) return
       sfx.tomar()
       setPendientes((x) => [...x, uid])
       return
@@ -451,7 +453,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const cerrarTrazo = () => {
     if (!herramienta || !puedeCerrar) return
     sfx.trazar()
-    on.cambio((st) => { trazar(st, herramienta, pendientes, param) })
+    if (herramienta === 'flecha' && pendientes.length > 2) {
+      // una flecha por cada par consecutivo, todas con el mismo tipo de conexión
+      on.cambio((st) => {
+        for (let k = 0; k < pendientes.length - 1; k++) {
+          if (!herramientasLibres(st).includes('flecha')) break
+          trazar(st, 'flecha', [pendientes[k], pendientes[k + 1]], param)
+        }
+      })
+    } else on.cambio((st) => { trazar(st, herramienta, pendientes, param) })
     reset()
   }
 
@@ -535,7 +545,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           ref={burbujaRef}
           className={`guia${guia.centro ? ' centro' : ''}${
             guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' || guia.foco?.zona === 'carril' ? ' apartada' : ''
-          }`}
+          }${h && !resuelto && !guia.centro ? ' arriba' : ''}`}
           role="dialog" aria-live="polite" aria-label={`Tutorial, paso ${guia.indice + 1} de ${guia.total}`}
         >
           <div className="guia-andy" aria-hidden="true">
@@ -543,7 +553,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               src={`${import.meta.env.BASE_URL}art/andy-caras/${resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}.png`} alt="" draggable={false} />
           </div>
           <div className="guia-cuerpo">
-            <p>{resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? 'Mira a la derecha cómo te fue. Luego pulsa «Siguiente turno».' : guia.texto}</p>
+            <p>{resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? `Mira a la derecha cómo te fue. Luego pulsa «${e.fase === 'ganado' ? 'El carril queda despejado' : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda' : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}».` : guia.texto}</p>
             <div className="guia-pie">
               <div className="pasos-puntos">
                 {Array.from({ length: guia.total }, (_, i) => (
@@ -1009,6 +1019,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               <span className="silencio" style={{ fontSize: 11.5 }}>
                 {pendientes.length === 0
                   ? 'Toca en el tablero las piezas que quieras relacionar.'
+                  : h.id === 'flecha' ? `${pendientes.length} ${pendientes.length === 1 ? 'carta' : 'cartas'} · el orden importa · puedes tocar más para encadenar`
                   : `${pendientes.length}/${h.aridad[0] === h.aridad[1] ? h.aridad[0] : `${h.aridad[0]}–${h.aridad[1]}`}${h.ordenada ? ' · el orden importa' : ''}`}
               </span>
             </div>
