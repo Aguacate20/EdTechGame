@@ -370,7 +370,7 @@ export default function App() {
       herramientas: sala.herramientas, relaciones: sala.relaciones,
       casos: [], tesis: [], intuiciones: [], fusionados: [], terrenos: [], sellos: [],
       apoyo: true, sinTocar: [],
-      mazoFijo: sala.mazo(c),
+      mazoFijo: sala.mazo(c), sinFrontera: sala.sinFrontera,
       enemigosFijos: sala.enemigos(1)
     }, 'facil', 0, 6))
     atlasAlEmpezarRef.current = atlas

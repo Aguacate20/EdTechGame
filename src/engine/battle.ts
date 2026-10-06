@@ -140,6 +140,7 @@ export interface EstadoBatalla {
   turno: number
   fase: 'jugando' | 'resuelto' | 'ganado' | 'perdido'
   ultima: ResultadoTurno | null
+  sinFrontera?: boolean
   manoBase: number
   pozo: EventoPozo[]
   /** el último gesto del pozo, para poder darle acuse de recibo en pantalla */
@@ -291,6 +292,8 @@ export interface Bolsa {
   apoyo: boolean
   /** el tutorial reparte una mano y un frente fijos, para poder guiar paso a paso */
   mazoFijo?: Pieza[]
+  /** v6.31 · tutorial: no se añaden cartas de conceptos vecinos; solo las del guion */
+  sinFrontera?: boolean
   enemigosFijos?: Enemigo[]
   /** conceptos que el estudiante aún no ha tocado: con apoyo llegan enteros */
   sinTocar: string[]
@@ -384,7 +387,7 @@ export function iniciarBatalla(
     relacionesDisponibles: bolsa.relaciones,
     quemasRestantes: Math.max(1, (dificultad === 'facil' ? 2 : 3) + m.quemasExtra + (bolsa.quemasDelta ?? 0)),
     cambiosRestantes: 3 + m.cambiosExtra,
-    turno: 1, fase: 'jugando', ultima: null,
+    turno: 1, fase: 'jugando', ultima: null, sinFrontera: !!bolsa.sinFrontera,
     manoBase: manoBase + m.manoExtra,
     pozo: [], ultimoPozo: null, fusionados: [...bolsa.fusionados],
     sellos: bolsa.sellos, sellosUsados: [], reveladas: [],
@@ -895,6 +898,7 @@ export function compactarMapa(e: EstadoBatalla, ctx: ContextoBatalla): number {
  *  los conceptos de la sala si aún no hay mapa— entran al mazo. La mano nunca se seca: se
  *  llama tras afirmar, al quemar y al pasar de turno cuando faltan cartas. Lo cristalizado no vuelve. */
 export function reponerFrontera(e: EstadoBatalla, ctx: ContextoBatalla, n: number): number {
+  if (e.sinFrontera) return 0
   const TOPE = Math.max(e.conceptIdsCasilla.length, 14)
   const seco = e.mazo.length + e.descarte.length < 3
   const dentro = new Set(e.conceptIdsCasilla)

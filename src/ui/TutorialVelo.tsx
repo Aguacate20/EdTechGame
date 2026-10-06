@@ -17,7 +17,7 @@ function contenedorConScroll(el: HTMLElement): HTMLElement | null {
   return null
 }
 
-const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro', trazar: 'trazar', quemar: 'quemar' }
+const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro', trazar: 'trazar', quemar: 'quemar', resultado: 'resultado' }
 
 export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean } | null }) {
   const [rects, setRects] = useState<Rect[]>([])

@@ -80,7 +80,7 @@ export function piezaDefinicion(c: Contenido, conceptId: string): Pieza | null {
   if (!k) return null
   return {
     ...base(), clase: 'definicion', roles: ['nodo', 'definicion'],
-    titulo: 'Definición sin dueño', cuerpo: k.definicionCorta, conceptId,
+    titulo: '¿Qué soy?', cuerpo: k.definicionCorta, conceptId,
     umbral: k.esUmbral, importancia: k.importancia
   }
 }

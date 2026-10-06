@@ -227,6 +227,8 @@ export interface SalaTutorial {
   mazo: (c: Contenido) => Pieza[]
   enemigos: (escala: number) => Enemigo[]
   pasos: PasoGuia[]
+  /** v6.31 · solo las cartas del guion: nada de conceptos vecinos */
+  sinFrontera?: boolean
   /** lente regalada al empezar la sala, si la hay */
   lente?: string
 }
@@ -239,15 +241,15 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
   {
     titulo: 'Sala 1 · Poner y emparejar',
     intro: 'Dos criaturas se acercan. Lo único que tienes son fichas de papel: nombres por un lado, descripciones por otro. Juntarlas correctamente es tu primer ataque.',
-    conceptIds: ['abeja', 'flor', 'polinizacion'],
+    conceptIds: ['abeja', 'flor'],
+    sinFrontera: true,
     herramientas: ['identidad', 'identidad', 'flecha'],
     relaciones: ['apoya', 'causa'],
     mazo: (c) => [
       piezaEtiqueta(c, 'abeja')!,
       piezaDefinicion(c, 'abeja')!,
       piezaEtiqueta(c, 'flor')!,
-      piezaDefinicion(c, 'flor')!,
-      piezaConcepto(c, 'polinizacion')!
+      piezaDefinicion(c, 'flor')!
     ],
     enemigos: (escala) => [
       crearEnemigo('copista', escala * 0.55, 6),
@@ -289,7 +291,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
         foco: { zona: 'afirmar' } },
       { clave: 'repetir',
-        texto: '¡Así se hace! Repítelo con «Flor» hasta vencerlos.',
+        texto: '¡Así se hace! Ahora tú: une «Flor» con su descripción.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
     ]
   },

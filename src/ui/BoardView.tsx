@@ -76,6 +76,10 @@ const TONO_NOTA: Record<string, string> = {
   insinuado: 'ok', propuesta: 'nota', convive: 'nota',
   plausible: 'nota', silencio: 'nota', invertido: 'mal', error: 'mal'
 }
+/** v6.31 · en la mano, la etiqueta dice con qué se empareja la carta */
+const ETIQUETA_MANO: Partial<Record<Pieza['clase'], string>> = {
+  etiqueta: 'Nombre · busca su descripción', definicion: 'Descripción · busca su nombre', concepto: 'Idea completa'
+}
 const ETIQUETA: Record<Pieza['clase'], string> = {
   etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Concepto',
   apocrifa: 'Concepto', caso: 'Caso', tesis: 'Tesis', criterio: 'Criterio',
@@ -325,7 +329,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   // v6.18 · mientras se resuelve el ataque no hay foco: la pantalla entera se enciende para verlo
-  const foco = resuelto ? undefined : guia?.foco
+  // v6.31 · al terminar la cuenta, el tutorial enciende solo el resultado y el botón de seguir
+  const foco = resuelto ? (guia && casc.terminada && e.ultima ? { zona: 'resultado' } as NonNullable<typeof guia>['foco'] : undefined) : guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
   const fichaAndy = usarManifest()?.['jugador/copista'] as { escala?: number } | undefined
   const escalaAndy = typeof fichaAndy?.escala === 'number' ? fichaAndy.escala : 1
@@ -1143,7 +1148,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           const mal = filas.filter((f) => tono(f.ver?.estado) === 'mal').length
           const dudosas = filas.length - bien - mal
           return (
-            <div className="resultado-turno">
+            <div className="resultado-turno" data-tutorial="resultado">
               <span className="eyebrow">Resultado del ataque</span>
               <div className="resultado-resumen">
                 {bien > 0 && <span className="r-ok">✓ {bien} bien</span>}
@@ -1229,7 +1234,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 }}
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >
-                <span className="tt" style={{ color: cd.banda }}>{ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
+                <span className="tt" style={{ color: cd.banda }}>{ETIQUETA_MANO[p.clase] ?? ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
                 {p.cuerpo && <span className="desc">{recorte(p.cuerpo, 120)}</span>}
                 {cd.canto && <span className="marca">umbral</span>}
@@ -1346,7 +1351,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             {casc.xmult > 1 && <><span className="por">×</span><span className="xmult">×{casc.xmult.toFixed(1)}</span></>}
             {casc.total !== null && <><span className="por">=</span><span className={`total${casc.xmult > 1 ? ' mayor' : ''}`}>{casc.total}</span></>}
           </div>
-          <button className="btn primario grande sigue-turno" disabled={!casc.terminada}
+          <button data-tutorial="resultado" className="btn primario grande sigue-turno" disabled={!casc.terminada}
             onClick={() => { setTrazoAbierto(null); on.continuar() }}>
             {e.fase === 'ganado' ? 'El carril queda despejado'
               : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda'
