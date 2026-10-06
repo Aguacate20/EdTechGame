@@ -262,6 +262,10 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
     pasos: [
       { clave: 'hola', centro: true, soloLeer: true, boton: '¡Vamos!', hecho: nunca,
         texto: '¡Hola! Soy Andy. Ayúdame a derrotar a los enemigos con tu conocimiento.' },
+      { clave: 'idea', cara: 'explica', centro: true, soloLeer: true, boton: 'Entendido', hecho: nunca,
+        texto: 'Aquí se gana con lo que sabes: cada idea que conectas bien es un golpe.' },
+      { clave: 'idea2', cara: 'anima', centro: true, soloLeer: true, boton: '¡A jugar!', hecho: nunca,
+        texto: 'Hoy practicamos con ideas fáciles de biología. Después subes tus propias lecturas y juegas con ellas.' },
       { clave: 'enemigos', cara: 'preocupado', soloLeer: true, boton: 'Siguiente', hecho: nunca,
         texto: 'Ellos vienen por mí. Si llegan, me hacen daño.',
         foco: { zona: 'carril' } },
