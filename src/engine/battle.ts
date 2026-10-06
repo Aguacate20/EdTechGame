@@ -318,6 +318,9 @@ export interface Bolsa {
 
 const APOCRIFAS: Record<Dificultad, number> = { facil: 1, media: 2, dura: 3, jefe: 4 }
 
+/** v6.36 · las cartas falsas (apócrifas) están retiradas; el código queda por si vuelven */
+const CARTAS_FALSAS: boolean = false
+
 export function montarMazo(
   c: Contenido, conceptIds: string[], bolsa: Bolsa, dificultad: Dificultad, rng: Rng
 ): Pieza[] {
@@ -342,7 +345,8 @@ export function montarMazo(
       if (d) piezas.push(d)
     }
   }
-  for (let i = 0; i < ((bolsa.etapa ?? 4) <= 1 ? 0 : Math.max(0, APOCRIFAS[dificultad] + (bolsa.apocrifasDelta ?? 0))); i++) {
+  // v6.36 · sin cartas falsas: la mecánica de quemar se retiró del juego
+  for (let i = 0; i < (CARTAS_FALSAS ? Math.max(0, APOCRIFAS[dificultad] + (bolsa.apocrifasDelta ?? 0)) : 0); i++) {
     const p = piezaApocrifa(c, rng.pick(conceptIds), rng)
     if (p) piezas.push(p)
   }
@@ -1767,7 +1771,7 @@ export function turnoDelCarril(e: EstadoBatalla, ctx: ContextoBatalla, r: Result
         total += en.ataque
         en.gesto = 'golpea'
         let extra = ''
-        if (t.rasgo === 'apocrifo') {
+        if (CARTAS_FALSAS && t.rasgo === 'apocrifo') {
           const armadosAp = new Set(e.armados.flatMap((x) => x.piezas).map((u) => e.mano.find((q) => q.uid === u)?.conceptId))
           const candidatos = e.conceptIdsCasilla.filter((id) => !armadosAp.has(id) && !e.cristalizadosSala.includes(id))
           const p = candidatos.length ? piezaApocrifa(ctx.contenido, ctx.rng.pick(candidatos), ctx.rng) : null

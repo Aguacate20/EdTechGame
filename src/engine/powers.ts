@@ -270,3 +270,7 @@ export const selloPorId = (id: SelloId): Sello => SELLOS[id]
 export const listaSellos = Object.values(SELLOS)
 
 export { SIN_LENTES }
+
+/** v6.36 · mejoras que dependían de quemar o cambiar cartas: ya no se ofrecen */
+export const LENTES_RETIRADAS = ['inquisidor', 'ojo_critico', 'cuaderno_hereje', 'mano_rapida']
+export const LENTES_VIVAS = LENTES.filter((l) => !LENTES_RETIRADAS.includes(l.id))

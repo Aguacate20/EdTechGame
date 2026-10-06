@@ -51,24 +51,48 @@ const TEXTURA: Record<string, Cedula['textura']> = {
  *  color propio, se cazarían falsificaciones por la banda y la mecánica de
  *  discriminar moriría. */
 export const BANDA: Record<Pieza['clase'], string> = {
-  etiqueta: '#4f9be8',      // v6.34 · azul (nombre) + amarillo (descripción) = verde (idea completa)
-  //      // v6.31 · Nombre y Descripción comparten azul: azul con azul se emparejan
-  definicion: '#e8c64f',    // mismo azul que el Nombre
-  concepto: '#4e8c7a',      // Concepto completo: verdigrís
-  apocrifa: '#4e8c7a',      // ¡idéntica al concepto, a propósito!
-  caso: '#2f8fa3',          // Caso: cian
-  tesis: '#b07f4a',         // Tesis: ámbar
-  criterio: '#d0b054',      // Criterio: latón claro
-  marco: '#4a7fb0',         // Marco: azul
-  intuicion: '#c06a92',     // Intuición: rosa — que se note lo que traes tú
-  contexto: '#6f8f7d',      // Terreno: verde apagado
-  subdimension: '#9aa17d'   // Subdimensión: oliva
+  // v6.36 · un color por tipo de carta. Azul (nombre) + amarillo (descripción) = verde (idea)
+  etiqueta: '#4f9be8',      // Nombre: azul
+  definicion: '#e8c64f',    // Descripción: amarillo
+  concepto: '#45b98a',      // Idea completa: verde
+  apocrifa: '#45b98a',
+  caso: '#f08a3c',          // Ejemplo: naranja
+  tesis: '#e0564f',         // Afirmación: rojo
+  criterio: '#f29bc1',      // Prueba: rosa
+  marco: '#9b7fe8',         // Tema: morado
+  intuicion: '#c85fb0',     // Creencia común: magenta
+  contexto: '#b08a5a',      // Dónde aplica: café
+  subdimension: '#3fc1c9'   // Parte: turquesa
 }
 
 export const NOMBRE_CLASE: Record<Pieza['clase'], string> = {
-  etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Concepto',
-  apocrifa: 'Concepto', caso: 'Caso', tesis: 'Tesis', criterio: 'Criterio',
-  marco: 'Marco', intuicion: 'Intuición', contexto: 'Terreno', subdimension: 'Subdimensión'
+  etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Idea',
+  apocrifa: 'Idea', caso: 'Ejemplo', tesis: 'Afirmación', criterio: 'Prueba',
+  marco: 'Tema', intuicion: 'Creencia común', contexto: 'Dónde aplica', subdimension: 'Parte'
+}
+
+/** v6.36 · ¿estas dos cartas se pueden unir? Es la regla que pinta las franjas de
+ *  compatibilidad: cada carta enseña los colores de las cartas con las que va. */
+function vaCon(a: Pieza, b: Pieza): boolean {
+  const idea = (p: Pieza) => p.clase === 'concepto' || p.clase === 'apocrifa'
+  switch (a.clase) {
+    case 'etiqueta': return (b.clase === 'definicion' && b.conceptId === a.conceptId) || (idea(b) && b.conceptId !== a.conceptId)
+    case 'concepto': case 'apocrifa': return idea(b) && b.uid !== a.uid
+    case 'caso': return idea(b) && (!a.conceptIds.length || (!!b.conceptId && a.conceptIds.includes(b.conceptId)))
+    case 'tesis': return (b.clase === 'criterio' && b.tesisId === a.refId) || (idea(b) && !!b.conceptId && a.conceptIds.includes(b.conceptId))
+    case 'marco': return idea(b) && !!b.conceptId && a.conceptIds.includes(b.conceptId)
+    case 'intuicion': case 'contexto': return idea(b)
+    case 'subdimension': return idea(b) && b.conceptId === a.conceptId
+    default: return false
+  }
+}
+export function coloresCompatibles(p: Pieza, todas: Pieza[]): string[] {
+  const out: string[] = []
+  for (const q of todas) {
+    if (q.uid === p.uid) continue
+    if ((vaCon(p, q) || vaCon(q, p)) && !out.includes(BANDA[q.clase])) out.push(BANDA[q.clase])
+  }
+  return out
 }
 
 export function cedulaDe(c: Contenido, p: Pieza): Cedula {

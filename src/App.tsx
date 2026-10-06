@@ -469,7 +469,8 @@ export default function App() {
       acto.manoSugerida + manoExtra
     )
     // planeación: se elige viendo la mano y el frente, no en una pantalla aparte
-    if (atlas) e.encargosOfrecidos = proponerEncargos(contenido, nodo.conceptIds, atlas, e.mano, e.herramientas)
+    // v6.36 · los retos de sala se retiraron: menos pantallas antes de jugar
+    void proponerEncargos
     setBatalla(e)
     atlasAlEmpezarRef.current = atlas
     setFase('batalla')

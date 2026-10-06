@@ -22,7 +22,7 @@ import { LaneView, compasDelGolpe } from './LaneView'
 import { usarManifest } from './assets'
 import { GLOSA_RELACION as GLOSA } from './glosas'
 import { Chip } from './components'
-import { BANDA, NOMBRE_CLASE, cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
+import { BANDA, NOMBRE_CLASE, coloresCompatibles, cedulaDe, estiloDeCedula, estiloRelacion, ondaEntre } from './identity'
 import { useCascada } from './cascade'
 import { despertarAudio, sfx } from './sfx'
 import { consejoDeForma, encargoCumplido, previsualizarForma, type Encargo } from '../engine/srl'
@@ -78,12 +78,17 @@ const TONO_NOTA: Record<string, string> = {
 }
 /** v6.31 · en la mano, la etiqueta dice con qué se empareja la carta */
 const ETIQUETA_MANO: Partial<Record<Pieza['clase'], string>> = {
-  etiqueta: 'Nombre · busca su descripción', definicion: 'Descripción · busca su nombre', concepto: 'Idea completa'
+  etiqueta: 'Nombre · busca su descripción', definicion: 'Descripción · busca su nombre',
+  concepto: 'Idea · se conecta con otras ideas', apocrifa: 'Idea · se conecta con otras ideas',
+  caso: 'Ejemplo · va con las ideas que lo explican', tesis: 'Afirmación · va con sus pruebas',
+  criterio: 'Prueba · va con su afirmación', marco: 'Tema · agrupa ideas',
+  intuicion: 'Creencia común · compárala con una idea', contexto: 'Dónde aplica · va con una idea',
+  subdimension: 'Parte · va con su idea'
 }
 const ETIQUETA: Record<Pieza['clase'], string> = {
-  etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Concepto',
-  apocrifa: 'Concepto', caso: 'Caso', tesis: 'Tesis', criterio: 'Criterio',
-  marco: 'Marco', intuicion: 'Intuición', subdimension: 'Atributo', contexto: 'Terreno'
+  etiqueta: 'Nombre', definicion: 'Descripción', concepto: 'Idea',
+  apocrifa: 'Idea', caso: 'Ejemplo', tesis: 'Afirmación', criterio: 'Prueba',
+  marco: 'Tema', intuicion: 'Creencia común', subdimension: 'Parte', contexto: 'Dónde aplica'
 }
 
 
@@ -319,8 +324,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     () => previsualizarForma(e.trazos, [...e.mano, ...e.descarte]),
     [e.trazos, e.mano, e.descarte]
   )
-  const encargoPendiente = !resuelto && e.turno === 1 && e.trazos.length === 0 &&
-    !e.encargo && e.encargosOfrecidos.length > 0
+  // v6.36 · los retos de sala se retiraron
+  void piezaSel; void forma; void consejoDeForma
+  const encargoPendiente = false as boolean
   const cumplido = e.encargo ? encargoCumplido(e.encargo, {
     vinculosSostenidos: e.hallazgos.vinculos.length, combosVistos: e.combosVistos,
     conceptosSostenidos: e.conceptosSostenidos, quemasAcertadas: e.quemasAcertadas,
@@ -1197,9 +1203,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </div>
         {leyenda && (
           <div className="leyenda-clases">
+            <small className="leyenda-nota">La franja a la derecha de cada carta muestra los colores de las cartas de tu mano con las que se puede unir.</small>
             {([['etiqueta', 'azul: únelo con su descripción usando «Es lo mismo» (=)'],
               ['definicion', 'amarilla: únela con su nombre usando «Es lo mismo» (=)'],
-              ['concepto', 'verde: nombre y descripción ya unidos. Sirve con cualquier herramienta'],
+              ['concepto', 'verde: nombre y descripción ya unidos. Se conecta con otras ideas'],
               ['caso', 'ánclalo (⌖) a los conceptos que operan en él, o enlaza ejemplificando'],
               ['tesis', 'pésala (⚖) con sus criterios, apóyala o contrástala'],
               ['criterio', 'va a la balanza de su tesis'],
@@ -1245,7 +1252,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 <span className="tt" style={{ color: cd.banda }}>{ETIQUETA_MANO[p.clase] ?? ETIQUETA[p.clase]}<span className="orn">{cd.ornamento}</span></span>
                 <span className="nom">{recorte(p.titulo, 40)}</span>
                 {p.cuerpo && <span className="desc">{recorte(p.cuerpo, 120)}</span>}
-                {cd.canto && <span className="marca">umbral</span>}
+                {cd.canto && <span className="marca">idea clave</span>}
+                {(() => {
+                  const cs = coloresCompatibles(p, e.mano)
+                  return cs.length ? <span className="compat" aria-hidden="true">{cs.map((c) => <i key={c} style={{ background: c }} />)}</span> : null
+                })()}
               </div>
             )
           })}
@@ -1294,26 +1305,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             >
               Afirmar el diagrama {e.trazos.length > 0 && <span className="dato">· {e.trazos.length} trazos</span>}
             </button>
-            <button
-              className={`btn sello-confianza${e.sellado ? ' activo' : ''}`}
-              aria-pressed={e.sellado} disabled={e.trazos.length === 0}
-              onClick={() => { on.sellar(!e.sellado); despertarAudio() }}
-              data-ayuda={'SELLAR\nDeclaras que TODO lo que hay en el tablero se sostiene. Si es así, el diagrama rinde el doble de multiplicador; si un solo trazo falla, rinde el 60 %. No cambia lo que es verdad: cambia lo que ganas por saber que lo sabes.'}
-            >
-              {e.sellado ? '⬢ Sellado' : '⬡ Sellar'}
-            </button>
-            {e.trazos.length > 0 && (
-              <span className="forma-previa dato silencio">
-                {forma.piezas} piezas · alcance {forma.alcancePotencial}
-                {forma.combosPosibles.length > 0 && (
-                  <> · podría encender <strong>{forma.combosPosibles.join(', ')}</strong></>
-                )}
-                {(() => {
-                  const c = consejoDeForma(e.trazos, [...e.mano, ...e.descarte], e.sellado)
-                  return c ? <em className="consejo-forma"> — {c}</em> : null
-                })()}
-              </span>
-            )}
             {e.encargo && (
               <span className={`encargo-marca${cumplido ? ' cumplido' : ''}`} data-ayuda={e.encargo.detalle}>
                 {cumplido ? '✓ ' : ''}{e.encargo.titulo}
@@ -1324,23 +1315,6 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 ⚡ racha ×{e.racha}
               </span>
             )}
-            <button
-              data-tutorial="quemar"
-              className={`btn peligro${zona('pozo') || zona('quemar') ? ' senala' : ''}`}
-              disabled={!piezaSel}
-              onClick={() => { if (piezaSel) { on.quemar(piezaSel.uid); setSeleccion(null) } }}
-              data-ayuda={'QUEMAR\nAfirmas que la carta es una falsificación. Si aciertas: tinta, una carta nueva y bonificación. Si te equivocas, destruyes material bueno.'}
-            >
-              Quemar {piezaSel ? `«${recorte(piezaSel.titulo, 18)}»` : 'concepto'}
-            </button>
-            <button
-              className="btn" disabled={!piezaSel || e.cambiosRestantes <= 0}
-              onClick={() => { if (piezaSel) { on.cambiar(piezaSel.uid); setSeleccion(null) } }}
-              data-ayuda={'CAMBIAR\nEs cierta, pero aquí no te sirve. Vuelve al mazo y robas otra.'}
-            >
-              Cambiar {piezaSel ? `«${recorte(piezaSel.titulo, 18)}»` : 'concepto'}
-              <span className="dato"> · {e.cambiosRestantes}</span>
-            </button>
             {objetivo && (
               <span className="silencio dato" data-ayuda={tipoPorId(objetivo.tipoId).glosa}>
                 al frente: {objetivo.nombre}

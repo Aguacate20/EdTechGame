@@ -213,10 +213,12 @@ const deClase = (id: string, clase: string) => (e: EstadoBatalla) =>
   e.mano.filter((p) => p.conceptId === id && p.clase === clase).map((p) => p.uid)
 
 /** uid de la carta falsificada, para poder señalarla sin decir cuál es. */
-const laFalsa = (e: EstadoBatalla) =>
+export const laFalsa = (e: EstadoBatalla) =>
   e.mano.filter((p) => p.clase === 'apocrifa').map((p) => p.uid)
 
 const nunca = () => false
+
+void piezaApocrifaDe
 
 export interface SalaTutorial {
   titulo: string
@@ -308,7 +310,6 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       piezaConcepto(c, 'polinizacion')!,
       piezaConcepto(c, 'fruto')!,
       piezaConcepto(c, 'mamifero')!,
-      piezaApocrifaDe(c, 'murcielago', 'ave')!,
       piezaCaso(c, 'huerto')!
     ],
     enemigos: (escala) => [
@@ -350,15 +351,6 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: '¡Dos flechas pegan más que una! Pulsa «Afirmar».',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
         foco: { zona: 'afirmar' } },
-      { clave: 'falsa',
-        texto: '¡Ojo! Esta carta miente: dice «Murciélago» pero describe un ave. Tócala.',
-        hecho: (e) => e.quemasAcertadas >= 1 || e.pozo.length >= 1,
-        hechoUI: (ui, e) => !!ui.seleccion && laFalsa(e).includes(ui.seleccion),
-        foco: { zona: 'pozo', piezas: laFalsa, ilumina: ['piezas'] } },
-      { clave: 'sospecha',
-        texto: 'Pulsa «Quemar» para destruirla.',
-        hecho: (e) => e.quemasAcertadas >= 1 || e.pozo.length >= 1,
-        foco: { zona: 'quemar', piezas: laFalsa, ilumina: ['zona'] } },
       { clave: 'mejora',
         texto: '¡Muy bien! Ahora vence a los que quedan.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }

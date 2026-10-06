@@ -1,6 +1,6 @@
 import type { Contenido } from '../content/types'
 import type { Dificultad } from './lane'
-import { LENTES, SELLOS, type SelloId } from './powers'
+import { LENTES, LENTES_VIVAS, SELLOS, type SelloId } from './powers'
 import { HERRAMIENTAS, type HerramientaId } from './tools'
 import { nivelDe, type Atlas } from './atlas'
 import { Rng } from './rng'
@@ -384,7 +384,7 @@ export function ofrecerRecompensas(
   const salida: Recompensa[] = []
 
   // 1 · pasiva. Las vetadas son las lentes con hazaña pendiente: se ganan, no caen del botín
-  const libres = LENTES.filter((l) => !cartera.lentes.includes(l.id) &&
+  const libres = LENTES_VIVAS.filter((l) => !cartera.lentes.includes(l.id) &&
     !vetadas.includes(l.id) && (dura || l.rareza === 'comun'))
   if (libres.length) salida.push({ tipo: 'lente', id: rng.pick(libres).id })
 
@@ -412,7 +412,7 @@ export function ofrecerRecompensas(
 
   // la veta: una cuarta opción rara, más probable cuanto mejor lo hiciste
   const probabilidad = Math.min(0.55, 0.12 + calidad * 0.4 + (dura ? 0.1 : 0))
-  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id) && !opciones.some((x) => x.tipo === 'lente' && x.id === l.id))
+  const raras = LENTES_VIVAS.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id) && !opciones.some((x) => x.tipo === 'lente' && x.id === l.id))
   const veta = raras.length > 0 && rng.next() < probabilidad
   if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
 
@@ -509,7 +509,7 @@ export function ofrecerRecompensasAndamiadas(
 
   // la veta rara sigue siendo el único azar del botín
   const probabilidad = Math.min(0.55, 0.12 + calidad * 0.4 + (dura ? 0.1 : 0))
-  const raras = LENTES.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id))
+  const raras = LENTES_VIVAS.filter((l) => l.rareza !== 'comun' && !cartera.lentes.includes(l.id) && !vetadas.includes(l.id))
   const veta = raras.length > 0 && rng.next() < probabilidad
   const opciones = salida.slice(0, 3)
   if (veta) opciones.push({ tipo: 'lente', id: rng.pick(raras).id })
