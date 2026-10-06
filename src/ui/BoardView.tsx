@@ -569,7 +569,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       {foco && <TutorialVelo burbuja={burbujaRef} foco={foco} />}
       {guia && guiaVisible && guia.centro && <div className="guia-fondo" />}
       {/* v6.59 · mientras Andy explica (pasos de solo leer) no se puede tocar nada más que su botón */}
-      {guia && guia.alEntender && !resuelto && <div className="guia-bloqueo" />}
+      {guia && guia.alEntender && !resuelto && (
+        <div className="guia-bloqueo"
+          onWheel={(ev) => {
+            // v6.62 · lo único que sigue vivo mientras Andy explica: desplazar la mano y las herramientas
+            const debajo = document.elementsFromPoint(ev.clientX, ev.clientY).find((x) => !x.classList.contains('guia-bloqueo') && !x.closest('.velo-tutorial'))
+            const col = debajo?.closest('[data-tutorial="mano"], [data-tutorial="herramientas"]')
+            if (!col) return
+            const caja = [col, ...Array.from(col.querySelectorAll<HTMLElement>('*'))].find((x) => { const o = getComputedStyle(x).overflowY; return (o === 'auto' || o === 'scroll') && x.scrollHeight > x.clientHeight + 2 })
+            caja?.scrollBy({ top: ev.deltaY })
+          }} />
+      )}
       {guia && guiaVisible && (
         <aside
           ref={burbujaRef}
