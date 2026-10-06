@@ -70,15 +70,20 @@ function disponer(c: Contenido, soloUnidad: string | null): Estrella[] {
   const lejos = Math.max(0.001, ...estrellas.map((s) => Math.hypot(s.x, s.y, s.z)))
   for (const s of estrellas) { s.x = (s.x / lejos) * 0.92; s.y = (s.y / lejos) * 0.92; s.z = (s.z / lejos) * 0.92 }
   // v5.94 · nada encimado: relajación en el plano (x,y) hasta una distancia mínima
-  const minimo = Math.max(0.05, 0.16 / Math.sqrt(Math.max(1, estrellas.length / 12)))
+  // v6.55 · más aire entre estrellas: los nombres necesitan sitio
+  const minimo = Math.min(0.34, Math.max(0.07, 0.34 / Math.sqrt(Math.max(1, estrellas.length / 12))))
   for (let it = 0; it < 40; it++) {
     for (let i = 0; i < estrellas.length; i++) for (let j = i + 1; j < estrellas.length; j++) {
       const A = estrellas[i], B = estrellas[j]
-      let dx = B.x - A.x, dy = B.y - A.y
-      const d = Math.hypot(dx, dy) || 1e-4
-      if (d < minimo) { const f = ((minimo - d) / d) * 0.5; dx *= f; dy *= f; A.x -= dx; A.y -= dy; B.x += dx; B.y += dy }
+      // en 3D: así la separación se mantiene aunque la galaxia gire
+      let dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z
+      const d = Math.hypot(dx, dy, dz) || 1e-4
+      if (d < minimo) { const f = ((minimo - d) / d) * 0.5; dx *= f; dy *= f; dz *= f; A.x -= dx; A.y -= dy; A.z -= dz; B.x += dx; B.y += dy; B.z += dz }
     }
   }
+  // si al separarlas alguna se salió, todo se encoge lo justo para caber
+  const fuera = Math.max(0.001, ...estrellas.map((q) => Math.hypot(q.x, q.y, q.z)))
+  if (fuera > 0.95) for (const q of estrellas) { q.x *= 0.95 / fuera; q.y *= 0.95 / fuera; q.z *= 0.95 / fuera }
   return estrellas
 }
 
@@ -120,7 +125,7 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
       const y = s.y * Math.cos(st.tilt) + z * Math.sin(st.tilt)
       const zz = z * Math.cos(st.tilt) - s.y * Math.sin(st.tilt)
       const k = 1 / (1.9 - zz)
-      return { x: w / 2 + x * k * Math.min(w, h) * 0.66, y: h / 2 + y * k * Math.min(w, h) * 0.66, k, z: zz }
+      return { x: w / 2 + x * k * Math.min(w, h) * 0.66 * Math.min(1.7, Math.max(1, w / Math.max(1, h))), y: h / 2 + y * k * Math.min(w, h) * 0.66, k, z: zz }
     }
     const zonaFocoIdx = zonaFoco ? contenido.clusters.findIndex((z) => z.id === zonaFoco) : -1
     const densa = estrellas.length > 60
@@ -129,6 +134,15 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
     const conEtiqueta = new Set(
       [...estrellas].sort((a, b) => b.estado - a.estado || importancia(b.id) - importancia(a.id)).slice(0, densa ? 22 : 40).map((s) => s.id)
     )
+    // v6.55 · polvo de estrellas de fondo: posiciones fijas que giran más despacio (profundidad)
+    let semilla = 20260
+    const azar = () => { semilla = (semilla + 0x6D2B79F5) | 0; let x = Math.imul(semilla ^ (semilla >>> 15), 1 | semilla); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296 }
+    const polvo = Array.from({ length: 140 }, () => ({
+      a: azar() * Math.PI * 2, d: 0.15 + azar() * 1.25, y: (azar() - 0.5) * 1.5,
+      r: 0.4 + azar() * 1.1, f: 400 + azar() * 1600, c: azar()
+    }))
+    const encendidasTotal = estrellas.filter((x) => x.estado >= 2).length
+    const avanceTotal = encendidasTotal / Math.max(1, estrellas.length)
     const dibujar = (t: number) => {
       if (!vivo) return
       const dpr = window.devicePixelRatio || 1
@@ -139,6 +153,28 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
       const st = estado.current
       if (!st.quieto && !st.arrastre && !reducido) st.rot += 0.00035 * Math.min(32, t - t0)
       t0 = t
+      // etiquetas sin encimarse: cada una reserva su rectángulo; la que no cabe prueba otro lado o se calla
+      const ocupados: { x: number; y: number; w: number; h: number }[] = []
+      const libre = (q: { x: number; y: number; w: number; h: number }) =>
+        q.x >= 2 && q.y >= 2 && q.x + q.w <= w - 2 && q.y + q.h <= h - 2 &&
+        !ocupados.some((o) => q.x < o.x + o.w && q.x + q.w > o.x && q.y < o.y + o.h && q.y + q.h > o.y)
+      const pendientes: { texto: string; x: number; y: number; r: number; color: string; fuente: string; prio: number }[] = []
+      // fondo: polvo que titila y un núcleo que crece con lo que llevas encendido
+      {
+        const m = Math.min(w, h)
+        const nuc = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, m * (0.18 + 0.22 * avanceTotal))
+        nuc.addColorStop(0, `rgba(255,214,140,${0.05 + 0.2 * avanceTotal})`); nuc.addColorStop(0.5, `rgba(120,150,255,${0.04 + 0.08 * avanceTotal})`); nuc.addColorStop(1, 'rgba(120,150,255,0)')
+        g.fillStyle = nuc; g.beginPath(); g.arc(w / 2, h / 2, m * 0.45, 0, 7); g.fill()
+        for (const q of polvo) {
+          const ang = q.a + st.rot * 0.35
+          const x = w / 2 + Math.cos(ang) * q.d * m * 0.55, y = h / 2 + q.y * m * 0.42 + Math.sin(ang) * q.d * m * 0.12
+          if (x < 0 || x > w || y < 0 || y > h) continue
+          g.globalAlpha = reducido ? 0.35 : 0.18 + 0.32 * (0.5 + 0.5 * Math.sin(t / q.f + q.a * 7))
+          g.fillStyle = q.c > 0.85 ? '#FFD9A0' : q.c > 0.7 ? '#A9C8FF' : '#DCE6FF'
+          g.beginPath(); g.arc(x, y, q.r, 0, 7); g.fill()
+        }
+        g.globalAlpha = 1
+      }
       // nebulosas: una por zona, en el centroide proyectado
       const porZona = new Map<number, { x: number; y: number; n: number }>()
       let pos = estrellas.map((s) => ({ s, p: proyectar(s, w, h) }))
@@ -150,13 +186,31 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
           pos = pos.map(({ s, p }) => ({ s, p: { ...p, x: w / 2 + (p.x - cx) * 1.6, y: h / 2 + (p.y - cy) * 1.6 } }))
         }
       }
-      for (const { s, p } of pos) { const z = porZona.get(s.zona) ?? { x: 0, y: 0, n: 0 }; z.x += p.x; z.y += p.y; z.n++; porZona.set(s.zona, z) }
+      const litZona = new Map<number, number>()
+      for (const { s, p } of pos) { const z = porZona.get(s.zona) ?? { x: 0, y: 0, n: 0 }; z.x += p.x; z.y += p.y; z.n++; porZona.set(s.zona, z); if (s.estado >= 2) litZona.set(s.zona, (litZona.get(s.zona) ?? 0) + 1) }
       for (const [z, c] of porZona) {
         const cx = c.x / c.n, cy = c.y / c.n, r = Math.min(w, h) * (0.16 + 0.05 * Math.min(4, c.n))
         const grad = g.createRadialGradient(cx, cy, 0, cx, cy, r)
-        grad.addColorStop(0, `rgba(${NEBULOSAS[z % NEBULOSAS.length]},0.16)`); grad.addColorStop(1, `rgba(${NEBULOSAS[z % NEBULOSAS.length]},0)`)
+        // la zona se enciende a medida que la estudias: de apenas visible a nebulosa viva
+        const lit = (litZona.get(z) ?? 0) / c.n
+        const fuerza = 0.07 + 0.22 * lit + (reducido ? 0 : 0.02 * Math.sin(t / 1800 + z))
+        grad.addColorStop(0, `rgba(${NEBULOSAS[z % NEBULOSAS.length]},${fuerza})`); grad.addColorStop(0.6, `rgba(${NEBULOSAS[z % NEBULOSAS.length]},${fuerza * 0.35})`); grad.addColorStop(1, `rgba(${NEBULOSAS[z % NEBULOSAS.length]},0)`)
         g.fillStyle = grad; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fill()
-        if (!st.quieto && w > 480 && c.n >= 2) { g.font = '500 11px Manrope, sans-serif'; g.fillStyle = `rgba(${NEBULOSAS[z % NEBULOSAS.length]},0.75)`; g.textAlign = 'center'; g.fillText(nombreZona(z), cx, cy - r * 0.55) }
+        if (!st.quieto && w > 480 && c.n >= 2 && nombreZona(z)) {
+          const texto = `${nombreZona(z).replace(/^Zona de /, '').toUpperCase()} · ${litZona.get(z) ?? 0}/${c.n}`
+          g.font = '800 10.5px Manrope, sans-serif'
+          const tw = g.measureText(texto).width + 16
+          // el rótulo de zona busca sitio arriba de su nebulosa; si choca con otro, baja
+          for (const dy of [-r * 0.62, -r * 0.85, r * 0.7, -r * 0.4]) {
+            const q = { x: cx - tw / 2, y: cy + dy - 10, w: tw, h: 19 }
+            if (!libre(q)) continue
+            ocupados.push(q)
+            g.fillStyle = 'rgba(8,14,40,0.72)'; g.beginPath(); g.roundRect(q.x, q.y, q.w, q.h, 9); g.fill()
+            g.strokeStyle = `rgba(${NEBULOSAS[z % NEBULOSAS.length]},0.55)`; g.lineWidth = 1; g.stroke()
+            g.fillStyle = `rgba(${NEBULOSAS[z % NEBULOSAS.length]},0.95)`; g.textAlign = 'center'; g.fillText(texto, cx, q.y + 13)
+            break
+          }
+        }
       }
       // hilos: de atrás hacia adelante
       const P = new Map(pos.map(({ s, p }) => [s.id, p]))
@@ -168,6 +222,12 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
         else if (clase === 'firme') { g.strokeStyle = `rgba(56,182,255,${0.45 + 0.25 * Math.max(0, (pa.z + pb.z) / 2)})`; g.lineWidth = 1.6 }
         else { g.strokeStyle = C.trans; g.lineWidth = 1.4; g.setLineDash([4, 5]) }
         g.beginPath(); g.moveTo(pa.x, pa.y); g.lineTo(pa.x + (pb.x - pa.x) * avance, pa.y + (pb.y - pa.y) * avance); g.stroke()
+        if (clase === 'firme' && !reducido && !st.quieto) {
+          // un destello recorre cada conexión que ya dominas
+          const u = ((t / 2600) + hash(a + b)) % 1
+          g.shadowColor = '#fff'; g.shadowBlur = 8; g.fillStyle = 'rgba(255,255,255,0.9)'
+          g.beginPath(); g.arc(pa.x + (pb.x - pa.x) * u, pa.y + (pb.y - pa.y) * u, 1.6, 0, 7); g.fill()
+        }
         if (clase === 'nuevo' && avance < 1) { g.fillStyle = '#fff'; g.beginPath(); g.arc(pa.x + (pb.x - pa.x) * avance, pa.y + (pb.y - pa.y) * avance, 3, 0, 7); g.fill() }
         g.restore()
       }
@@ -200,13 +260,45 @@ export function Galaxia({ contenido, atlas, modo = 'vivo', soloUnidad = null, al
           if (d > 0) { g.shadowColor = '#fff'; g.shadowBlur = 40 * d; r += 6 * d; label = C.texto }
         }
         if (st.foco === s.id) { g.strokeStyle = '#FF6A1A'; g.lineWidth = 1.5; g.beginPath(); g.arc(p.x, p.y, r + 8, 0, 7); g.stroke(); label = C.texto }
+        if (s.estado >= 2 && s.estado <= 4) {
+          // halo: las estrellas encendidas iluminan su alrededor
+          const hr = r * (s.estado === 4 ? 5.5 : 4)
+          const halo = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, hr)
+          halo.addColorStop(0, s.estado === 4 ? 'rgba(255,194,61,0.38)' : 'rgba(56,182,255,0.30)'); halo.addColorStop(1, 'rgba(0,0,0,0)')
+          g.save(); g.shadowBlur = 0; g.fillStyle = halo; g.beginPath(); g.arc(p.x, p.y, hr, 0, 7); g.fill(); g.restore()
+        }
+        if (s.estado === 0) { g.strokeStyle = 'rgba(180,195,235,0.5)'; g.lineWidth = 1; g.beginPath(); g.arc(p.x, p.y, r + 1.5, 0, 7); g.stroke() }
         g.fillStyle = col; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill()
+        if (s.estado === 4) {
+          // destello en cruz de las dominadas
+          const L = r * (2.6 + (reducido ? 0 : 0.7 * Math.sin(t / 500 + p.x)))
+          g.strokeStyle = 'rgba(255,236,180,0.85)'; g.lineWidth = 1.1
+          g.beginPath(); g.moveTo(p.x - L, p.y); g.lineTo(p.x + L, p.y); g.moveTo(p.x, p.y - L); g.lineTo(p.x, p.y + L); g.stroke()
+        }
         if (label && w > 360 && (!st.quieto || s.estado >= 2)) {
-          g.shadowBlur = 0; g.font = `${s.estado >= 4 ? 700 : 500} ${Math.round(10 + 2 * p.k)}px Manrope, sans-serif`; g.fillStyle = label; g.textAlign = 'center'
-          const n = s.nombre.length > 26 ? s.nombre.slice(0, 24) + '…' : s.nombre
-          g.fillText(n, p.x, p.y + r + 13)
+          const n = s.nombre.length > 24 ? s.nombre.slice(0, 22) + '…' : s.nombre
+          pendientes.push({ texto: n, x: p.x, y: p.y, r, color: label, fuente: `${s.estado >= 4 ? 700 : 600} ${Math.round(10 + 2 * p.k)}px Manrope, sans-serif`,
+            prio: (st.foco === s.id ? 1000 : 0) + s.estado * 10 + importancia(s.id) * 5 + p.z })
         }
         g.restore()
+      }
+      // segunda pasada: los nombres, del más importante al menos, cada uno donde quepa
+      pendientes.sort((a, b) => b.prio - a.prio)
+      for (const e of pendientes) {
+        g.font = e.fuente
+        const tw = g.measureText(e.texto).width + 6, th = 15
+        const sitios = [
+          { x: e.x - tw / 2, y: e.y + e.r + 3, ax: 'center' as const, tx: e.x, ty: e.y + e.r + 14 },
+          { x: e.x - tw / 2, y: e.y - e.r - th - 3, ax: 'center' as const, tx: e.x, ty: e.y - e.r - 6 },
+          { x: e.x + e.r + 5, y: e.y - th / 2, ax: 'left' as const, tx: e.x + e.r + 8, ty: e.y + 4 },
+          { x: e.x - e.r - 5 - tw, y: e.y - th / 2, ax: 'right' as const, tx: e.x - e.r - 8, ty: e.y + 4 }
+        ]
+        const sitio = sitios.find((q) => libre({ x: q.x, y: q.y, w: tw, h: th }))
+        if (!sitio) continue
+        ocupados.push({ x: sitio.x, y: sitio.y, w: tw, h: th })
+        g.textAlign = sitio.ax; g.lineJoin = 'round'
+        g.strokeStyle = 'rgba(6,11,32,0.9)'; g.lineWidth = 3.5; g.strokeText(e.texto, sitio.tx, sitio.ty)
+        g.fillStyle = e.color; g.fillText(e.texto, sitio.tx, sitio.ty)
       }
       if (!(st.quieto && reducido)) requestAnimationFrame(dibujar)
     }
