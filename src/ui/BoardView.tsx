@@ -330,7 +330,14 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /* --- foco del tutorial: se ilumina lo que toca y lo demás queda inerte --- */
   // v6.18 · mientras se resuelve el ataque no hay foco: la pantalla entera se enciende para verlo
   // v6.31 · al terminar la cuenta, el tutorial enciende solo el resultado y el botón de seguir
-  const foco = resuelto ? (guia && casc.terminada && e.ultima ? { zona: 'resultado' } as NonNullable<typeof guia>['foco'] : undefined) : guia?.foco
+  // v6.32 · la luz del resultado espera a que Andy termine de atacar
+  const [ataqueVisto, setAtaqueVisto] = useState(false)
+  useEffect(() => {
+    if (!(resuelto && casc.terminada)) { setAtaqueVisto(false); return }
+    const t = window.setTimeout(() => setAtaqueVisto(true), 2600)
+    return () => window.clearTimeout(t)
+  }, [resuelto, casc.terminada, e.turno])
+  const foco = resuelto ? (guia && casc.terminada && ataqueVisto && e.ultima ? { zona: 'resultado' } as NonNullable<typeof guia>['foco'] : undefined) : guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
   const fichaAndy = usarManifest()?.['jugador/copista'] as { escala?: number } | undefined
   const escalaAndy = typeof fichaAndy?.escala === 'number' ? fichaAndy.escala : 1
@@ -519,7 +526,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <Retrato familia="jugador" id="copista" alt="" tamano={Math.round((guia.centro ? 170 : 88) / escalaAndy)} gesto="quieto" respaldo={<span>✦</span>} />
           </div>
           <div className="guia-cuerpo">
-            <p>{resuelto && !guia.centro ? 'Mira a la derecha cómo te fue. Luego pulsa «Siguiente turno».' : guia.texto}</p>
+            <p>{resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? 'Mira a la derecha cómo te fue. Luego pulsa «Siguiente turno».' : guia.texto}</p>
             <div className="guia-pie">
               <div className="pasos-puntos">
                 {Array.from({ length: guia.total }, (_, i) => (
