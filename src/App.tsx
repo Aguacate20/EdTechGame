@@ -1120,7 +1120,8 @@ export default function App() {
               sfx.titan(4)
               setEstallido({ variante: est.id, trazos: sostenidos, zonas: 1, dano, tutorial: true })
               window.setTimeout(() => setEstallido(null), est.duracion)
-            }, 650)
+            // v6.40 · espera a que Andy golpee y el enemigo caiga: el estallido entra justo después
+            }, 2500)
           } : tutorial === null ? () => {
             // v6.28 · el jefe cayó con un ataque normal: lo que quedó en oro se cristaliza igual.
             // Sin esto el mapa se perdía al empezar otra expedición y la partida terminaba sin clímax.
@@ -1294,19 +1295,14 @@ export default function App() {
 
       {fase === 'tutorial-fin' && (
         <div className="envoltura pila tutorial-cierre" style={{ maxWidth: 560 }}>
-          <div className="marca-lc" aria-label="LudusCog"><span className="orbita" aria-hidden="true" /><span className="nombre"><b>Ludus<span>Cog</span></b><small>aprender · entender · avanzar</small></span></div>
+          <img className="cierre-andy" src={`${import.meta.env.BASE_URL}art/andy-caras/celebra.png`} alt="Andy celebrando" draggable={false} />
           <span className="eyebrow">Tutorial completado</span>
-          <h2 className="display">Ya sabes jugar</h2>
-          <ul className="cierre-lista tres-cosas">
-            <li><i className="estrella-oro" /><span><b>Sacaste piezas a la mesa</b><small>Un nombre y una descripción, sin que pase nada todavía.</small></span></li>
-            <li><i className="estrella-oro" /><span><b>Afirmaste un vínculo</b><small>Y el juego lo comprobó contra el texto: eso fue tu ataque.</small></span></li>
-            <li><i className="estrella-oro" /><span><b>Detectaste una falsificación</b><small>Un nombre con la descripción de otro. Quemarla da ventaja.</small></span></li>
-          </ul>
-          <p className="silencio">
-            El daño de cada diagrama son <b>puntos</b> (cuánto lo sostiene el texto) por un
-            <b> multiplicador</b> (cuánto se articula). Un montón de trazos sueltos pega poco;
-            pocos trazos verdaderos que se tocan, mucho.
+          <h2 className="display">¡Lo lograste!</h2>
+          <p className="cierre-andy-dice">
+            Ya sabes todo lo que necesitas: <b>sacar cartas</b>, <b>unirlas</b> y <b>atacar</b>.
+            Ahora viene lo bueno: hazlo con tus propias lecturas y mira cómo se enciende tu galaxia.
           </p>
+          <p className="silencio">Entre más conexiones correctas unas en un ataque, más fuerte pego. ¿Vamos por la primera expedición?</p>
           <div className="fila">
             <button className="btn primario grande" onClick={() => {
               const prev = previoRef.current
@@ -1323,7 +1319,7 @@ export default function App() {
                 setContenido(null); setFase('cargar')
               }
             }}>
-              Volver al menú principal
+              ¡Vamos a mi primera expedición!
             </button>
             <button className="btn fantasma" onClick={() => empezarTutorial(0)}>
               Repetir el tutorial
