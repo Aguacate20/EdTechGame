@@ -355,6 +355,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   }, [resuelto, casc.terminada, e.turno])
   const foco = resuelto ? (guia && casc.terminada && ataqueVisto && e.ultima ? { zona: 'resultado' } as NonNullable<typeof guia>['foco'] : undefined) : guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
+  /** v6.53 · aviso de Andy cuando el jugador intenta una conexión equivocada en el tutorial */
+  const [avisoAndy, setAvisoAndy] = useState<string | null>(null)
+  useEffect(() => { if (!avisoAndy) return; const t = window.setTimeout(() => setAvisoAndy(null), 6000); return () => window.clearTimeout(t) }, [avisoAndy])
   const fichaAndy = usarManifest()?.['jugador/copista'] as { escala?: number } | undefined
   void fichaAndy // const escalaAndy = typeof fichaAndy?.escala === 'number' ? fichaAndy.escala : 1
   /** v6.15 · el cuadro de instrucción se puede ocultar; vuelve con el paso siguiente */
@@ -452,6 +455,29 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
 
   const cerrarTrazo = () => {
     if (!herramienta || !puedeCerrar) return
+    // v6.53 · en el tutorial Andy no deja pasar una conexión equivocada: la revisa antes de trazarla
+    if (guia) {
+      try {
+        const st = structuredClone(e)
+        if (herramienta === 'flecha' && pendientes.length > 2) {
+          for (let k = 0; k < pendientes.length - 1; k++) trazar(st, 'flecha', [pendientes[k], pendientes[k + 1]], param)
+        } else trazar(st, herramienta, pendientes, param)
+        const nuevos = evaluarDiagrama(contenido, st.mano, st.trazos, lentes).veredictos
+          .filter((v) => !e.trazos.some((t) => t.uid === v.trazo.uid))
+        const malo = nuevos.find((v) => ['error', 'invertido', 'silencio', 'plausible', 'convive'].includes(v.estado))
+        if (malo) {
+          sfx.deshacer()
+          setAvisoAndy(malo.estado === 'invertido'
+            ? '¡Ojo! Está al revés. Toca primero la carta que va antes.'
+            : herramienta === 'identidad'
+              ? '¡Ojo! Esa descripción no es de ese nombre. Prueba con otra.'
+              : '¡Ojo! Esas cartas no van unidas así. Inténtalo otra vez.')
+          setPendientes([]); setParam(null)
+          return
+        }
+      } catch { /* si la revisión falla, se deja trazar */ }
+    }
+    setAvisoAndy(null)
     sfx.trazar()
     if (herramienta === 'flecha' && pendientes.length > 2) {
       // una flecha por cada par consecutivo, todas con el mismo tipo de conexión
@@ -545,15 +571,15 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           ref={burbujaRef}
           className={`guia${guia.centro ? ' centro' : ''}${
             guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' || guia.foco?.zona === 'carril' ? ' apartada' : ''
-          }${h && !resuelto && !guia.centro ? ' arriba' : ''}`}
+          }${avisoAndy ? ' aviso' : ''}${h && !resuelto && !guia.centro ? ' arriba' : ''}`}
           role="dialog" aria-live="polite" aria-label={`Tutorial, paso ${guia.indice + 1} de ${guia.total}`}
         >
           <div className="guia-andy" aria-hidden="true">
-            <img className="guia-cara" key={resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}
-              src={`${import.meta.env.BASE_URL}art/andy-caras/${resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}.png`} alt="" draggable={false} />
+            <img className="guia-cara" key={avisoAndy ? 'preocupado' : resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}
+              src={`${import.meta.env.BASE_URL}art/andy-caras/${avisoAndy ? 'preocupado' : resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}.png`} alt="" draggable={false} />
           </div>
           <div className="guia-cuerpo">
-            <p>{resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? `Mira a la derecha cómo te fue. Luego pulsa «${e.fase === 'ganado' ? 'El carril queda despejado' : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda' : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}».` : guia.texto}</p>
+            <p>{avisoAndy ? avisoAndy : resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? `Mira a la derecha cómo te fue. Luego pulsa «${e.fase === 'ganado' ? 'El carril queda despejado' : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda' : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}».` : guia.texto}</p>
             <div className="guia-pie">
               <div className="pasos-puntos">
                 {Array.from({ length: guia.total }, (_, i) => (

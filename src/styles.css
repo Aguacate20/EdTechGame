@@ -2530,3 +2530,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 
 /* v6.52 · con una herramienta abierta, Andy sube sobre el carril para no tapar la barra ni «Trazar» */
 .guia.arriba, .guia.apartada.arriba { top: 76px; bottom: auto; left: 16px; right: auto; }
+
+/* v6.53 · Andy avisa de una conexión equivocada */
+.guia.aviso { border: 2px solid var(--oxido); animation: aviso-tiembla .4s ease-out; }
+.guia.aviso p { color: #ffd9d2; }
+@keyframes aviso-tiembla { 0%, 100% { translate: 0 0; } 20% { translate: -7px 0; } 40% { translate: 7px 0; } 60% { translate: -4px 0; } 80% { translate: 4px 0; } }
