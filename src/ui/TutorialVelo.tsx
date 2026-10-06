@@ -92,6 +92,9 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
     const t = window.setTimeout(() => {
       const z = foco?.zona && ZONA_A_ANCLA[foco.zona] ? document.querySelector<HTMLElement>(`[data-tutorial="${ZONA_A_ANCLA[foco.zona]}"]`) : null
       if (z && contenedorConScroll(z)) z.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      // v6.33 · la herramienta señalada se trae sola a la vista: nadie tiene que adivinar que hay que subir
+      const h = foco?.herramientas?.[0] ? document.querySelector<HTMLElement>(`[data-herramienta="${foco.herramientas[0]}"]`) : null
+      if (h && contenedorConScroll(h)) h.scrollIntoView({ block: 'center', behavior: 'smooth' })
     }, 350)
     return () => { vivo.current = false; window.clearTimeout(t) }
   }, [burbuja, foco])
@@ -126,8 +129,11 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       ))}
       {flecha && (
         <g transform={`translate(${flecha.x} ${flecha.y})`}><g className="flecha-tutorial">
-          <circle r="18" fill="#FF6A1A" />
+          <rect x="-58" y="-18" width="116" height="36" rx="18" fill="#FF6A1A" />
+          <text x="12" y="5" textAnchor="middle" fontSize="14" fontWeight="800" fill="#0A1230">{flecha.abajo ? 'Baja aquí' : 'Sube aquí'}</text>
+          <g transform="translate(-40 0)">
           <path d={flecha.abajo ? 'M -7 -3 L 0 6 L 7 -3' : 'M -7 3 L 0 -6 L 7 3'} fill="none" stroke="#0A1230" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </g>
         </g></g>
       )}
       {arrastre && (
