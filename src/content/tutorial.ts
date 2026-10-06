@@ -409,10 +409,15 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Vuelve a sacar «Nube», «Lluvia» y «Charco». Únelas con «→» y «causa»: puedes tocar las tres seguidas.',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
         foco: { zona: 'mano', piezas: (e) => [...deClase('nube', 'etiqueta')(e), ...de(['lluvia', 'charco'])(e)], herramientas: ['flecha'], relaciones: ['causa'], arrastrar: true, sitios: [[26, 34], [50, 34], [74, 34]] } },
-      { clave: 'combo', cara: 'piensa',
-        texto: 'No ataques aún. Saca la carta «¿Qué soy?» y únela a «Nube» con «=».',
+      // v6.57 · igual que con «Trueno»: primero solo sacar la descripción; después, solo la herramienta
+      { clave: 'sacar-desc', cara: 'piensa',
+        texto: 'No ataques aún. Arrastra la carta «¿Qué soy?» a la mesa.',
+        hecho: (e) => deClase('nube', 'definicion')(e).some((u) => e.tablero.some((t) => t.uid === u)) || trazosDe(e, 'identidad') >= 1,
+        foco: { zona: 'mano', piezas: deClase('nube', 'definicion'), arrastrar: true, sitios: [[26, 52]] } },
+      { clave: 'combo', cara: 'explica',
+        texto: 'Toca «= Es lo mismo» y luego «Nube» y su descripción.',
         hecho: (e) => trazosDe(e, 'identidad') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']), arrastrar: true, sitios: [[26, 52]] } },
+        foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['nube']) } },
       // v6.56 · dos pasos: primero solo sacar «Trueno»; después, solo la herramienta
       { clave: 'sacar-trueno',
         texto: 'Ahora arrastra «Trueno» a la mesa.',
