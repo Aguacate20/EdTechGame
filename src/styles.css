@@ -2462,3 +2462,33 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .cierre-menu { margin-top: 4px; font-size: 13px; color: var(--texto-2); opacity: .7; text-decoration: underline; }
 .cierre-menu:hover { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .fugaz, .inicio-vacia, .inicio-andy img { animation: none; } }
+
+/* v6.42 · inicio a tres columnas: Andy y racha a la izquierda, logros y redes a la derecha */
+.inicio { display: grid; grid-template-columns: 250px minmax(0, 1fr) 250px; grid-template-areas: "izq centro der" "pie pie pie" "enl enl enl"; gap: 12px 16px; max-width: 1400px; align-items: stretch; }
+.inicio-centro { grid-area: centro; }
+.inicio-pie { grid-area: pie; }
+.inicio-enlaces { grid-area: enl; }
+.inicio-lado { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.inicio-lado.izq { grid-area: izq; } .inicio-lado.der { grid-area: der; }
+.lado-andy { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.lado-andy img { width: 150px; height: 150px; image-rendering: pixelated; animation: cierre-salta 2.4s ease-in-out infinite; }
+.lado-burbuja { position: relative; background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 12px 14px; font-size: 15px; line-height: 1.35; text-align: center; }
+.lado-burbuja::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 14px; height: 14px; background: var(--panel); border-right: 1px solid var(--borde); border-bottom: 1px solid var(--borde); transform: translateX(-50%) rotate(45deg); }
+.lado-tarjeta { background: var(--panel); border: 1px solid var(--borde); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.lado-tarjeta h4 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--texto-2); }
+.lado-tarjeta p { margin: 0; font-size: 13.5px; line-height: 1.4; }
+.lado-num { font-size: 24px; color: var(--acento); }
+.lado-semana { display: flex; gap: 4px; }
+.lado-semana span { flex: 1; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 700; background: var(--panel-hundido); color: var(--texto-2); border: 1px solid var(--borde); }
+.lado-semana span.hecho { background: rgba(255, 106, 26, .25); color: var(--texto); border-color: rgba(255, 106, 26, .5); }
+.lado-semana span.hoy { background: var(--acento); color: #0A1230; border-color: var(--acento); }
+.lado-pronto { font-size: 11px; color: var(--texto-2); opacity: .8; }
+.lado-medallas { display: flex; gap: 8px; }
+.lado-medallas span { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; font-size: 18px; background: var(--panel-hundido); border: 1px dashed var(--borde); filter: grayscale(1); opacity: .45; }
+.lado-medallas span.ganada { filter: none; opacity: 1; border: 2px solid var(--dominar, #ffc23d); box-shadow: 0 0 12px rgba(255, 194, 61, .35); }
+.lado-boton { width: 100%; }
+.lado-redes { display: flex; flex-direction: column; gap: 6px; }
+.lado-redes a, .lado-redes span { font-size: 13px; padding: 7px 10px; border-radius: 8px; background: var(--panel-hundido); border: 1px solid var(--borde); color: var(--texto); text-decoration: none; }
+.lado-redes span { opacity: .55; }
+.lado-redes a:hover { border-color: var(--acento); }
+@media (max-width: 1100px) { .inicio { grid-template-columns: 1fr; grid-template-areas: "centro" "pie" "izq" "der" "enl"; } .lado-andy { flex-direction: row-reverse; justify-content: center; } .lado-andy img { width: 90px; height: 90px; } .lado-burbuja::after { display: none; } }

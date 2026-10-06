@@ -191,6 +191,8 @@ export interface Hallazgo {
   tipoReal: string | null
   nota: string
   camino: Camino | null
+  /** v6.42 · el par es un no-vínculo: se marca como falso, no como invertido */
+  distinguidos?: boolean
   /** en `aproximada`: el tipo afirmado es de OTRA familia que el real. No es
    *  un matiz de etiqueta, es otra afirmación: vale menos. */
   lejana?: boolean
@@ -241,7 +243,6 @@ export function juzgarVinculo(
   // v5.71 · no-vínculos: pares que el texto distingue a propósito. Trazarlos es un error
   // con causa, no un silencio.
   const nv = (c.noVinculos ?? []).find((n) => (n.a === from && n.b === to) || (n.a === to && n.b === from))
-  if (nv) return { estado: 'invertida', tipoReal: null, camino: null, nota: `El texto los distingue a propósito: ${nv.motivo}` }
   const directa = c.aristas.filter((x) => x.from === from && x.to === to)
   const inversa = c.aristas.filter((x) => x.from === to && x.to === from)
   const disponibles = opciones.tiposDisponibles
@@ -250,6 +251,13 @@ export function juzgarVinculo(
 
   const exacta = directa.find((x) => x.tipo === tipo)
   if (exacta) return { estado: 'sostenida', tipoReal: exacta.tipo, nota: exacta.descripcion, camino: null }
+  // v6.42 · un par que el texto separa a propósito: decir que CONTRASTAN es justo lo correcto;
+  // cualquier otro vínculo es un error (y no «al revés»: darle la vuelta no lo arregla)
+  if (nv) {
+    return SIMETRICOS.has(tipo)
+      ? { estado: 'sostenida', tipoReal: tipo, camino: null, nota: `Bien visto: el texto los distingue a propósito. ${nv.motivo}` }
+      : { estado: 'invertida', distinguidos: true, tipoReal: null, camino: null, nota: `Estas dos ideas no se unen así, en ninguna dirección: el texto las separa a propósito. ${nv.motivo} Prueba a unirlas con «contrasta».` }
+  }
 
   // simétricos: la dirección no importa
   if (SIMETRICOS.has(tipo)) {

@@ -58,9 +58,9 @@ const DIMS: { id: string; nombre: string; color: string; nivel: number }[] = [
 export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, aprendizaje, onAprendizaje, onNueva, onAtlas, onEstrella, acciones, temas = [], temaActivo = null, onTema, diamante = false }: Props) {
   const zonaFoco: string | null = null
   // v6.35 · todo cabe en la primera pantalla: la galaxia ocupa lo que sobra de alto
-  const [altoGalaxia, setAltoGalaxia] = useState(() => Math.max(200, Math.min(520, window.innerHeight - 400)))
+  const [altoGalaxia, setAltoGalaxia] = useState(() => Math.max(200, Math.min(520, window.innerHeight - 350)))
   useEffect(() => {
-    const f = () => setAltoGalaxia(Math.max(200, Math.min(520, window.innerHeight - 400)))
+    const f = () => setAltoGalaxia(Math.max(200, Math.min(520, window.innerHeight - 350)))
     window.addEventListener('resize', f); return () => window.removeEventListener('resize', f)
   }, [])
   const [confirmarNueva, setConfirmarNueva] = useState(false)
@@ -83,23 +83,41 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
 
   return (
     <div className="inicio">
-      <main className="inicio-centro">
-        {(() => {
-          const faltan = ids.length - niveles.filter((n) => n >= 1).length
-          const m = guardada ? { cara: 'anima', texto: `¡Hola, ${nombre}! Dejaste una expedición a medias. ¿Seguimos?` }
-            : cob.aristas === 0 ? { cara: 'saludo', texto: `¡Hola, ${nombre}! Empieza una expedición y enciende tu primera estrella.` }
-              : racha >= 3 ? { cara: 'celebra', texto: `¡${racha} días seguidos, ${nombre}! Hoy encendemos otra zona.` }
-                : faltan > 0 && faltan <= 5 ? { cara: 'piensa', texto: `Te ${faltan === 1 ? 'falta 1 estrella' : `faltan ${faltan} estrellas`} para completar esta lectura.` }
-                  : faltan === 0 ? { cara: 'celebra', texto: `¡Encendiste todas las estrellas, ${nombre}! Ahora a conectarlas mejor.` }
-                    : { cara: 'explica', texto: `¡Hola, ${nombre}! Ya llevas ${cob.aristas} conexiones. Vamos por más.` }
-          return (
-            <div className="inicio-andy">
+      {(() => {
+        const faltan = ids.length - niveles.filter((n) => n >= 1).length
+        const m = guardada ? { cara: 'anima', texto: `¡Hola, ${nombre}! Dejaste una expedición a medias. ¿Seguimos?` }
+          : cob.aristas === 0 ? { cara: 'saludo', texto: `¡Hola, ${nombre}! Empieza una expedición y enciende tu primera estrella.` }
+            : racha >= 3 ? { cara: 'celebra', texto: `¡${racha} días seguidos, ${nombre}! Hoy encendemos otra zona.` }
+            : faltan > 0 && faltan <= 5 ? { cara: 'piensa', texto: `Te ${faltan === 1 ? 'falta 1 estrella' : `faltan ${faltan} estrellas`} para completar esta lectura.` }
+              : faltan === 0 ? { cara: 'celebra', texto: `¡Encendiste todas las estrellas, ${nombre}! Ahora a conectarlas mejor.` }
+              : { cara: 'explica', texto: `¡Hola, ${nombre}! Ya llevas ${cob.aristas} conexiones. Vamos por más.` }
+        const hoy = (new Date().getDay() + 6) % 7
+        return (
+          <aside className="inicio-lado izq">
+            <div className="lado-andy">
+              <div className="lado-burbuja"><b>{m.texto}</b></div>
               <img src={`${import.meta.env.BASE_URL}art/andy-caras/${m.cara}.png`} alt="" draggable={false} />
-              <div className="inicio-andy-dice"><b>{m.texto}</b><small>{fuente}</small></div>
-              {racha >= 2 && <span className="inicio-racha" title="Días seguidos entrando a jugar">🔥 {racha} días</span>}
             </div>
-          )
-        })()}
+            <section className="lado-tarjeta">
+              <h4>🔥 Racha</h4>
+              <b className="lado-num">{racha} {racha === 1 ? 'día' : 'días'}</b>
+              <div className="lado-semana">
+                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, k) => (
+                  <span key={k} className={k === hoy ? 'hoy' : k < hoy && hoy - k < racha ? 'hecho' : ''}>{d}</span>
+                ))}
+              </div>
+            </section>
+            <section className="lado-tarjeta">
+              <h4>🎯 Meta de hoy</h4>
+              <p>Completa una sala y enciende 3 estrellas nuevas.</p>
+              <div className="barra-prog"><span style={{ width: '0%' }} /></div>
+              <small className="lado-pronto">0 de 3 · próximamente</small>
+            </section>
+          </aside>
+        )
+      })()}
+      <main className="inicio-centro">
+        <div className="inicio-cab"><b>{fuente}</b></div>
         <div className="inicio-galaxia">
           <i className="fugaz f1" /><i className="fugaz f2" />
           {cob.aristas === 0 && <span className="inicio-vacia">Aquí aparecerá tu primera estrella ✦</span>}
@@ -153,9 +171,34 @@ export function InicioView({ contenido, atlas, sesion, guardada, onContinuar, ap
           <button className={`btn primario inicio-continuar${diamante ? ' diamante' : ''}`} onClick={onContinuar}>{diamante ? '◆ Repasar el texto' : `Empezar expedición${aprendizaje ? ' · aprendizaje' : ''}`}</button>
         )}
       </footer>
+      <aside className="inicio-lado der">
+        <section className="lado-tarjeta">
+          <h4>🏅 Logros</h4>
+          <div className="lado-medallas">
+            <span title="Primera estrella" className={cob.conceptos > 0 ? 'ganada' : ''}>✦</span>
+            <span title="Primera conexión" className={cob.aristas > 0 ? 'ganada' : ''}>⇄</span>
+            <span title="Racha de 3 días" className={racha >= 3 ? 'ganada' : ''}>🔥</span>
+            <span title="Lectura completa" className={cob.pct >= 95 ? 'ganada' : ''}>◆</span>
+          </div>
+          <small className="lado-pronto">{[cob.conceptos > 0, cob.aristas > 0, racha >= 3, cob.pct >= 95].filter(Boolean).length} de 4</small>
+        </section>
+        <section className="lado-tarjeta">
+          <h4>📣 Comparte</h4>
+          <p>Muestra tu galaxia a tus amigos.</p>
+          <button className="btn fantasma lado-boton" disabled>Compartir mi galaxia</button>
+          <small className="lado-pronto">próximamente</small>
+        </section>
+        <section className="lado-tarjeta">
+          <h4>Síguenos</h4>
+          <div className="lado-redes">
+            {ENLACES.map((x) => x.url
+              ? <a key={x.nombre} href={x.url} target="_blank" rel="noreferrer">{x.nombre}</a>
+              : <span key={x.nombre}>{x.nombre}</span>)}
+          </div>
+        </section>
+      </aside>
       <div className="inicio-enlaces">
         <span>LudusCog · aprender jugando</span>
-        {ENLACES.filter((x) => x.url).map((x) => <a key={x.nombre} href={x.url} target="_blank" rel="noreferrer">{x.nombre}</a>)}
       </div>
     </div>
   )

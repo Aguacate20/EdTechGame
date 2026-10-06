@@ -670,7 +670,7 @@ function validarFlecha(
   const motivoPropuesta = h.estado === 'plausible' && !ra.reserva && !rb.reserva
     ? admisibleComoPropuesta(c, ra.id, rb.id) : null
   const estado: Estado = h.estado === 'plausible' && motivoPropuesta
-    ? 'propuesta' : (MAPA[h.estado] ?? 'silencio')
+    ? 'propuesta' : h.distinguidos ? 'error' : (MAPA[h.estado] ?? 'silencio')
   const imp = (a.importancia + b.importancia) / 2
   const peso = estado === 'aproximado' && h.lejana ? PESO_APROXIMADO_LEJANO
     : estado === 'propuesta' ? PESO_PROPUESTA[distanciaPropuesta(c, ra.id, rb.id)]
