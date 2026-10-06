@@ -402,8 +402,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   // v6.29 · la columna entera solo se enciende si el paso no señala nada concreto dentro de ella
   const zonaEntera = !!foco && !(foco.piezas?.length || foco.herramientas?.length) && (!foco.ilumina || foco.ilumina.includes('zona'))
   const zona = (z: string) => (foco?.zona === z && zonaEntera ? ' destacada' : '')
-  const piezaLibre = (uid: string) => !foco?.piezas || foco.piezas.includes(uid)
-  const herrLibre = (id: HerramientaId) => !foco?.herramientas || foco.herramientas.includes(id)
+  // v6.59 · en un paso guiado solo se puede hacer lo que el paso pide: lo que no nombra, queda quieto
+  const piezaLibre = (uid: string) => !foco || (!!foco.piezas && foco.piezas.includes(uid))
+  const herrLibre = (id: HerramientaId) => !foco || (!!foco.herramientas && foco.herramientas.includes(id))
+  const afirmarLibre = !foco || foco.zona === 'afirmar'
 
   const reset = () => {
     setHerramienta(null); setParam(null); setPendientes([]); setPrevisualizada(null)
@@ -566,6 +568,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
       {/* v6.13 · paso libre (sin foco): no hay velo, la pantalla entera queda encendida */}
       {foco && <TutorialVelo burbuja={burbujaRef} foco={foco} />}
       {guia && guiaVisible && guia.centro && <div className="guia-fondo" />}
+      {/* v6.59 · mientras Andy explica (pasos de solo leer) no se puede tocar nada más que su botón */}
+      {guia && guia.alEntender && !resuelto && <div className="guia-bloqueo" />}
       {guia && guiaVisible && (
         <aside
           ref={burbujaRef}
@@ -1410,7 +1414,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
             <button
               data-tutorial="afirmar"
               className={`btn primario grande${zona('afirmar') ? ' senala' : ''}`}
-              onClick={on.afirmar} disabled={e.trazos.length === 0}
+              onClick={on.afirmar} disabled={e.trazos.length === 0 || !afirmarLibre}
             >
               Afirmar el diagrama {e.trazos.length > 0 && <span className="dato">· {e.trazos.length} trazos</span>}
             </button>

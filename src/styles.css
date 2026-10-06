@@ -2571,3 +2571,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .toca-num.sigue::after { content: ''; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #FFD23F; border-bottom: 0; }
 @keyframes toca-bota { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
 @media (prefers-reduced-motion: reduce) { .toca-num.sigue { animation: none; } }
+
+/* v6.59 · capa invisible que detiene los clics mientras Andy explica */
+.guia-bloqueo { position: fixed; inset: 0; z-index: 88; background: transparent; cursor: default; }
