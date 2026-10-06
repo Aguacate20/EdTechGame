@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { TutorialVelo } from './TutorialVelo'
-import { Retrato } from './assets'
 import { GolpeMayor, PaginaEnBlanco, escalonDeGolpe } from './Estallido'
 import { porqueDe } from '../engine/significativo'
 import { orientar } from '../engine/feedback'
@@ -154,7 +153,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   guia?: {
     titulo?: string; texto: string; indice: number; total: number
     clave?: string; alEntender?: () => void
-    centro?: boolean; boton?: string
+    centro?: boolean; boton?: string; cara?: string
     hechoUI?: (ui: { herramienta: string | null; pendientes: number; param: string | null; seleccion: string | null }) => boolean
     alCumplir?: () => void
     foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean }
@@ -347,7 +346,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const foco = resuelto ? (guia && casc.terminada && ataqueVisto && e.ultima ? { zona: 'resultado' } as NonNullable<typeof guia>['foco'] : undefined) : guia?.foco
   const burbujaRef = useRef<HTMLElement>(null)
   const fichaAndy = usarManifest()?.['jugador/copista'] as { escala?: number } | undefined
-  const escalaAndy = typeof fichaAndy?.escala === 'number' ? fichaAndy.escala : 1
+  void fichaAndy // const escalaAndy = typeof fichaAndy?.escala === 'number' ? fichaAndy.escala : 1
   /** v6.15 · el cuadro de instrucción se puede ocultar; vuelve con el paso siguiente */
   const [guiaOculta, setGuiaOculta] = useState<string | null>(null)
   const guiaVisible = !!guia && guiaOculta !== `${guia.clave ?? guia.indice}`
@@ -530,7 +529,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           role="dialog" aria-live="polite" aria-label={`Tutorial, paso ${guia.indice + 1} de ${guia.total}`}
         >
           <div className="guia-andy" aria-hidden="true">
-            <Retrato familia="jugador" id="copista" alt="" tamano={Math.round((guia.centro ? 170 : 88) / escalaAndy)} gesto="quieto" respaldo={<span>✦</span>} />
+            <img className="guia-cara" key={resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}
+              src={`${import.meta.env.BASE_URL}art/andy-caras/${resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}.png`} alt="" draggable={false} />
           </div>
           <div className="guia-cuerpo">
             <p>{resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? 'Mira a la derecha cómo te fue. Luego pulsa «Siguiente turno».' : guia.texto}</p>

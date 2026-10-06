@@ -1103,6 +1103,8 @@ export default function App() {
             const marcar = () => setPasosHechos((prev) => prev.includes(paso.clave) ? prev : [...prev, paso.clave])
             return { texto: paso.texto, indice: idx, total: sala.pasos.length, foco, clave: paso.clave,
               centro: paso.centro, boton: paso.boton,
+              // v6.39 · la cara de Andy acompaña lo que dice
+              cara: paso.cara ?? (paso.centro ? 'saludo' : paso.soloLeer ? 'explica' : paso.foco ? 'senala' : 'anima'),
               // v6.29 · pasos que se cumplen con un gesto de interfaz
               hechoUI: paso.hechoUI ? (ui: EstadoUI) => paso.hechoUI!(ui, batalla) : undefined, alCumplir: marcar,
               // v6.15 · en un paso de solo leer el botón lo da por hecho; en los demás solo oculta el cuadro

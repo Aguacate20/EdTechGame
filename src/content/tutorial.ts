@@ -200,6 +200,8 @@ export interface PasoGuia {
   soloLeer?: boolean
   /** v6.29 · Andy en grande, en el centro de la pantalla */
   centro?: boolean
+  /** v6.39 · expresión de Andy; si falta, se deduce del tipo de paso */
+  cara?: 'saludo' | 'explica' | 'senala' | 'anima' | 'celebra' | 'sorpresa' | 'piensa' | 'preocupado'
   /** texto del botón en los pasos de solo leer */
   boton?: string
 }
@@ -260,7 +262,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
     pasos: [
       { clave: 'hola', centro: true, soloLeer: true, boton: '¡Vamos!', hecho: nunca,
         texto: '¡Hola! Soy Andy. Ayúdame a derrotar a los enemigos con tu conocimiento.' },
-      { clave: 'enemigos', soloLeer: true, boton: 'Siguiente', hecho: nunca,
+      { clave: 'enemigos', cara: 'preocupado', soloLeer: true, boton: 'Siguiente', hecho: nunca,
         texto: 'Ellos vienen por mí. Si llegan, me hacen daño.',
         foco: { zona: 'carril' } },
       { clave: 'cartas', soloLeer: true, boton: 'Siguiente', hecho: (e) => enTablero(e, 1),
@@ -292,7 +294,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: '¡Listo! Pulsa «Afirmar» para atacar.',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
         foco: { zona: 'afirmar' } },
-      { clave: 'repetir',
+      { clave: 'repetir', cara: 'anima',
         texto: '¡Así se hace! Ahora tú: une «Flor» con su descripción.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
     ]
@@ -318,7 +320,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       crearEnemigo('apocrifo', escala * 0.6, 8)
     ],
     pasos: [
-      { clave: 'hola2', centro: true, soloLeer: true, boton: 'Siguiente', hecho: nunca,
+      { clave: 'hola2', cara: 'celebra', centro: true, soloLeer: true, boton: 'Siguiente', hecho: nunca,
         texto: '¡Bien hecho! Ahora te enseño la flecha: sirve para unir dos ideas.' },
       { clave: 'sacar3',
         texto: 'Arrastra estas tres cartas a la mesa.',
@@ -351,7 +353,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: '¡Dos flechas pegan más que una! Pulsa «Afirmar».',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
         foco: { zona: 'afirmar' } },
-      { clave: 'mejora',
+      { clave: 'mejora', cara: 'anima',
         texto: '¡Muy bien! Ahora vence a los que quedan.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
     ]
@@ -375,19 +377,19 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
     ],
     enemigos: (escala) => [crearEnemigo('dogma', escala * 0.85, 7)],
     pasos: [
-      { clave: 'hola3', centro: true, soloLeer: true, boton: 'Siguiente', hecho: nunca,
+      { clave: 'hola3', cara: 'piensa', centro: true, soloLeer: true, boton: 'Siguiente', hecho: nunca,
         texto: 'Último truco: el gran ataque. Entre más cartas unas, más fuerte pego.' },
-      { clave: 'jefe', soloLeer: true, boton: 'Siguiente', hecho: nunca,
+      { clave: 'jefe', cara: 'sorpresa', soloLeer: true, boton: 'Siguiente', hecho: nunca,
         texto: 'Este enemigo es duro. Necesita un ataque grande.',
         foco: { zona: 'carril' } },
-      { clave: 'lente', soloLeer: true, boton: 'Siguiente', hecho: (e) => e.tablero.length >= 1,
+      { clave: 'lente', cara: 'explica', soloLeer: true, boton: 'Siguiente', hecho: (e) => e.tablero.length >= 1,
         texto: 'Llevas una mejora: da más fuerza a los ataques largos.',
         foco: { zona: 'pasivas' } },
       { clave: 'cadena3',
         texto: 'Saca «Abeja», «Polinización» y «Fruto». Únelas con dos flechas «causa».',
         hecho: (e) => trazosDe(e, 'flecha') >= 2,
         foco: { zona: 'mano', piezas: (e) => [...deClase('abeja', 'etiqueta')(e), ...de(['polinizacion', 'fruto'])(e)], herramientas: ['flecha'], relaciones: ['causa'] } },
-      { clave: 'combo',
+      { clave: 'combo', cara: 'piensa',
         texto: 'No ataques aún. Saca la carta «¿Qué soy?» y únela a «Abeja» con «=».',
         hecho: (e) => trazosDe(e, 'identidad') >= 1,
         foco: { zona: 'herramientas', herramientas: ['identidad'], piezas: de(['abeja']) } },
@@ -395,7 +397,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
         texto: 'Saca «Flor». Con «◯» encierra Abeja, Flor y Polinización.',
         hecho: (e) => trazosDe(e, 'campo') >= 1,
         foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['abeja', 'flor', 'polinizacion']) } },
-      { clave: 'estallido',
+      { clave: 'estallido', cara: 'anima',
         texto: '¡Ahora sí! Pulsa «Afirmar» y mira.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) || e.turno > 2,
         foco: { zona: 'afirmar' } }
