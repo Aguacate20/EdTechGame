@@ -1106,7 +1106,7 @@ export default function App() {
             const paso = sala.pasos[idx]
             // v6.11 · el foco del paso llega a la mesa: sin esto el velo oscurecía todo y solo se veía la instrucción
             const foco = paso.foco
-              ? { zona: paso.foco.zona, piezas: paso.foco.piezas?.(batalla), herramientas: paso.foco.herramientas, relaciones: paso.foco.relaciones, ilumina: paso.foco.ilumina, arrastrar: paso.foco.arrastrar, huecos: paso.foco.huecos, sitios: paso.foco.sitios, orden: paso.foco.orden?.(batalla) }
+              ? { zona: paso.foco.zona, piezas: paso.foco.piezas?.(batalla), herramientas: paso.foco.herramientas, relaciones: paso.foco.relaciones, ilumina: paso.foco.ilumina, arrastrar: paso.foco.arrastrar, huecos: paso.foco.huecos, sitios: paso.foco.sitios, orden: paso.foco.orden?.(batalla), grupo: paso.foco.grupo }
               : undefined
             const marcar = () => setPasosHechos((prev) => prev.includes(paso.clave) ? prev : [...prev, paso.clave])
             return { texto: paso.texto, indice: idx, total: sala.pasos.length, foco, clave: paso.clave,

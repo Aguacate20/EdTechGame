@@ -190,6 +190,8 @@ export interface FocoGuia {
   sitios?: [number, number][]
   /** v6.58 · en qué orden tocar las cartas de la mesa: cada una lleva su número mientras hay herramienta */
   orden?: (e: EstadoBatalla) => string[]
+  /** v6.61 · un solo recuadro que abarca todas las cartas señaladas de la mesa y sus líneas */
+  grupo?: boolean
 }
 
 /** v6.29 · lo que el jugador tiene «en la mano» en la interfaz y el motor no ve */
@@ -321,7 +323,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'afirmar',
         texto: '¡Bien! Estás diciendo que «Nube» es «algo blanco o gris que flota en el cielo». Pulsa «Afirmar» para atacar.',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
-        foco: { zona: 'afirmar' } },
+        foco: { zona: 'afirmar', piezas: de(['nube']), grupo: true } },
       { clave: 'repetir', cara: 'anima',
         texto: '¡Así se hace! Ahora tú: une «Lluvia» con su descripción.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
@@ -380,7 +382,7 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'afirmar2',
         texto: '¡Dos flechas pegan más que una! Pulsa «Afirmar».',
         hecho: (e) => e.turno > 1 || e.fase !== 'jugando',
-        foco: { zona: 'afirmar' } },
+        foco: { zona: 'afirmar', piezas: de(['nube', 'lluvia', 'charco']), grupo: true } },
       { clave: 'mejora', cara: 'anima',
         texto: '¡Muy bien! Ahora vence a los que quedan.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) }
@@ -434,11 +436,11 @@ export const SALAS_TUTORIAL: SalaTutorial[] = [
       { clave: 'combo-campo', cara: 'explica',
         texto: 'Toca «◯ Van juntos» y luego Nube, Trueno y Lluvia: las tres son de una tormenta.',
         hecho: (e) => trazosDe(e, 'campo') >= 1,
-        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: de(['nube', 'trueno', 'lluvia']), orden: enOrden('nube', 'lluvia', 'trueno') } },
+        foco: { zona: 'herramientas', herramientas: ['campo'], piezas: enOrden('nube', 'lluvia', 'trueno'), orden: enOrden('nube', 'lluvia', 'trueno') } },
       { clave: 'estallido', cara: 'anima',
         texto: '¡Ahora sí! Pulsa «Afirmar» y mira.',
         hecho: (e) => e.enemigos.every((x) => x.hp <= 0) || e.turno > 2,
-        foco: { zona: 'afirmar' } }
+        foco: { zona: 'afirmar', piezas: de(['nube', 'lluvia', 'charco', 'trueno']), grupo: true } }
     ]
   }
 ]

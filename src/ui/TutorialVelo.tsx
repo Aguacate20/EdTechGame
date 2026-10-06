@@ -19,7 +19,7 @@ function contenedorConScroll(el: HTMLElement): HTMLElement | null {
 
 const ZONA_A_ANCLA: Record<string, string> = { lienzo: 'mesa', mesa: 'mesa', mano: 'mano', herramientas: 'herramientas', afirmar: 'afirmar', pozo: 'pozo', pasivas: 'pasivas', carril: 'carril', parametro: 'parametro', trazar: 'trazar', quemar: 'quemar', resultado: 'resultado' }
 
-export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean } | null }) {
+export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLElement | null>; foco: { zona?: string; piezas?: string[]; herramientas?: string[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; grupo?: boolean } | null }) {
   const [rects, setRects] = useState<Rect[]>([])
   const [bubble, setBubble] = useState<Rect | null>(null)
   const [flecha, setFlecha] = useState<Flecha | null>(null)
@@ -56,7 +56,28 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
       // herramienta, p. ej.), se enciende todo lo del foco para que nunca quede a oscuras
       let sel = armar(foco?.ilumina)
       if (foco?.ilumina && !(sel.length && document.querySelector(sel.join(',')))) sel = armar()
-      const els = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))
+      // v6.61 · a qué apunta Andy ahora: la carta que toca; si ya están todas, el tipo de conexión
+      // que falta elegir; y si no falta nada, el botón «Trazar»
+      const activa = document.querySelector('.herr-v.activa')
+      const objetivo: HTMLElement | null =
+        document.querySelector<HTMLElement>('.toca-num.sigue')?.closest<HTMLElement>('[data-uid]') ??
+        (activa
+          ? ((foco?.relaciones ?? []).map((r) => document.querySelector<HTMLElement>(`[data-relacion="${r}"]:not(.activa)`)).find(Boolean) ??
+             document.querySelector<HTMLElement>('[data-tutorial="trazar"]:not(:disabled)'))
+          : null)
+      const els0 = Array.from(document.querySelectorAll<HTMLElement>(sel.length ? sel.join(',') : '.batalla.con-foco .destacada'))
+      let els = objetivo && !els0.includes(objetivo) ? [...els0, objetivo] : els0
+      // un solo recuadro para el grupo de cartas de la mesa: así se ven también sus líneas
+      let grupoRect: Rect | null = null
+      if (foco?.grupo) {
+        const enMesa = els.filter((x) => x.classList.contains('en-tablero'))
+        if (enMesa.length) {
+          const rs = enMesa.map((x) => x.getBoundingClientRect())
+          const x0 = Math.min(...rs.map((r) => r.left)), y0 = Math.min(...rs.map((r) => r.top)), x1 = Math.max(...rs.map((r) => r.right)), y1 = Math.max(...rs.map((r) => r.bottom))
+          grupoRect = { x: x0 - 14, y: y0 - 14, w: x1 - x0 + 28, h: y1 - y0 + 28 }
+          els = els.filter((x) => !x.classList.contains('en-tablero'))
+        }
+      }
       // v6.15 · lo que queda fuera de la vista de su columna (hay que desplazarse) no se recorta
       // en un sitio falso: se marca con una flecha en el borde por donde hay que ir
       const nuevos: Rect[] = []
@@ -73,8 +94,9 @@ export function TutorialVelo({ burbuja, foco }: { burbuja: React.RefObject<HTMLE
         // v6.58 · las cartas de la mesa llevan su número encima: el recorte sube para que se vea encendido
         const q = { x: r.left - 6, y: top - 6, w: r.width + 12, h: bottom - top + 12 }
         // la carta que toca ahora va primero: hacia ella apunta la línea de Andy
-        if (q.w > 16 && q.h > 16) { if (el.querySelector('.toca-num.sigue')) nuevos.unshift(q); else nuevos.push(q) }
+        if (q.w > 16 && q.h > 16) { if (el === objetivo) nuevos.unshift(q); else nuevos.push(q) }
       }
+      if (grupoRect) nuevos.push(grupoRect)
       let na: string | null = null
       if (foco?.arrastrar) {
         const origen = (foco.piezas ?? []).map((u) => document.querySelector<HTMLElement>(`[data-tutorial="mano"] [data-uid="${u}"]`)).find(Boolean)

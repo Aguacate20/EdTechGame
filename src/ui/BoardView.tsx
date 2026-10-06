@@ -162,7 +162,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
     centro?: boolean; boton?: string; cara?: string
     hechoUI?: (ui: { herramienta: string | null; pendientes: number; param: string | null; seleccion: string | null }) => boolean
     alCumplir?: () => void
-    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; huecos?: number; sitios?: [number, number][]; orden?: string[] }
+    foco?: { zona: string; piezas?: string[]; herramientas?: HerramientaId[]; relaciones?: string[]; ilumina?: string[]; arrastrar?: boolean; huecos?: number; sitios?: [number, number][]; orden?: string[]; grupo?: boolean }
   } | null
   fondo?: { n: number; sala?: string | null }
 }) {

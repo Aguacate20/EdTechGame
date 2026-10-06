@@ -2574,3 +2574,6 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 
 /* v6.59 · capa invisible que detiene los clics mientras Andy explica */
 .guia-bloqueo { position: fixed; inset: 0; z-index: 88; background: transparent; cursor: default; }
+
+/* v6.61 · las cartas de la mano no se aplastan en pantallas bajitas: la lista se desplaza y el texto se ve */
+.lista-mano > .renglon { flex: none; }
