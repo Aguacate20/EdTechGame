@@ -399,6 +399,16 @@ export default function App() {
     setFase('batalla')
   }, [])
 
+  /** v6.69 · modo demo (`?demo=1`): el tutorial arranca solo, sin perfil, para la encuesta.
+   *  Al terminar avisa a la ventana que lo abrió (postMessage) y ofrece volver. */
+  const esDemo = useMemo(() => new URLSearchParams(location.search).get('demo') === '1', [])
+  useEffect(() => { if (esDemo) empezarTutorial(0) }, [esDemo])
+  useEffect(() => {
+    if (!esDemo || fase !== 'tutorial-fin') return
+    const msg = { tipo: 'luduscog-tutorial-fin', en: Date.now() }
+    try { window.opener?.postMessage(msg, '*') } catch { /* sin ventana madre */ }
+    try { if (window.parent !== window) window.parent.postMessage(msg, '*') } catch { /* sin marco */ }
+  }, [esDemo, fase])
   useEffect(() => {
     if (tutorial === null || !batalla) return
     const sala = SALAS_TUTORIAL[tutorial]
@@ -1352,6 +1362,16 @@ export default function App() {
                 setContenido(null); setFase('cargar')
               }
             }
+            if (esDemo) return (
+              <div className="fila">
+                <button className="btn primario grande" onClick={() => {
+                  try { window.opener?.postMessage({ tipo: 'luduscog-tutorial-fin', en: Date.now() }, '*') } catch { /* nada */ }
+                  if (window.parent !== window) { try { window.parent.postMessage({ tipo: 'luduscog-tutorial-fin', en: Date.now() }, '*') } catch { /* nada */ } }
+                  else if (window.opener) window.close()
+                }}>Volver a la encuesta</button>
+                <button className="btn fantasma" onClick={() => empezarTutorial(0)}>Repetir el tutorial</button>
+              </div>
+            )
             return (<>
               <div className="fila">
                 <button className="btn primario grande" onClick={() => volver(true)}>¡Vamos a mi primera expedición!</button>
