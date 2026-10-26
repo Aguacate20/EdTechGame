@@ -2709,3 +2709,55 @@ html { background: var(--fondo); }
   .app .zona-carril .bicho .vida { width: 36px; height: 5px; }
   .app .zona-carril .bicho[data-frente='true'] .vida { width: 52px; height: 6px; }
 }
+
+/* ==========================================================================
+   v6.70 · el combate se adapta al ALTO de la pantalla (ventanas bajas, el marco de la
+   encuesta, portátiles pequeños): el carril y la mano ceden espacio a la mesa
+   ========================================================================== */
+@media (min-width: 721px) and (max-height: 780px) {
+  .barra { padding: 6px 14px; gap: 10px; }
+  .barra .btn { padding: 6px 10px; font-size: 12px; }
+  .app .batalla { gap: 8px; padding: 8px 12px; height: calc(100dvh - 46px); grid-template-columns: 150px minmax(0, 1fr) 210px; grid-template-rows: 166px minmax(0, 1fr) 56px; }
+  .app .zona-carril { padding: 2px 10px 0; }
+  .app .zona-carril .carril { zoom: .72; }
+  .app .zona-carril .parte-frente { font-size: 10px; }
+  .app .herr-v { padding: 6px 10px; min-height: 36px; }
+  .app .renglon { padding: 6px 10px; }
+  .app .renglon .desc { -webkit-line-clamp: 1; }
+  .app .zona-acciones { padding-top: 6px; }
+  .app .zona-acciones .btn.grande { min-height: 40px; font-size: 14px; padding: 0 14px; }
+  .guia { bottom: 64px; width: min(320px, calc(100vw - 32px)); padding: 10px 12px; }
+  .guia p { font-size: 15px; }
+  .guia-andy { width: 64px; height: 64px; }
+  .naipe.en-tablero { width: 136px; }
+}
+@media (min-width: 721px) and (max-height: 640px) {
+  .app .batalla { gap: 6px; padding: 6px 10px; grid-template-columns: 140px minmax(0, 1fr) 200px; grid-template-rows: 128px minmax(0, 1fr) 52px; }
+  .app .zona-carril .carril { zoom: .55; }
+  .app .herr-v { min-height: 32px; padding: 4px 8px; font-size: 12px; }
+  .app .renglon .desc { display: none; }
+  .app .renglon .nom { font-size: 13px; }
+  .guia { bottom: 58px; }
+  .guia p { font-size: 14px; }
+  .guia-andy { width: 52px; height: 52px; }
+  .guia.centro .guia-andy { width: 110px; height: 110px; }
+  .guia.centro p { font-size: 18px; }
+  .naipe.en-tablero { width: 124px; }
+  .naipe.en-tablero .desc-mesa { display: none; }
+}
+/* celulares bajitos: las franjas fijas se encogen con el alto */
+@media (max-width: 720px) {
+  .app .batalla { grid-template-rows: clamp(64px, 10vh, 84px) minmax(0, 1fr) clamp(46px, 6.5vh, 54px) clamp(104px, 16vh, 136px) clamp(44px, 6vh, 50px) !important; }
+  .app .zona-carril .carril { transform: scale(calc(.5 * var(--carril-escala, 1))); }
+}
+@media (max-width: 720px) and (max-height: 700px) {
+  .app .zona-carril .carril { --carril-escala: .8; width: 250%; }
+  .app .renglon .desc { display: none; }
+  .app .renglon { flex-basis: 150px !important; }
+  .guia-andy { width: 44px !important; height: 44px !important; }
+  .guia p { font-size: 13px !important; }
+}
+@media (min-width: 721px) and (max-height: 780px) {
+  .app .herr-v { white-space: nowrap; overflow: hidden; }
+  .app .herr-v .nom, .app .herr-v > span:not(.glifo) { overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+}
