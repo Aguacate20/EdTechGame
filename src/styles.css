@@ -2661,3 +2661,8 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
   .guia.apartada { top: 118px !important; }
 }
 html { background: var(--fondo); }
+
+/* v6.65 · en táctil, las cartas de la mesa se mueven con el dedo sin que la página se desplace */
+@media (pointer: coarse) {
+  .naipe.en-tablero { touch-action: none; user-select: none; -webkit-user-select: none; }
+}

@@ -385,7 +385,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   /** v6.5 · la carta dorada que se está arrastrando: sin transición, pegada al puntero */
   const [moviendoUid, setMoviendoUid] = useState<string | null>(null)
   /** v5.99 · arrastre en vivo de cartas doradas (por puntero, sin HTML5 drag) */
-  const moviendoRef = useRef<{ uid: string; raf: number | null } | null>(null)
+  const moviendoRef = useRef<{ uid: string; raf: number | null; x0?: number; y0?: number } | null>(null)
   /** v6.1 · si el puntero se movió, fue arrastre, no clic */
   const seMovioRef = useRef(false)
   useEffect(() => {
@@ -982,9 +982,11 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                   ...(texturaDe(p.clase) ? { background: `${texturaDe(p.clase)}, ${cd.tono}` } : {}) }}
                 draggable={!resuelto && !(e.armados ?? []).some((a) => a.piezas.includes(p.uid))}
                 onPointerDown={(ev) => {
-                  if (resuelto || !(e.armados ?? []).some((a) => a.piezas.includes(p.uid)) || ev.button !== 0) return
+                  // v6.65 · en pantalla táctil cualquier carta de la mesa se mueve con el dedo (no solo las acertadas)
+                  const arrastrable = (e.armados ?? []).some((a) => a.piezas.includes(p.uid)) || (tactil && ev.pointerType === 'touch')
+                  if (resuelto || !arrastrable || ev.button !== 0) return
                   ev.stopPropagation(); ev.preventDefault()
-                  moviendoRef.current = { uid: p.uid, raf: null }
+                  moviendoRef.current = { uid: p.uid, raf: null, x0: ev.clientX, y0: ev.clientY }
                   setMoviendoUid(p.uid)
                   seMovioRef.current = false
                   const rc = (ev.currentTarget as HTMLElement).getBoundingClientRect()
@@ -994,6 +996,8 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onPointerMove={(ev) => {
                   const mv = moviendoRef.current
                   if (!mv || mv.uid !== p.uid) return
+                  // un toque con el dedo tiembla unos píxeles: eso sigue siendo un toque, no un arrastre
+                  if (!seMovioRef.current && Math.hypot(ev.clientX - (mv.x0 ?? ev.clientX), ev.clientY - (mv.y0 ?? ev.clientY)) < 8) return
                   seMovioRef.current = true
                   const { x, y } = posicionEnLienzo(ev)
                   if (mv.raf !== null) cancelAnimationFrame(mv.raf)
@@ -1005,7 +1009,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDragEnd={() => setArrastrando(null)}
                 onClick={(ev) => {
                   const armada = (e.armados ?? []).some((a) => a.piezas.includes(p.uid))
-                  if (armada && seMovioRef.current) { seMovioRef.current = false; return }
+                  if ((armada || tactil) && seMovioRef.current) { seMovioRef.current = false; return }
                   if (armada && !herramienta) {
                     void ev; void setAyudaFija; abrirDetalle(p)
                     return
