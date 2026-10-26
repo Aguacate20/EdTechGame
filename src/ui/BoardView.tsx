@@ -367,7 +367,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const guiaVisible = !!guia && guiaOculta !== `${guia.clave ?? guia.indice}`
   /** v5.87 · cámara de la mesa: el mundo es uno; la vista lo escala entero y se desplaza
    *  (arrastrar el fondo, dos dedos en el trackpad, Ctrl+rueda para zoom) */
-  const [zoom, setZoom] = useState(0.75)
+  /** v6.64 · en pantalla táctil no hay arrastre: tocar una carta de la mano la pone en la mesa */
+  const tactil = useMemo(() => window.matchMedia?.('(pointer: coarse)').matches ?? false, [])
+  const [zoom, setZoom] = useState(() => (window.innerWidth < 720 ? 0.6 : 0.75))
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const panRef = useRef<{ x0: number; y0: number; px: number; py: number } | null>(null)
   /** v6.5 · la cámara nunca sale de la mesa: el desplazamiento se acota a lo que el mundo
@@ -1368,7 +1370,17 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => {
                   if (!piezaLibre(p.uid)) return
-                  setSeleccion(seleccion === p.uid ? null : p.uid); despertarAudio()
+                  despertarAudio()
+                  if (tactil && !resuelto) {
+                    // a la silueta del tutorial si la hay; si no, a un hueco libre en rejilla
+                    const sil = document.querySelector<HTMLElement>('[data-tutorial="silueta"]')
+                    const n = e.tablero.length
+                    const x = sil ? parseFloat(sil.style.left) : 22 + (n % 4) * 19
+                    const y = sil ? parseFloat(sil.style.top) : 30 + Math.floor(n / 4) * 24
+                    sfx.soltar(); on.cambio((st) => soltar(st, p.uid, x, y)); setSeleccion(null)
+                    return
+                  }
+                  setSeleccion(seleccion === p.uid ? null : p.uid)
                 }}
                 data-ayuda={ayudaDe(p) + (dorada ? AYUDA_DORADA : '')}
               >

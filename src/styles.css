@@ -2589,3 +2589,75 @@ img[src$='enemigos/eco.svg'] { opacity: .68; }
 .remate-carril small { position: relative; font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #FFE6B0; text-shadow: 0 1px 4px #0A1230; animation: remate-cifra 1.9s ease-out forwards; }
 @keyframes remate-cifra { 0% { opacity: 0; transform: scale(.4); } 14% { opacity: 1; transform: scale(1.15); } 26% { transform: scale(1); } 82% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
 @media (prefers-reduced-motion: reduce) { .zona-carril.rematando, .remate-carril i, .remate-carril b, .remate-carril small { animation-duration: .01s; } }
+
+/* ==========================================================================
+   v6.64 · móvil: toda la app cabe en una pantalla estrecha
+   ========================================================================== */
+@media (max-width: 720px) {
+  html, body { overflow-x: hidden; }
+  /* barra superior en una sola línea */
+  .barra { flex-wrap: nowrap !important; overflow-x: auto; gap: 6px !important; padding: 6px 8px !important; min-height: 48px; height: 48px; }
+  .barra .eyebrow, .barra .etapa-lectura, .barra .dato.silencio { display: none !important; }
+  .barra .marca { font-size: 14px; white-space: nowrap; }
+  .barra .btn { padding: 6px 10px !important; font-size: 12px !important; white-space: nowrap; flex: none; }
+  /* el combate: carril arriba, mesa en el medio, herramientas y mano abajo */
+  .app .batalla { grid-template-rows: 62px minmax(0, 1fr) 54px 136px 50px !important; height: calc(100dvh - 48px) !important; padding: 6px !important; gap: 6px !important; }
+  .app .zona-herramientas { gap: 6px !important; }
+  .app .herr-v { min-width: 46px !important; height: 44px; padding: 0 !important; display: grid; place-items: center; }
+  .app .herr-v .glifo { font-size: 20px; }
+  .app .renglon { flex: 0 0 170px !important; min-height: 0 !important; padding: 8px 10px !important; }
+  .app .renglon .desc { -webkit-line-clamp: 2; }
+  .naipe.en-tablero { width: 124px !important; }
+  .naipe.en-tablero .desc-mesa { display: none; }
+  .naipe.en-tablero[data-armada='true'] { width: 124px !important; }
+  .silueta-carta { width: 124px; height: 48px; }
+  .barra-trazo { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
+  .barra-trazo strong { font-size: 12.5px !important; }
+  .zona-acciones { gap: 6px !important; padding-top: 6px !important; flex-wrap: nowrap !important; overflow-x: auto; }
+  .zona-acciones .btn.grande { font-size: 13px !important; padding: 0 12px !important; min-height: 42px; white-space: nowrap; }
+  .zona-acciones .silencio.dato, .zona-acciones .forma-previa { display: none !important; }
+  .cuenta.cuenta-pie { font-size: 12px; }
+  .cuenta.cuenta-pie .total { font-size: 18px; }
+  /* el resultado del ataque cabe en la bandeja de la mano */
+  .resultado-turno { overflow-y: auto; }
+  .resultado-fila { padding: 7px 9px; }
+  .resultado-sigue { display: none; }
+  /* Andy: arriba, sobre el carril, en una sola línea de texto grande */
+  .guia, .guia.apartada, .guia.arriba { position: fixed !important; top: 52px !important; left: 6px !important; right: 6px !important; bottom: auto !important; width: auto !important; padding: 8px 10px !important; gap: 8px !important; }
+  .guia-andy { width: 54px !important; height: 54px !important; }
+  .guia p { font-size: 14px !important; line-height: 1.3 !important; }
+  .guia .pasos-puntos { display: none; }
+  .guia.centro { top: 50% !important; left: 50% !important; right: auto !important; transform: translate(-50%, -50%); width: calc(100vw - 24px) !important; padding: 18px !important; flex-direction: column; text-align: center; }
+  .guia.centro .guia-andy { width: 120px !important; height: 120px !important; }
+  .guia.centro p { font-size: 18px !important; }
+  .guia.centro .guia-pie { justify-content: center; }
+  .toca-num { font-size: 11px; height: 22px; min-width: 22px; top: -14px; }
+  .toca-num.sigue { top: -20px; }
+  .ficha-detalle { width: calc(100vw - 24px); padding: 16px; }
+  .ficha-detalle h3 { font-size: 18px; }
+  /* pantallas de texto: inicio, mapa, premios, cierre */
+  .envoltura { padding: 12px 12px 40px !important; }
+  .display { font-size: 24px !important; }
+  .mano-naipes { grid-template-columns: 1fr !important; }
+  .inicio { padding: 8px 10px 12px !important; gap: 10px !important; }
+  .inicio-centro { padding: 8px !important; }
+  .inicio .escalon { min-width: 56px; }
+  .inicio .escalon-anillo { width: 38px; height: 38px; font-size: 10px; }
+  .inicio .escalon small { font-size: 10px; }
+  .inicio-pie { flex-direction: column; align-items: stretch; }
+  .inicio-pie .interruptor { width: 100%; }
+  .inicio-continuar { width: 100%; }
+  .inicio-botones { flex-direction: column; align-items: stretch; }
+  .lado-andy img { width: 80px !important; height: 80px !important; }
+  .tutorial-cierre { padding: 16px 12px !important; }
+  .cierre-andy { width: 130px; height: 130px; }
+  .cierre-andy-dice { font-size: 16px; }
+  .remate-carril b { font-size: 28px; }
+  .estallido-cifra { font-size: 40px !important; }
+  .velo-tutorial { pointer-events: none; }
+}
+@media (max-width: 720px) {
+  /* cuando Andy habla del carril, baja para no taparlo */
+  .guia.apartada { top: 118px !important; }
+}
+html { background: var(--fondo); }
