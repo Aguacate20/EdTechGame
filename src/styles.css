@@ -2761,3 +2761,20 @@ html { background: var(--fondo); }
   .app .herr-v { white-space: nowrap; overflow: hidden; }
   .app .herr-v .nom, .app .herr-v > span:not(.glifo) { overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
 }
+
+/* v6.71 · táctil: arrastrar desde la mano con el dedo */
+@media (pointer: coarse) {
+  .lista-mano > .renglon { touch-action: pan-x; }
+}
+.carta-fantasma { position: fixed; z-index: 95; transform: translate(-50%, -50%) rotate(-3deg); pointer-events: none; background: #1A2A58; color: var(--texto); border: 1px solid var(--borde); border-left: 5px solid var(--acento); border-radius: 10px; padding: 10px 14px; font-weight: 800; font-size: 14px; box-shadow: 0 14px 34px rgba(0, 0, 0, .55); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* mientras Andy ataca, su burbuja no tapa el carril */
+@media (max-width: 720px) {
+  .guia.atacando { display: none !important; }
+}
+@media (max-width: 720px) {
+  /* la barra tras el ataque: cuenta compacta y el botón entero */
+  .app .cuenta-pie .etiqueta-cuenta { display: none; }
+  .app .cuenta-pie { gap: 4px; font-size: 13px; flex: 1 1 auto; min-width: 0; }
+  .app .zona-acciones .sigue-turno { padding: 0 12px !important; font-size: 13px !important; flex: none; }
+  .resonancia-aviso { font-size: 10px !important; padding: 4px 8px !important; max-width: 60%; line-height: 1.25; }
+}

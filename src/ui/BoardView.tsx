@@ -174,6 +174,10 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
   const [pendientes, setPendientes] = useState<string[]>([])
   const [seleccion, setSeleccion] = useState<string | null>(null)
   const [arrastrando, setArrastrando] = useState<string | null>(null)
+  /** v6.71 · arrastre con el dedo desde la mano (en táctil no existe el arrastre HTML5):
+   *  una «carta fantasma» sigue al dedo y, al soltar sobre la mesa, la carta cae ahí */
+  const dedoRef = useRef<{ uid: string; x0: number; y0: number; movio: boolean } | null>(null)
+  const [fantasma, setFantasma] = useState<{ titulo: string; color: string; x: number; y: number } | null>(null)
   const [trazoAbierto, setTrazoAbierto] = useState<string | null>(null)
   const [leyenda, setLeyenda] = useState(false)
   const manifiesto = usarManifest()
@@ -589,7 +593,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
           ref={burbujaRef}
           className={`guia${guia.centro ? ' centro' : ''}${
             guia.foco?.zona === 'pasivas' || guia.foco?.zona === 'herramientas' || guia.foco?.zona === 'carril' ? ' apartada' : ''
-          }${avisoAndy ? ' aviso' : ''}${h && !resuelto && !guia.centro ? ' arriba' : ''}`}
+          }${avisoAndy ? ' aviso' : ''}${h && !resuelto && !guia.centro ? ' arriba' : ''}${resuelto && !guia.centro && !ataqueVisto ? ' atacando' : ''}`}
           role="dialog" aria-live="polite" aria-label={`Tutorial, paso ${guia.indice + 1} de ${guia.total}`}
         >
           <div className="guia-andy" aria-hidden="true">
@@ -614,6 +618,9 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
         </aside>
       )}
 
+      {fantasma && (
+        <div className="carta-fantasma" style={{ left: fantasma.x, top: fantasma.y, borderLeftColor: fantasma.color }}>{fantasma.titulo}</div>
+      )}
       {detalle && (
         <div className="velo" onClick={() => setDetalle(null)}>
           <div className="ficha-detalle" style={{ ['--color' as string]: detalle.color }} onClick={(ev) => ev.stopPropagation()}>
@@ -1367,6 +1374,37 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 style={{ borderLeftColor: cd.banda, ['--banda' as string]: cd.banda,
                   background: texturaDe(p.clase) ? `${texturaDe(p.clase)}, ${cd.tono}` : cd.tono }}
                 draggable={!resuelto && piezaLibre(p.uid)}
+                onPointerDown={(ev) => {
+                  if (!tactil || ev.pointerType !== 'touch' || resuelto || !piezaLibre(p.uid)) return
+                  dedoRef.current = { uid: p.uid, x0: ev.clientX, y0: ev.clientY, movio: false }
+                  try { (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId) } catch { /* puntero sintético */ }
+                }}
+                onPointerMove={(ev) => {
+                  const d = dedoRef.current
+                  if (!d || d.uid !== p.uid) return
+                  if (!d.movio) {
+                    // un desplazamiento horizontal corto es desplazar la bandeja; vertical, arrastrar la carta
+                    const dx = ev.clientX - d.x0, dy = ev.clientY - d.y0
+                    if (Math.hypot(dx, dy) < 10) return
+                    if (Math.abs(dx) > Math.abs(dy) * 1.5) { dedoRef.current = null; return }
+                    d.movio = true; setArrastrando(p.uid)
+                  }
+                  ev.preventDefault()
+                  setFantasma({ titulo: p.titulo, color: cd.banda, x: ev.clientX, y: ev.clientY })
+                }}
+                onPointerUp={(ev) => {
+                  const d = dedoRef.current
+                  if (!d || d.uid !== p.uid) return
+                  dedoRef.current = null; setFantasma(null); setArrastrando(null)
+                  if (!d.movio) return
+                  // cae donde se soltó, si fue sobre la mesa; si no, se queda en la mano
+                  const z = lienzo.current?.parentElement?.getBoundingClientRect()
+                  if (!z || ev.clientX < z.left || ev.clientX > z.right || ev.clientY < z.top || ev.clientY > z.bottom) return
+                  const { x, y } = posicionEnLienzo({ clientX: ev.clientX, clientY: ev.clientY }, false)
+                  sfx.soltar(); on.cambio((st) => soltar(st, p.uid, x, y)); setSeleccion(null)
+                  seMovioRef.current = true; window.setTimeout(() => { seMovioRef.current = false }, 250)
+                }}
+                onPointerCancel={() => { dedoRef.current = null; setFantasma(null); setArrastrando(null) }}
                 onDragStart={(ev) => {
                   if (!piezaLibre(p.uid)) { ev.preventDefault(); return }
                   setArrastrando(p.uid); ev.dataTransfer.setData('text/plain', p.uid)
@@ -1374,6 +1412,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
                 onDragEnd={() => setArrastrando(null)}
                 onClick={() => {
                   if (!piezaLibre(p.uid)) return
+                  if (seMovioRef.current) return
                   despertarAudio()
                   if (tactil && !resuelto) {
                     // a la silueta del tutorial si la hay; si no, a un hueco libre en rejilla
