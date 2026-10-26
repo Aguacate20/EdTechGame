@@ -2689,3 +2689,14 @@ html { background: var(--fondo); }
   .barra-trazo > .btn.primario { grid-area: t; padding: 6px 14px; min-height: 36px; }
   .barra-trazo > .btn.fantasma { grid-area: x; padding: 6px 10px; min-height: 36px; }
 }
+
+/* v6.67 · móvil: Andy y su vida centrados en el carril; los enemigos más chicos para no amontonarse */
+@media (max-width: 720px) {
+  .app .zona-carril .carril-jugador { align-items: center !important; align-self: center !important; padding: 0 6px 0 0 !important; }
+  .app .zona-carril .carril-jugador > :first-child { translate: 0 -16px; }
+  .app .zona-carril .heroe-casa { translate: 0 -22px; }
+  .app .zona-carril .carril-pista { align-items: flex-end; }
+  .app .zona-carril .casilla .retrato-sprite { transform: scale(.62); transform-origin: 50% 100%; }
+  .app .zona-carril .casilla .retrato-sprite[style*="scaleX(-1)"] { transform: scale(.62) scaleX(-1) !important; }
+  .app .zona-carril .casilla { gap: 0 !important; }
+}
