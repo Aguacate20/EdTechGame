@@ -2700,3 +2700,12 @@ html { background: var(--fondo); }
   .app .zona-carril .casilla .retrato-sprite[style*="scaleX(-1)"] { transform: scale(.62) scaleX(-1) !important; }
   .app .zona-carril .casilla { gap: 0 !important; }
 }
+
+/* v6.68 · móvil: en el carril solo el enemigo del frente lleva nombre (en una pastilla legible);
+   los demás conservan su barra de vida y nada más, para que no se encimen los rótulos */
+@media (max-width: 720px) {
+  .app .zona-carril .bicho .nom, .app .zona-carril .bicho .vida-num, .app .zona-carril .bicho .rasgo { display: none !important; }
+  .app .zona-carril .bicho[data-frente='true'] .nom { display: inline-block !important; font-size: 15px; font-weight: 800; color: #fff; background: rgba(8, 14, 40, .78); border: 1px solid rgba(255, 255, 255, .25); border-radius: 999px; padding: 2px 10px; white-space: nowrap; position: relative; z-index: 3; margin-top: 2px; }
+  .app .zona-carril .bicho .vida { width: 36px; height: 5px; }
+  .app .zona-carril .bicho[data-frente='true'] .vida { width: 52px; height: 6px; }
+}

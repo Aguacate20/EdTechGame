@@ -163,6 +163,8 @@ export function LaneView({
     }
   }, [enemigos, disparoListo])
   const enMira = new Set(vivos.slice(0, Math.max(0, alcance)).map((e) => e.uid))
+  // v6.68 · el que va primero en el carril: en celular es el único que lleva nombre
+  const frenteUid = vivos[0]?.uid ?? null
 
   return (
     <div className={`carril${golpeMayor && disparoListo ? ' sacudida' : ''}` +
@@ -263,6 +265,7 @@ export function LaneView({
                 return (
                   <div
                     key={e.uid}
+                    data-frente={e.uid === frenteUid ? 'true' : undefined}
                     className={`bicho bicho-${gestoVisible(e, !!(impactoReal && !impacto))}${enMira.has(e.uid) ? ' en-mira' : ''}${fila > 0 ? ' detras' : ''}`}
                     style={fila > 0 ? ({ '--fila': fila, zIndex: 10 - fila } as React.CSSProperties) : undefined}
                     title={`${e.nombre} — ${t.glosa}`}
