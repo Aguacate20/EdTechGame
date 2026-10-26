@@ -2666,3 +2666,26 @@ html { background: var(--fondo); }
 @media (pointer: coarse) {
   .naipe.en-tablero { touch-action: none; user-select: none; -webkit-user-select: none; }
 }
+
+/* v6.66 · móvil: el carril se ve entero (Andy y enemigos a escala) y la barra de la herramienta
+   ocupa dos renglones compactos en vez de media mesa */
+@media (max-width: 720px) {
+  .app .batalla { grid-template-rows: 84px minmax(0, 1fr) 54px 136px 50px !important; }
+  .app .zona-carril { padding: 4px 8px 0 !important; }
+  /* el carril entero se dibuja al 50 % y las casillas se estrechan: Andy y los ocho pasos caben en 360 px */
+  .app .zona-carril .carril { width: 200%; transform: scale(.5); transform-origin: 0 0; overflow: visible; }
+  .app .zona-carril .carril-pista { height: 140px !important; overflow: visible; flex: 1 1 0; min-width: 0; }
+  .app .zona-carril .casilla { flex: 1 1 0 !important; min-width: 0 !important; }
+  .app .zona-carril .carril-jugador { padding: 0 6px 6px 0 !important; gap: 4px !important; }
+  .app .zona-carril .carril-jugador > :first-child { width: 84px; min-width: 0; flex: none; }
+  .app .zona-carril .parte-frente { display: none; }
+  .barra-trazo { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "g n t x" "r r r r"; gap: 6px 8px !important; padding: 6px 8px !important; left: 4px !important; right: 4px !important; bottom: 4px !important; }
+  .barra-trazo > .glifo-barra { grid-area: g; font-size: 18px; }
+  .barra-trazo > .pila { grid-area: n; }
+  .barra-trazo > .pila .silencio { display: none; }
+  .barra-trazo > .pila strong { font-size: 13px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .barra-trazo > .fila { grid-area: r; flex-wrap: nowrap !important; overflow-x: auto; max-width: none !important; padding-bottom: 2px; scrollbar-width: none; }
+  .barra-trazo > .fila .apuesta { flex: none; }
+  .barra-trazo > .btn.primario { grid-area: t; padding: 6px 14px; min-height: 36px; }
+  .barra-trazo > .btn.fantasma { grid-area: x; padding: 6px 10px; min-height: 36px; }
+}
