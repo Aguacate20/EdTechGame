@@ -601,7 +601,7 @@ export function BoardView({ e, contenido, lentes, on, lucidez, lucidezMax, lente
               src={`${import.meta.env.BASE_URL}art/andy-caras/${avisoAndy ? 'preocupado' : resuelto && !guia.centro ? (ataqueVisto ? 'celebra' : 'anima') : guia.cara ?? 'explica'}.png`} alt="" draggable={false} />
           </div>
           <div className="guia-cuerpo">
-            <p>{avisoAndy ? avisoAndy : resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? `Mira a la derecha cómo te fue. Luego pulsa «${e.fase === 'ganado' ? 'El carril queda despejado' : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda' : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}».` : guia.texto}</p>
+            <p>{avisoAndy ? avisoAndy : resuelto && !guia.centro && !ataqueVisto ? '¡Allá voy!' : resuelto && !guia.centro ? `Mira cómo te fue. Luego pulsa «${e.fase === 'ganado' ? 'El carril queda despejado' : e.oleadas.length && vivos(e).length === 0 ? 'Entra la siguiente tanda' : e.fase === 'perdido' ? 'Cerrar la expedición' : 'Siguiente turno'}».` : guia.texto}</p>
             <div className="guia-pie">
               <div className="pasos-puntos">
                 {Array.from({ length: guia.total }, (_, i) => (
